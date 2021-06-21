@@ -2,7 +2,7 @@ namespace modules {
     //% fixedInstances
     export class AccelerometerClient extends jacdac.BufferedSensorClient {
         constructor(role: string) {
-            super(jacdac.SRV_ACCELEROMETER, role, "i6.10 i6.10 i6.10");
+            super(jacdac.SRV_ACCELEROMETER, role, "i6.10 i6.10 i6.10")
         }
 
         /**
@@ -12,7 +12,7 @@ namespace modules {
         //% group="Accelerometer"
         //% blockSetVariable="accelerometer"
         get x(): number {
-            return this.get(JDDimension.X);
+            return this.get(JDDimension.X)
         }
 
         /**
@@ -22,7 +22,7 @@ namespace modules {
         //% group="Accelerometer"
         //% blockSetVariable="accelerometer"
         get y(): number {
-            return this.get(JDDimension.Y);
+            return this.get(JDDimension.Y)
         }
 
         /**
@@ -32,7 +32,7 @@ namespace modules {
         //% group="Accelerometer"
         //% blockSetVariable="accelerometer"
         get z(): number {
-            return this.get(JDDimension.Z);
+            return this.get(JDDimension.Z)
         }
 
         /**
@@ -42,40 +42,41 @@ namespace modules {
         //% group="Accelerometer"
         //% blockSetVariable="accelerometer"
         get strength(): number {
-            return this.get(JDDimension.Strength);
+            return this.get(JDDimension.Strength)
         }
 
         private get(dimension: JDDimension): number {
-            const values = this.values();
-            const s = this.values;
-            if (!s || s.length < 6) return 0;
+            const values = this.values()
+            const s = this.values
+            if (!s || s.length < 6) return 0
             switch (dimension) {
                 case JDDimension.X:
                 case JDDimension.Y:
                 case JDDimension.Z:
-                    return values[dimension] * 1023;
-                default: // strength
-                    let r = 0;
+                    return values[dimension] * 1023
+                default:
+                    // strength
+                    let r = 0
                     for (let i = 0; i < 3; ++i) {
-                        const x = values[i] * 1023;
-                        r += x * x;
+                        const x = values[i] * 1023
+                        r += x * x
                     }
-                    return Math.sqrt(r);
+                    return Math.sqrt(r)
             }
         }
 
         /**
          * Runs code when an event happens on the sensor
-         * @param gesture 
-         * @param handler 
+         * @param gesture
+         * @param handler
          */
         //% blockId=jacadacacconevent block="on %accelerometer $event"
         //% group="Accelerometer"
         onEvent(event: jacdac.AccelerometerEvent, handler: () => void) {
-            this.registerEvent(event, handler);
+            this.registerEvent(event, handler)
         }
     }
 
     //% fixedInstance whenUsed block="accelerometer 1"
-    export const accelerometer = new AccelerometerClient("accelerometer");
+    export const accelerometer = new AccelerometerClient("accelerometer")
 }

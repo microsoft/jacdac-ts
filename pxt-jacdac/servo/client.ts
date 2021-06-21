@@ -1,9 +1,9 @@
 namespace modules {
     //% fixedInstances
-    //% blockGap=8        
+    //% blockGap=8
     export class ServoClient extends jacdac.Client {
         constructor(role: string) {
-            super(jacdac.SRV_SERVO, role);
+            super(jacdac.SRV_SERVO, role)
         }
 
         private pulse: number
@@ -12,8 +12,7 @@ namespace modules {
 
         private sync(n: number) {
             this.lastSet = control.millis()
-            if (n === this.pulse)
-                return
+            if (n === this.pulse) return
             if (n == null) {
                 this.setReg(jacdac.ServoReg.Enabled, "u8", [0])
             } else {
@@ -28,7 +27,11 @@ namespace modules {
             this.lastSet = control.millis()
             if (this.autoOff === undefined)
                 jacdac.bus.on(jacdac.SELF_ANNOUNCE, () => {
-                    if (this.pulse != null && this.autoOff && control.millis() - this.lastSet > this.autoOff) {
+                    if (
+                        this.pulse != null &&
+                        this.autoOff &&
+                        control.millis() - this.lastSet > this.autoOff
+                    ) {
                         this.turnOff()
                     }
                 })
@@ -54,8 +57,8 @@ namespace modules {
             // this isn't exactly what the internets say, but it's what codal does
             const center = 1500
             const range = 2000
-            const lower = center - (range >> 1) << 10;
-            const scaled = lower + (range * Math.idiv(degrees << 10, 180));
+            const lower = (center - (range >> 1)) << 10
+            const scaled = lower + range * Math.idiv(degrees << 10, 180)
             this.setPulse(scaled >> 10)
         }
 
@@ -70,7 +73,7 @@ namespace modules {
         //% servo.fieldOptions.width=220
         //% servo.fieldOptions.columns=2
         run(speed: number): void {
-            this.setAngle(Math.map(speed, -100, 100, 0, 180));
+            this.setAngle(Math.map(speed, -100, 100, 0, 180))
         }
 
         /*
@@ -85,12 +88,12 @@ namespace modules {
         //% servo.fieldOptions.width=220
         //% servo.fieldOptions.columns=2
         setPulse(micros: number) {
-            micros = micros | 0;
-            micros = Math.clamp(500, 2500, micros);
+            micros = micros | 0
+            micros = Math.clamp(500, 2500, micros)
             this.sync(micros)
         }
     }
 
     //% fixedInstance whenUsed block="servo 1"
-    export const servo1 = new ServoClient("servo1");
+    export const servo1 = new ServoClient("servo1")
 }

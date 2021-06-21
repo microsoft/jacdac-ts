@@ -8,7 +8,7 @@ namespace jacdac {
         constructor(
             public readonly timestamp: number,
             public readonly pkt: JDPacket
-        ) { }
+        ) {}
     }
 
     export function delayedSend(pkt: JDPacket, timestamp: number) {
@@ -30,10 +30,9 @@ namespace jacdac {
         while (true) {
             pause(10)
             const now = control.millis()
-            for (; ;) {
+            for (;;) {
                 const curr = delayedPackets[0]
-                if (!curr || curr.timestamp > now)
-                    break
+                if (!curr || curr.timestamp > now) break
                 delayedPackets.shift()
                 curr.pkt._sendCore()
             }

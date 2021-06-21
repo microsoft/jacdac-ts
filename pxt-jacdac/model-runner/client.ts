@@ -2,8 +2,7 @@ namespace jacdac {
     function unpackArray(buf: Buffer, fmt: NumberFormat) {
         const sz = Buffer.sizeOfNumberFormat(fmt)
         const res: number[] = []
-        for (let i = 0; i < buf.length; i += sz)
-            res.push(buf.getNumber(fmt, i))
+        for (let i = 0; i < buf.length; i += sz) res.push(buf.getNumber(fmt, i))
         return res
     }
 
@@ -11,7 +10,7 @@ namespace jacdac {
     //% blockGap=8
     export class ModelRunnerClient extends Client {
         constructor(role: string) {
-            super(jacdac.SRV_MODEL_RUNNER, role);
+            super(jacdac.SRV_MODEL_RUNNER, role)
         }
 
         private _autoInv: number
@@ -27,11 +26,16 @@ namespace jacdac {
 
         autoInvoke(numSamples = 10) {
             this._autoInv = numSamples
-            this.setReg(jacdac.ModelRunnerReg.AutoInvokeEvery, "u16", [numSamples])
+            this.setReg(jacdac.ModelRunnerReg.AutoInvokeEvery, "u16", [
+                numSamples,
+            ])
         }
 
         handlePacket(pkt: JDPacket) {
-            if (pkt.serviceCommand == (jacdac.ModelRunnerReg.Outputs | CMD_GET_REG)) {
+            if (
+                pkt.serviceCommand ==
+                (jacdac.ModelRunnerReg.Outputs | CMD_GET_REG)
+            ) {
                 const scores = unpackArray(pkt.data, NumberFormat.Float32LE)
                 for (let i = 0; i < scores.length; ++i) {
                     if (scores[i] > this._minScore) {
@@ -52,7 +56,7 @@ namespace jacdac {
         //% blockId=jacadacmrundetect block="on %modelRunner ML class %classId detected"
         onDetection(classId: number, handler: () => void) {
             this.autoStart()
-            this.registerEvent(classId + 1000, handler);
+            this.registerEvent(classId + 1000, handler)
         }
     }
 
@@ -60,5 +64,5 @@ namespace jacdac {
      * Default model runner
      */
     //% fixedInstance
-    export const modelRunner = new ModelRunnerClient("model_runner");
+    export const modelRunner = new ModelRunnerClient("model_runner")
 }

@@ -3,8 +3,8 @@ namespace jacdac {
         DAL.DEVICE_BUTTON_EVT_CLICK,
         DAL.DEVICE_BUTTON_EVT_LONG_CLICK,
         DAL.DEVICE_BUTTON_EVT_DOWN,
-        DAL.DEVICE_BUTTON_EVT_UP
-    ];
+        DAL.DEVICE_BUTTON_EVT_UP,
+    ]
 }
 
 const enum JDGamepadCommand {
@@ -21,13 +21,13 @@ const enum JDDimension {
     //% block=z
     Z = 2,
     //% block=strength
-    Strength = 3
+    Strength = 3,
 }
 
 const enum JDControllerCommand {
     ClientButtons = 1,
     ControlServer = 2,
-    ControlClient = 3
+    ControlClient = 3,
 }
 
 const enum JDControllerButton {
@@ -37,5 +37,5 @@ const enum JDControllerButton {
     Up = 2,
     Right = 3,
     Down = 4,
-    Menu = 7
+    Menu = 7,
 }

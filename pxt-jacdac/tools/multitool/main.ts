@@ -12,8 +12,7 @@ function identify(d: jacdac.Device) {
 
 function describe(dev: jacdac.Device) {
     let name = ""
-    if (dev == jacdac.bus.selfDevice)
-        name = "<self>"
+    if (dev == jacdac.bus.selfDevice) name = "<self>"
     /*
 else if (dns) {
     const bound = dns.remoteRequestedDevices.find(d => d.boundTo == dev)
@@ -31,18 +30,25 @@ function selectDevice(fun: string, cond: (dev: jacdac.Device) => boolean) {
         footer: "A = select, -> = identify",
         update: opts => {
             devs = jacdac.bus.devices.filter(cond)
-            opts.elements = devs.map(d => menu.item(describe(d), opts => {
-                res = d
-                menu.exit(opts)
-            }, () => identify(d)))
-        }
+            opts.elements = devs.map(d =>
+                menu.item(
+                    describe(d),
+                    opts => {
+                        res = d
+                        menu.exit(opts)
+                    },
+                    () => identify(d)
+                )
+            )
+        },
     })
     return res
 }
 
 function resetAll() {
-    jacdac.JDPacket.onlyHeader(jacdac.ControlCmd.Reset)
-        .sendAsMultiCommand(jacdac.SRV_CONTROL)
+    jacdac.JDPacket.onlyHeader(jacdac.ControlCmd.Reset).sendAsMultiCommand(
+        jacdac.SRV_CONTROL
+    )
 }
 
 let consoleClient: jacdac.LoggerClient
@@ -90,7 +96,6 @@ function wifi() {
     console.log("resp: " + resp.toString())
     console.log("cont: " + resp.content)
 
-
     hideConsole()
 }
 
@@ -102,14 +107,20 @@ function deviceBrowser() {
         update: opts => {
             devs = jacdac.bus.devices.slice()
             devs.sort((a, b) => a.shortId.compare(b.shortId))
-            opts.elements = devs.map(d => menu.item(describe(d), () => deviceView(d),
-                () => testDevice(d), () => identify(d)))
-        }
+            opts.elements = devs.map(d =>
+                menu.item(
+                    describe(d),
+                    () => deviceView(d),
+                    () => testDevice(d),
+                    () => identify(d)
+                )
+            )
+        },
     })
 }
 
 interface FnMap {
-    [index: string]: () => void;
+    [index: string]: () => void
 }
 
 function mainMenu() {
@@ -122,7 +133,7 @@ function mainMenu() {
             opts.elements.push(menu.item("WiFi", wifi))
             opts.elements.push(menu.item("Console", startConsole))
             opts.elements.push(menu.item("Reset all devices", resetAll))
-        }
+        },
     })
 }
 

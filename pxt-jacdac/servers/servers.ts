@@ -9,7 +9,6 @@ namespace servers {
      */
     //% blockId=jacdac_start_server block="start $server server"
     export function startServer(server: jacdac.Server) {
-        if (server)
-            server.start()
+        if (server) server.start()
     }
 }

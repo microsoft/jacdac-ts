@@ -5,9 +5,9 @@ namespace jacdac {
         Identify = 202,
     }
 
-    /** 
-     * Register platform specific code to be run before jacdac starts 
-    */
+    /**
+     * Register platform specific code to be run before jacdac starts
+     */
     export let onPlatformStart: () => void
 
     export const CHANGE = "change"
@@ -78,9 +78,9 @@ namespace jacdac {
         get selfDevice() {
             if (!this._myDevice) {
                 this._myDevice = new Device(
-                    control.deviceLongSerialNumber().toHex()
+                    control.deviceLongSerialNumber().toHex(),
+                    Buffer.create(4)
                 )
-                this._myDevice.services = Buffer.create(4)
             }
             return this._myDevice
         }
@@ -88,7 +88,7 @@ namespace jacdac {
         clearAttachCache() {
             for (let d of this.devices) {
                 // add a dummy byte at the end (if not done already), to force re-attach of services
-                if (d.services && (d.services.length & 3) == 0)
+                if ((d.services.length & 3) == 0)
                     d.services = d.services.concat(Buffer.create(1))
             }
         }
@@ -107,6 +107,7 @@ namespace jacdac {
             const buf = Buffer.create(ids.length * 4)
             for (let i = 0; i < ids.length; ++i)
                 buf.setNumber(NumberFormat.UInt32LE, i * 4, ids[i])
+            this.selfDevice.services = buf
             JDPacket.from(SystemCmd.Announce, buf)._sendReport(this.selfDevice)
             this.emit(SELF_ANNOUNCE)
             for (const cl of this.allClients) cl.announceCallback()
@@ -262,18 +263,18 @@ namespace jacdac {
                             this.emit(RESTART)
                         }
 
+                        let matches = false
                         if (!dev) {
-                            dev = new Device(pkt.deviceIdentifier)
+                            dev = new Device(pkt.deviceIdentifier, pkt.data)
                             // ask for uptime
                             dev.sendCtrlCommand(CMD_GET_REG | ControlReg.Uptime)
                             this.emit(DEVICE_CONNECT, dev)
+                        } else {
+                            matches = serviceMatches(dev, pkt.data)
+                            dev.services = pkt.data
                         }
 
-                        const matches = serviceMatches(dev, pkt.data)
-                        dev.services = pkt.data
-                        if (!matches) {
-                            this.reattach(dev)
-                        }
+                        if (!matches) this.reattach(dev)
                     }
                     if (dev) dev.handleCtrlReport(pkt)
                     return
@@ -964,7 +965,6 @@ namespace jacdac {
     }
 
     export class Device extends EventSource {
-        services: Buffer
         lastSeen: number
         clients: Client[] = []
         private _eventCounter: number
@@ -972,15 +972,14 @@ namespace jacdac {
         private queries: RegQuery[]
         _score: number
 
-        constructor(public deviceId: string) {
+        // services can never be null
+        constructor(public deviceId: string, public services: Buffer) {
             super()
             bus.devices.push(this)
         }
 
         get announceflags(): ControlAnnounceFlags {
-            return this.services
-                ? this.services.getNumber(NumberFormat.UInt16LE, 0)
-                : 0
+            return this.services.getNumber(NumberFormat.UInt16LE, 0)
         }
 
         get resetCount() {
@@ -990,7 +989,7 @@ namespace jacdac {
         }
 
         get packetCount() {
-            return this.services ? this.services[2] : 0
+            return this.services[2]
         }
 
         get isConnected() {
@@ -1022,18 +1021,16 @@ namespace jacdac {
         }
 
         get serviceClassLength() {
-            return !this.services ? 0 : this.services.length >> 2
+            return this.services.length >> 2
         }
 
         serviceClassAt(serviceIndex: number) {
             return serviceIndex == 0
                 ? 0
-                : this.services
-                ? this.services.getNumber(
+                : this.services.getNumber(
                       NumberFormat.UInt32LE,
                       serviceIndex << 2
                   )
-                : 0
         }
 
         queryInt(reg: number, refreshRate = 1000) {
@@ -1407,8 +1404,7 @@ namespace jacdac {
     jacdac.__physStart()
 
     // platform setup
-    if(onPlatformStart)
-        onPlatformStart()
+    if (onPlatformStart) onPlatformStart()
 
     // check for proxy mode
     startProxy()

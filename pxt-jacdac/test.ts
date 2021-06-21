@@ -3,17 +3,22 @@ function jdpackTest() {
         function checksame(a: any, b: any) {
             function fail(msg: string): never {
                 debugger
-                throw (`jdpack test error: ${msg} (at ${fmt}; a=${JSON.stringify(a)}; b=${JSON.stringify(b)})`)
+                throw `jdpack test error: ${msg} (at ${fmt}; a=${JSON.stringify(
+                    a
+                )}; b=${JSON.stringify(b)})`
             }
 
-            if (a === b || JSON.stringify(a) == JSON.stringify(b))
-                return
+            if (a === b || JSON.stringify(a) == JSON.stringify(b)) return
             fail("not the same")
         }
 
         const buf = jacdac.jdpack(fmt, data0)
         const data1 = jacdac.jdunpack(buf, fmt)
-        console.log(`${JSON.stringify(data0)}->${fmt}->${buf.toHex()}->${JSON.stringify(data1)}`)
+        console.log(
+            `${JSON.stringify(data0)}->${fmt}->${buf.toHex()}->${JSON.stringify(
+                data1
+            )}`
+        )
         // console.log(fmt, data0, data1, toHex(buf))
         checksame(data0, data1)
     }
@@ -25,11 +30,23 @@ function jdpackTest() {
     testOne("u32 z s", [42, "foo", "bar"])
     testOne("i8 z s", [42, "foo", "bar"])
     testOne("u8 z s", [42, "foo12", "bar"])
-    testOne("u8 r: u8 z", [42, [[17, "xy"], [18, "xx"]]])
+    testOne("u8 r: u8 z", [
+        42,
+        [
+            [17, "xy"],
+            [18, "xx"],
+        ],
+    ])
     //testOne("z b", ["foo12", jacdac.stringToBuffer("bar")])
     testOne("u16 r: u16", [42, [[17], [18]]])
     testOne("i8 s[9] u16 s[10] u8", [-100, "foo", 1000, "barbaz", 250])
-    testOne("i8 x[4] s[9] u16 x[2] s[10] x[3] u8", [-100, "foo", 1000, "barbaz", 250])
+    testOne("i8 x[4] s[9] u16 x[2] s[10] x[3] u8", [
+        -100,
+        "foo",
+        1000,
+        "barbaz",
+        250,
+    ])
     testOne("u16 u16[]", [42, [17, 18]])
     testOne("u16 u16[]", [42, [18]])
     testOne("u16 u16[]", [42, []])
@@ -38,7 +55,7 @@ function jdpackTest() {
 
 // pins.A9.digitalWrite(false)
 
-jacdac.logPriority = jacdac.LoggerPriority.Log;
+jacdac.logPriority = jacdac.LoggerPriority.Log
 jacdac.roleManagerServer.start()
 jacdac.protoTestServer.start()
 jacdac.start()
@@ -102,7 +119,6 @@ namespace jacdac {
          */
         MaxHumidity = 0x105,
     }
-
 }
 namespace modules {
     /**
@@ -110,91 +126,95 @@ namespace modules {
      **/
     //% fixedInstances blockGap=8
     export class HumidityClient extends jacdac.SimpleSensorClient {
-
-        private readonly _humidityError : jacdac.RegisterClient<[number]>;
-        private readonly _minHumidity : jacdac.RegisterClient<[number]>;
-        private readonly _maxHumidity : jacdac.RegisterClient<[number]>;            
+        private readonly _humidityError: jacdac.RegisterClient<[number]>
+        private readonly _minHumidity: jacdac.RegisterClient<[number]>
+        private readonly _maxHumidity: jacdac.RegisterClient<[number]>
 
         constructor(role: string) {
-            super(jacdac.SRV_HUMIDITY, role, "u22.10");
+            super(jacdac.SRV_HUMIDITY, role, "u22.10")
 
-            this._humidityError = this.addRegister<[number]>(jacdac.HumidityReg.HumidityError, "u22.10");
-            this._minHumidity = this.addRegister<[number]>(jacdac.HumidityReg.MinHumidity, "u22.10");
-            this._maxHumidity = this.addRegister<[number]>(jacdac.HumidityReg.MaxHumidity, "u22.10");            
+            this._humidityError = this.addRegister<[number]>(
+                jacdac.HumidityReg.HumidityError,
+                "u22.10"
+            )
+            this._minHumidity = this.addRegister<[number]>(
+                jacdac.HumidityReg.MinHumidity,
+                "u22.10"
+            )
+            this._maxHumidity = this.addRegister<[number]>(
+                jacdac.HumidityReg.MaxHumidity,
+                "u22.10"
+            )
         }
-    
 
         /**
-        * The relative humidity in percentage of full water saturation.
-        */
+         * The relative humidity in percentage of full water saturation.
+         */
         //% callInDebugger
         //% group="Environment"
         //% block="%humidity humidity"
         //% blockId=jacdac_humidity_humidity___get
         //% weight=100
         humidity(): number {
-            return this.reading();
-        
+            return this.reading()
         }
 
         /**
-        * The real humidity is between `humidity - humidity_error` and `humidity + humidity_error`.
-        */
+         * The real humidity is between `humidity - humidity_error` and `humidity + humidity_error`.
+         */
         //% callInDebugger
         //% group="Environment"
         //% weight=99
         humidityError(): number {
-            this.start();            
-            const values = this._humidityError.pauseUntilValues() as any[];
-            return values[0];
+            this.start()
+            const values = this._humidityError.pauseUntilValues() as any[]
+            return values[0]
         }
 
         /**
-        * Lowest humidity that can be reported.
-        */
+         * Lowest humidity that can be reported.
+         */
         //% callInDebugger
         //% group="Environment"
         //% weight=98
         minHumidity(): number {
-            this.start();            
-            const values = this._minHumidity.pauseUntilValues() as any[];
-            return values[0];
+            this.start()
+            const values = this._minHumidity.pauseUntilValues() as any[]
+            return values[0]
         }
 
         /**
-        * Highest humidity that can be reported.
-        */
+         * Highest humidity that can be reported.
+         */
         //% callInDebugger
         //% group="Environment"
         //% weight=97
         maxHumidity(): number {
-            this.start();            
-            const values = this._maxHumidity.pauseUntilValues() as any[];
-            return values[0];
+            this.start()
+            const values = this._maxHumidity.pauseUntilValues() as any[]
+            return values[0]
         }
 
         /**
          * Run code when the humidity changes by the given threshold value.
-        */
+         */
         //% group="Environment"
         //% blockId=jacdac_humidity_on_humidity_change
         //% block="on %humidity humidity changed by %threshold"
         //% weight=96
         //% threshold.defl=1
         onHumidityChangedBy(threshold: number, handler: () => void): void {
-            this.onReadingChangedBy(threshold, handler);
+            this.onReadingChangedBy(threshold, handler)
         }
-
-    
     }
     //% fixedInstance whenUsed
-    export const humidity = new HumidityClient("humidity");
+    export const humidity = new HumidityClient("humidity")
 }
 
 modules.humidity.start()
 forever(() => {
     const h = modules.humidity.humidity()
-   // console.debug(`debug message`)
-   // console.log(`humidity: ${h} (this is a log message)`)
+    // console.debug(`debug message`)
+    // console.log(`humidity: ${h} (this is a log message)`)
     pause(1000)
 })

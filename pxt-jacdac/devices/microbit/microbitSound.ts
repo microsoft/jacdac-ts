@@ -78,38 +78,57 @@ namespace servers {
     }
 
     export class SoundLevelServer extends jacdac.SensorServer {
-        enabled: boolean = false;
-        private registered = false;
+        enabled: boolean = false
+        private registered = false
         // Sensitivity	-38dB ±3dB @ 94dB SPL
         minDecibels: number = 56
         maxDecibels: number = 132
-        loudThreshold: number = 0.5;
-        quietThreshold: number = 0.2;
-                
+        loudThreshold: number = 0.5
+        quietThreshold: number = 0.2
+
         constructor() {
             super("sound level", SRV_SOUND_LEVEL)
         }
 
         private setThresholds() {
-            input.setSoundThreshold(SoundThreshold.Loud, 255 * this.loudThreshold)
-            input.setSoundThreshold(SoundThreshold.Quiet, 255 * this.quietThreshold)
+            input.setSoundThreshold(
+                SoundThreshold.Loud,
+                255 * this.loudThreshold
+            )
+            input.setSoundThreshold(
+                SoundThreshold.Quiet,
+                255 * this.quietThreshold
+            )
         }
 
         public handlePacket(pkt: jacdac.JDPacket) {
             super.handlePacket(pkt)
             const oldEnabled = this.enabled
-            this.enabled = this.handleRegBool(pkt, SoundLevelReg.Enabled, this.enabled);
-            this.loudThreshold = this.handleRegValue(pkt, SoundLevelReg.LoudThreshold, "u0.16", this.loudThreshold);
-            this.quietThreshold = this.handleRegValue(pkt, SoundLevelReg.QuietThreshold, "u0.16", this.quietThreshold);
+            this.enabled = this.handleRegBool(
+                pkt,
+                SoundLevelReg.Enabled,
+                this.enabled
+            )
+            this.loudThreshold = this.handleRegValue(
+                pkt,
+                SoundLevelReg.LoudThreshold,
+                "u0.16",
+                this.loudThreshold
+            )
+            this.quietThreshold = this.handleRegValue(
+                pkt,
+                SoundLevelReg.QuietThreshold,
+                "u0.16",
+                this.quietThreshold
+            )
             if (this.enabled && oldEnabled !== this.enabled)
                 this.registerEvents()
-            if (this.enabled)
-                this.setThresholds()
+            if (this.enabled) this.setThresholds()
         }
 
         private registerEvents() {
             if (this.enabled) {
-                this.registered = true;
+                this.registered = true
                 input.onSound(DetectedSound.Loud, function () {
                     this.sendEvent(SoundLevelEvent.Loud)
                 })
@@ -117,17 +136,15 @@ namespace servers {
                     this.sendEvent(SoundLevelEvent.Quiet)
                 })
             } else if (this.registered) {
-                input.onSound(DetectedSound.Loud, function() {})
-                input.onSound(DetectedSound.Quiet, function () { })
-                this.registered = false;
+                input.onSound(DetectedSound.Loud, function () {})
+                input.onSound(DetectedSound.Quiet, function () {})
+                this.registered = false
             }
         }
 
         public serializeState(): Buffer {
-            const soundLevel = this.enabled 
-                ? (input.soundLevel() / 255) 
-                : 0.0
-            return jacdac.jdpack("u0.16", [soundLevel]);
+            const soundLevel = this.enabled ? input.soundLevel() / 255 : 0.0
+            return jacdac.jdpack("u0.16", [soundLevel])
         }
     }
 

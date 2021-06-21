@@ -6,8 +6,7 @@
 //% blockGap=8
 //% groups='["Broadcast", "Console", "Controller", "Services", "Control"]'
 //% blockNamespace="Jacdac"
-namespace jacdac {
-}
+namespace jacdac {}
 
 /**
  * Jacdac modules
@@ -15,6 +14,4 @@ namespace jacdac {
 //% icon="icons/jacdac.svg"
 //% weight=80 color="#009900"
 //% blockGap=8
-namespace modules {
-
-}
+namespace modules {}

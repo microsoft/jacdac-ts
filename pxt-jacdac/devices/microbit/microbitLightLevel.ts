@@ -6,7 +6,7 @@ namespace servers {
         }
 
         public serializeState(): Buffer {
-            return jacdac.jdpack("u0.16", [input.lightLevel()/255]);
+            return jacdac.jdpack("u0.16", [input.lightLevel() / 255])
         }
     }
 

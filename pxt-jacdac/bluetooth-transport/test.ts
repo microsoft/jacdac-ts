@@ -1,5 +1,5 @@
 jacdac.start()
 
-forever ( () => {
-    basic.showString("hello");
+forever(() => {
+    basic.showString("hello")
 })

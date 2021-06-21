@@ -12,14 +12,14 @@ namespace jacdac {
         while (buf[p]) p++
         const ssid = buf.slice(16, p - 16).toString()
         const r = new net.AccessPoint(ssid)
-        r.encryption = flags & 0x0001 ? 4 : 7;
+        r.encryption = flags & 0x0001 ? 4 : 7
         r.rssi = rssi
         return r
     }
 
     export class WifiClient extends Client {
         constructor(role: string) {
-            super(jacdac.SRV_WIFI, role);
+            super(jacdac.SRV_WIFI, role)
         }
 
         get hasIP() {
@@ -37,10 +37,11 @@ namespace jacdac {
 
         connect(ssid: string, password?: string) {
             const data = ssid + "\u0000" + (password ? password + "\u0000" : "")
-            this.sendCommandWithAck(JDPacket.from(CMD_CONNECT, Buffer.fromUTF8(data)))
+            this.sendCommandWithAck(
+                JDPacket.from(CMD_CONNECT, Buffer.fromUTF8(data))
+            )
             pauseUntil(() => this.hasIP, 15000)
-            if (!this.hasIP)
-                throw "Can't connect"
+            if (!this.hasIP) throw "Can't connect"
         }
     }
     export class WifiController extends net.Controller {
@@ -55,8 +56,7 @@ namespace jacdac {
         }
 
         start() {
-            if (this.wifiClient)
-                return
+            if (this.wifiClient) return
 
             this.wifiClient = new WifiClient("wifi")
             this.wifiClient.start()
@@ -75,22 +75,24 @@ namespace jacdac {
             for (let i = 0; i < this.sockets.length; ++i) {
                 if (!this.sockets[i]) {
                     this.sockets[i] = s
-                    return i;
+                    return i
                 }
             }
             this.sockets.push(s)
             return this.sockets.length - 1
         }
 
-        public socketConnect(socketNum: number, dest: string | Buffer, port: number, connMode = net.TCP_MODE): boolean {
-            if (connMode != net.TLS_MODE)
-                throw "only SSL supported now"
-            if (typeof dest != "string")
-                throw "only string hostnames supported"
+        public socketConnect(
+            socketNum: number,
+            dest: string | Buffer,
+            port: number,
+            connMode = net.TCP_MODE
+        ): boolean {
+            if (connMode != net.TLS_MODE) throw "only SSL supported now"
+            if (typeof dest != "string") throw "only string hostnames supported"
 
             const s = this.sockets[socketNum]
-            if (!s)
-                throw "no such socket"
+            if (!s) throw "no such socket"
 
             try {
                 s.connectSSL(dest, port)
@@ -125,7 +127,7 @@ namespace jacdac {
         }
 
         public hostbyName(hostname: string): Buffer {
-            return undefined;
+            return undefined
         }
 
         get isIdle(): boolean {
@@ -140,19 +142,20 @@ namespace jacdac {
          * Uses RSSID and password in settings to connect to a compatible AP
          */
         public connect(): boolean {
-            if (this.isConnected) return true;
+            if (this.isConnected) return true
 
-            const wifis = net.knownAccessPoints();
-            const ssids = Object.keys(wifis);
-            const networks = this.scanNetworks()
-                .filter(network => ssids.indexOf(network.ssid) > -1);
+            const wifis = net.knownAccessPoints()
+            const ssids = Object.keys(wifis)
+            const networks = this.scanNetworks().filter(
+                network => ssids.indexOf(network.ssid) > -1
+            )
             // try connecting to known networks
             for (const network of networks) {
                 try {
                     this.wifiClient.connect(network.ssid, wifis[network.ssid])
                     this._ssid = network.ssid
                     net.log(`connected to '${network.ssid}'`)
-                    return true;
+                    return true
                 } catch {
                     net.log(`can't connect to '${network.ssid}'`)
                 }
@@ -160,17 +163,23 @@ namespace jacdac {
 
             // no compatible SSID
             net.log(`connection failed`)
-            return false;
+            return false
         }
 
-        get ssid(): string { return this._ssid }
+        get ssid(): string {
+            return this._ssid
+        }
         get MACaddress(): Buffer {
             if (this.wifiClient && this.wifiClient.device)
-                return Buffer.fromHex(this.wifiClient.device.deviceId.slice(2, 14))
+                return Buffer.fromHex(
+                    this.wifiClient.device.deviceId.slice(2, 14)
+                )
             return undefined
         }
 
-        public ping(dest: string, ttl: number = 250): number { return -1; }
+        public ping(dest: string, ttl: number = 250): number {
+            return -1
+        }
     }
 
     // initialize default controller and net.Net instance

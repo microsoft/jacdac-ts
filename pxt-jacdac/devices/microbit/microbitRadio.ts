@@ -105,41 +105,62 @@ namespace servers {
     }
 
     export class RadioServer extends jacdac.Server {
-        readonly enabled = true;
-        group = 1;
-        transmissionPower = 6;
+        readonly enabled = true
+        group = 1
+        transmissionPower = 6
 
         constructor() {
             super("radio", SRV_BIT_RADIO)
 
             radio.setGroup(this.group)
-            radio.setTransmitPower(this.transmissionPower);
+            radio.setTransmitPower(this.transmissionPower)
             radio.onReceivedBuffer(buf => this.handleReceivedBuffer(buf))
             radio.onReceivedString(str => this.handleReceivedString(str))
-            radio.onReceivedNumber(value => this.handleReceivedNumber("", value))
-            radio.onReceivedValue((name, value) => this.handleReceivedNumber(name, value))
+            radio.onReceivedNumber(value =>
+                this.handleReceivedNumber("", value)
+            )
+            radio.onReceivedValue((name, value) =>
+                this.handleReceivedNumber(name, value)
+            )
         }
 
         public handlePacket(pkt: jacdac.JDPacket) {
             super.handlePacket(pkt)
 
             // registers
-            this.handleRegBool(pkt, BitRadioReg.Enabled, this.enabled);
-            const oldGroup = this.group;
-            this.group = this.handleRegValue(pkt, BitRadioReg.Group, "u8", this.group);
-            if (oldGroup !== this.group)
-                radio.setGroup(this.group)
+            this.handleRegBool(pkt, BitRadioReg.Enabled, this.enabled)
+            const oldGroup = this.group
+            this.group = this.handleRegValue(
+                pkt,
+                BitRadioReg.Group,
+                "u8",
+                this.group
+            )
+            if (oldGroup !== this.group) radio.setGroup(this.group)
             const oldTransmissionPower = this.transmissionPower
-            this.transmissionPower = this.handleRegValue(pkt, BitRadioReg.TransmissionPower, "u8", this.transmissionPower);
+            this.transmissionPower = this.handleRegValue(
+                pkt,
+                BitRadioReg.TransmissionPower,
+                "u8",
+                this.transmissionPower
+            )
             if (oldTransmissionPower !== this.transmissionPower)
                 radio.setTransmitPower(this.transmissionPower)
 
             // commands
-            switch(pkt.serviceCommand) {
-                case BitRadioCmd.SendBuffer: this.handleSendBuffer(pkt); break;
-                case BitRadioCmd.SendNumber: this.handleSendNumber(pkt); break;
-                case BitRadioCmd.SendString: this.handleSendString(pkt); break;
-                case BitRadioCmd.SendValue: this.handleSendValue(pkt); break;
+            switch (pkt.serviceCommand) {
+                case BitRadioCmd.SendBuffer:
+                    this.handleSendBuffer(pkt)
+                    break
+                case BitRadioCmd.SendNumber:
+                    this.handleSendNumber(pkt)
+                    break
+                case BitRadioCmd.SendString:
+                    this.handleSendString(pkt)
+                    break
+                case BitRadioCmd.SendValue:
+                    this.handleSendValue(pkt)
+                    break
             }
         }
 
@@ -148,8 +169,13 @@ namespace servers {
             const rssi = radio.receivedSignalStrength()
             const time = radio.receivedTime()
 
-            const payload = jacdac.jdpack<[number, number, number, Buffer]>("u32 u32 i8 x[1] b", [time, deviceSerialNumber, rssi, data])
-            this.sendReport(jacdac.JDPacket.from(BitRadioCmd.BufferReceived, payload))
+            const payload = jacdac.jdpack<[number, number, number, Buffer]>(
+                "u32 u32 i8 x[1] b",
+                [time, deviceSerialNumber, rssi, data]
+            )
+            this.sendReport(
+                jacdac.JDPacket.from(BitRadioCmd.BufferReceived, payload)
+            )
         }
 
         private handleReceivedString(data: string) {
@@ -157,8 +183,13 @@ namespace servers {
             const rssi = radio.receivedSignalStrength()
             const time = radio.receivedTime()
 
-            const payload = jacdac.jdpack<[number, number, number, string]>("u32 u32 i8 x[1] s", [time, deviceSerialNumber, rssi, data])
-            this.sendReport(jacdac.JDPacket.from(BitRadioCmd.StringReceived, payload))
+            const payload = jacdac.jdpack<[number, number, number, string]>(
+                "u32 u32 i8 x[1] s",
+                [time, deviceSerialNumber, rssi, data]
+            )
+            this.sendReport(
+                jacdac.JDPacket.from(BitRadioCmd.StringReceived, payload)
+            )
         }
 
         private handleReceivedNumber(name: string, data: number) {
@@ -166,24 +197,34 @@ namespace servers {
             const rssi = radio.receivedSignalStrength()
             const time = radio.receivedTime()
 
-            const payload = jacdac.jdpack<[number, number, number, number, string]>("u32 u32 i8 x[3] f64 s", [time, deviceSerialNumber, rssi, data, name])
-            this.sendReport(jacdac.JDPacket.from(BitRadioCmd.NumberReceived, payload))
+            const payload = jacdac.jdpack<
+                [number, number, number, number, string]
+            >("u32 u32 i8 x[3] f64 s", [
+                time,
+                deviceSerialNumber,
+                rssi,
+                data,
+                name,
+            ])
+            this.sendReport(
+                jacdac.JDPacket.from(BitRadioCmd.NumberReceived, payload)
+            )
         }
 
         private handleSendBuffer(pkt: jacdac.JDPacket) {
-            const [data] = pkt.jdunpack<[Buffer]>("b");
+            const [data] = pkt.jdunpack<[Buffer]>("b")
             radio.sendBuffer(data)
         }
         private handleSendNumber(pkt: jacdac.JDPacket) {
-            const [n] = pkt.jdunpack<[number]>("f64");
+            const [n] = pkt.jdunpack<[number]>("f64")
             radio.sendNumber(n)
         }
         private handleSendString(pkt: jacdac.JDPacket) {
-            const [s] = pkt.jdunpack<[string]>("s");
+            const [s] = pkt.jdunpack<[string]>("s")
             radio.sendString(s)
         }
         private handleSendValue(pkt: jacdac.JDPacket) {
-            const [value, name] = pkt.jdunpack<[number, string]>("f64 s");
+            const [value, name] = pkt.jdunpack<[number, string]>("f64 s")
             radio.sendValue(name, value)
         }
     }

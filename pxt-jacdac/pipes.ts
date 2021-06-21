@@ -6,7 +6,10 @@ namespace jacdac {
 
     let pipes: InPipe[]
     function handlePipeData(pkt: JDPacket) {
-        if (pkt.serviceIndex != JD_SERVICE_INDEX_PIPE || pkt.deviceIdentifier != bus.selfDevice.deviceId)
+        if (
+            pkt.serviceIndex != JD_SERVICE_INDEX_PIPE ||
+            pkt.deviceIdentifier != bus.selfDevice.deviceId
+        )
             return
         const port = pkt.serviceCommand >> PORT_SHIFT
         const s = pipes.find(s => s.port == port)
@@ -29,34 +32,33 @@ namespace jacdac {
             }
             while (true) {
                 this.port = Math.randomRange(1, 511)
-                if (pipes.every(s => s.port != this.port))
-                    break
+                if (pipes.every(s => s.port != this.port)) break
             }
             pipes.push(this)
         }
 
         openCommand(cmd: number) {
-            const b = jdpack<[Buffer, number, number]>("b[8] u16 u16",
-                [Buffer.fromHex(bus.selfDevice.deviceId), this.port, 0])
+            const b = jdpack<[Buffer, number, number]>("b[8] u16 u16", [
+                Buffer.fromHex(bus.selfDevice.deviceId),
+                this.port,
+                0,
+            ])
             return JDPacket.from(cmd, b)
         }
 
         bytesAvailable() {
             let sum = 0
-            for (const b of this.inQ)
-                sum += b.length
+            for (const b of this.inQ) sum += b.length
             return sum
         }
 
         read() {
             while (true) {
-                if (this.inQ.length)
-                    return this.inQ.shift()
+                if (this.inQ.length) return this.inQ.shift()
 
-                if (this.closed)
-                    return null
+                if (this.closed) return null
 
-                control.waitForEvent(DAL.DEVICE_ID_NOTIFY, this.eventId);
+                control.waitForEvent(DAL.DEVICE_ID_NOTIFY, this.eventId)
             }
         }
 
@@ -70,20 +72,18 @@ namespace jacdac {
             this.inQ = []
         }
 
-        meta(buf: Buffer) { }
+        meta(buf: Buffer) {}
 
         _handle(pkt: JDPacket) {
             let cmd = pkt.serviceCommand
-            if ((cmd & COUNTER_MASK) != (this.nextCnt & COUNTER_MASK))
-                return
+            if ((cmd & COUNTER_MASK) != (this.nextCnt & COUNTER_MASK)) return
             this.nextCnt++
-            if (cmd & CLOSE_MASK)
-                this._close()
+            if (cmd & CLOSE_MASK) this._close()
             if (cmd & METADATA_MASK) {
                 this.meta(pkt.data)
             } else {
                 this.inQ.push(pkt.data)
-                control.raiseEvent(DAL.DEVICE_ID_NOTIFY_ONE, this.eventId);
+                control.raiseEvent(DAL.DEVICE_ID_NOTIFY_ONE, this.eventId)
             }
         }
 
@@ -92,8 +92,7 @@ namespace jacdac {
             while (true) {
                 const buf = this.read()
                 if (!buf) return r
-                if (buf.length)
-                    r.push(f(buf))
+                if (buf.length) r.push(f(buf))
             }
         }
     }
@@ -101,12 +100,14 @@ namespace jacdac {
     export class OutPipe {
         private nextCnt = 0
 
-        constructor(public readonly deviceId: string, public port: number) {
-        }
+        constructor(public readonly deviceId: string, public port: number) {}
 
         static from(pkt: JDPacket) {
-            const [idbuf, port] = jdunpack<[Buffer, number]>(pkt.data, "b[8] u16");
-            const id = idbuf.toHex();
+            const [idbuf, port] = jdunpack<[Buffer, number]>(
+                pkt.data,
+                "b[8] u16"
+            )
+            const id = idbuf.toHex()
             return new OutPipe(id, port)
         }
 
@@ -114,8 +115,7 @@ namespace jacdac {
             control.runInParallel(() => {
                 try {
                     const outp = OutPipe.from(pkt)
-                    for (const e of inp)
-                        outp.write(f(e))
+                    for (const e of inp) outp.write(f(e))
                     outp.close()
                 } catch (e) {
                     console.error("respondForEach " + e)
@@ -129,10 +129,14 @@ namespace jacdac {
 
         private writeEx(buf: Buffer, flags: number) {
             if (!this.port) return
-            const pkt = JDPacket.from((this.nextCnt & COUNTER_MASK) | (this.port << PORT_SHIFT) | flags, buf)
+            const pkt = JDPacket.from(
+                (this.nextCnt & COUNTER_MASK) |
+                    (this.port << PORT_SHIFT) |
+                    flags,
+                buf
+            )
             this.nextCnt++
-            if (flags & CLOSE_MASK)
-                this.port = null
+            if (flags & CLOSE_MASK) this.port = null
             pkt.serviceIndex = JD_SERVICE_INDEX_PIPE
             if (!pkt._sendWithAck(this.deviceId)) {
                 this.port = null

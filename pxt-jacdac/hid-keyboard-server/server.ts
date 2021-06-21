@@ -121,13 +121,20 @@ namespace servers {
         private selectorToMedia(selector: number): KeyboardMediaKey {
             // KeyboardMediaKey is an enum starting at 0
             switch (selector) {
-                case DAL.KEY_MUTE: return KeyboardMediaKey.Mute
-                case DAL.KEY_VOLUMEUP: return KeyboardMediaKey.VolumeUp
-                case DAL.KEY_VOLUMEDOWN: return KeyboardMediaKey.VolumeUp
-                case DAL.KEY_MEDIA_PLAYPAUSE: return KeyboardMediaKey.PlayPause
-                case DAL.KEY_MEDIA_STOP: return KeyboardMediaKey.Stop
-                case DAL.KEY_MEDIA_PREVIOUSSONG: return KeyboardMediaKey.PreviousTrack
-                case DAL.KEY_MEDIA_NEXTSONG: return KeyboardMediaKey.NextTrack
+                case DAL.KEY_MUTE:
+                    return KeyboardMediaKey.Mute
+                case DAL.KEY_VOLUMEUP:
+                    return KeyboardMediaKey.VolumeUp
+                case DAL.KEY_VOLUMEDOWN:
+                    return KeyboardMediaKey.VolumeUp
+                case DAL.KEY_MEDIA_PLAYPAUSE:
+                    return KeyboardMediaKey.PlayPause
+                case DAL.KEY_MEDIA_STOP:
+                    return KeyboardMediaKey.Stop
+                case DAL.KEY_MEDIA_PREVIOUSSONG:
+                    return KeyboardMediaKey.PreviousTrack
+                case DAL.KEY_MEDIA_NEXTSONG:
+                    return KeyboardMediaKey.NextTrack
                 /*
                 case DAL.KEY_Mail:
                 case DAL.KEY_Calculator:
@@ -144,7 +151,11 @@ namespace servers {
             }
         }
 
-        key(selector: number, modifiers: KeyboardModifierKey, action: KeyboardKeyEvent) {
+        key(
+            selector: number,
+            modifiers: KeyboardModifierKey,
+            action: KeyboardKeyEvent
+        ) {
             const fcn = this.selectorToFunction(selector)
             const media = this.selectorToMedia(selector)
             const key = this.selectorToKey(selector)
@@ -152,13 +163,11 @@ namespace servers {
             if (action === KeyboardKeyEvent.Press) {
                 keyboard.modifierKey(modifiers, KeyboardKeyEvent.Down)
                 if (fcn) keyboard.functionKey(fcn, KeyboardKeyEvent.Down)
-                else if (media)
-                    keyboard.mediaKey(media, KeyboardKeyEvent.Down)
+                else if (media) keyboard.mediaKey(media, KeyboardKeyEvent.Down)
                 else if (key) keyboard.key(key, KeyboardKeyEvent.Down)
                 pause(REPORT_DELAY)
                 if (fcn) keyboard.functionKey(fcn, KeyboardKeyEvent.Up)
-                else if (media)
-                    keyboard.mediaKey(media, KeyboardKeyEvent.Up)
+                else if (media) keyboard.mediaKey(media, KeyboardKeyEvent.Up)
                 else if (key) keyboard.key(key, KeyboardKeyEvent.Up)
                 pause(REPORT_DELAY)
                 keyboard.modifierKey(modifiers, KeyboardKeyEvent.Up)

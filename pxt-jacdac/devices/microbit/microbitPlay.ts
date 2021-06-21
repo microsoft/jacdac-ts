@@ -41,15 +41,26 @@ namespace servers {
             super.handlePacket(pkt)
 
             // registers
-            const oldVol = music.volume();
-            const vol = (this.handleRegValue(pkt, SoundPlayerReg.Volume, "u0.16", oldVol / 255) * 255) | 0
-            if (vol !== oldVol)
-                music.setVolume(vol)
+            const oldVol = music.volume()
+            const vol =
+                (this.handleRegValue(
+                    pkt,
+                    SoundPlayerReg.Volume,
+                    "u0.16",
+                    oldVol / 255
+                ) *
+                    255) |
+                0
+            if (vol !== oldVol) music.setVolume(vol)
 
             // commands
-            switch(pkt.serviceCommand) {
-                case SoundPlayerCmd.Play: this.handlePlayCommand(pkt); break;
-                case SoundPlayerCmd.ListSounds: this.handleListSoundsCommand(pkt); break;
+            switch (pkt.serviceCommand) {
+                case SoundPlayerCmd.Play:
+                    this.handlePlayCommand(pkt)
+                    break
+                case SoundPlayerCmd.ListSounds:
+                    this.handleListSoundsCommand(pkt)
+                    break
             }
         }
 
@@ -73,7 +84,7 @@ namespace servers {
                 [0, "soaring"],
                 [0, "spring"],
                 [0, "twinkle"],
-                [0, "yawn"]
+                [0, "yawn"],
             ]
             jacdac.OutPipe.respondForEach(pkt, sounds, k => {
                 return jacdac.jdpack<[number, string]>("u32 s", k)

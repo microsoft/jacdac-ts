@@ -41,7 +41,11 @@ namespace hidevents {
             ) {
                 // we have a hit!
                 console.log(`key ${binding[4]} ${binding[5]}`)
-                servers.hidKeyboardServer.key(binding[4], binding[5], KeyboardKeyEvent.Press)
+                servers.hidKeyboardServer.key(
+                    binding[4],
+                    binding[5],
+                    KeyboardKeyEvent.Press
+                )
             }
         }
     }
@@ -57,23 +61,23 @@ namespace hidevents {
 
         let pixelColors: number[] = [0xffff00, 0x0000ff, 0xff0000, 0x00ff00]
 
-        pixelColors.forEach((el, i) =>{
-            light.setPixelColor(i, el);
+        pixelColors.forEach((el, i) => {
+            light.setPixelColor(i, el)
         })
 
         for (let i = 0; i < 32; i++) {
-            light.setBrightness(i);
-            pause(50);
+            light.setBrightness(i)
+            pause(50)
         }
 
-        pause(250);
+        pause(250)
 
         for (let i = 32; i > 0; i--) {
-            light.setBrightness(i);
-            pause(50);
+            light.setBrightness(i)
+            pause(50)
         }
 
-        light.setAll(0);
+        light.setAll(0)
 
         // eventually lights will display the configuration
 

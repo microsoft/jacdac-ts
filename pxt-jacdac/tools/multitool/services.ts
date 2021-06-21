@@ -33,8 +33,7 @@ function servName(id: number) {
     let ptr = 0
     while (ptr < servNames.length) {
         let eptr = ptr + 4
-        while (servNames[eptr])
-            eptr++
+        while (servNames[eptr]) eptr++
         if (servNames.getNumber(NumberFormat.UInt32LE, ptr) == id) {
             return servNames.slice(ptr + 4, eptr - ptr - 4).toString()
         }
@@ -48,15 +47,16 @@ class ServiceDesc {
         public classNum: number,
         public name: string,
         public testFn?: (num: number) => void
-    ) { }
+    ) {}
 }
 
 const serviceDescs: ServiceDesc[] = [
-    new ServiceDesc(jacdac.SRV_ACCELEROMETER, "acc",
-        num => modules.accelerometer1.setStreaming(num & 1 ? true : false)),
-    new ServiceDesc(jacdac.SRV_LED_PIXEL, "light", (num) => {
+    new ServiceDesc(jacdac.SRV_ACCELEROMETER, "acc", num =>
+        modules.accelerometer1.setStreaming(num & 1 ? true : false)
+    ),
+    new ServiceDesc(jacdac.SRV_LED_PIXEL, "light", num => {
         const cl = modules.ledPixel1
-        cl.setBrightness(10);
+        cl.setBrightness(10)
         //cl.setStrip(128, jacdac.LightType.WS2812B_SK9822)
         cl.configure(80, jacdac.LedPixelLightType.WS2812B_GRB)
 
@@ -74,16 +74,25 @@ const serviceDescs: ServiceDesc[] = [
                 cl.showAnimation(modules.ledPixelAnimations.firefly, duration)
                 break
             case 3:
-                cl.showAnimation(modules.ledPixelAnimations.rainbowCycle, duration)
+                cl.showAnimation(
+                    modules.ledPixelAnimations.rainbowCycle,
+                    duration
+                )
                 break
             case 4:
-                cl.showAnimation(modules.ledPixelAnimations.runningLights, duration)
+                cl.showAnimation(
+                    modules.ledPixelAnimations.runningLights,
+                    duration
+                )
                 break
             case 5:
                 cl.showAnimation(modules.ledPixelAnimations.sparkle, duration)
                 break
             case 6:
-                cl.showAnimation(modules.ledPixelAnimations.theatherChase, duration)
+                cl.showAnimation(
+                    modules.ledPixelAnimations.theatherChase,
+                    duration
+                )
                 break
             case 7:
                 cl.showAnimation(modules.ledPixelAnimations.colorWipe, duration)
@@ -95,17 +104,23 @@ const serviceDescs: ServiceDesc[] = [
         //jacdac.monoLightClient.setBrightness(0)
     }),
     new ServiceDesc(jacdac.SRV_SERVO, "servo", num =>
-        (num & 3) == 0 ? modules.servo1.turnOff() :
-            modules.servo1.setAngle(num & 1 ? 90 : 45)),
+        (num & 3) == 0
+            ? modules.servo1.turnOff()
+            : modules.servo1.setAngle(num & 1 ? 90 : 45)
+    ),
     new ServiceDesc(jacdac.SRV_MOTOR, "motor", num =>
-        modules.motor1.run(((num % 11) - 5) * 20)),
+        modules.motor1.run(((num % 11) - 5) * 20)
+    ),
     new ServiceDesc(jacdac.SRV_LOGGER, "logger"),
-    new ServiceDesc(jacdac.SRV_ROTARY_ENCODER, "crank",
-        num => modules.rotaryEncoder1.setStreaming(num & 1 ? true : false)),
-    new ServiceDesc(jacdac.SRV_BUTTON, "btn",
-        num => modules.rotaryEncoder1.setStreaming(num & 1 ? true : false)),
-    new ServiceDesc(jacdac.SRV_BUZZER, "buz",
-        num => modules.buzzer1.playMelody(music.jumpDown, 20)),
+    new ServiceDesc(jacdac.SRV_ROTARY_ENCODER, "crank", num =>
+        modules.rotaryEncoder1.setStreaming(num & 1 ? true : false)
+    ),
+    new ServiceDesc(jacdac.SRV_BUTTON, "btn", num =>
+        modules.rotaryEncoder1.setStreaming(num & 1 ? true : false)
+    ),
+    new ServiceDesc(jacdac.SRV_BUZZER, "buz", num =>
+        modules.buzzer1.playMelody(music.jumpDown, 20)
+    ),
 ]
 
 class RawSensorClient extends jacdac.SensorClient {
@@ -124,7 +139,7 @@ class RawSensorClient extends jacdac.SensorClient {
 
 function sensorView(d: jacdac.Device, s: ServiceDesc) {
     const client = new RawSensorClient(d.deviceId, s.classNum)
-    const reading = menu.item("Reading: ", () => { })
+    const reading = menu.item("Reading: ", () => {})
     client.setStreaming(true)
     client.onStateChanged(() => {
         reading.name = "Reading: " + client.reading
@@ -134,9 +149,8 @@ function sensorView(d: jacdac.Device, s: ServiceDesc) {
         title: "Device: " + d.shortId + " / " + s.name,
         update: opts => {
             opts.elements = [reading]
-            if (!d.isConnected)
-                menu.exit(opts)
-        }
+            if (!d.isConnected) menu.exit(opts)
+        },
     })
 
     client.destroy()
@@ -154,12 +168,9 @@ function hexNum(n: number) {
 let testDevN = 0
 let lastDev: jacdac.Device
 function testDevice(d: jacdac.Device) {
-    if (d == jacdac.bus.selfDevice)
-        return
-    if (d != lastDev)
-        testDevN = 1
-    else
-        testDevN++
+    if (d == jacdac.bus.selfDevice) return
+    if (d != lastDev) testDevN = 1
+    else testDevN++
     lastDev = d
     for (let i = 4; i < d.services.length; i += 4) {
         const id = d.services.getNumber(NumberFormat.UInt32LE, i)
@@ -171,14 +182,12 @@ function testDevice(d: jacdac.Device) {
 }
 
 function deviceView(d: jacdac.Device) {
-    if (d == jacdac.bus.selfDevice)
-        return
+    if (d == jacdac.bus.selfDevice) return
     const services: ServiceDesc[] = []
     for (let i = 4; i < d.services.length; i += 4) {
         const id = d.services.getNumber(NumberFormat.UInt32LE, i)
         let s = serviceDescs.find(s => s.classNum == id)
-        if (!s)
-            s = new ServiceDesc(id, "Service: " + servName(id), () => { })
+        if (!s) s = new ServiceDesc(id, "Service: " + servName(id), () => {})
         services.push(s)
     }
 
@@ -186,19 +195,26 @@ function deviceView(d: jacdac.Device) {
     let noopSent = 0
     let noopRecv = 0
 
-
-    function noop() { }
+    function noop() {}
 
     // TODO: using function syntax here causes crash at runtime; https://github.com/microsoft/pxt/issues/8172
     const noopTest = () => {
         noopSent = noopRecv = 0
-        const pkt = jacdac.JDPacket.from(jacdac.ControlCmd.Noop, Buffer.create(0))
-        const unsub = jacdac.bus.subscribe(jacdac.PACKET_PROCESS, (r: jacdac.JDPacket) => {
-            if (r.serviceIndex == jacdac.JD_SERVICE_INDEX_CRC_ACK
-                && pkt.crc == r.serviceCommand
-                && r.deviceIdentifier == d.deviceId)
-                noopRecv++
-        })
+        const pkt = jacdac.JDPacket.from(
+            jacdac.ControlCmd.Noop,
+            Buffer.create(0)
+        )
+        const unsub = jacdac.bus.subscribe(
+            jacdac.PACKET_PROCESS,
+            (r: jacdac.JDPacket) => {
+                if (
+                    r.serviceIndex == jacdac.JD_SERVICE_INDEX_CRC_ACK &&
+                    pkt.crc == r.serviceCommand &&
+                    r.deviceIdentifier == d.deviceId
+                )
+                    noopRecv++
+            }
+        )
         pkt.requiresAck = true
         for (let i = 0; i < 1000; ++i) {
             noopSent++
@@ -215,24 +231,44 @@ function deviceView(d: jacdac.Device) {
             opts.elements = []
             //opts.elements.push(menu.item(d..classDescription, noop))
             opts.elements.push(menu.item(d.firmwareVersion, noop))
-            opts.elements.push(menu.item("Temp: " + (d.mcuTemperature || "?") + "C", noop))
-            opts.elements.push(menu.item("Uptime: " + Math.round((d.queryInt(jacdac.ControlReg.Uptime) || 0) / 1000000) + "s", noop))
+            opts.elements.push(
+                menu.item("Temp: " + (d.mcuTemperature || "?") + "C", noop)
+            )
+            opts.elements.push(
+                menu.item(
+                    "Uptime: " +
+                        Math.round(
+                            (d.queryInt(jacdac.ControlReg.Uptime) || 0) /
+                                1000000
+                        ) +
+                        "s",
+                    noop
+                )
+            )
             opts.elements.push(menu.item("Identify", () => identify(d)))
-            opts.elements.push(menu.item(`Ping test: ${noopRecv}/${noopSent}`, noopTest))
+            opts.elements.push(
+                menu.item(`Ping test: ${noopRecv}/${noopSent}`, noopTest)
+            )
             opts.elements.push(menu.item("---", noop))
-            opts.elements = opts.elements.concat(services.map(s => menu.item(s.name, () => {
-                sensorView(d, s)
-            }, opts => {
-                if (s.testFn) {
-                    s.testFn(++num)
-                    opts.title = "Device: " + d.shortId + " T:" + num
-                }
-            })))
+            opts.elements = opts.elements.concat(
+                services.map(s =>
+                    menu.item(
+                        s.name,
+                        () => {
+                            sensorView(d, s)
+                        },
+                        opts => {
+                            if (s.testFn) {
+                                s.testFn(++num)
+                                opts.title =
+                                    "Device: " + d.shortId + " T:" + num
+                            }
+                        }
+                    )
+                )
+            )
 
-            if (!d.isConnected)
-                menu.exit(opts)
-        }
+            if (!d.isConnected) menu.exit(opts)
+        },
     })
 }
-
-

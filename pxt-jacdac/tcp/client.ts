@@ -10,23 +10,19 @@ namespace jacdac {
             this.outp.close()
         }
         write(buf: Buffer) {
-            if (this.isConnected)
-                this.outp.write(buf)
+            if (this.isConnected) this.outp.write(buf)
         }
         read(): Buffer {
-            if (this.isConnected)
-                return this.inp.read()
-            else
-                return null
+            if (this.isConnected) return this.inp.read()
+            else return null
         }
         bytesAvailable(): number {
             return this.inp.bytesAvailable()
         }
 
         connectSSL(hostname: string, port: number) {
-            if (this.isConnected)
-                throw "already connected"
-            this.outp.writeMeta(jdpack("u32 u16 z", [1, port, hostname]));
+            if (this.isConnected) throw "already connected"
+            this.outp.writeMeta(jdpack("u32 u16 z", [1, port, hostname]))
             const buf = this.inp.read()
             if (buf && buf.length == 0) {
                 this.isConnected = true
@@ -50,7 +46,7 @@ namespace jacdac {
         _retPort: number = null
 
         constructor(role: string) {
-            super(jacdac.SRV_TCP, role);
+            super(jacdac.SRV_TCP, role)
         }
 
         handlePacket(pkt: JDPacket) {

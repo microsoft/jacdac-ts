@@ -56,7 +56,7 @@ namespace servers {
     }
 
     export class ThermometerServer extends jacdac.SensorServer {
-        variant: ThermometerVariant = ThermometerVariant.Indoor;
+        variant: ThermometerVariant = ThermometerVariant.Indoor
 
         constructor() {
             super("thermometer", SRV_THERMOMETER)
@@ -64,14 +64,29 @@ namespace servers {
 
         public handlePacket(pkt: jacdac.JDPacket) {
             super.handlePacket(pkt)
-            this.handleRegValue(pkt, ThermometerReg.MinTemperature, "i22.10", -10);
-            this.handleRegValue(pkt, ThermometerReg.MaxTemperature, "i22.10", 50);
-            this.handleRegValue(pkt, ThermometerReg.TemperatureError, "u22.10", 3);
+            this.handleRegValue(
+                pkt,
+                ThermometerReg.MinTemperature,
+                "i22.10",
+                -10
+            )
+            this.handleRegValue(
+                pkt,
+                ThermometerReg.MaxTemperature,
+                "i22.10",
+                50
+            )
+            this.handleRegValue(
+                pkt,
+                ThermometerReg.TemperatureError,
+                "u22.10",
+                3
+            )
             this.handleRegValue(pkt, ThermometerReg.Variant, "u8", this.variant)
         }
 
         public serializeState(): Buffer {
-            return jacdac.jdpack("i22.10", [input.temperature()]);
+            return jacdac.jdpack("i22.10", [input.temperature()])
         }
     }
 

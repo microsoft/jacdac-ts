@@ -1,20 +1,32 @@
 namespace jacdac {
     function cmdCode(cmd: string) {
         switch (cmd) {
-            case "setall": return 0xD0
-            case "fade": return 0xD1
-            case "fadehsv": return 0xD2
-            case "rotfwd": return 0xD3
-            case "rotback": return 0xD4
+            case "setall":
+                return 0xd0
+            case "fade":
+                return 0xd1
+            case "fadehsv":
+                return 0xd2
+            case "rotfwd":
+                return 0xd3
+            case "rotback":
+                return 0xd4
             case "show":
-            case "wait": return 0xD5
-            case "range": return 0xD6
-            case "mode": return 0xD7
-            case "tmpmode": return 0xD8
+            case "wait":
+                return 0xd5
+            case "range":
+                return 0xd6
+            case "mode":
+                return 0xd7
+            case "tmpmode":
+                return 0xd8
             case "set1":
-            case "setone": return 0xCF
-            case "mult": return 0x100
-            default: return undefined
+            case "setone":
+                return 0xcf
+            case "mult":
+                return 0x100
+            default:
+                return undefined
         }
     }
 
@@ -31,8 +43,7 @@ namespace jacdac {
         function pushNumber(n: number) {
             if (n == null || (n | 0) != n || n < 0 || n >= 16383)
                 throw "light: number out of range: " + n
-            if (n < 128)
-                outarr.push(n)
+            if (n < 128) outarr.push(n)
             else {
                 outarr.push(0x80 | (n >> 8))
                 outarr.push(n & 0xff)
@@ -40,16 +51,13 @@ namespace jacdac {
         }
 
         function flush() {
-            if (currcmd == 0xCF) {
-                if (colors.length != 1)
-                    throw "setone requires 1 color"
+            if (currcmd == 0xcf) {
+                if (colors.length != 1) throw "setone requires 1 color"
             } else {
-                if (colors.length == 0)
-                    return
-                if (colors.length <= 3)
-                    outarr.push(0xC0 | colors.length)
+                if (colors.length == 0) return
+                if (colors.length <= 3) outarr.push(0xc0 | colors.length)
                 else {
-                    outarr.push(0xC0)
+                    outarr.push(0xc0)
                     outarr.push(colors.length)
                 }
             }
@@ -62,54 +70,52 @@ namespace jacdac {
         }
 
         function nextToken() {
-            while (isWhiteSpace(format.charCodeAt(pos)))
-                pos++;
+            while (isWhiteSpace(format.charCodeAt(pos))) pos++
             const beg = pos
             while (pos < format.length && !isWhiteSpace(format.charCodeAt(pos)))
                 pos++
             return format.slice(beg, pos)
-
         }
 
         while (pos < format.length) {
             const token = nextToken()
             const t0 = token.charCodeAt(0)
-            if (97 <= t0 && t0 <= 122) { // a-z
+            if (97 <= t0 && t0 <= 122) {
+                // a-z
                 flush()
                 currcmd = cmdCode(token)
                 if (currcmd == undefined)
                     throw "Unknown light command: " + token
                 if (currcmd == 0x100) {
                     const f = parseFloat(nextToken())
-                    if (isNaN(f) || f < 0 || f > 2)
-                        throw "expecting scale"
-                    outarr.push(0xD8) // tmpmode
+                    if (isNaN(f) || f < 0 || f > 2) throw "expecting scale"
+                    outarr.push(0xd8) // tmpmode
                     outarr.push(3) // mult
-                    outarr.push(0xD0) // setall
+                    outarr.push(0xd0) // setall
                     const mm = Math.clamp(0, 255, Math.round(128 * f))
-                    outarr.push(0xC1)
+                    outarr.push(0xc1)
                     outarr.push(mm)
                     outarr.push(mm)
                     outarr.push(mm)
                 } else {
                     outarr.push(currcmd)
                 }
-            } else if (48 <= t0 && t0 <= 57) { // 0-9
+            } else if (48 <= t0 && t0 <= 57) {
+                // 0-9
                 pushNumber(parseInt(token))
-            } else if (t0 == 37) { // %
+            } else if (t0 == 37) {
+                // %
                 if (args.length == 0) throw "Out of args, %"
                 const v = args.shift()
-                if (typeof v != "number")
-                    throw "Expecting number"
+                if (typeof v != "number") throw "Expecting number"
                 pushNumber(v)
-            } else if (t0 == 35) { // #
+            } else if (t0 == 35) {
+                // #
                 if (token.length == 1) {
                     if (args.length == 0) throw "Out of args, #"
                     const v = args.shift()
-                    if (typeof v == "number")
-                        colors.push(v)
-                    else
-                        for (let vv of v) colors.push(vv)
+                    if (typeof v == "number") colors.push(v)
+                    else for (let vv of v) colors.push(vv)
                 } else {
                     if (token.length == 7) {
                         const b = Buffer.fromHex("00" + token.slice(1))

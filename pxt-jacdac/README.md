@@ -25,6 +25,8 @@ To build all projects
 sh mk.sh
 ```
 
+Run `makecode --pxt-modules` to create files in `pxt_modules/*`, which help with TypeScript auto-completion.
+
 To refresh the ``constants.ts`` files, build jacdac-spec (``yarn buildspecs`` from jacdac-ts) from https://github.com/microsoft/jacdac-ts .
 
 ### Building local projects

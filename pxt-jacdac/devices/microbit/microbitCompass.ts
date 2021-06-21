@@ -47,8 +47,12 @@ namespace servers {
         public handlePacket(pkt: jacdac.JDPacket) {
             super.handlePacket(pkt)
             const oldEnabled = this.enabled
-            this.enabled = this.handleRegBool(pkt, CompassReg.Enabled, this.enabled);
-            this.handleRegValue(pkt, CompassReg.HeadingError, "u16.16", 2);
+            this.enabled = this.handleRegBool(
+                pkt,
+                CompassReg.Enabled,
+                this.enabled
+            )
+            this.handleRegValue(pkt, CompassReg.HeadingError, "u16.16", 2)
 
             // trigger calibration
             if (this.enabled && oldEnabled !== this.enabled)
@@ -58,17 +62,16 @@ namespace servers {
         private startCalibration() {
             control.runInBackground(() => {
                 input.compassHeading()
-            });
+            })
         }
 
         protected handleCalibrateCommand(pkt: jacdac.JDPacket) {
-            if (this.enabled)
-                this.startCalibration();
+            if (this.enabled) this.startCalibration()
         }
 
         public serializeState(): Buffer {
             const heading = this.enabled ? input.compassHeading() : 0
-            return jacdac.jdpack("u16.16", [heading]);
+            return jacdac.jdpack("u16.16", [heading])
         }
     }
 

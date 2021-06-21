@@ -1,53 +1,52 @@
-namespace pxsim {    
-    const JD_SERIAL_EVT_DATA_READY = 1;
+namespace pxsim {
+    const JD_SERIAL_EVT_DATA_READY = 1
 
     export interface SimulatorJacDacMessage extends SimulatorBroadcastMessage {
-        type: "jacdac";
-        broadcast: true;
-        packet: Uint8Array;
+        type: "jacdac"
+        broadcast: true
+        packet: Uint8Array
     }
 
     export class JacDacState {
-        eventId: number;
-        board: BaseBoard;
-        running = false;
-        private packetQueue: Uint8Array[];
+        eventId: number
+        board: BaseBoard
+        running = false
+        private packetQueue: Uint8Array[]
 
         constructor(board: BaseBoard) {
-            this.eventId = 100; // ?
-            this.board = board;
-            this.packetQueue = [];
-            board.addMessageListener(msg => this.processMessage(msg));
+            this.eventId = 100 // ?
+            this.board = board
+            this.packetQueue = []
+            board.addMessageListener(msg => this.processMessage(msg))
         }
 
         start() {
-            this.running = true;
+            this.running = true
         }
 
         stop() {
-            this.running = false;
+            this.running = false
         }
 
         isConnected() {
-            return this.running;
+            return this.running
         }
 
         isRunning() {
-            return this.running;
+            return this.running
         }
 
         getState(): number {
-            return 0;
+            return 0
         }
 
         getPacket(): RefBuffer {
-            const b = this.packetQueue.shift();
-            if (!b) return undefined;
-            const buf = pxsim.BufferMethods.createBuffer(b.length);
-            for (let i = 0; i < buf.data.length; ++i)
-                buf.data[i] = b[i];
+            const b = this.packetQueue.shift()
+            if (!b) return undefined
+            const buf = pxsim.BufferMethods.createBuffer(b.length)
+            for (let i = 0; i < buf.data.length; ++i) buf.data[i] = b[i]
             //console.log("jd> recv " + pxsim.BufferMethods.toHex(buf));
-            return buf;
+            return buf
         }
 
         sendPacket(buf: RefBuffer) {
@@ -55,32 +54,32 @@ namespace pxsim {
             Runtime.postMessage(<SimulatorJacDacMessage>{
                 type: "jacdac",
                 broadcast: true,
-                packet: BufferMethods.getBytes(buf)
+                packet: BufferMethods.getBytes(buf),
             })
         }
 
         processMessage(msg: pxsim.SimulatorMessage) {
-            const b = board();
-            if (!this.running || !b) return;
+            const b = board()
+            if (!this.running || !b) return
 
             if (msg && msg.type == "jacdac") {
-                const jdmsg = msg as pxsim.SimulatorJacDacMessage;
-                this.packetQueue.push(jdmsg.packet);
-                b.bus.queue(this.eventId, JD_SERIAL_EVT_DATA_READY);
+                const jdmsg = msg as pxsim.SimulatorJacDacMessage
+                this.packetQueue.push(jdmsg.packet)
+                b.bus.queue(this.eventId, JD_SERIAL_EVT_DATA_READY)
             }
         }
 
         getDiagnostics(): RefBuffer {
             // TODO
-            return undefined;
+            return undefined
         }
     }
 
     export interface JacDacBoard extends CommonBoard {
-        jacdacState: JacDacState;
+        jacdacState: JacDacState
     }
     export function getJacDacState() {
-        return (board() as JacDacBoard).jacdacState;
+        return (board() as JacDacBoard).jacdacState
     }
 }
 
@@ -89,65 +88,61 @@ namespace pxsim.jacdac {
      * Gets the physical layer component id
      **/
     export function __physId(): number {
-        const state = getJacDacState();
-        return state ? state.eventId : -1;
+        const state = getJacDacState()
+        return state ? state.eventId : -1
     }
 
     /**
      * Write a buffer to the jacdac physical layer.
      **/
     export function __physSendPacket(buf: RefBuffer, data: RefBuffer): void {
-        const state = getJacDacState();
-        if (data.data.length)
-            U.userError("data not implemented yet")
-        if (state)
-            state.sendPacket(buf);
+        const state = getJacDacState()
+        if (data.data.length) U.userError("data not implemented yet")
+        if (state) state.sendPacket(buf)
     }
 
     /**
      * Reads a packet from the queue. NULL if queue is empty
      **/
     export function __physGetPacket(): RefBuffer {
-        const state = getJacDacState();
-        return state ? state.getPacket() : undefined;
+        const state = getJacDacState()
+        return state ? state.getPacket() : undefined
     }
 
     /**
      * Returns the connection state of the Jacdac physical layer.
      **/
     export function __physIsConnected(): boolean {
-        const state = getJacDacState();
-        return state && state.isConnected();
+        const state = getJacDacState()
+        return state && state.isConnected()
     }
 
     /**
      * Indicates if the bus is running
      **/
     export function __physIsRunning(): boolean {
-        const state = getJacDacState();
-        return state && state.isRunning();
+        const state = getJacDacState()
+        return state && state.isRunning()
     }
 
     /**
      * Starts the Jacdac physical layer.
      **/
     export function __physStart(): void {
-        const state = getJacDacState();
-        if (state)
-            state.start();
+        const state = getJacDacState()
+        if (state) state.start()
     }
 
     /**
      * Stops the Jacdac physical layer.
      **/
     export function __physStop(): void {
-        const state = getJacDacState();
-        if (state)
-            state.stop();
+        const state = getJacDacState()
+        if (state) state.stop()
     }
 
     export function __physGetDiagnostics(): RefBuffer {
-        const state = getJacDacState();
-        return state && state.getDiagnostics();
+        const state = getJacDacState()
+        return state && state.getDiagnostics()
     }
 }

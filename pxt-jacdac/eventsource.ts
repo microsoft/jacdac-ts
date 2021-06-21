@@ -101,14 +101,14 @@ namespace jacdac {
 
             // cleanup the "once"
             if (someOnce) {
-                let i = 0;
-                while(i < this.listeners.length) {
+                let i = 0
+                while (i < this.listeners.length) {
                     const listener = this.listeners[i]
                     if (listener.once && listener.key === eventName) {
-                        this.listeners.splice(i, 1);
+                        this.listeners.splice(i, 1)
                         // no need to increment i
                     } else {
-                        i++;
+                        i++
                     }
                 }
             }

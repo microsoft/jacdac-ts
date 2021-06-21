@@ -1,13 +1,17 @@
-
 namespace menu {
     export type Callback = (opts: Options) => void
     export class Item {
         public onRight: Callback
         public onLeft: Callback
-        constructor(public name: string, public cb: Callback) { }
+        constructor(public name: string, public cb: Callback) {}
     }
 
-    export function item(name: string, cb: Callback, onRight?: Callback, onLeft?: Callback) {
+    export function item(
+        name: string,
+        cb: Callback,
+        onRight?: Callback,
+        onLeft?: Callback
+    ) {
         const item = new Item(name, cb)
         item.onRight = onRight
         item.onLeft = onLeft
@@ -30,15 +34,14 @@ namespace menu {
     }
 
     export function show(opts: Options) {
-        let cursor = 0;
-        let offset = 0;
-        let blinkOut = 0;
+        let cursor = 0
+        let offset = 0
+        let blinkOut = 0
 
         const move = (dx: number) => {
             let nc = cursor + dx
             if (nc < 0) nc = 0
-            else if (nc >= opts.elements.length)
-                nc = opts.elements.length - 1
+            else if (nc >= opts.elements.length) nc = opts.elements.length - 1
             if (nc - offset < 2) offset = nc - 2
             if (nc - offset > 6) offset = nc - 6
             if (offset < 0) offset = 0
@@ -49,17 +52,22 @@ namespace menu {
             cursor = 0
             offset = 0
 
-            controller.down.onEvent(ControllerButtonEvent.Pressed, () => move(1))
-            controller.down.onEvent(ControllerButtonEvent.Repeated, () => move(1))
+            controller.down.onEvent(ControllerButtonEvent.Pressed, () =>
+                move(1)
+            )
+            controller.down.onEvent(ControllerButtonEvent.Repeated, () =>
+                move(1)
+            )
 
             controller.up.onEvent(ControllerButtonEvent.Pressed, () => move(-1))
-            controller.up.onEvent(ControllerButtonEvent.Repeated, () => move(-1))
+            controller.up.onEvent(ControllerButtonEvent.Repeated, () =>
+                move(-1)
+            )
 
             controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
                 blinkOut = control.millis() + 100
                 const e = opts.elements[cursor]
-                if (e && e.cb)
-                    control.runInBackground(() => e.cb(opts))
+                if (e && e.cb) control.runInBackground(() => e.cb(opts))
             })
             controller.B.onEvent(ControllerButtonEvent.Pressed, () => {
                 if (opts.onB) {
@@ -87,8 +95,7 @@ namespace menu {
             })
 
             game.onPaint(function () {
-                if (game.consoleOverlay.isVisible())
-                    return
+                if (game.consoleOverlay.isVisible()) return
 
                 const x = 10
                 if (opts.elements.length == 0) {
@@ -106,20 +113,17 @@ namespace menu {
                     else hl = 6
                 }
                 for (let i = 0; i < 9; ++i) {
-                    const e = opts.elements[i + offset];
+                    const e = opts.elements[i + offset]
                     const ename = e ? e.name : ""
                     let y = 15 + i * 11
                     if (i + offset == cursor) {
                         screen.fillRect(0, y - 2, 160, 11, hl)
                         screen.print(ename, x, y, 15)
-                    }
-                    else
-                        screen.print(ename, x, y, 1)
+                    } else screen.print(ename, x, y, 1)
                 }
                 if (opts.footer)
                     screen.print(opts.footer, x, 120 - 6, 4, image.font5)
             })
-
         }
 
         game.pushScene()
@@ -138,7 +142,7 @@ namespace menu {
     }
 
     export function wait(ms: number, msg: string) {
-        game.pushScene();
+        game.pushScene()
 
         game.onPaint(() => {
             screen.print(msg, 5, 50)

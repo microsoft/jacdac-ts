@@ -1,1 +1,1 @@
-modules.analogButton.start();
+modules.analogButton.start()

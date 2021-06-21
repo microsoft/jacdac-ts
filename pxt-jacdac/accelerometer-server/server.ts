@@ -1,7 +1,7 @@
 namespace jacdac {
     export class AccelerometerServer extends jacdac.SensorServer {
         constructor(dev: string) {
-            super(dev, jacdac.SRV_ACCELEROMETER);
+            super(dev, jacdac.SRV_ACCELEROMETER)
 
             // todo events
         }
@@ -10,8 +10,8 @@ namespace jacdac {
             const x = input.acceleration(Dimension.X)
             const y = input.acceleration(Dimension.Y)
             const z = input.acceleration(Dimension.Z)
-            
-            return jacdac.jdpack("i12.20 i12.20 i12.20", [x, y, z]);
+
+            return jacdac.jdpack("i12.20 i12.20 i12.20", [x, y, z])
         }
     }
 }

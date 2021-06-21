@@ -1,12 +1,16 @@
 namespace modules {
     class ToneToPlay {
-        constructor(public payload: Buffer, public timestamp: number) { }
+        constructor(public payload: Buffer, public timestamp: number) {}
     }
 
     function tonePayload(frequency: number, ms: number, volume: number) {
         const period = Math.idiv(1000000, frequency)
         const duty = (period * volume) >> 11
-        return jacdac.jdpack<[number, number, number]>("u16 u16 u16", [period, duty, ms])
+        return jacdac.jdpack<[number, number, number]>("u16 u16 u16", [
+            period,
+            duty,
+            ms,
+        ])
     }
 
     class JDMelodyPlayer extends music.MelodyPlayer {
@@ -23,8 +27,7 @@ namespace modules {
 
         private playLoop() {
             while (true) {
-                if (this.queue == null)
-                    break
+                if (this.queue == null) break
                 const e = this.queue.shift()
                 if (!e) {
                     this.queue = null
@@ -32,9 +35,10 @@ namespace modules {
                 }
                 const now = control.millis()
                 const delta = e.timestamp - now
-                if (delta > 0)
-                    pause(delta)
-                this.musicClient.sendCommand(jacdac.JDPacket.from(jacdac.BuzzerCmd.PlayTone, e.payload))
+                if (delta > 0) pause(delta)
+                this.musicClient.sendCommand(
+                    jacdac.JDPacket.from(jacdac.BuzzerCmd.PlayTone, e.payload)
+                )
             }
         }
 
@@ -48,22 +52,30 @@ namespace modules {
             }
             for (let off = 0; off < buf.length - (isize - 1); off += isize) {
                 const ibuf = buf.slice(off, isize)
-                const [soundWave, flags, frequency, duration, startVolume, endVolume, endFrequency] =
-                    jacdac.jdunpack<number[]>(ibuf, "u8 u8 u16 u16 u16 u16 u16")
+                const [
+                    soundWave,
+                    flags,
+                    frequency,
+                    duration,
+                    startVolume,
+                    endVolume,
+                    endFrequency,
+                ] = jacdac.jdunpack<number[]>(ibuf, "u8 u8 u16 u16 u16 u16 u16")
                 const freq = (frequency + endFrequency) >> 1
                 const vol = (startVolume + endVolume) >> 1
-                this.queue.push(new ToneToPlay(tonePayload(freq, duration, vol), timestamp))
+                this.queue.push(
+                    new ToneToPlay(tonePayload(freq, duration, vol), timestamp)
+                )
                 timestamp += duration
             }
-            if (startPlay)
-                control.runInParallel(() => this.playLoop())
+            if (startPlay) control.runInParallel(() => this.playLoop())
         }
     }
 
     //% fixedInstances
     export class BuzzerClient extends jacdac.Client {
         constructor(role: string) {
-            super(jacdac.SRV_BUZZER, role);
+            super(jacdac.SRV_BUZZER, role)
         }
 
         private player: JDMelodyPlayer
@@ -85,10 +97,15 @@ namespace modules {
         //% weight=76 blockGap=8
         //% group="Music"
         playTone(frequency: number, ms: number, volume = 255): void {
-            this.sendCommand(jacdac.JDPacket.from(jacdac.BuzzerCmd.PlayTone, tonePayload(frequency, ms, volume << 2)))
+            this.sendCommand(
+                jacdac.JDPacket.from(
+                    jacdac.BuzzerCmd.PlayTone,
+                    tonePayload(frequency, ms, volume << 2)
+                )
+            )
         }
     }
 
     //% fixedInstance whenUsed
-    export const buzzer1 = new BuzzerClient("buzzer1");
+    export const buzzer1 = new BuzzerClient("buzzer1")
 }

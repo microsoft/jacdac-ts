@@ -35,20 +35,30 @@ namespace servers {
             super.handlePacket(pkt)
 
             // registers
-            const oldVol = music.volume();
-            const vol = (this.handleRegValue(pkt, BuzzerReg.Volume, "u0.8", oldVol / 0xff) * 0xff) | 0
-            if (vol !== oldVol)
-                music.setVolume(vol)
+            const oldVol = music.volume()
+            const vol =
+                (this.handleRegValue(
+                    pkt,
+                    BuzzerReg.Volume,
+                    "u0.8",
+                    oldVol / 0xff
+                ) *
+                    0xff) |
+                0
+            if (vol !== oldVol) music.setVolume(vol)
 
             // commands
             switch (pkt.serviceCommand) {
-                case BuzzerCmd.PlayTone: this.handlePlayToneCommand(pkt); break;
+                case BuzzerCmd.PlayTone:
+                    this.handlePlayToneCommand(pkt)
+                    break
             }
         }
 
         private handlePlayToneCommand(pkt: jacdac.JDPacket) {
-            const [period, duty, duration] = pkt.jdunpack<[number, number, number]>("u16 u16 u16")
-            const frequency = 1000000 / period;
+            const [period, duty, duration] =
+                pkt.jdunpack<[number, number, number]>("u16 u16 u16")
+            const frequency = 1000000 / period
             music.stopAllSounds()
             music.playTone(frequency, duration)
         }

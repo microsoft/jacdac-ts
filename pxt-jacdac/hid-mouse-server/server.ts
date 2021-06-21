@@ -19,9 +19,10 @@ namespace servers {
         }
 
         private handleSetButton(pkt: jacdac.JDPacket) {
-            const [buttons, event] = pkt.jdunpack<
-                [MouseButton, jacdac.HidMouseButtonEvent]
-            >("u16 u8")
+            const [buttons, event] =
+                pkt.jdunpack<[MouseButton, jacdac.HidMouseButtonEvent]>(
+                    "u16 u8"
+                )
             switch (event) {
                 case jacdac.HidMouseButtonEvent.Down:
                     mouse.setButton(buttons, true)
@@ -47,9 +48,8 @@ namespace servers {
         }
 
         private handleMove(pkt: jacdac.JDPacket) {
-            const [dx, dy, time] = pkt.jdunpack<[number, number, number]>(
-                "i16 i16 u16"
-            )
+            const [dx, dy, time] =
+                pkt.jdunpack<[number, number, number]>("i16 i16 u16")
             mouse.move(dx, dy)
         }
 

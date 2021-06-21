@@ -10,15 +10,15 @@ namespace jacdac {
     }
 
     function jdCrc16(p: Buffer) {
-        let crc = 0xffff;
+        let crc = 0xffff
         for (let i = 0; i < p.length; ++i) {
-            const data = p[i];
-            let x = (crc >> 8) ^ data;
-            x ^= x >> 4;
-            crc = (crc << 8) ^ (x << 12) ^ (x << 5) ^ x;
-            crc &= 0xffff;
+            const data = p[i]
+            let x = (crc >> 8) ^ data
+            x ^= x >> 4
+            crc = (crc << 8) ^ (x << 12) ^ (x << 5) ^ x
+            crc &= 0xffff
         }
-        return crc;
+        return crc
     }
 
     /**
@@ -27,13 +27,12 @@ namespace jacdac {
     //% shim=jacdac::__physSendPacket
     export function __physSendPacket(header: Buffer, data: Buffer): void {
         // the sim transport layer computes the CRC
-        let payload = header.concat(data);
+        let payload = header.concat(data)
         const tailend = payload.length & 3
-        if (tailend)
-            payload = payload.concat(Buffer.create(4 - tailend))
+        if (tailend) payload = payload.concat(Buffer.create(4 - tailend))
         header[2] = payload[2] = payload.length - 12
-        const crc = jdCrc16(payload.slice(2));
-        header[0] = payload[0] = (crc >> 0) & 0xff;
+        const crc = jdCrc16(payload.slice(2))
+        header[0] = payload[0] = (crc >> 0) & 0xff
         header[1] = payload[1] = (crc >> 8) & 0xff
         control.simmessages.send("jacdac", payload)
     }
@@ -46,7 +45,6 @@ namespace jacdac {
         if (!recvQ) return undefined
         return recvQ.shift()
     }
-
 
     /**
      * Gets reception time in ms of last __physGetPacket()
@@ -77,7 +75,7 @@ namespace jacdac {
                 control.dmesg("bad size in sim jdpkt: " + buf.toHex())
                 buf = buf.slice(0, buf[2] + 12)
             }
-            const crc = jdCrc16(buf.slice(2));
+            const crc = jdCrc16(buf.slice(2))
             if (buf.getNumber(NumberFormat.UInt16LE, 0) != crc) {
                 control.dmesg("bad crc in sim")
             } else {
@@ -89,8 +87,7 @@ namespace jacdac {
                     const nextoff = (buf[12] + 16 + 3) & ~3
                     buf.write(12, buf.slice(nextoff))
                     const skip = nextoff - 12
-                    if (buf[2] <= skip)
-                        break
+                    if (buf[2] <= skip) break
                     buf[2] -= skip
                 }
                 control.raiseEvent(__physId(), 1)
@@ -99,7 +96,7 @@ namespace jacdac {
         // announce packet, don't rely on forever
         control.runInParallel(function () {
             while (true) {
-                control.raiseEvent(__physId(), 100);
+                control.raiseEvent(__physId(), 100)
                 pause(500)
             }
         })
