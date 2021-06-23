@@ -14,6 +14,7 @@ import { serviceSpecificationFromName } from "../jdom/spec"
 export interface RoleBinding {
     role: string
     serviceShortId: string
+    client: boolean
     service?: JDService
 }
 
@@ -79,7 +80,7 @@ export default class RoleManager extends JDEventSource {
             if (!existingRole) {
                 // added role
                 changed = true
-                this._roles.push({ ...newRole })
+                this._roles.push({ ...newRole, client:true })
             } else if (existingRole.serviceShortId !== newRole.serviceShortId) {
                 // modified type, force rebinding
                 changed = true
@@ -101,6 +102,8 @@ export default class RoleManager extends JDEventSource {
     private bindServices() {
         let changed = false
         this.unboundRoles.forEach(binding => {
+            if (!binding.client)
+                return
             const boundRoles = this.boundRoles
             const service = this.bus
                 .services({
@@ -137,7 +140,7 @@ export default class RoleManager extends JDEventSource {
         return this._roles.find(r => r.role === role)?.service
     }
 
-    public addRoleService(role: string, serviceShortId: string) {
+    public addRoleService(role: string, serviceShortId: string, client = true) {
         if (!serviceSpecificationFromName(serviceShortId)) return // unknown role type
 
         let binding = this._roles.find(r => r.role === role)
@@ -146,10 +149,10 @@ export default class RoleManager extends JDEventSource {
         if (binding && serviceShortId === binding.serviceShortId) return
 
         // new role
-        binding = { role, serviceShortId }
+        binding = { role, serviceShortId, client }
         this._roles.push(binding)
 
-        const ret = this.bus
+        const ret = client && this.bus
             .services({ ignoreSelf: true, serviceName: serviceShortId })
             .find(s => !this._roles.find(r => r.service === s))
         if (ret) {
