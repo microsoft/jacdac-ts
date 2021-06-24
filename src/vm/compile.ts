@@ -60,14 +60,36 @@ function handlerVisitor(
 }
 
 export function compileProgram(prog: VMProgram) {
-    const newProgram: VMProgram = { roles: prog.roles.slice(0), handlers: [] }
+    const newProgram: VMProgram = { roles: prog.roles.slice(0), implements: [], handlers: [] }
     // process start blocks
     prog.handlers.forEach(startBlock)
     // remove if-then-else
     newProgram.handlers = prog.handlers.map(h => {
         return { commands: removeIfThenElse(h), errors: h?.errors }
     })
+    processServerBlocks(newProgram)
     return newProgram
+}
+
+function processServerBlocks(prog: VMProgram) {
+    prog.handlers.forEach(h => {
+        h.commands.forEach((c: VMCommand) => {
+            if (checkCall(c,"server")) {
+                const role = ((c.command as jsep.CallExpression).arguments[0] as jsep.Identifier).name
+                const serviceShortId = ((c.command as jsep.CallExpression).arguments[1] as jsep.Identifier).name
+                if (!prog.implements.find(p => p.role === role)) {
+                    prog.implements.push({ role, serviceShortId })
+                } else {
+                    // duplicate - should raise error
+                }
+                c.command = {
+                    type: "CallExpression",
+                    callee: toIdentifier("nop"),
+                    arguments: []
+                } 
+            }
+        })
+    })
 }
 
 function checkCall(cmd: VMBase, id: string) {
