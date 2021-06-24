@@ -85,7 +85,7 @@ namespace jacdac._rolemgr {
                         numPossible++ // this can be assigned
                         // in fact, assign if requested
                         if (select) {
-                            control.dmesg(
+                            console.add(jacdac.logPriority,
                                 "autobind: " +
                                     missing[i].role +
                                     " -> " +
@@ -265,16 +265,13 @@ namespace jacdac._rolemgr {
 
         bindRoles() {
             if (!this.running) return
-            this.log(
-                `autobind: devs=${bus.devices.length} clients=${jacdac.bus.unattachedClients.length}`
-            )
-            if (
-                bus.devices.length == 0 ||
-                jacdac.bus.unattachedClients.length == 0
-            ) {
+            if (jacdac.bus.unattachedClients.length == 0) {
                 this.checkChanges()
                 return
             }
+            this.log(
+                `autobind: devs=${bus.devices.length} clients=${jacdac.bus.unattachedClients.length}`
+            )
 
             const bindings: RoleBinding[] = []
             const wraps = bus.devices.map(d => new DeviceWrapper(d))

@@ -25,6 +25,15 @@ namespace jacdac {
         throw msg
     }
 
+    function hexNum(n: number, len = 8) {
+        const hex = "0123456789abcdef"
+        let r = "0x"
+        for (let i = 0; i < len; ++i) {
+            r += hex[(n >>> ((len - 1 - i) * 4)) & 0xf]
+        }
+        return r
+    }
+
     export class JDPacket {
         _header: Buffer
         _data: Buffer
@@ -213,7 +222,9 @@ namespace jacdac {
         toString(): string {
             let msg = `${jacdac.shortDeviceId(this.deviceIdentifier)}/${
                 this.serviceIndex
-            }[${this.packetFlags}]: ${this.serviceCommand} sz=${this.size}`
+            }[${this.packetFlags}]: ${hexNum(this.serviceCommand, 4)} sz=${
+                this.size
+            }`
             if (this.size < 20) msg += ": " + this.data.toHex()
             else msg += ": " + this.data.slice(0, 20).toHex() + "..."
             return msg
@@ -222,6 +233,7 @@ namespace jacdac {
         _sendCore() {
             if (this._data.length != this._header[12]) throw "jdsize mismatch"
             jacdac.__physSendPacket(this._header, this._data)
+            bus.processPacket(this) // handle loop-back packet
         }
 
         _sendReport(dev: Device) {

@@ -31,6 +31,7 @@ namespace jacdac {
         private restartCounter = 0
         private resetIn = 2000000 // 2s
         private autoBindCnt = 0
+        private _eventCounter = 0
         private controlServer: ControlServer
         public readonly unattachedClients: Client[] = []
         public readonly allClients: Client[] = []
@@ -85,6 +86,18 @@ namespace jacdac {
             return this._myDevice
         }
 
+        mkEventCmd(evCode: number) {
+            if (!this._eventCounter) this._eventCounter = 0
+            this._eventCounter =
+                (this._eventCounter + 1) & CMD_EVENT_COUNTER_MASK
+            if (evCode >> 8) throw "invalid evcode"
+            return (
+                CMD_EVENT_MASK |
+                (this._eventCounter << CMD_EVENT_COUNTER_POS) |
+                evCode
+            )
+        }
+
         clearAttachCache() {
             for (let d of this.devices) {
                 // add a dummy byte at the end (if not done already), to force re-attach of services
@@ -107,7 +120,6 @@ namespace jacdac {
             const buf = Buffer.create(ids.length * 4)
             for (let i = 0; i < ids.length; ++i)
                 buf.setNumber(NumberFormat.UInt32LE, i * 4, ids[i])
-            this.selfDevice.services = buf
             JDPacket.from(SystemCmd.Announce, buf)._sendReport(this.selfDevice)
             this.emit(SELF_ANNOUNCE)
             for (const cl of this.allClients) cl.announceCallback()
@@ -120,18 +132,18 @@ namespace jacdac {
                     jdpack("u32", [this.resetIn])
                 ).sendAsMultiCommand(SRV_CONTROL)
 
-            // only try autoBind, proxy we see some devices online
-            if (this.devices.length > 1) {
-                // check for proxy mode
-                jacdac.roleManagerServer.checkProxy()
-                // auto bind
-                if (jacdac.roleManagerServer.autoBind) {
-                    this.autoBindCnt++
-                    // also, only do it every two announces (TBD)
-                    if (this.autoBindCnt >= 2) {
-                        this.autoBindCnt = 0
-                        jacdac.roleManagerServer.bindRoles()
-                    }
+            // always try autoBind - we may want to bind to local services
+
+            // check for proxy mode
+            jacdac.roleManagerServer.checkProxy()
+
+            // auto bind
+            if (jacdac.roleManagerServer.autoBind) {
+                this.autoBindCnt++
+                // also, only do it every two announces (TBD)
+                if (this.autoBindCnt >= 2) {
+                    this.autoBindCnt = 0
+                    jacdac.roleManagerServer.bindRoles()
                 }
             }
         }
@@ -236,11 +248,7 @@ namespace jacdac {
                         h.handlePacketOuter(pkt)
                     }
                 }
-            } else if (devId == this.selfDevice.deviceId) {
-                if (!pkt.isCommand) {
-                    // control.dmesg(`invalid echo ${pkt}`)
-                    return // huh? someone's pretending to be us?
-                }
+            } else if (devId == this.selfDevice.deviceId && pkt.isCommand) {
                 const h = this.hostServices[pkt.serviceIndex]
                 if (h && h.running) {
                     // log(`handle pkt at ${h.name} cmd=${pkt.service_command}`)
@@ -297,10 +305,10 @@ namespace jacdac {
     export const bus: Bus = new Bus()
 
     // common logging level for jacdac services
-    export let logPriority = LoggerPriority.Debug
+    export let logPriority = ConsolePriority.Debug
 
     function log(msg: string) {
-        jacdac.loggerServer.add(logPriority, msg)
+        console.add(logPriority, msg)
     }
 
     //% fixedInstances
@@ -365,7 +373,7 @@ namespace jacdac {
 
         protected sendEvent(eventCode: number, data?: Buffer) {
             const pkt = JDPacket.from(
-                bus.selfDevice.mkEventCmd(eventCode),
+                bus.mkEventCmd(eventCode),
                 data || Buffer.create(0)
             )
             this.sendReport(pkt)
@@ -537,12 +545,11 @@ namespace jacdac {
         protected log(text: string) {
             // check if logging is needed
             if (this.supressLog) return
-            const loggerMinPriority = jacdac.loggerServer.minPriority
-            if (jacdac.logPriority < loggerMinPriority) return
+            if (jacdac.logPriority < console.minPriority) return
 
             // log things up!
             const dev = bus.selfDevice.toString()
-            loggerServer.add(
+            console.add(
                 logPriority,
                 `${dev}${
                     this.instanceName
@@ -916,14 +923,10 @@ namespace jacdac {
         }
 
         protected log(text: string) {
-            if (
-                this.supressLog ||
-                logPriority < jacdac.loggerServer.minPriority
-            )
-                return
+            if (this.supressLog || logPriority < console.minPriority) return
             let dev = bus.selfDevice.toString()
             let other = this.device ? this.device.toString() : "<unbound>"
-            jacdac.loggerServer.add(
+            console.add(
                 logPriority,
                 `${dev}/${other}:${this.serviceClass}>${this.role}>${text}`
             )
@@ -1098,23 +1101,19 @@ namespace jacdac {
 
             if (pkt.isEvent) {
                 let ec = this._eventCounter
-                // if ec is undefined, it's the first event, so skip processing
-                if (ec !== undefined) {
-                    ec++
-                    // how many packets ahead and behind current are we?
-                    const ahead =
-                        (pkt.eventCounter - ec) & CMD_EVENT_COUNTER_MASK
-                    const behind =
-                        (ec - pkt.eventCounter) & CMD_EVENT_COUNTER_MASK
-                    // ahead == behind == 0 is the usual case, otherwise
-                    // behind < 60 means this is an old event (or retransmission of something we already processed)
-                    // ahead < 5 means we missed at most 5 events, so we ignore this one and rely on retransmission
-                    // of the missed events, and then eventually the current event
-                    if (ahead > 0 && (behind < 60 || ahead < 5)) return
-                    // we got our event
-                    this.emit(EVENT, pkt)
-                    bus.emit(EVENT, pkt)
-                }
+                if (ec === undefined) ec = pkt.eventCounter - 1
+                ec++
+                // how many packets ahead and behind current are we?
+                const ahead = (pkt.eventCounter - ec) & CMD_EVENT_COUNTER_MASK
+                const behind = (ec - pkt.eventCounter) & CMD_EVENT_COUNTER_MASK
+                // ahead == behind == 0 is the usual case, otherwise
+                // behind < 60 means this is an old event (or retransmission of something we already processed)
+                // ahead < 5 means we missed at most 5 events, so we ignore this one and rely on retransmission
+                // of the missed events, and then eventually the current event
+                if (ahead > 0 && (behind < 60 || ahead < 5)) return
+                // we got our event
+                this.emit(EVENT, pkt)
+                bus.emit(EVENT, pkt)
                 this._eventCounter = pkt.eventCounter
             }
 
@@ -1124,7 +1123,7 @@ namespace jacdac {
                     : c.serviceIndex == pkt.serviceIndex
             )
             if (client) {
-                // log(`handle pkt at ${client.name} rep=${pkt.service_command}`)
+                // log(`handle pkt at ${client.role} rep=${pkt.serviceCommand}`)
                 client.currentDevice = this
                 client.handlePacketOuter(pkt)
             }
@@ -1162,18 +1161,6 @@ namespace jacdac {
                 : JDPacket.from(cmd, payload)
             pkt.serviceIndex = JD_SERVICE_INDEX_CTRL
             pkt._sendCmd(this)
-        }
-
-        mkEventCmd(evCode: number) {
-            if (!this._eventCounter) this._eventCounter = 0
-            this._eventCounter =
-                (this._eventCounter + 1) & CMD_EVENT_COUNTER_MASK
-            if (evCode >> 8) throw "invalid evcode"
-            return (
-                CMD_EVENT_MASK |
-                (this._eventCounter << CMD_EVENT_COUNTER_POS) |
-                evCode
-            )
         }
 
         _destroy() {

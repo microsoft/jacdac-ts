@@ -55,7 +55,7 @@ function jdpackTest() {
 
 // pins.A9.digitalWrite(false)
 
-jacdac.logPriority = jacdac.LoggerPriority.Log
+jacdac.logPriority = ConsolePriority.Log
 jacdac.roleManagerServer.start()
 jacdac.protoTestServer.start()
 jacdac.start()
