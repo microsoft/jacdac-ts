@@ -157,7 +157,7 @@ export const VMFunctions: jdtest.TestFunctionDescription[] = [
     {
         id: "server",
         args: ["Identifier", "Identifier" ],
-        prompt: `server role {1} {2}`,
+        prompt: `server role {1} service {2}`,
         context: "command",
     },
     {
