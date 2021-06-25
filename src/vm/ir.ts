@@ -37,7 +37,7 @@ export interface VMRole {
 
 export interface VMProgram {
     roles: VMRole[]
-    implements: VMRole[]
+    serverRoles: VMRole[]
     handlers: VMHandler[]
 }
 
@@ -57,7 +57,6 @@ export type VMFunctionNames =
     | "writeLocal"
     | "watch"
     | "log"
-    | "server"
     | "roleBound"
     | "roleBoundExpression"
     | "onRoleConnected"
@@ -152,12 +151,6 @@ export const VMFunctions: jdtest.TestFunctionDescription[] = [
         id: "log",
         args: ["number"],
         prompt: `not used`,
-        context: "command",
-    },
-    {
-        id: "server",
-        args: ["Identifier", "Identifier" ],
-        prompt: `server role {1} service {2}`,
         context: "command",
     },
     {
