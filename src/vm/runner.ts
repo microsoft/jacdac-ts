@@ -531,7 +531,7 @@ export class VMProgramRunner extends JDClient {
         super()
         const compiled = compileProgram(program)
         const { registers, events, errors } = checkProgram(compiled)
-        this._roles = compiled.roles
+        this._roles = compiled.roles.filter(r => !compiled.implements.find(p => p.role === r.role))
         if (errors?.length) console.debug("ERRORS", errors)
         // data structures for running program
         this._status = VMStatus.Stopped
