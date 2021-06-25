@@ -524,7 +524,6 @@ export class VMProgramRunner extends JDClient {
     private _breaksMutex: Mutex
 
     constructor(
-        readonly bus: JDBus,
         readonly roleManager: RoleManager,
         readonly program: VMProgram
     ) {
