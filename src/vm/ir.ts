@@ -61,6 +61,7 @@ export type VMFunctionNames =
     | "roleBoundExpression"
     | "onRoleConnected"
     | "onRoleDisconnected"
+    | "raiseEvent"
 
 export const VMFunctions: jdtest.TestFunctionDescription[] = [
     {
