@@ -9,7 +9,7 @@ import { jdpack, PackedValues } from "../jdom/pack"
 
 export class VMServiceServer extends JDServiceServer {
     private eventNameToId: SMap<number> = {}
-    constructor(private role: string, private spec: jdspec.ServiceSpec) {
+    constructor(public shortId: string, private spec: jdspec.ServiceSpec) {
         super(spec.classIdentifier)
 
         spec.packets.filter(isHighLevelRegister).map(reg => {

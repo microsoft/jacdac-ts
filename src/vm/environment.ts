@@ -50,8 +50,10 @@ export class VMEnvironment
         serverRoles.forEach(p => {
             // get the service
             const service = serviceSpecificationFromName(p.serviceShortId)
-            // spin up JDServiceServer
-            this._serverEnvs[p.role] = new VMServiceServer(p.role, service)
+            if (service) {
+                // spin up JDServiceServer
+                this._serverEnvs[p.role] = new VMServiceServer(p.serviceShortId, service)
+            }
         })
     }
 
@@ -60,7 +62,13 @@ export class VMEnvironment
     }
 
     public servers() {
-        return Object.keys(this._serverEnvs).map(k => ({ role: k, server: this._serverEnvs[k]}))
+        return Object.keys(this._serverEnvs).map(k => {
+            return {
+                role: k,
+                shortId: this._serverEnvs[k].shortId,
+                server: this._serverEnvs[k],
+            }
+        })
     }
 
     public serviceChanged(role: string, service: JDService) {
@@ -137,7 +145,7 @@ export class VMEnvironment
         if (!s) {
             throw new VMException(VMExceptionCode.RoleNoService, root)
         }
-        return s       
+        return s
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -170,7 +178,9 @@ export class VMEnvironment
             }
             return undefined
         }
-        const ep = (e as jsep.MemberExpression).property as jsep.Identifier | jsep.MemberExpression
+        const ep = (e as jsep.MemberExpression).property as
+            | jsep.Identifier
+            | jsep.MemberExpression
         const root =
             typeof ep === "string"
                 ? ep

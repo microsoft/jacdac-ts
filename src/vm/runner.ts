@@ -579,7 +579,7 @@ export class VMProgramRunner extends JDClient {
 
     // expose VM as service
 
-    get servers(): { role: string, server: JDServiceServer }[] {
+    get servers(): { role: string, shortId: string, server: JDServiceServer }[] {
         return this._env.servers()
     }
 
