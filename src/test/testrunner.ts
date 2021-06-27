@@ -656,7 +656,8 @@ export class JDServiceTestRunner extends JDServiceClient {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public lookup(e: jsep.MemberExpression | string): any {
-        return this._env.lookupRegisterAsync(e)
+        // TODO: fix up test runner
+        return undefined; // this._env.lookupRegisterAsync(e)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
