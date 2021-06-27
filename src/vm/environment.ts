@@ -1,4 +1,3 @@
-
 import { SMap } from "../jdom/utils"
 import { JDService } from "../jdom/service"
 import JDServiceProvider from "../jdom/serviceprovider"
@@ -19,7 +18,7 @@ export const EVENT_CHANGE = "vmEnvEventChange"
 export enum VMExceptionCode {
     RoleNoService = "vmEnvRoleNoService",
     TypeMismatch = "vmEnvTypeMismatch",
-    InternalError = "vmInternalError"
+    InternalError = "vmInternalError",
 }
 
 export class VMException extends Error {
@@ -40,7 +39,7 @@ export class VMEnvironment
     private _currentEvent: string = undefined
     private _clientEnvs: SMap<VMServiceClient> = {}
     private _serverEnvs: SMap<VMServiceServer> = {}
-    private _serviceProvider: JDServiceProvider;
+    private _serviceProvider: JDServiceProvider
     private _globals: SMap<GlobalVariable> = {}
 
     constructor(
@@ -51,27 +50,28 @@ export class VMEnvironment
         super()
         // TODO: need to spin up a JDService for each serverRole and put into a JDDevice
         serverRoles.forEach(p => {
-            // get the service 
+            // get the service
             const service = serviceSpecificationFromName(p.serviceShortId)
             // VMServer really...
-            this._serverEnvs[p.role] = new VMServiceServer(service)
+            this._serverEnvs[p.role] = new VMServiceServer(p.role, service)
         })
         // the device
-        this._serviceProvider = new JDServiceProvider(Object.values(this._serverEnvs))
+        this._serviceProvider = new JDServiceProvider(
+            Object.values(this._serverEnvs),
+            { deviceId: "VMServiceProvider" }
+        )
     }
 
     public globals() {
-        return this._globals;
+        return this._globals
     }
 
     public serviceChanged(role: string, service: JDService) {
         if (this._clientEnvs[role]) {
             this._clientEnvs[role].unmount()
             this._clientEnvs[role] = undefined
-            
         }
-        if (!service) 
-            this._rolesUnbound.push(role)
+        if (!service) this._rolesUnbound.push(role)
         else {
             this._rolesBound.push(role)
             this._clientEnvs[role] = new VMServiceClient(service)
@@ -128,12 +128,19 @@ export class VMEnvironment
         if (!root) return undefined
         const s = this._clientEnvs[root]
         if (!s) {
-            throw new VMException(
-                VMExceptionCode.RoleNoService,
-                root
-            )
+            throw new VMException(VMExceptionCode.RoleNoService, root)
         }
         return s
+    }
+
+    private getServer(e: jsep.MemberExpression | string) {
+        const root = this.getRootName(e)
+        if (!root) return undefined
+        const s = this._serverEnvs[root]
+        if (!s) {
+            throw new VMException(VMExceptionCode.RoleNoService, root)
+        }
+        return s       
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -142,16 +149,21 @@ export class VMEnvironment
         values: PackedValues
     ) {
         const serviceEnv = this.getService(e)
-        // TODO: need to raise alert if service undefined
-        await serviceEnv?.sendCommandAsync(
-            e.property as jsep.Identifier,
-            values
-        )
+        if (serviceEnv)
+            await serviceEnv?.sendCommandAsync(
+                (e.property as jsep.Identifier).name,
+                values
+            )
+        else {
+            const server = this.getServer(e)
+            await server?.sendEventNameAsync(
+                (e.property as jsep.Identifier).name,
+                values
+            )
+        }
     }
 
-    public async lookupAsync(
-        e: jsep.MemberExpression | string
-    ) {
+    public async lookupAsync(e: jsep.MemberExpression | string) {
         const roleName = this.getRootName(e)
         if (roleName.startsWith("$var")) {
             const me = e as jsep.MemberExpression
@@ -235,7 +247,7 @@ export class VMEnvironment
         }
         return false
     }
-    
+
     // role events
     private _rolesBound: string[] = []
     private _rolesUnbound: string[] = []

@@ -1,47 +1,38 @@
 import JDServiceServer from "../jdom/serviceserver"
-import JDRegisterServer from "../jdom/registerserver"
-import { PackedValues } from "../jdom/pack"
 import {
-    //isClientEvent,
     isClientRegister,
-    //isCommand
+    isClientEvent,
+    isCommand
 } from "../../../jacdac-ts/src/jdom/spec"
 import { SMap } from "../jdom/utils"
+import { PackedValues } from "../jdom/pack"
 
-class VMRegisterServer extends JDRegisterServer<PackedValues> {
-    constructor(parent: VMServiceServer, regId: number) {
-        super(parent,regId)
-    }
-    
-    // 0. regServer.packFormat
-    // 1. regServer.setValues (before sendGetAsync) skipChangeEvent=true
-    // 3. regServer.reset
-
-    async sendGetAsync() {
-        // await the VM code for computing the register's value
-        // this.setValues
-        super.sendGetAsync()
-    }
-}
 export class VMServiceServer extends JDServiceServer {
-    private regServersByName: SMap<VMRegisterServer> = {}
-    private regServersById: SMap<VMRegisterServer> = {}
-    constructor(spec: jdspec.ServiceSpec) {
+    private eventNameToId: SMap<number> = {}
+    constructor(private role: string, spec: jdspec.ServiceSpec) {
         super(spec.classIdentifier)
 
         spec.packets.filter(isClientRegister).map(reg => {
-            const regServer = new VMRegisterServer(
-                this,
-                reg.identifier
-            )
-            this.regServersByName[reg.name] = regServer
-            this.regServersById[reg.identifier] = regServer
-            
-            // subscribe to CHANGE event for a write request
+            this.addRegister(reg.identifier)
+            // nothing to do on a read of register from outside (server maintains current value)
+            // on a write from outside, notify the VM of CHANGE of value
+            // on a write from VM, notify outside of CHANGE (done already)
         })
 
-        // TODO: events
+        spec.packets.filter(isCommand).map(cmd => {
+            this.addCommand(cmd.identifier, (pkt) => {
+                // raise event to execute the command
+                // sending the pkt along with the data
+            })
+        })
+
+        spec.packets.filter(isClientEvent).forEach(pkt => {
+            this.eventNameToId[pkt.name] = pkt.identifier
+        })
     }
 
-
+    async sendEventNameAsync(eventName: string, data?: PackedValues) {
+        // TODO: convert PackedValues to lower-level value, using format
+        await this.sendEvent(this.eventNameToId[eventName], data)
+    }
 }
