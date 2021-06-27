@@ -80,21 +80,7 @@ export class VMServiceClient extends JDServiceClient {
         }
     }
 
-    public async lookupRegisterAsync(
-        e: jsep.MemberExpression | jsep.Identifier | string
-    ) {
-        const root =
-            typeof e === "string"
-                ? e
-                : e.type === "Identifier"
-                ? e.name
-                : (e.object as jsep.Identifier).name
-        const fld =
-            typeof e === "string"
-                ? undefined
-                : e.type === "Identifier"
-                ? undefined
-                : (e.property as jsep.Identifier).name
+    public async lookupRegisterAsync(root: string, fld: string) {
         if (root in this._registers) {
             const register = this._registers[root]
             await register.refresh()

@@ -5,11 +5,11 @@ import {
     isCommand
 } from "../../../jacdac-ts/src/jdom/spec"
 import { SMap } from "../jdom/utils"
-import { PackedValues } from "../jdom/pack"
+import { jdpack, PackedValues } from "../jdom/pack"
 
 export class VMServiceServer extends JDServiceServer {
     private eventNameToId: SMap<number> = {}
-    constructor(private role: string, spec: jdspec.ServiceSpec) {
+    constructor(private role: string, private spec: jdspec.ServiceSpec) {
         super(spec.classIdentifier)
 
         spec.packets.filter(isClientRegister).map(reg => {
@@ -31,8 +31,13 @@ export class VMServiceServer extends JDServiceServer {
         })
     }
 
-    async sendEventNameAsync(eventName: string, data?: PackedValues) {
-        // TODO: convert PackedValues to lower-level value, using format
-        await this.sendEvent(this.eventNameToId[eventName], data)
+    async sendEventNameAsync(eventName: string, values?: PackedValues) {
+        const pkt = this.spec.packets.find(
+            p => isClientEvent(p) && p.name === eventName
+        )
+        if (pkt) {
+            await this.sendEvent(this.eventNameToId[eventName], 
+                jdpack(pkt.packFormat, values))
+        }
     }
 }

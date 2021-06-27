@@ -173,11 +173,21 @@ export class VMEnvironment
             }
             return undefined
         }
+        const ep = (e as jsep.MemberExpression).property as jsep.Identifier | jsep.MemberExpression
+        const root =
+            typeof ep === "string"
+                ? ep
+                : ep.type === "Identifier"
+                ? ep.name
+                : (ep.object as jsep.Identifier).name
+        const fld =
+            typeof ep === "string"
+                ? undefined
+                : ep.type === "Identifier"
+                ? undefined
+                : (ep.property as jsep.Identifier).name
         const serviceEnv = this.getService(e)
-        const me = e as jsep.MemberExpression
-        return await serviceEnv.lookupRegisterAsync(
-            me.property as jsep.Identifier | jsep.MemberExpression
-        )
+        return await serviceEnv.lookupRegisterAsync(root, fld)
     }
 
     public async writeRegisterAsync(
