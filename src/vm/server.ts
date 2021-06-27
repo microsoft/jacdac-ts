@@ -1,7 +1,7 @@
 import JDServiceServer from "../jdom/serviceserver"
 import {
-    isClientRegister,
-    isClientEvent,
+    isHighLevelRegister,
+    isHighLevelEvent,
     isCommand
 } from "../../../jacdac-ts/src/jdom/spec"
 import { SMap } from "../jdom/utils"
@@ -12,7 +12,7 @@ export class VMServiceServer extends JDServiceServer {
     constructor(private role: string, private spec: jdspec.ServiceSpec) {
         super(spec.classIdentifier)
 
-        spec.packets.filter(isClientRegister).map(reg => {
+        spec.packets.filter(isHighLevelRegister).map(reg => {
             this.addRegister(reg.identifier)
             // nothing to do on a read of register from outside (server maintains current value)
             // on a write from outside, notify the VM of CHANGE of value
@@ -26,14 +26,14 @@ export class VMServiceServer extends JDServiceServer {
             })
         })
 
-        spec.packets.filter(isClientEvent).forEach(pkt => {
+        spec.packets.filter(isHighLevelEvent).forEach(pkt => {
             this.eventNameToId[pkt.name] = pkt.identifier
         })
     }
 
     async sendEventNameAsync(eventName: string, values?: PackedValues) {
         const pkt = this.spec.packets.find(
-            p => isClientEvent(p) && p.name === eventName
+            p => isHighLevelEvent(p) && p.name === eventName
         )
         if (pkt) {
             await this.sendEvent(this.eventNameToId[eventName], 

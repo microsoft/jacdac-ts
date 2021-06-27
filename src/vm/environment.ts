@@ -39,7 +39,6 @@ export class VMEnvironment
     private _currentEvent: string = undefined
     private _clientEnvs: SMap<VMServiceClient> = {}
     private _serverEnvs: SMap<VMServiceServer> = {}
-    private _serviceProvider: JDServiceProvider
     private _globals: SMap<GlobalVariable> = {}
 
     constructor(
@@ -48,22 +47,20 @@ export class VMEnvironment
         serverRoles: VMRole[]
     ) {
         super()
-        // TODO: need to spin up a JDService for each serverRole and put into a JDDevice
         serverRoles.forEach(p => {
             // get the service
             const service = serviceSpecificationFromName(p.serviceShortId)
-            // VMServer really...
+            // spin up JDServiceServer
             this._serverEnvs[p.role] = new VMServiceServer(p.role, service)
         })
-        // the device
-        this._serviceProvider = new JDServiceProvider(
-            Object.values(this._serverEnvs),
-            { deviceId: "VMServiceProvider" }
-        )
     }
 
     public globals() {
         return this._globals
+    }
+
+    public servers() {
+        return Object.keys(this._serverEnvs).map(k => ({ role: k, server: this._serverEnvs[k]}))
     }
 
     public serviceChanged(role: string, service: JDService) {

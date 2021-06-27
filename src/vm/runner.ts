@@ -24,6 +24,7 @@ import {
 import { Mutex, atomic } from "./utils"
 import { assert, SMap } from "../jdom/utils"
 import { JDClient } from "../jdom/client"
+import JDServiceServer from "../jdom/serviceserver"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type VMTraceContext = any
@@ -434,7 +435,6 @@ class VMHandlerRunner extends JDEventSource {
     }
 
     private async singleStepAsync() {
-        const sid = this._currentCommand.cmd.sourceId
         try {
             await this._currentCommand.stepAsync()
         } catch (e) {
@@ -575,6 +575,12 @@ export class VMProgramRunner extends JDClient {
             )
         )
         this.initializeRoleManagement()
+    }
+
+    // expose VM as service
+
+    get servers(): { role: string, server: JDServiceServer }[] {
+        return this._env.servers()
     }
 
     // control of VM

@@ -204,7 +204,7 @@ const includedRegisters = [
     SystemReg.Intensity,
 ]
 
-export function isClientRegister(pkt: jdspec.PacketInfo) {
+export function isHighLevelRegister(pkt: jdspec.PacketInfo) {
     return (
         isRegister(pkt) &&
         !pkt.lowLevel &&
@@ -214,7 +214,7 @@ export function isClientRegister(pkt: jdspec.PacketInfo) {
 
 const ignoredEvents = [SystemEvent.StatusCodeChanged]
 
-export function isClientEvent(pkt: jdspec.PacketInfo) {
+export function isHighLevelEvent(pkt: jdspec.PacketInfo) {
     return (
         isEvent(pkt) &&
         !pkt.lowLevel &&
