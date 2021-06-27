@@ -10,7 +10,7 @@ import { JDService } from "../jdom/service"
 import { JDServiceClient } from "../jdom/serviceclient"
 import { roundWithPrecision } from "../jdom/utils"
 import { unparse, VMExprEvaluator, CallEvaluator, StartMap } from "../vm/expr"
-import { VMServiceEnvironment } from "../vm/environment"
+import { VMServiceClient } from "../vm/client"
 
 export enum JDTestStatus {
     NotReady,
@@ -618,7 +618,7 @@ export class JDTestRunner extends JDEventSource {
 
 export class JDServiceTestRunner extends JDServiceClient {
     private _testIndex = -1
-    private _env: VMServiceEnvironment;
+    private _env: VMServiceClient;
     public readonly tests: JDTestRunner[]
 
     constructor(
@@ -626,7 +626,7 @@ export class JDServiceTestRunner extends JDServiceClient {
         service: JDService
     ) {
         super(service)
-        this._env = new VMServiceEnvironment(service)
+        this._env = new VMServiceClient(service)
         this.tests = this.testSpec.tests.map(t => new JDTestRunner(this, t))
         this.testSpec.tests.forEach(t => {
             t.events.forEach(s => {

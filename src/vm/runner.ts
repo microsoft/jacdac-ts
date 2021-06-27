@@ -9,7 +9,6 @@ import {
     EVENT_CHANGE,
 } from "./environment"
 import { VMExprEvaluator, unparse, CallEvaluator } from "./expr"
-import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, ROLE_BOUND, ROLE_UNBOUND, TRACE } from "../jdom/constants"
 import { checkProgram, compileProgram } from "./compile"
@@ -22,7 +21,7 @@ import {
     VM_LOG_ENTRY,
     VM_ROLE_MISSING,
 } from "./events"
-import { Mutex } from "./utils"
+import { Mutex, atomic } from "./utils"
 import { assert, SMap } from "../jdom/utils"
 import { JDClient } from "../jdom/client"
 
@@ -39,8 +38,6 @@ enum VMInternalStatus {
 }
 
 const VM_WAKE_SLEEPER = "vmWakeSleeper"
-
-export type atomic = string | boolean | number
 
 export interface VMEnvironmentInterface {
     writeRegisterAsync: (
@@ -78,15 +75,15 @@ class VMCommandEvaluator {
     constructor(
         public parent: VMCommandRunner,
         private readonly env: VMEnvironment,
-        private readonly gc: VMCommand
+        private readonly cmd: VMCommand
     ) {}
 
     trace(msg: string, context: VMTraceContext = {}) {
-        this.parent.trace(msg, { command: this.gc.command.type, ...context })
+        this.parent.trace(msg, { command: this.cmd.command.type, ...context })
     }
 
     private get inst() {
-        return (this.gc.command.callee as jsep.Identifier)?.name
+        return (this.cmd.command.callee as jsep.Identifier)?.name
     }
 
     private callEval() : CallEvaluator {
@@ -127,11 +124,11 @@ class VMCommandEvaluator {
 
     private async startAsync() {
         if (
-            this.gc.command.callee.type !== "MemberExpression" &&
+            this.cmd.command.callee.type !== "MemberExpression" &&
             (this.inst === "awaitRegister" || this.inst === "awaitChange")
         ) {
             // need to capture register value for awaitChange/awaitRegister
-            const args = this.gc.command.arguments
+            const args = this.cmd.command.arguments
             this._regSaved = await this.evalExpressionAsync(args[0])
             if (this.inst === "awaitChange")
                 this._changeSaved = await this.evalExpressionAsync(args[1])
@@ -146,17 +143,17 @@ class VMCommandEvaluator {
             this._started = true
             if (neededStart) return VMInternalStatus.Running
         }
-        const args = this.gc.command.arguments
-        if (this.gc.command.callee.type === "MemberExpression") {
+        const args = this.cmd.command.arguments
+        if (this.cmd.command.callee.type === "MemberExpression") {
             // interpret as a service command (role.comand)
             const expr = this.newEval()
             // TODO
             const values: atomic[] = []
-            for (const a of this.gc.command.arguments) {
+            for (const a of this.cmd.command.arguments) {
                 values.push(await expr.evalAsync(a))
             }
             await this.env.sendCommandAsync(
-                this.gc.command.callee as jsep.MemberExpression,
+                this.cmd.command.callee as jsep.MemberExpression,
                 values
             )
             return VMInternalStatus.Completed
@@ -234,14 +231,14 @@ class VMCommandEvaluator {
             case "watch": {
                 const expr = this.newEval()
                 const ev = await expr.evalAsync(args[0])
-                this.parent.watch(this.gc?.sourceId, ev)
+                this.parent.watch(this.cmd?.sourceId, ev)
                 return VMInternalStatus.Completed
             }
             case "log": {
                 const expr = this.newEval()
                 const ev = await expr.evalAsync(args[0])
                 const evString = ev + ""
-                this.parent.writeLog(this.gc?.sourceId, evString)
+                this.parent.writeLog(this.cmd?.sourceId, evString)
                 return VMInternalStatus.Completed
             }
             case "halt": {
@@ -271,9 +268,9 @@ class VMCommandRunner {
         public readonly parent: VMHandlerRunner,
         private handlerId: number,
         env: VMEnvironment,
-        public gc: VMCommand
+        public cmd: VMCommand
     ) {
-        this._eval = new VMCommandEvaluator(this, env, gc)
+        this._eval = new VMCommandEvaluator(this, env, cmd)
     }
 
     trace(msg: string, context: VMTraceContext = {}) {
@@ -298,7 +295,7 @@ class VMCommandRunner {
 
     async stepAsync() {
         if (this.status === VMInternalStatus.Running) {
-            this.trace(unparse(this.gc.command))
+            this.trace(unparse(this.cmd.command))
             this.status = await this._eval.evaluate()
         }
     }
@@ -427,7 +424,7 @@ class VMHandlerRunner extends JDEventSource {
 
     private async singleStepCheckBreakAsync(singleStep = false) {
         this.trace("step begin")
-        const sid = this._currentCommand.gc?.sourceId
+        const sid = this._currentCommand.cmd?.sourceId
         if (!singleStep && (await this.parent.breakpointOnAsync(sid))) {
             return true
         }
@@ -437,7 +434,7 @@ class VMHandlerRunner extends JDEventSource {
     }
 
     private async singleStepAsync() {
-        const sid = this._currentCommand.gc.sourceId
+        const sid = this._currentCommand.cmd.sourceId
         try {
             await this._currentCommand.stepAsync()
         } catch (e) {
@@ -451,7 +448,7 @@ class VMHandlerRunner extends JDEventSource {
                 this._currentCommand.status = VMInternalStatus.Sleeping
                 await this.parent.sleepAsync(this, vmt.ms)
             } else {
-                this.emit(VM_COMMAND_FAILED, this._currentCommand.gc.sourceId)
+                this.emit(VM_COMMAND_FAILED, this._currentCommand.cmd.sourceId)
                 throw e
             }
         }
@@ -532,9 +529,11 @@ export class VMProgramRunner extends JDClient {
         const { registers, events, errors } = checkProgram(compiled)
         this._roles = compiled.roles
         if (errors?.length) console.debug("ERRORS", errors)
+        // TODO: serverRoles
+        
         // data structures for running program
         this._status = VMStatus.Stopped
-        this._env = new VMEnvironment(registers, events)
+        this._env = new VMEnvironment(registers, events, compiled.serverRoles)
         this._handlerRunners = compiled.handlers.map(
             (h, index) => new VMHandlerRunner(this, index, this._env, h)
         )
@@ -763,7 +762,7 @@ export class VMProgramRunner extends JDClient {
             h,
             h.status === VMInternalStatus.Completed
                 ? ""
-                : h.command.gc?.sourceId
+                : h.command.cmd?.sourceId
         )
     }
 

@@ -1,3 +1,5 @@
+export type atomic = string | boolean | number
+
 export class Mutex {
     private promises: (() => Promise<any>)[] = []
     private shift() {
