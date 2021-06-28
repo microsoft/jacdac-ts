@@ -540,10 +540,10 @@ export class VMProgramRunner extends JDClient {
         )
         const servers = this._env.servers()
         if (servers.length) {
-            this._provider = new JDServiceProvider(servers.map(s=>s.server), {
-              deviceId: "VMServiceProvider",
-            })
-            this._provider.bus = roleManager.bus
+            // this._provider = new JDServiceProvider(servers.map(s=>s.server), {
+            //  deviceId: "VMServiceProvider",
+            // })
+            // this._provider.bus = roleManager.bus
         }
 
         // TODO: can't add multiple handlers until we have deduplicate CHANGE on Event
