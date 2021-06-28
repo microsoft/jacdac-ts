@@ -183,10 +183,11 @@
 
         async function sniff() {
             console.log('starting')
+            if (!audioCtx)
+                audioCtx = await createToneContext();
             await jd.disconnect();
             await jd.connect();
             console.log('started')
-            audioCtx = await createToneContext();
             const srv = jacdac.startServiceProviderFromServiceClass(jd, jacdac.SRV_BUZZER)
 
             srv.subscribe("playTone", args => {

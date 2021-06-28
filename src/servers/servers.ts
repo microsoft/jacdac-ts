@@ -1330,6 +1330,8 @@ export function addServiceProvider(
     bus: JDBus,
     definition: ServiceProviderDefinition
 ) {
+    if (!definition) return undefined
+
     const services = definition.services()
     const options = {
         resetIn: definition.resetIn,
@@ -1356,6 +1358,5 @@ export function startServiceProviderFromServiceClass(
     serviceClass: number
 ) {
     const provider = serviceProviderDefinitionFromServiceClass(serviceClass)
-    if (provider) return addServiceProvider(bus, provider)
-    return null
+    return addServiceProvider(bus, provider)
 }
