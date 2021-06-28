@@ -1,220 +1,211 @@
 <html>
-
-<head>
-    <style>
-        body {
-            font-family: monospace;
-        }
-
-        #streams {
-            margin-top: 1rem;
-        }
-
-        .stream input {
-            margin-left: 1rem;
-        }
-
-        #log {
-            margin-top: 1rem;
-        }
-
-        #log>div {
-            margin: 0.25rem;
-        }
-        button:not(.active) {
-            opacity: 0.7;
-        }
-        button.active {
-            font-weight: bold;
-        }
-    </style>
-    <script>
-        var process = {
-            env: {}
-        }   
-    </script>
-</head>
-
-<body>
-    <h1>Jacdac/Accelerometer Audio</h1>
-    <div>
-        <button id="connect">connect</button>
-        <button id="disconnect">disconnect</button>
-    </div>
-    <div id="devices" class="segment"></div>
-    <div id="streams" class="segment"></div>
-
-    <script type="module">
-        import * as jacdac from "/dist/jacdac.js"
-        const VOLUME_GAIN = 0.4
-        const devicesDiv = document.getElementById("devices");
-        const jd = jacdac.createUSBBus()
-        console.log("JACDAC ", jacdac);
-        let audioCtx = null;
-        let buzzerArray = [];
-
-        jd.on(jacdac.DEVICE_ANNOUNCE, d => {
-            console.log(`found device: ${d}`)
-            // look for all accelerometers on this device.
-            const accelerometers = d.services({serviceClass: jacdac.SRV_ACCELEROMETER})
-
-            function tonePayload(frequency, ms, volume) {
-                const period = Math.round(1000000/frequency)
-                const duty = (period * volume) >> 11
-                return jacdac.jdpack("u16 u16 u16", [
-                    period,
-                    duty,
-                    ms,
-                ])
+    <head>
+        <style>
+            body {
+                font-family: monospace;
             }
 
-            accelerometers.forEach((accelerometer) => {
-                let last = jd.timestamp;
+            #streams {
+                margin-top: 1rem;
+            }
 
-                accelerometer.readingRegister.subscribe(jacdac.REPORT_UPDATE, () => {
-                    // console.log("READING", accelerometer);
-                    const [x,y,z] = accelerometer.readingRegister.unpackedValue;
+            .stream input {
+                margin-left: 1rem;
+            }
 
-                    const now = jd.timestamp;
-                    if (now - last > 100) {
-                        const pkt = jacdac.Packet.from(jacdac.BuzzerCmd.PlayTone,
-                                                        tonePayload(1000 + (x * 1000), 100, 1))
-                        buzzerArray.forEach((buzzer)=>{
-                            console.log("WRITE BUZZER ", buzzer)
-                            buzzer.sendPacketAsync(pkt);
-                        })
-                        // pkt.sendAsMultiCommandAsync(accelerometer.device.bus, jacdac.SRV_BUZZER);
-                        last = now;
-                    }
+            #log {
+                margin-top: 1rem;
+            }
+
+            #log > div {
+                margin: 0.25rem;
+            }
+            button:not(.active) {
+                opacity: 0.7;
+            }
+            button.active {
+                font-weight: bold;
+            }
+        </style>
+        <script>
+            var process = {
+                env: {},
+            }
+        </script>
+    </head>
+
+    <body>
+        <h1>Jacdac/Accelerometer Audio</h1>
+        <div>
+            <button id="connect">connect</button>
+            <button id="disconnect">disconnect</button>
+        </div>
+        <div id="devices" class="segment"></div>
+        <div id="streams" class="segment"></div>
+
+        <script type="module">
+            import * as jacdac from "/dist/jacdac.js"
+            const VOLUME_GAIN = 0.4
+            const devicesDiv = document.getElementById("devices")
+            const jd = jacdac.createUSBBus()
+            console.log("JACDAC ", jacdac)
+            let audioCtx = null
+            let buzzerArray = []
+
+            jd.on(jacdac.DEVICE_ANNOUNCE, d => {
+                console.log(`found device: ${d}`)
+                // look for all accelerometers on this device.
+                const accelerometers = d.services({
+                    serviceClass: jacdac.SRV_ACCELEROMETER,
                 })
+
+                function tonePayload(frequency, ms, volume) {
+                    const period = Math.round(1000000 / frequency)
+                    const duty = (period * volume) >> 11
+                    return jacdac.jdpack("u16 u16 u16", [period, duty, ms])
+                }
+
+                accelerometers.forEach(accelerometer => {
+                    let last = jd.timestamp
+
+                    accelerometer.readingRegister.subscribe(
+                        jacdac.REPORT_UPDATE,
+                        () => {
+                            // console.log("READING", accelerometer);
+                            const [x, y, z] =
+                                accelerometer.readingRegister.unpackedValue
+
+                            const now = jd.timestamp
+                            if (now - last > 100) {
+                                const pkt = jacdac.Packet.from(
+                                    jacdac.BuzzerCmd.PlayTone,
+                                    tonePayload(1000 + x * 1000, 100, 1)
+                                )
+                                buzzerArray.forEach(buzzer => {
+                                    console.log("WRITE BUZZER ", buzzer)
+                                    buzzer.sendPacketAsync(pkt)
+                                })
+                                // pkt.sendAsMultiCommandAsync(accelerometer.device.bus, jacdac.SRV_BUZZER);
+                                last = now
+                            }
+                        }
+                    )
+                })
+
+                const buzzers = d.services({ serviceClass: jacdac.SRV_BUZZER })
+                if (buzzers.length) {
+                    buzzerArray = buzzerArray.concat(buzzers)
+                    console.log("FOUND NEW BUZZER ", buzzers)
+                    buzzers.forEach(buzzer => {
+                        const pkt = jacdac.Packet.from(
+                            jacdac.BuzzerCmd.PlayTone,
+                            tonePayload(1000 + 1 * 1000, 100, 1)
+                        )
+                        console.log("WRITE BUZZER ", buzzer)
+                        buzzer.sendPacketAsync(pkt)
+                    })
+                }
             })
 
-            const buzzers = d.services({serviceClass: jacdac.SRV_BUZZER})
+            function createToneContext(defaultVolume) {
+                try {
+                    console.log(`create tone context`)
+                    const ctx = new (window.AudioContext ||
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        window.webkitAudioContext)()
 
-            buzzerArray = buzzerArray.concat(buzzers);
-            console.log("FOUND NEW BUZZER ", buzzers)
+                    // play silence sound within onlick to unlock it
+                    const buffer = ctx.createBuffer(1, 1, 22050)
+                    const source = ctx.createBufferSource()
+                    source.buffer = buffer
+                    source.connect(ctx.destination)
+                    source.start()
 
-            buzzerArray.forEach(buzzer=>{
-                if (!buzzer.device.physical) {
-                    console.log("INSIDE", audioCtx)
-                    buzzer.subscribe("playTone", args => {
-                        console.log("PLAY TONE")
-                        audioCtx.playTone?.(args[0], args[1])
-                    });
-                }
-            })
+                    // output node with volume
+                    const volume = ctx.createGain()
+                    volume.connect(ctx.destination)
+                    volume.gain.value =
+                        (defaultVolume !== undefined ? defaultVolume : 0.2) *
+                        VOLUME_GAIN
 
-            if (buzzerArray.length > 0)
-            {
-                const pkt = jacdac.Packet.from(jacdac.BuzzerCmd.PlayTone,
-                                                        tonePayload(1000 + (1 * 1000), 100, 1))
-                buzzerArray.forEach(buzzer=>{
-                    if (!buzzer.device.physical) {
-                        console.log("INSIDE", audioCtx)
-                        buzzer.subscribe("playTone", args => {
-                            console.log("PLAY TONE")
-                            audioCtx.playTone?.(args[0], args[1])
-                        });
+                    const setVolume = v => {
+                        if (volume && !isNaN(v)) {
+                            volume.gain.value = v * VOLUME_GAIN
+                        }
                     }
-                    console.log("WRITE BUZZER ", buzzer)
-                    buzzer.sendPacketAsync(pkt);
+
+                    const playTone = (frequency, duration) => {
+                        try {
+                            const tone = ctx.createOscillator()
+                            tone.type = "sawtooth"
+                            tone.connect(volume)
+                            tone.frequency.value = frequency // update frequency
+                            tone.start() // start and stop
+                            tone.stop(ctx.currentTime + duration / 1000)
+                        } catch (e) {
+                            console.debug(e)
+                        }
+                    }
+
+                    const close = () => {
+                        try {
+                            if (ctx.state === "running") ctx.close()
+                        } catch (e) {
+                            console.warn(e)
+                        }
+                    }
+
+                    console.log(`tone context created`)
+
+                    return {
+                        setVolume,
+                        playTone,
+                        close,
+                    }
+                } catch (e) {
+                    return undefined
+                }
+            }
+
+            async function sniff() {
+                console.log("starting")
+                if (!audioCtx) audioCtx = await createToneContext()
+                await jd.disconnect()
+                await jd.connect()
+                console.log("started")
+                const dev = jacdac.startServiceProviderFromServiceClass(
+                    jd,
+                    jacdac.SRV_BUZZER
+                )
+                const srv = dev
+                    .services()
+                    .find(s => s.serviceClass === jacdac.SRV_BUZZER)
+                srv.subscribe("playTone", args => {
+                    console.log("ORIGINAL PLAY TONE")
+                    audioCtx.playTone?.(args[0], args[1])
                 })
             }
-        })
 
-        function createToneContext(defaultVolume){
-            try {
-                console.log(`create tone context`)
-                const ctx = new (window.AudioContext ||
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (window).webkitAudioContext)()
+            const connect = document.getElementById("connect")
+            connect.onclick = sniff
+            const disconnect = document.getElementById("disconnect")
+            disconnect.onclick = () => jd.disconnect()
 
-                // play silence sound within onlick to unlock it
-                const buffer = ctx.createBuffer(1, 1, 22050)
-                const source = ctx.createBufferSource()
-                source.buffer = buffer
-                source.connect(ctx.destination)
-                source.start()
-
-                // output node with volume
-                const volume = ctx.createGain()
-                volume.connect(ctx.destination)
-                volume.gain.value =
-                    (defaultVolume !== undefined ? defaultVolume : 0.2) * VOLUME_GAIN
-
-                const setVolume = (v) => {
-                    if (volume && !isNaN(v)) {
-                        volume.gain.value = v * VOLUME_GAIN
-                    }
+            function updateConnectionState() {
+                connect.classList.remove("active")
+                disconnect.classList.remove("active")
+                switch (jd.connectionState) {
+                    case jacdac.ConnectionState.Connected:
+                        disconnect.classList.add("active")
+                        break
+                    case jacdac.ConnectionState.Disconnected:
+                        connect.classList.add("active")
+                        break
                 }
-
-                const playTone = (frequency, duration) => {
-                    try {
-                        const tone = ctx.createOscillator()
-                        tone.type = "sawtooth"
-                        tone.connect(volume)
-                        tone.frequency.value = frequency // update frequency
-                        tone.start() // start and stop
-                        tone.stop(ctx.currentTime + duration / 1000)
-                    } catch (e) {
-                        console.debug(e)
-                    }
-                }
-
-                const close = () => {
-                    try {
-                        if (ctx.state === "running") ctx.close()
-                    } catch (e) {
-                        console.warn(e)
-                    }
-                }
-
-                console.log(`tone context created`)
-
-                return {
-                    setVolume,
-                    playTone,
-                    close,
-                }
-            } catch (e) {
-                return undefined
+                console.log("CONN state UPDATED")
             }
-        }
-
-        async function sniff() {
-            console.log('starting')
-            if (!audioCtx)
-                audioCtx = await createToneContext();
-            await jd.disconnect();
-            await jd.connect();
-            console.log('started')
-            const srv = jacdac.startServiceProviderFromServiceClass(jd, jacdac.SRV_BUZZER)
-
-            srv.subscribe("playTone", args => {
-                console.log("ORIGINAL PLAY TONE")
-                audioCtx.playTone?.(args[0], args[1])
-            });
-        }
-
-        const connect = document.getElementById("connect");
-        connect.onclick = sniff;
-        const disconnect = document.getElementById("disconnect");
-        disconnect.onclick = () => jd.disconnect()
-
-        function updateConnectionState() {
-            connect.classList.remove('active');
-            disconnect.classList.remove('active');
-            switch (jd.connectionState) {
-                case jacdac.ConnectionState.Connected:
-                    disconnect.classList.add('active'); break;
-                case jacdac.ConnectionState.Disconnected:
-                    connect.classList.add('active'); break;
-            }
-            console.log("CONN state UPDATED")
-        }        
-        jd.on(jacdac.CONNECTION_STATE, updateConnectionState)
-        updateConnectionState()
-    </script>
-</body>
-
+            jd.on(jacdac.CONNECTION_STATE, updateConnectionState)
+            updateConnectionState()
+        </script>
+    </body>
 </html>
