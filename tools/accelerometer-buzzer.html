@@ -93,18 +93,7 @@
                 })
 
                 const buzzers = d.services({ serviceClass: jacdac.SRV_BUZZER })
-                if (buzzers.length) {
-                    buzzerArray = buzzerArray.concat(buzzers)
-                    console.log("FOUND NEW BUZZER ", buzzers)
-                    buzzers.forEach(buzzer => {
-                        const pkt = jacdac.Packet.from(
-                            jacdac.BuzzerCmd.PlayTone,
-                            tonePayload(1000 + 1 * 1000, 100, 1)
-                        )
-                        console.log("WRITE BUZZER ", buzzer)
-                        buzzer.sendPacketAsync(pkt)
-                    })
-                }
+                buzzerArray = buzzerArray.concat(buzzers)
             })
 
             function createToneContext(defaultVolume) {
@@ -181,7 +170,6 @@
                     .services()
                     .find(s => s.serviceClass === jacdac.SRV_BUZZER)
                 srv.subscribe("playTone", args => {
-                    console.log("ORIGINAL PLAY TONE")
                     audioCtx.playTone?.(args[0], args[1])
                 })
             }
