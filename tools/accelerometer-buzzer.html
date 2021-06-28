@@ -50,6 +50,7 @@
         import * as jacdac from "/dist/jacdac.js"
         const devicesDiv = document.getElementById("devices");
         const jd = jacdac.createUSBBus()
+        console.log("JACDAC ", jacdac);
         let audioCtx = null;
 
         jd.on(jacdac.DEVICE_ANNOUNCE, d => {
@@ -60,7 +61,7 @@
                 let last = Date.now();
 
                 accelerometer.readingRegister.subscribe(jacdac.REPORT_UPDATE, () => {
-                    console.log("READING");
+                    // console.log("READING", accelerometer);
                     const [x,y,z] = accelerometer.readingRegister.unpackedValue;
 
                     function tonePayload(frequency, ms, volume) {
@@ -77,7 +78,7 @@
                     if (now - last > 100) {
                         const pkt = jacdac.Packet.from(jacdac.BuzzerCmd.PlayTone,
                                                         tonePayload(1000 + (x * 1000), 100, 1))
-                        pkt.sendAsMultiCommandAsync(jd, jacdac.SRV_BUZZER);
+                        pkt.sendAsMultiCommandAsync(accelerometer.device.bus, jacdac.SRV_BUZZER);
                         last = now;
                     }
                 })
@@ -149,7 +150,12 @@
             await jd.connect();
             console.log('started')
             audioCtx = await createToneContext();
-            jacdac.startServiceProviderFromServiceClass(jd, jacdac.SRV_BUZZER)
+            const srv = jacdac.startServiceProviderFromServiceClass(jd, jacdac.SRV_BUZZER)
+            console.log("SNIFF SRV", srv)
+            srv.on("playTone", ([frequency, duration])=>{
+                audioCtx.playTone(frequency, duration)
+                console.log("PLAYTONE INNER")
+            });
         }
 
         const connect = document.getElementById("connect");
