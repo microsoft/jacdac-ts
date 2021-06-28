@@ -132,9 +132,6 @@ export class VMEnvironment
         const root = this.getRootName(e)
         if (!root) return undefined
         const s = this._clientEnvs[root]
-        if (!s) {
-            throw new VMException(VMExceptionCode.RoleNoService, root)
-        }
         return s
     }
 
@@ -142,9 +139,6 @@ export class VMEnvironment
         const root = this.getRootName(e)
         if (!root) return undefined
         const s = this._serverEnvs[root]
-        if (!s) {
-            throw new VMException(VMExceptionCode.RoleNoService, root)
-        }
         return s
     }
 
@@ -154,12 +148,12 @@ export class VMEnvironment
         values: PackedValues
     ) {
         const serviceEnv = this.getService(e)
-        if (serviceEnv)
+        if (serviceEnv) {
             await serviceEnv?.sendCommandAsync(
                 (e.property as jsep.Identifier).name,
                 values
             )
-        else {
+        } else {
             const server = this.getServer(e)
             await server?.sendEventNameAsync(
                 (e.property as jsep.Identifier).name,
