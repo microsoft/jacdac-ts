@@ -25,6 +25,7 @@ import { Mutex, atomic } from "./utils"
 import { assert, SMap } from "../jdom/utils"
 import { JDClient } from "../jdom/client"
 import JDServiceServer from "../jdom/serviceserver"
+import JDServiceProvider from "../jdom/serviceprovider"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type VMTraceContext = any
@@ -519,7 +520,8 @@ export class VMProgramRunner extends JDClient {
     private _log: { text: string; count: number }[] = []
     private _breaks: SMap<boolean> = {}
     private _breaksMutex: Mutex
-
+    private _provider: JDServiceProvider;
+    
     constructor(
         readonly roleManager: RoleManager,
         readonly program: VMProgram
@@ -536,6 +538,14 @@ export class VMProgramRunner extends JDClient {
         this._handlerRunners = compiled.handlers.map(
             (h, index) => new VMHandlerRunner(this, index, this._env, h)
         )
+        const servers = this._env.servers()
+        if (servers.length) {
+            this._provider = new JDServiceProvider(servers.map(s=>s.server), {
+              deviceId: "VMServiceProvider",
+            })
+            this._provider.bus = roleManager.bus
+        }
+
         // TODO: can't add multiple handlers until we have deduplicate CHANGE on Event
         /*
         const len = this._handlerRunners.length
@@ -576,7 +586,9 @@ export class VMProgramRunner extends JDClient {
         this.initializeRoleManagement()
     }
 
-    // expose VM as service
+    get provider() {
+        return this._provider;
+    }
 
     get servers(): { role: string, shortId: string, server: JDServiceServer }[] {
         return this._env.servers()

@@ -21,7 +21,7 @@ export interface RoleBinding {
 export default class RoleManager extends JDEventSource {
     private readonly _roles: RoleBinding[] = []
 
-    constructor(private readonly bus: JDBus) {
+    constructor(private readonly _bus: JDBus) {
         super()
 
         this.bus.on(DEVICE_ANNOUNCE, this.addServices.bind(this))
@@ -33,6 +33,10 @@ export default class RoleManager extends JDEventSource {
 
         this.on(ROLE_UNBOUND, role => console.log(`role unbound`, { role }))
         this.on(ROLE_BOUND, role => console.log(`role bound`, { role }))
+    }
+
+    get bus() {
+        return this._bus
     }
 
     get roles() {

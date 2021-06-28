@@ -52,7 +52,10 @@ export class VMEnvironment
             const service = serviceSpecificationFromName(p.serviceShortId)
             if (service) {
                 // spin up JDServiceServer
-                this._serverEnvs[p.role] = new VMServiceServer(p.serviceShortId, service)
+                this._serverEnvs[p.role] = new VMServiceServer(
+                    p.serviceShortId,
+                    service
+                )
             }
         })
     }
