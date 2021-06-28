@@ -9,6 +9,16 @@ import {
 import Packet from "../jdom/packet"
 import JDRegisterServer from "../jdom/registerserver"
 import JDServiceServer, { ServerOptions } from "../jdom/serviceserver"
+
+export interface LEDServiceOptions extends ServerOptions {
+    ledCount?: number
+    variant?: LedVariant
+    luminousIntensity?: number
+    waveLength?: number
+    maxPower?: number
+    color?: [number, number, number]
+}
+
 export default class LEDServer extends JDServiceServer {
     readonly color: JDRegisterServer<[number, number, number]>
     readonly maxPower: JDRegisterServer<[number]>
@@ -28,16 +38,7 @@ export default class LEDServer extends JDServiceServer {
         start: number
     }
 
-    constructor(
-        options?: {
-            ledCount?: number
-            variant?: LedVariant
-            luminousIntensity?: number
-            waveLength?: number
-            maxPower?: number
-            color?: [number, number, number]
-        } & ServerOptions
-    ) {
+    constructor(options?: LEDServiceOptions) {
         super(SRV_LED, options)
         const {
             ledCount = 1,

@@ -4,7 +4,13 @@ import {
     SystemReg,
     SystemStatusCodes,
 } from "../../jacdac-spec/dist/specconstants"
-import { CHANGE, PACKET_RECEIVE, PACKET_SEND, REPORT_UPDATE } from "./constants"
+import {
+    CHANGE,
+    DEVICE_CHANGE,
+    PACKET_RECEIVE,
+    PACKET_SEND,
+    REPORT_UPDATE,
+} from "./constants"
 import JDServiceProvider from "./serviceprovider"
 import { JDEventSource } from "./eventsource"
 import Packet from "./packet"
@@ -32,7 +38,7 @@ export interface ServerOptions {
 
 export default class JDServiceServer extends JDEventSource {
     public serviceIndex = -1 // set by device
-    public device: JDServiceProvider
+    private _device: JDServiceProvider
     public readonly specification: jdspec.ServiceSpec
     private readonly _registers: JDRegisterServer<PackedValues>[] = []
     private readonly commands: {
@@ -99,6 +105,18 @@ export default class JDServiceServer extends JDEventSource {
         }
 
         this.handleTwinPacket = this.handleTwinPacket.bind(this)
+    }
+
+    get device() {
+        return this._device
+    }
+
+    set device(value: JDServiceProvider) {
+        if (this._device !== value) {
+            this._device = value
+            this.emit(DEVICE_CHANGE)
+            this.emit(CHANGE)
+        }
     }
 
     get twin() {
