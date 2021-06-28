@@ -1,0 +1,138 @@
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: monospace;
+        }
+
+        #streams {
+            margin-top: 1rem;
+        }
+
+        .stream input {
+            margin-left: 1rem;
+        }
+
+        #log {
+            margin-top: 1rem;
+        }
+
+        #log>div {
+            margin: 0.25rem;
+        }
+        button:not(.active) {
+            opacity: 0.7;
+        }
+        button.active {
+            font-weight: bold;
+        }
+    </style>
+    <script>
+        var process = {
+            env: {}
+        }   
+    </script>
+</head>
+
+<body>
+    <h1>Jacdac/Accelerometer Audio</h1>
+    <div>
+        <button id="connect">connect</button>
+        <button id="disconnect">disconnect</button>
+    </div>
+    <div id="devices" class="segment"></div>
+    <div id="streams" class="segment"></div>
+
+    <script type="module">
+        import * as jacdac from "/dist/jacdac.js"
+        const devicesDiv = document.getElementById("devices");
+        const jd = jacdac.createUSBBus()
+        let accelerometer = null; 
+        let buzzer = null;
+
+        jd.on(jacdac.DEVICE_ANNOUNCE, d => {
+            // console.log("HELLO ",jd.devices({ ignoreSelf: true, serviceClass: jacdac.SRV_ACCELEROMETER }))
+            console.log(`found device: ${d}`)
+
+            // look for all accelerometers on this device.
+            const accelerometers = d.services({serviceClass: jacdac.SRV_ACCELEROMETER})
+            // look for all buzzers on this device.
+            const buzzers = d.services({serviceClass: jacdac.SRV_BUZZER})
+
+            if (buzzers.length && !buzzer) {
+                buzzer = buzzers[0]
+                console.log("BUZZER SET")
+                d.on(jacdac.DISCONNECT, () => {
+                    buzzer = null;
+                })
+            }
+
+            if (accelerometers.length && !accelerometer) {
+                accelerometer = accelerometers[0];
+                let last = Date.now();
+
+                accelerometer.readingRegister.on(jacdac.REPORT_UPDATE, (register) => {
+                    console.log("READ", register[0])
+                    const [x,y,z] = register[0].unpackedValue;
+
+                    function tonePayload(frequency, ms, volume) {
+                        const period = Math.round(1000000/frequency)
+                        const duty = (period * volume) >> 11
+                        return jacdac.jdpack("u16 u16 u16", [
+                            period,
+                            duty,
+                            ms,
+                        ])
+                    }
+
+                    const now = Date.now();
+                    if (buzzer &&  now - last > 100){
+
+                        buzzer.sendCmdAsync(
+                                jacdac.BuzzerCmd.PlayTone,
+                                tonePayload(1000 + (x * 1000), 100, 1)
+                        )
+
+                        last = now;
+                    }
+                })
+
+                d.on(jacdac.DISCONNECT, () => {
+                    accelerometer = null;
+                    console.log("DEVICE DISCONNECTED")
+                })
+            }
+        })
+
+        async function sniff() {
+            console.log('starting')
+            await jd.disconnect();
+            await jd.connect();
+            console.log('started')
+        }
+
+        const connect = document.getElementById("connect");
+        connect.onclick = sniff;
+        const disconnect = document.getElementById("disconnect");
+        disconnect.onclick = () => jd.disconnect()
+
+        function updateConnectionState() {
+            connect.classList.remove('active');
+            disconnect.classList.remove('active');
+            switch (jd.connectionState) {
+                case jacdac.ConnectionState.Connected:
+                    disconnect.classList.add('active'); break;
+                case jacdac.ConnectionState.Disconnected:
+                    connect.classList.add('active'); break;
+            }
+            console.log("CONN state UPDATED")
+            accelerometer = null;
+            buzzer = null;
+        }        
+        jd.on(jacdac.CONNECTION_STATE, updateConnectionState)
+        updateConnectionState()
+    </script>
+</body>
+
+</html>
