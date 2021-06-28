@@ -1356,5 +1356,6 @@ export function startServiceProviderFromServiceClass(
     serviceClass: number
 ) {
     const provider = serviceProviderDefinitionFromServiceClass(serviceClass)
-    if (provider) addServiceProvider(bus, provider)
+    if (provider) return addServiceProvider(bus, provider)
+    return null
 }
