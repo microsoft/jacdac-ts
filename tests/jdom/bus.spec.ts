@@ -35,14 +35,14 @@ export default class CompositeLEDServer extends LEDServer {
 
         // we're about to send the status of the register
         this.color.on(REGISTER_PRE_GET, () => {
-            // read rgb data
+            // read rgb data from other services
             const rgbs: number[][] = this.roleManager.roles.map(
                 b =>
                     b.service?.register(LedReg.Color)?.unpackedValue || [
                         0, 0, 0,
                     ]
             )
-            // do something with the data?
+            // remix data into something else
             const [r, g, b] = rgbs.map((rgb, i) => rgb[i])
             this.color.setValues([r, g, b])
         })
