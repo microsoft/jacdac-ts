@@ -529,8 +529,7 @@ export class VMProgramRunner extends JDClient {
         const { registers, events, errors } = checkProgram(compiled)
         this._roles = compiled.roles
         if (errors?.length) console.debug("ERRORS", errors)
-        // TODO: serverRoles
-        
+
         // data structures for running program
         this._status = VMStatus.Stopped
         this._env = new VMEnvironment(registers, events, compiled.serverRoles)
