@@ -24,7 +24,7 @@ import {
     isConstRegister,
 } from "./spec"
 import { JDEvent } from "./event"
-import { delay, strcmp } from "./utils"
+import { strcmp } from "./utils"
 import {
     BaseEvent,
     BaseReg,
@@ -308,6 +308,7 @@ export class JDService extends JDNode {
     }
 
     sendCmdAwaitResponseAsync(pkt: Packet, timeout = 500) {
+        const { bus } = this.device
         return new Promise<Packet>((resolve, reject) => {
             const handleRes = (resp: Packet) => {
                 if (resp.serviceCommand == pkt.serviceCommand) {
@@ -316,7 +317,7 @@ export class JDService extends JDNode {
                     resolve = null
                 }
             }
-            delay(timeout).then(() => {
+            bus.delay(timeout).then(() => {
                 if (!resolve) return
                 resolve = null
                 this.off(REPORT_RECEIVE, handleRes)

@@ -35,7 +35,7 @@ import {
     SRV_CONTROL,
     SRV_LOGGER,
 } from "./constants"
-import { read32, SMap, bufferEq, setAckError, delay, read16 } from "./utils"
+import { read32, SMap, bufferEq, setAckError, read16 } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
 import { JDBus, ServiceFilter } from "./bus"
 import { JDService } from "./service"
@@ -45,7 +45,6 @@ import { isInstanceOf } from "./spec"
 import { FirmwareInfo } from "./flashing"
 import { QualityOfService } from "./qualityofservice"
 import LEDController from "./ledcontroller"
-import { SRV_ROLE_MANAGER } from "../../jacdac-spec/dist/specconstants"
 
 export interface PipeInfo {
     pipeType?: string
@@ -444,7 +443,7 @@ export class JDDevice extends JDNode {
             else {
                 const ctrl = this.service(0)
                 await ctrl.sendCmdAsync(ControlCmd.Identify, undefined, false)
-                await delay(IDENTIFY_DURATION)
+                await this.bus.delay(IDENTIFY_DURATION)
             }
         } catch (e) {
             this.emit(ERROR, e)

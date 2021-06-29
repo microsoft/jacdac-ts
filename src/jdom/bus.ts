@@ -1,6 +1,6 @@
 import Packet from "./packet"
 import { JDDevice } from "./device"
-import { debounceAsync, strcmp, arrayConcatMany } from "./utils"
+import { debounceAsync, strcmp, arrayConcatMany, delay } from "./utils"
 import {
     JD_SERVICE_INDEX_CTRL,
     CMD_ADVERTISEMENT_DATA,
@@ -403,6 +403,10 @@ export class JDBus extends JDNode {
 
     get timestamp(): number {
         return Date.now() - this._startTime
+    }
+
+    delay<T>(millis: number, value?: T): Promise<T | undefined> {
+        return delay(millis, value)
     }
 
     get minLoggerPriority(): LoggerPriority {

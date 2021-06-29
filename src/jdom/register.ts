@@ -71,7 +71,10 @@ export class JDRegister extends JDServiceMemberNode {
         const pkt = Packet.from(cmd, data)
         this._lastSetTimestamp = this.service.device.bus.timestamp
         let p = this.service.sendPacketAsync(pkt, this.service.registersUseAcks)
-        if (autoRefresh) p = delay(50).then(() => this.sendGetAsync())
+        if (autoRefresh)
+            p = this.service.device.bus
+                .delay(50)
+                .then(() => this.sendGetAsync())
         return p
     }
 
@@ -193,11 +196,11 @@ export class JDRegister extends JDServiceMemberNode {
                 })
                 // re-send get if no answer within 40ms and 90ms
                 this.sendGetAsync()
-                    .then(() => delay(REGISTER_REFRESH_RETRY_0))
+                    .then(() => bus.delay(REGISTER_REFRESH_RETRY_0))
                     .then(() => {
                         if (resolve)
                             return this.sendGetAsync().then(() =>
-                                delay(REGISTER_REFRESH_RETRY_1)
+                                bus.delay(REGISTER_REFRESH_RETRY_1)
                             )
                     })
                     .then(() => {

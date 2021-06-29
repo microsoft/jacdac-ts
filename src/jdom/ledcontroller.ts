@@ -23,11 +23,12 @@ export default class LEDController extends JDEventSource {
     async blink(from: number, to: number, interval: number, repeat: number) {
         const on = jdpack("u8 u8 u8 u8", trgbToValues(from))
         const off = jdpack("u8 u8 u8 u8", trgbToValues(to))
+        const { bus } = this.service.device
         for (let i = 0; i < repeat; ++i) {
             await this.service.sendCmdAsync(this.command, on)
-            await delay(interval - 1)
+            await bus.delay(interval - 1)
             await this.service.sendCmdAsync(this.command, off)
-            await delay(interval - 1)
+            await bus.delay(interval - 1)
         }
     }
 }
