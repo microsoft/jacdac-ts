@@ -253,7 +253,7 @@ export default class JDServiceServer extends JDEventSource {
         // notify that calibration started
         this.statusCode.setValues([SystemStatusCodes.Calibrating, 0])
         // wait 5 seconds
-        await delay(CALIBRATION_DELAY)
+        await this.device.bus.delay(CALIBRATION_DELAY)
         // finish calibraion
         this.statusCode.setValues([SystemStatusCodes.Ready, 0])
     }
