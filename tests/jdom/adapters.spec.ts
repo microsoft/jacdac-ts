@@ -9,21 +9,18 @@ import ButtonServer from "../../src/servers/buttonserver"
 import { JDEvent } from "../../src/jdom/event";
 import { JDDevice } from "../../src/jdom/device";
 
-suite('bus', () => {
+suite('adapters', () => {
     let bus: JDBus;
 
     afterEach(() => bus?.stop())
 
-    test('self announce', function(done) {
+    test('click detect event', function(done) {
         console.log("start test")
         bus = mkBus();
         console.log("bus created")
 
-        const options = {  // no idea what this does, cargo-culting from servers.ts
-            resetIn: false,
-        }
         const buttonServer = new ButtonServer("B0")  // TODO does the name do anything?
-        bus.addServiceProvider(new JDServiceProvider([buttonServer], options))
+        bus.addServiceProvider(new JDServiceProvider([buttonServer]))
 
         bus.on(DEVICE_ANNOUNCE, (device: JDDevice) => {
             const servicesNames = device.services().map(service => service.specification.classIdentifier)
@@ -32,9 +29,10 @@ suite('bus', () => {
             if (servicesNames.includes(SRV_BUTTON)) {
                 const button = bus.services({serviceClass: SRV_BUTTON})[0]
                 const buttonAdapter = new ButtonGestureAdapter(button, "BG0")
-                bus.addServiceProvider(new JDServiceProvider([buttonAdapter], options))
+                bus.addServiceProvider(new JDServiceProvider([buttonAdapter]))
 
                 // Simple test stimulus, click cycle
+
                 setTimeout(() => { buttonServer.down() }, 300)
                 setTimeout(() => { buttonServer.up() }, 400)  // should generate click event
 
