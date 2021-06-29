@@ -35,8 +35,13 @@ suite('bus', () => {
                 bus.addServiceProvider(new JDServiceProvider([buttonAdapter], options))
 
                 // Simple test stimulus, click cycle
-                setTimeout(() => { buttonServer.down() }, 500)
-                setTimeout(() => { buttonServer.up() }, 750)
+                setTimeout(() => { buttonServer.down() }, 300)
+                setTimeout(() => { buttonServer.up() }, 400)  // should generate click event
+
+                // Test stimulus, click and hold cycle
+                setTimeout(() => { buttonServer.down() }, 700)  // should generate click-and-hold event
+                setTimeout(() => { buttonServer.up() }, 1000)  // and release event
+                setTimeout(() => { done() }, 1200)
             }
 
             // When the adapter is connected, set up the event handler and dump events
@@ -49,10 +54,7 @@ suite('bus', () => {
                     console.log(evs[0].code)
                     console.log(evs[0].name)
 
-                    eventCounts += 1
-                    if (eventCounts >= 2) {
-                        done()
-                    }
+                    eventCounts += 1  // TODO do something with this! Some kind of expect?
                 })
             }
         })
