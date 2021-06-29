@@ -50,7 +50,7 @@
         [
             "@semantic-release/git",
             {
-                "assets": ["package.json", "src/**.ts"]
+                "assets": ["package.json", "src/*.ts", "src/**/*.ts"]
             }
         ]
     ]
