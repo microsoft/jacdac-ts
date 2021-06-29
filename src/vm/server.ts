@@ -9,11 +9,14 @@ import { jdpack, PackedValues } from "../jdom/pack"
 
 export class VMServiceServer extends JDServiceServer {
     private eventNameToId: SMap<number> = {}
+    private regNameToId: SMap<number> = {}
     constructor(public shortId: string, private spec: jdspec.ServiceSpec) {
         super(spec.classIdentifier)
 
         spec.packets.filter(isHighLevelRegister).map(reg => {
             this.addRegister(reg.identifier)
+            this.eventNameToId[reg.name] = reg.identifier
+            
             // nothing to do on a read of register from outside (server maintains current value)
             // on a write from outside, notify the VM of CHANGE of value
             // on a write from VM, notify outside of CHANGE (done already)
@@ -38,6 +41,17 @@ export class VMServiceServer extends JDServiceServer {
         if (pkt) {
             await this.sendEvent(this.eventNameToId[eventName], 
                 jdpack(pkt.packFormat, values))
+        }
+    }
+
+    lookupRegister(root: string, fld: string) {
+        const reg = this.register(this.regNameToId[root])
+        if (!fld) return reg.values()?.[0]
+        else {
+            // TODO
+            return undefined
+            //const field = reg.fields.find(f => f.name === fld)
+            //return field?.value
         }
     }
 }
