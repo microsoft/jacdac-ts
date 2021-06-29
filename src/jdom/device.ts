@@ -444,7 +444,7 @@ export class JDDevice extends JDNode {
             else {
                 const ctrl = this.service(0)
                 await ctrl.sendCmdAsync(ControlCmd.Identify, undefined, false)
-                await delay(IDENTIFY_DURATION)
+                await this.bus.delay(IDENTIFY_DURATION)
             }
         } catch (e) {
             this.emit(ERROR, e)

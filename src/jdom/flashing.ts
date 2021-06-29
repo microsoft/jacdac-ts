@@ -133,7 +133,7 @@ class FlashClient {
                         log(`set session ${this.sessionId} on ${d.device}`)
                         await d.sendCommandAsync(setsession)
                     }
-                    await delay(BL_SESSION_DELAY)
+                    await this.bus.delay(BL_SESSION_DELAY)
                 }
             }
             if (this.numPending() == 0) break
@@ -145,7 +145,7 @@ class FlashClient {
 
     private async endFlashAsync() {
         for (const f of this.classClients) {
-            await delay(10)
+            await this.bus.delay(10)
             await f.device.sendCtrlCommand(ControlCmd.Reset)
         }
     }
@@ -166,7 +166,7 @@ class FlashClient {
     private async waitForStatusAsync() {
         for (let i = 0; i < 100; ++i) {
             if (this.classClients.every(c => c.lastStatus != null)) break
-            await delay(5)
+            await this.bus.delay(5)
         }
     }
 
@@ -226,7 +226,7 @@ class FlashClient {
                             await f.sendCommandAsync(p)
                         }
                 }
-                await delay(BL_PAGE_DELAY)
+                await this.bus.delay(BL_PAGE_DELAY)
             }
 
             await this.waitForStatusAsync()
@@ -297,7 +297,7 @@ class FlashClient {
                 prog()
                 // wait until we're out of bootloader mode; otherwise the subsequent scan will keep devices in BL mode
                 for (let i = 0; i < waitCycles; ++i) {
-                    await delay(150)
+                    await this.bus.delay(150)
                     prog()
                 }
             } finally {
@@ -447,7 +447,7 @@ async function scanCore(
                 ]) {
                     const pkt = Packet.onlyHeader(CMD_GET_REG | reg)
                     await pkt.sendAsMultiCommandAsync(bus, SRV_CONTROL)
-                    await delay(10)
+                    await bus.delay(10)
                 }
             }
 
@@ -457,7 +457,7 @@ async function scanCore(
                 await bl_announce.sendAsMultiCommandAsync(bus, SRV_BOOTLOADER)
             }
 
-            await delay(10)
+            await bus.delay(10)
         }
     } finally {
         bus.off(PACKET_REPORT, handlePkt)
