@@ -1,7 +1,7 @@
 import { JDBus } from "./bus"
 import { JDClient } from "./client"
 import { CHANGE, PACKET_PROCESS, PACKET_SEND } from "./constants"
-import Packet from "./packet"
+import Packet from "./packet";
 import { randomDeviceId } from "./random";
 
 /**
