@@ -23,10 +23,8 @@ suite('adapters', () => {
         bus.addServiceProvider(new JDServiceProvider([buttonServer]))
 
         bus.on(DEVICE_ANNOUNCE, (device: JDDevice) => {
-            const servicesNames = device.services().map(service => service.specification.classIdentifier)
-
             // When the button is connected, setup the button adapter and queue test stimulus
-            if (servicesNames.includes(SRV_BUTTON)) {
+            if (device.services({serviceClass: SRV_BUTTON}).length) {
                 const button = bus.services({serviceClass: SRV_BUTTON})[0]
                 const buttonAdapter = new ButtonGestureAdapter(button, "BG0")
                 bus.addServiceProvider(new JDServiceProvider([buttonAdapter]))
@@ -43,14 +41,12 @@ suite('adapters', () => {
             }
 
             // When the adapter is connected, set up the event handler and dump events
-            if (servicesNames.includes(SRV_BUTTON_GESTURE)) {
+            if (device.services({serviceClass: SRV_BUTTON_GESTURE}).length) {
                 const buttonGesture = bus.services({serviceClass: SRV_BUTTON_GESTURE})[0]
                 
                 let eventCounts = 0
                 buttonGesture.on(EVENT, (evs: JDEvent[]) => {
-                    // console.log(evs)
-                    console.log(evs[0].code)
-                    console.log(evs[0].name)
+                    console.log(`${evs[0].name}  ${evs[0].code}`)
 
                     eventCounts += 1  // TODO do something with this! Some kind of expect?
                 })
