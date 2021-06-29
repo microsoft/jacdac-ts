@@ -19,10 +19,8 @@ export default class ButtonGestureAdapter extends SensorServer<[number]> {
     // reset upon a event being generated
     protected clickCounter = 0
 
-    static readonly clickTimeoutMs: number = 200
-    static readonly multiClickTimeoutMs: number = 200
-
-    constructor(button: JDService, instanceName?: string) {
+    constructor(button: JDService, instanceName?: string, 
+        protected clickTimeoutMs = 200, protected multiClickTimeoutMs = 200) {
         // TODO should this take not a service so it can be instantiated before a button is announced on the bus?
         // (to avoid the async boilerplate nightmare)
         super(SRV_BUTTON_GESTURE, {
@@ -59,7 +57,7 @@ export default class ButtonGestureAdapter extends SensorServer<[number]> {
 
                 this.state = "down_held"
             }
-        }, ButtonGestureAdapter.clickTimeoutMs)
+        }, this.clickTimeoutMs)
     }
 
     private onSourceButtonUp() {
@@ -84,7 +82,7 @@ export default class ButtonGestureAdapter extends SensorServer<[number]> {
                     this.state = "up"
                     this.clickCounter = 0
                 }
-            }, ButtonGestureAdapter.multiClickTimeoutMs)
+            }, this.multiClickTimeoutMs)
         } else if (this.state == "down_held") {
             this.sendEvent(ButtonGestureEvent.HoldRelease)
             
