@@ -1,8 +1,8 @@
 import { JDBus } from "./bus"
 import { JDClient } from "./client"
 import { CHANGE, PACKET_PROCESS, PACKET_SEND } from "./constants"
-import Packet from "./packet";
-import { randomDeviceId } from "./random";
+import Packet from "./packet"
+import { randomDeviceId } from "./random"
 
 /**
  * A client that bridges received and sent packets to a parent iframe.
