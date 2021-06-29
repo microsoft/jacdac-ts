@@ -6,14 +6,13 @@ import {
     VMHandler,
     VMIfThenElse,
     VMProgram,
-    VMFunctions
+    VMFunctions,
 } from "./ir"
 import {
     VMChecker,
     SpecSymbolResolver,
 } from "../../jacdac-spec/spectool/jdutils"
 import { assert } from "../jdom/utils"
-
 
 export function toIdentifier(id: string) {
     return {
@@ -72,10 +71,10 @@ export function compileProgram(prog: VMProgram) {
 
 function checkCall(cmd: VMBase, id: string) {
     if (cmd.type === "cmd") {
-        const callee = (cmd as VMCommand).command.callee 
+        const callee = (cmd as VMCommand).command.callee
         if (callee.type === "Identifier") {
             const cid = (callee as jsep.Identifier).name
-            return id === cid 
+            return id === cid
         }
     }
     return undefined
@@ -89,9 +88,9 @@ function startBlock(handler: VMHandler) {
             command: {
                 type: "CallExpression",
                 callee: toIdentifier("halt"),
-                arguments: []
-            } 
-        } as VMCommand )
+                arguments: [],
+            },
+        } as VMCommand)
     }
 }
 

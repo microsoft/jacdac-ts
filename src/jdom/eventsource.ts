@@ -19,17 +19,17 @@ function normalizeEventNames(eventNames: string | string[]): string[] {
 }
 
 export interface IEventSource {
-    changeId: number;
-    
+    changeId: number
+
     /**
      * Subscribes to an event and returns the unsubscription handler
      * @param eventName
      * @param next
      */
-     subscribe<T>(
+    subscribe<T>(
         eventName: string | string[],
         next: (value: T) => void
-    ): () => void;
+    ): () => void
 }
 
 export class JDEventSource implements IEventSource {

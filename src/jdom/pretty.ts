@@ -240,7 +240,10 @@ export function decodeMember(
             humanValue = v + prettyUnit(member.unit)
         } else {
             humanValue = scaledValue + ""
-            if ((scaledValue | 0) == scaledValue && (!member.unit || scaledValue >= 15)) {
+            if (
+                (scaledValue | 0) == scaledValue &&
+                (!member.unit || scaledValue >= 15)
+            ) {
                 if (!member.unit) humanValue = hexNum(scaledValue)
                 else humanValue += " (" + hexNum(scaledValue) + ")"
             } else if (scaledValue && member.storage == 8) {
@@ -519,9 +522,8 @@ export function commandName(n: number, serviceClass?: number): string {
         const reg = n & CMD_REG_MASK
         let regName = SystemReg[reg]?.toLowerCase() // try reserved registers first, fast path
         if (regName === undefined) {
-            const serviceSpec = serviceSpecificationFromClassIdentifier(
-                serviceClass
-            )
+            const serviceSpec =
+                serviceSpecificationFromClassIdentifier(serviceClass)
             regName = serviceSpec?.packets.find(
                 pkt => isRegister(pkt) && pkt.identifier === reg
             )?.name
@@ -535,9 +537,8 @@ export function commandName(n: number, serviceClass?: number): string {
 
     let r = SystemCmd[n]?.toLowerCase()
     if (r === undefined) {
-        const serviceSpec = serviceSpecificationFromClassIdentifier(
-            serviceClass
-        )
+        const serviceSpec =
+            serviceSpecificationFromClassIdentifier(serviceClass)
         r = serviceSpec?.packets.find(
             pkt => pkt.kind === "command" && pkt.identifier === n
         )?.name

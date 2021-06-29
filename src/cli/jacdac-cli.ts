@@ -1,7 +1,12 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const cli = require("cli")
 const fs = require("fs-extra")
-import { DEVICE_ANNOUNCE, PACKET_PROCESS, PACKET_RECEIVE, PACKET_RECEIVE_ANNOUNCE } from "../jdom/constants"
+import {
+    DEVICE_ANNOUNCE,
+    PACKET_PROCESS,
+    PACKET_RECEIVE,
+    PACKET_RECEIVE_ANNOUNCE,
+} from "../jdom/constants"
 import { createUSBTransport } from "../jdom/transport/usb"
 import { createNodeUSBOptions } from "../jdom/transport/nodewebusb"
 import {
@@ -103,12 +108,12 @@ if (options.parse) {
 
     const opts = {
         skipRepeatedAnnounce: false,
-        showTime: true
+        showTime: true,
     }
     jd.on(PACKET_RECEIVE, pkt => console.log(printPacket(pkt, opts)))
     jd.on(PACKET_RECEIVE_ANNOUNCE, pkt => console.log(printPacket(pkt, opts)))
 
     const text = fs.readFileSync(options.parse, "utf8")
-    replayLog(jd, parseLogicLog(text), Number.POSITIVE_INFINITY);
+    replayLog(jd, parseLogicLog(text), Number.POSITIVE_INFINITY)
     setTimeout(() => process.exit(0), 500)
 }

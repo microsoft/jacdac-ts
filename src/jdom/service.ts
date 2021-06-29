@@ -24,7 +24,7 @@ import {
     isConstRegister,
 } from "./spec"
 import { JDEvent } from "./event"
-import { delay, strcmp } from "./utils"
+import { strcmp } from "./utils"
 import {
     BaseEvent,
     BaseReg,
