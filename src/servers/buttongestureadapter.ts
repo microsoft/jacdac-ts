@@ -1,44 +1,33 @@
 import {
     ButtonEvent,
-    ButtonReg,
-    CHANGE,
-    REFRESH,
-    SRV_BUTTON,
+    ButtonGestureEvent,
+    EVENT,
     SRV_BUTTON_GESTURE,
 } from "../jdom/constants"
 import SensorServer from "./sensorserver"
-import RoleManager from "./rolemanager"
-import RegisterServer from "../jdom/registerserver"
-import { jdpack } from "../jdom/pack"
-
-const HOLD_TIME = 500
-const INACTIVE_VALUE = 0
-const ACTIVE_VALUE = 1
+import { JDEvent, JDService } from "../jdom/jacdac-jdom"
 
 export default class ButtonGestureAdapter extends SensorServer<[number]> {
-    private roleManager: RoleManager
-    
-    private _downTime: number
-    private _nextHold: number
-
-    constructor(instanceName?: string) {
+    constructor(button: JDService, instanceName?: string) {
+        // TODO should this take not a service so it can be instantiated before a button is announced on the bus?
+        // (to avoid the async boilerplate nightmare)
         super(SRV_BUTTON_GESTURE, {
-            instanceName
+            instanceName,
         })
 
-        this.emit(DEVICE_CHANGE, () => {
-            if (this.device) {
-                this.roleManager = new RoleManager(this.device.bus)
-                this.roleManager.setRoles([ { role: instanceName, serviceShortId: "buttonGesture" } ])
-            }
+        button.on(EVENT, (evs: JDEvent[]) => {
+            evs.forEach((ev) => {
+                if (ev.code == ButtonEvent.Down) {
+                    this.sendEvent(
+                        ButtonGestureEvent.ClickHold
+                    )
+                } else if (ev.code == ButtonEvent.Up) {
+                    this.sendEvent(
+                        ButtonGestureEvent.HoldRelease
+                    )
+                }
+            })
         })
-
-
         
     }
-
-    private async handleRefresh() {
-        const now = this.device.bus.timestamp
-    }
-
 }
