@@ -58,16 +58,16 @@ export class VMServiceClient extends JDServiceClient {
         }
     }
 
-    public async writeRegisterAsync(regName: string, ev: atomic) {
+    public async writeRegisterAsync(regName: string, values: atomic[]) {
         const register = this._registers[regName]
         if (register.code === SystemReg.Value) await this.setEnabled()
-        await this.writeRegAsync(this._registers[regName], ev)
+        await this.writeRegAsync(this._registers[regName], values)
     }
 
-    private async writeRegAsync(jdreg: JDRegister, ev: atomic) {
+    private async writeRegAsync(jdreg: JDRegister, values: atomic[]) {
         await jdreg?.sendSetPackedAsync(
             jdreg.specification?.packFormat,
-            [ev],
+            values,
             true
         )
     }
@@ -76,7 +76,7 @@ export class VMServiceClient extends JDServiceClient {
         const pkt = this.service.specification.packets.find(isIntensity)
         if (pkt && pkt.fields[0].type === "bool") {
             const jdreg = this.service.register(SystemReg.Intensity)
-            await this.writeRegAsync(jdreg, true)
+            await this.writeRegAsync(jdreg, [true])
         }
     }
 

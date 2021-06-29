@@ -2,10 +2,11 @@ import JDServiceServer from "../jdom/serviceserver"
 import {
     isHighLevelRegister,
     isHighLevelEvent,
-    isCommand
+    isCommand,
 } from "../../../jacdac-ts/src/jdom/spec"
 import { SMap } from "../jdom/utils"
 import { jdpack, PackedValues } from "../jdom/pack"
+import { atomic } from "./utils"
 
 export class VMServiceServer extends JDServiceServer {
     private eventNameToId: SMap<number> = {}
@@ -15,7 +16,8 @@ export class VMServiceServer extends JDServiceServer {
 
         spec.packets.filter(isHighLevelRegister).map(reg => {
             this.addRegister(reg.identifier)
-            this.eventNameToId[reg.name] = reg.identifier
+            this.regNameToId[reg.name] = reg.identifier
+
             
             // nothing to do on a read of register from outside (server maintains current value)
             // on a write from outside, notify the VM of CHANGE of value
@@ -23,7 +25,7 @@ export class VMServiceServer extends JDServiceServer {
         })
 
         spec.packets.filter(isCommand).map(cmd => {
-            this.addCommand(cmd.identifier, (pkt) => {
+            this.addCommand(cmd.identifier, pkt => {
                 // raise event to execute the command
                 // sending the pkt along with the data
             })
@@ -39,8 +41,10 @@ export class VMServiceServer extends JDServiceServer {
             p => isHighLevelEvent(p) && p.name === eventName
         )
         if (pkt) {
-            await this.sendEvent(this.eventNameToId[eventName], 
-                jdpack(pkt.packFormat, values))
+            await this.sendEvent(
+                this.eventNameToId[eventName],
+                jdpack(pkt.packFormat, values)
+            )
         }
     }
 
@@ -48,10 +52,17 @@ export class VMServiceServer extends JDServiceServer {
         const reg = this.register(this.regNameToId[root])
         if (!fld) return reg.values()?.[0]
         else {
+            // reg.packFormat
             // TODO
             return undefined
             //const field = reg.fields.find(f => f.name === fld)
             //return field?.value
         }
+    }
+
+    public writeRegister(root: string, ev: atomic[]) {
+        const reg = this.register(this.regNameToId[root])
+        // TODO: need to deal with fields
+        // reg.packFormat
     }
 }

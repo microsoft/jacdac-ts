@@ -101,26 +101,18 @@ export class VMEnvironment
     }
 
     public registerRegister(role: string, reg: string) {
-        try {
-            const serviceEnv = this.getService(role)
-            serviceEnv.registerRegister(reg, () => {
-                this.emit(REGISTER_CHANGE, reg)
-            })
-        } catch (e) {
-            // nothing
-        }
+        const serviceEnv = this.getService(role)
+        serviceEnv.registerRegister(reg, () => {
+            this.emit(REGISTER_CHANGE, reg)
+        })
     }
 
     public registerEvent(role: string, ev: string) {
-        try {
-            const serviceEnv = this.getService(role)
-            serviceEnv.registerEvent(ev, () => {
-                this._currentEvent = `${role}.${ev}`
-                this.emit(EVENT_CHANGE, this._currentEvent)
-            })
-        } catch (e) {
-            // nothing
-        }
+        const serviceEnv = this.getService(role)
+        serviceEnv.registerEvent(ev, () => {
+            this._currentEvent = `${role}.${ev}`
+            this.emit(EVENT_CHANGE, this._currentEvent)
+        })
     }
 
     private getRootName(e: jsep.MemberExpression | string) {
@@ -191,18 +183,28 @@ export class VMEnvironment
                 ? undefined
                 : (ep.property as jsep.Identifier).name
         const serviceEnv = this.getService(e)
-        return await serviceEnv.lookupRegisterAsync(root, fld)
+        if (serviceEnv)
+            return await serviceEnv.lookupRegisterAsync(root, fld)
+        else {
+            const server = this.getServer(e)
+            return server.lookupRegister(root, fld)
+        }
     }
 
     public async writeRegisterAsync(
         e: jsep.MemberExpression | string,
-        ev: number
+        values: atomic[]
     ) {
         const serviceEnv = this.getService(e)
         const me = e as jsep.MemberExpression
         if (me.property.type === "Identifier") {
             const reg = (me.property as jsep.Identifier).name
-            await serviceEnv.writeRegisterAsync(reg, ev)
+            if (serviceEnv) 
+                await serviceEnv.writeRegisterAsync(reg, values)
+            else {
+                const server = this.getServer(e)
+                return server.writeRegister(reg, values)
+            }
         }
     }
 

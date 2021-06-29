@@ -44,7 +44,7 @@ const VM_WAKE_SLEEPER = "vmWakeSleeper"
 export interface VMEnvironmentInterface {
     writeRegisterAsync: (
         e: jsep.MemberExpression | string,
-        v: atomic
+        v: atomic[]
     ) => Promise<void>
     sendCommandAsync: (
         command: jsep.MemberExpression,
@@ -218,16 +218,19 @@ class VMCommandEvaluator {
             case "writeRegister":
             case "writeLocal": {
                 const expr = this.newEval()
-                const ev = await expr.evalAsync(args[1])
+                const values: atomic[] = []
+                for (const a of this.cmd.command.arguments.slice(1)) {
+                    values.push(await expr.evalAsync(a))
+                }
                 this.trace("eval-end", { expr: unparse(args[1]) })
                 const reg = args[0] as jsep.MemberExpression
                 if (this.inst === "writeRegister") {
-                    await this.env.writeRegisterAsync(reg, ev)
+                    await this.env.writeRegisterAsync(reg, values)
                     this.trace("write-after-wait", {
                         reg: unparse(reg),
-                        expr: ev,
+                        expr: values[0],
                     })
-                } else this.env.writeGlobal(reg, ev)
+                } else this.env.writeGlobal(reg, values[0])
                 return VMInternalStatus.Completed
             }
             case "watch": {
