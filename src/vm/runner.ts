@@ -935,7 +935,7 @@ export class VMProgramRunner extends JDClient {
     private initializeRoleManagement() {
         // adding a (role,service) binding
         const addRoleService = (role: string) => {
-            const service = this.roleManager.getService(role)
+            const service = this.roleManager.getRoleService(role)
             if (service) {
                 this._env.serviceChanged(role, service)
             }

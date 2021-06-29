@@ -1,31 +1,40 @@
 import { JDEventSource } from "../jdom/eventsource"
 import {
+    BOUND,
     CHANGE,
     DEVICE_ANNOUNCE,
     DEVICE_DISCONNECT,
     ROLE_BOUND,
     ROLE_UNBOUND,
+    UNBOUND,
 } from "../jdom/constants"
 import { JDBus } from "../jdom/bus"
 import { JDDevice } from "../jdom/device"
 import { JDService } from "../jdom/service"
-import { serviceSpecificationFromName } from "../jdom/spec"
+import { JDClient } from "../jdom/client"
 
 export interface RoleBinding {
     role: string
-    serviceShortId: string
+    serviceClass: number
     service?: JDService
 }
 
 // TODO: replicate MakeCode role manager logic
-export default class RoleManager extends JDEventSource {
+export default class RoleManager extends JDClient {
     private readonly _roles: RoleBinding[] = []
 
     constructor(private readonly bus: JDBus) {
         super()
 
-        this.bus.on(DEVICE_ANNOUNCE, this.addServices.bind(this))
-        this.bus.on(DEVICE_DISCONNECT, this.removeServices.bind(this))
+        this.mount(
+            this.bus.subscribe(DEVICE_ANNOUNCE, this.addServices.bind(this))
+        )
+        this.mount(
+            this.bus.subscribe(
+                DEVICE_DISCONNECT,
+                this.removeServices.bind(this)
+            )
+        )
 
         this.bus
             .devices({ ignoreSelf: true, announced: true })
@@ -47,24 +56,29 @@ export default class RoleManager extends JDEventSource {
         return this._roles.filter(r => !r.service)
     }
 
+    /**
+     * All roles around bound
+     */
+    get bound() {
+        return this._roles.every(({ service }) => !!service)
+    }
+
     setRoles(
         newRoles: {
             role: string
-            serviceShortId: string
+            serviceClass: number
         }[]
     ) {
-        let changed = false
+        if (!newRoles?.length) return
 
-        // remove unknown roles
-        const supportedNewRoles = newRoles.filter(({ serviceShortId }) =>
-            serviceSpecificationFromName(serviceShortId)
-        )
+        const oldBound = this.bound
+        let changed = false
 
         // unbind removed roles
         let i = 0
         while (i < this._roles.length) {
             const role = this._roles[i]
-            if (!supportedNewRoles.find(r => r.role === role.role)) {
+            if (!newRoles.find(r => r.role === role.role)) {
                 changed = true
                 this._roles.splice(i, 1)
                 this.emit(ROLE_UNBOUND, role.role)
@@ -74,38 +88,63 @@ export default class RoleManager extends JDEventSource {
         }
 
         // update or add roles
-        for (const newRole of supportedNewRoles) {
+        for (const newRole of newRoles) {
             const existingRole = this._roles.find(r => r.role === newRole.role)
             if (!existingRole) {
                 // added role
                 changed = true
                 this._roles.push({ ...newRole })
-            } else if (existingRole.serviceShortId !== newRole.serviceShortId) {
+            } else if (existingRole.serviceClass !== newRole.serviceClass) {
                 // modified type, force rebinding
                 changed = true
-                existingRole.serviceShortId = newRole.serviceShortId
+                existingRole.serviceClass = newRole.serviceClass
                 if (existingRole.service) {
                     existingRole.service = undefined
                     this.emit(ROLE_UNBOUND, existingRole.role)
                 }
             } // else unmodifed role
         }
-
-        // emit change as needed
-        if (changed) this.emit(CHANGE)
-
         // bound services
-        this.bindServices()
+        this.bindServices(changed)
+        this.emitBoundEvents(oldBound)
     }
 
-    private bindServices() {
-        let changed = false
+    public addRoleService(role: string, serviceClass: number) {
+        let binding = this._roles.find(r => r.role === role)
+
+        // check if we already have this role
+        if (binding && serviceClass === binding.serviceClass) return
+
+        const oldBound = this.bound
+        // new role
+        binding = { role, serviceClass }
+        this._roles.push(binding)
+
+        const ret = this.bus
+            .services({ ignoreSelf: true, serviceClass })
+            .find(s => !this._roles.find(r => r.service === s))
+        if (ret) {
+            binding.service = ret
+            this.emit(ROLE_BOUND, role)
+        } else {
+            this.emit(ROLE_UNBOUND, role)
+        }
+        this.emit(CHANGE)
+        this.emitBoundEvents(oldBound)
+    }
+
+    private emitBoundEvents(oldBound: boolean) {
+        const bound = this.bound
+        if (oldBound !== bound) this.emit(bound ? BOUND : UNBOUND)
+    }
+
+    private bindServices(changed?: boolean) {
         this.unboundRoles.forEach(binding => {
             const boundRoles = this.boundRoles
             const service = this.bus
                 .services({
                     ignoreSelf: true,
-                    serviceName: binding.serviceShortId,
+                    serviceClass: binding.serviceClass,
                 })
                 .find(srv => !boundRoles.find(b => b.service === srv))
             binding.service = service
@@ -129,35 +168,10 @@ export default class RoleManager extends JDEventSource {
                 this.emit(ROLE_UNBOUND, r.role)
                 changed = true
             })
-        this.bindServices()
-        if (changed) this.emit(CHANGE)
+        this.bindServices(changed)
     }
 
-    public getService(role: string): JDService {
+    public getRoleService(role: string): JDService {
         return this._roles.find(r => r.role === role)?.service
-    }
-
-    public addRoleService(role: string, serviceShortId: string) {
-        if (!serviceSpecificationFromName(serviceShortId)) return // unknown role type
-
-        let binding = this._roles.find(r => r.role === role)
-
-        // check if we already have this role
-        if (binding && serviceShortId === binding.serviceShortId) return
-
-        // new role
-        binding = { role, serviceShortId }
-        this._roles.push(binding)
-
-        const ret = this.bus
-            .services({ ignoreSelf: true, serviceName: serviceShortId })
-            .find(s => !this._roles.find(r => r.service === s))
-        if (ret) {
-            binding.service = ret
-            this.emit(ROLE_BOUND, role)
-        } else {
-            this.emit(ROLE_UNBOUND, role)
-        }
-        this.emit(CHANGE)
     }
 }
