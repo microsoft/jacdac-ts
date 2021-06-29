@@ -65,7 +65,7 @@ const ignoredServices = [
     SRV_LOGGER,
     SRV_SETTINGS,
     SRV_ROLE_MANAGER,
-    SRV_PROTO_TEST
+    SRV_PROTO_TEST,
 ]
 
 /**
@@ -219,9 +219,7 @@ export default class IFrameBridgeClient extends JDIFrameClient {
     }
 
     deviceFilter(device: JDDevice) {
-        return device
-            .services()
-            .some(srv => this.serviceFilter(srv))
+        return device.services().some(srv => this.serviceFilter(srv))
     }
 
     serviceFilter(srv: JDService) {

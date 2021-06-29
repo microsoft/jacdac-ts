@@ -15,7 +15,6 @@ import {
 } from "./constants"
 import {
     assert,
-    delay,
     bufferConcat,
     bufferToString,
     SMap,

@@ -71,7 +71,10 @@ export class JDRegister extends JDServiceMemberNode {
         const pkt = Packet.from(cmd, data)
         this._lastSetTimestamp = this.service.device.bus.timestamp
         let p = this.service.sendPacketAsync(pkt, this.service.registersUseAcks)
-        if (autoRefresh) p = this.service.device.bus.delay(50).then(() => this.sendGetAsync())
+        if (autoRefresh)
+            p = this.service.device.bus
+                .delay(50)
+                .then(() => this.sendGetAsync())
         return p
     }
 

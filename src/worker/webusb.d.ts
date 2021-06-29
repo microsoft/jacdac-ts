@@ -1,3 +1,3 @@
 interface WorkerNavigator {
-    readonly usb: USB;
+    readonly usb: USB
 }

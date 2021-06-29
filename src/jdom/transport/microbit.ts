@@ -12,7 +12,12 @@ import {
     fromUTF8,
 } from "../utils"
 import Flags from "../flags"
-import { ERROR_MICROBIT_INVALID_MEMORY, ERROR_MICROBIT_JACDAC_MISSING, ERROR_MICROBIT_UNKNOWN, ERROR_MICROBIT_V1 } from "../constants"
+import {
+    ERROR_MICROBIT_INVALID_MEMORY,
+    ERROR_MICROBIT_JACDAC_MISSING,
+    ERROR_MICROBIT_UNKNOWN,
+    ERROR_MICROBIT_V1,
+} from "../constants"
 
 export const MICROBIT_V2_VENDOR_ID = 3368
 export const MICROBIT_V2_PRODUCT_ID = 516
@@ -35,8 +40,7 @@ export class CMSISProto implements Proto {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private _lastInterval: any
 
-    constructor(private io: USBIO) {
-    }
+    constructor(private io: USBIO) {}
 
     private startRecvToLoop() {
         console.assert(!this._lastInterval)
@@ -456,11 +460,17 @@ export class CMSISProto implements Proto {
         this.startRecvToLoop()
         const devid = await this.talkStringAsync(0x80)
         if (/^9902/.test(devid)) {
-            this.error(`micro:bit v1 is not supported. sorry.`, ERROR_MICROBIT_V1)
+            this.error(
+                `micro:bit v1 is not supported. sorry.`,
+                ERROR_MICROBIT_V1
+            )
             return
         }
         if (!/^990[3456789]/.test(devid)) {
-            this.error(`Invalid Vendor0 response: ` + devid, ERROR_MICROBIT_UNKNOWN)
+            this.error(
+                `Invalid Vendor0 response: ` + devid,
+                ERROR_MICROBIT_UNKNOWN
+            )
             return
         }
 
@@ -500,14 +510,20 @@ export class CMSISProto implements Proto {
 
         const xchg = await this.findExchange()
         if (xchg === null) {
-            this.error(`exchange address not found; add jacdac to your project`, ERROR_MICROBIT_JACDAC_MISSING)
+            this.error(
+                `exchange address not found; add jacdac to your project`,
+                ERROR_MICROBIT_JACDAC_MISSING
+            )
             return
         }
         this.xchgAddr = xchg
         const info = await this.readBytes(xchg, 16)
         this.irqn = info[8]
         if (info[12 + 2] != 0xff) {
-            this.error("invalid memory; try power-cycling the micro:bit", ERROR_MICROBIT_INVALID_MEMORY)
+            this.error(
+                "invalid memory; try power-cycling the micro:bit",
+                ERROR_MICROBIT_INVALID_MEMORY
+            )
             return
         }
         // clear initial lock

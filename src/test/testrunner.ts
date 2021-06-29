@@ -24,7 +24,7 @@ export enum JDTestCommandStatus {
     Active,
     RequiresUserInput,
     Passed,
-    Failed
+    Failed,
 }
 
 function commandStatusToTestStatus(status: JDTestCommandStatus) {
@@ -76,26 +76,26 @@ class JDCommandEvaluator {
         }
     }
 
-    private callEval(start: StartMap) : CallEvaluator {
-        return (caller: jsep.CallExpression, ee: VMExprEvaluator) => { 
+    private callEval(start: StartMap): CallEvaluator {
+        return (caller: jsep.CallExpression, ee: VMExprEvaluator) => {
             function getStartVal(e: jsep.Expression) {
                 return start.find(r => r.e === e).v
             }
             const callee = <jsep.Identifier>caller.callee
             switch (callee.name) {
-                case "start": 
-                    return getStartVal(caller.arguments[0]);
+                case "start":
+                    return getStartVal(caller.arguments[0])
                 case "closeTo": {
                     const args = caller.arguments
                     const goal = getStartVal(args[1])
                     const error = getStartVal(args[2])
                     ee.visitExpressionAsync(args[0])
                     const ev = ee.pop()
-                    return  ev >= goal - error && ev <= goal + error
+                    return ev >= goal - error && ev <= goal + error
                 }
                 default: // ERROR
             }
-            return null;
+            return null
         }
     }
 
@@ -147,16 +147,19 @@ class JDCommandEvaluator {
             case "events": {
                 const eventList = this.command.call
                     .arguments[0] as jsep.ArrayExpression
-                this._eventsComplete = (eventList.elements as jsep.Identifier[]).map(
-                    id => id.name
-                )
+                this._eventsComplete = (
+                    eventList.elements as jsep.Identifier[]
+                ).map(id => id.name)
                 break
             }
         }
         // evaluate the start expressions and store the results
         startExprs.forEach(child => {
             if (this._startExpressions.findIndex(r => r.e === child) < 0) {
-                const exprEval = new VMExprEvaluator(this.env, this.callEval([]))
+                const exprEval = new VMExprEvaluator(
+                    this.env,
+                    this.callEval([])
+                )
                 this._startExpressions.push({
                     e: child,
                     v: exprEval.evalAsync(child),
@@ -195,7 +198,10 @@ class JDCommandEvaluator {
     public setEvent(ev: string) {}
 
     private checkExpression(e: jsep.Expression) {
-        const expr = new VMExprEvaluator(this.env, this.callEval(this._startExpressions))
+        const expr = new VMExprEvaluator(
+            this.env,
+            this.callEval(this._startExpressions)
+        )
         return expr.evalAsync(e)
             ? JDTestCommandStatus.Passed
             : JDTestCommandStatus.Active
@@ -226,7 +232,7 @@ class JDCommandEvaluator {
                     this.env,
                     this.callEval(this._startExpressions)
                 )
-                const ev = await expr.evalAsync(args[0]) as number
+                const ev = (await expr.evalAsync(args[0])) as number
                 if (Math.abs(ev - goal.v) <= error.v)
                     this._status = JDTestCommandStatus.Passed
                 this._progress = `current: ${pretify(ev)}; goal: ${pretify(
@@ -364,7 +370,10 @@ class JDCommandEvaluator {
                 )
                 const ev = expr.evalAsync(args[1])
                 const reg = args[0] as jsep.Identifier
-                await this.testRunner.serviceTestRunner.writeRegisterAsync(reg.name, ev)
+                await this.testRunner.serviceTestRunner.writeRegisterAsync(
+                    reg.name,
+                    ev
+                )
                 this._status = JDTestCommandStatus.Passed
                 this._progress = `wrote ${ev} to register ${reg.name}`
             }
@@ -458,7 +467,7 @@ export class JDTestCommandRunner extends JDEventSource {
                     // we will try again on next environment change
                     this._commandEvaluator = undefined
                 }
-            } 
+            }
             if (this._commandEvaluator) {
                 try {
                     await this._commandEvaluator.evaluateAsync()
@@ -472,8 +481,7 @@ export class JDTestCommandRunner extends JDEventSource {
                         JDTestCommandStatus.RequiresUserInput
                     )
                         this.status = JDTestCommandStatus.RequiresUserInput
-                    else 
-                        await this.finishAsync(this._commandEvaluator.status)
+                    else await this.finishAsync(this._commandEvaluator.status)
                 } catch (e) {
                     // show still be in the active state
                 }
@@ -607,8 +615,7 @@ export class JDTestRunner extends JDEventSource {
     public async finishCommandAsync() {
         if (this.getCommandIndex() === this.commands.length - 1)
             this.finish(commandStatusToTestStatus(this.currentCommand.status))
-        else 
-            await this.setCommandIndex(this.getCommandIndex()+1)
+        else await this.setCommandIndex(this.getCommandIndex() + 1)
     }
 
     get currentCommand() {
@@ -618,7 +625,7 @@ export class JDTestRunner extends JDEventSource {
 
 export class JDServiceTestRunner extends JDServiceClient {
     private _testIndex = -1
-    private _env: VMServiceEnvironment;
+    private _env: VMServiceEnvironment
     public readonly tests: JDTestRunner[]
 
     constructor(
@@ -630,22 +637,21 @@ export class JDServiceTestRunner extends JDServiceClient {
         this.tests = this.testSpec.tests.map(t => new JDTestRunner(this, t))
         this.testSpec.tests.forEach(t => {
             t.events.forEach(s => {
-                const eventName = s.substr(s.indexOf(".")+1)
-                this._env.registerEvent(eventName, async () => { 
+                const eventName = s.substr(s.indexOf(".") + 1)
+                this._env.registerEvent(eventName, async () => {
                     try {
-                        await this.currentTest?.eventChangeAsync(eventName) 
-                    } catch (e)
-                    {
+                        await this.currentTest?.eventChangeAsync(eventName)
+                    } catch (e) {
                         //
                     }
                 })
             })
             t.registers.forEach(s => {
-                const regName = s.substr(s.indexOf(".")+1)
-                this._env.registerRegister(regName, async () => { 
+                const regName = s.substr(s.indexOf(".") + 1)
+                this._env.registerRegister(regName, async () => {
                     try {
-                        await this.currentTest?.envChangeAsync() 
-                    } catch(e){
+                        await this.currentTest?.envChangeAsync()
+                    } catch (e) {
                         //
                     }
                 })

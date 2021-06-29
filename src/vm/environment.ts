@@ -18,7 +18,7 @@ export const EVENT_CHANGE = "vmEnvEventChange"
 export enum VMExceptionCode {
     RoleNoService = "vmEnvRoleNoService",
     TypeMismatch = "vmEnvTypeMismatch",
-    InternalError = "vmInternalError"
+    InternalError = "vmInternalError",
 }
 
 export class VMException extends Error {
@@ -100,7 +100,9 @@ export class VMServiceEnvironment extends JDServiceClient {
         }
     }
 
-    public async lookupRegisterAsync(e: jsep.MemberExpression | jsep.Identifier | string) {
+    public async lookupRegisterAsync(
+        e: jsep.MemberExpression | jsep.Identifier | string
+    ) {
         const root =
             typeof e === "string"
                 ? e
@@ -118,9 +120,7 @@ export class VMServiceEnvironment extends JDServiceClient {
             await register.refresh()
             if (!fld) return register.unpackedValue?.[0]
             else {
-                const field = register.fields.find(
-                    f => f.name === fld
-                )
+                const field = register.fields.find(f => f.name === fld)
                 return field?.value
             }
         } else if (root in this._events) {
@@ -152,17 +152,15 @@ export class VMEnvironment
     }
 
     public globals() {
-        return this._globals;
+        return this._globals
     }
 
     public serviceChanged(role: string, service: JDService) {
         if (this._envs[role]) {
             this._envs[role].unmount()
             this._envs[role] = undefined
-            
         }
-        if (!service) 
-            this._rolesUnbound.push(role)
+        if (!service) this._rolesUnbound.push(role)
         else {
             this._rolesBound.push(role)
             this._envs[role] = new VMServiceEnvironment(service)
@@ -219,10 +217,7 @@ export class VMEnvironment
         if (!root) return undefined
         const s = this._envs[root]
         if (!s) {
-            throw new VMException(
-                VMExceptionCode.RoleNoService,
-                root
-            )
+            throw new VMException(VMExceptionCode.RoleNoService, root)
         }
         return s
     }
@@ -240,9 +235,7 @@ export class VMEnvironment
         )
     }
 
-    public async lookupAsync(
-        e: jsep.MemberExpression | string
-    ) {
+    public async lookupAsync(e: jsep.MemberExpression | string) {
         const roleName = this.getRootName(e)
         if (roleName.startsWith("$var")) {
             const me = e as jsep.MemberExpression
@@ -326,7 +319,7 @@ export class VMEnvironment
         }
         return false
     }
-    
+
     // role events
     private _rolesBound: string[] = []
     private _rolesUnbound: string[] = []
