@@ -25,7 +25,7 @@ suite('adapters', () => {
         bus.on(DEVICE_ANNOUNCE, (device: JDDevice) => {
             // When the button is connected, setup the button adapter and queue test stimulus
             if (device.services({serviceClass: SRV_BUTTON}).length) {
-                const button = bus.services({serviceClass: SRV_BUTTON})[0]
+                const button = bus.services({serviceClass: SRV_BUTTON})[0]  // TODO more robust to make sure we're getting the right button
                 const buttonAdapter = new ButtonGestureAdapter(button, "BG0")
                 bus.addServiceProvider(new JDServiceProvider([buttonAdapter]))
 
@@ -45,7 +45,7 @@ suite('adapters', () => {
                 const buttonGesture = bus.services({serviceClass: SRV_BUTTON_GESTURE})[0]
                 
                 let eventCounts = 0
-                buttonGesture.on(EVENT, (evs: JDEvent[]) => {
+                buttonGesture.on(EVENT, (evs: JDEvent[]) => {  // TODO make sure we're expecting the right events
                     console.log(`${evs[0].name}  ${evs[0].code}`)
 
                     eventCounts += 1  // TODO do something with this! Some kind of expect?
