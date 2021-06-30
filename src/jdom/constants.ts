@@ -182,9 +182,12 @@ export const TRACE_FILTER_HORIZON = 100
 export const EMBED_MIN_ASPECT_RATIO = 1.22
 
 export const BLUETOOTH_JACDAC_SERVICE = "f8530001-a97f-49f5-a554-3e373fbea2d5"
-export const BLUETOOTH_JACDAC_RX_CHARACTERISTIC = "f8530002-a97f-49f5-a554-3e373fbea2d5"
-export const BLUETOOTH_JACDAC_TX_CHARACTERISTIC = "f8530003-a97f-49f5-a554-3e373fbea2d5"
-export const BLUETOOTH_JACDAC_DIAG_CHARACTERISTIC = "f8530004-a97f-49f5-a554-3e373fbea2d5"
+export const BLUETOOTH_JACDAC_RX_CHARACTERISTIC =
+    "f8530002-a97f-49f5-a554-3e373fbea2d5"
+export const BLUETOOTH_JACDAC_TX_CHARACTERISTIC =
+    "f8530003-a97f-49f5-a554-3e373fbea2d5"
+export const BLUETOOTH_JACDAC_DIAG_CHARACTERISTIC =
+    "f8530004-a97f-49f5-a554-3e373fbea2d5"
 
 export const TRANSPORT_CONNECT_RETRY_DELAY = 500
 export const TRANSPORT_PULSE_TIMEOUT = 15000 // don't interfere with manual flashing of devices
@@ -197,5 +200,7 @@ export const ERROR_MICROBIT_INVALID_MEMORY = "microbit/invalid-memory"
 export const ROLE_BOUND = "roleBound"
 export const ROLE_UNBOUND = "roleUnbound"
 export const ROLE_HAS_NO_SERVICE = "roleHasNoService"
+export const BOUND = "bound"
+export const UNBOUND = "unbound"
 
 export * from "../../jacdac-spec/dist/specconstants"

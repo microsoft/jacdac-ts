@@ -383,8 +383,7 @@ export class Packet {
 
     // helpers
     get friendlyDeviceName(): string {
-        if (this.isMultiCommand)
-            return "*"
+        if (this.isMultiCommand) return "*"
         return this.device?.friendlyName || this.deviceIdentifier
     }
     get friendlyServiceName(): string {

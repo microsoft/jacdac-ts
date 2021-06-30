@@ -89,33 +89,39 @@ class VMCommandEvaluator {
         return (this.gc.command.callee as jsep.Identifier)?.name
     }
 
-    private callEval() : CallEvaluator {
-        return (caller: jsep.CallExpression, ee: VMExprEvaluator) => { 
+    private callEval(): CallEvaluator {
+        return (caller: jsep.CallExpression, ee: VMExprEvaluator) => {
             const callee = <jsep.MemberExpression>caller.callee
             const namespace = (callee.object as jsep.Identifier).name
             const funName = (callee.property as jsep.Identifier).name
             const args = caller.arguments
             if (namespace === "$fun") {
                 switch (funName) {
-                    case "roleBoundExpression":  {
+                    case "roleBoundExpression": {
                         const role = (args[0] as jsep.Identifier).name
                         return this.env.roleBound(role)
                     }
                     default: // ERROR
                 }
-                throw new VMException(VMExceptionCode.InternalError, `unknown function ${namespace}.${funName}`)
+                throw new VMException(
+                    VMExceptionCode.InternalError,
+                    `unknown function ${namespace}.${funName}`
+                )
             } else
-               throw new VMException(VMExceptionCode.InternalError, `unknown namespace ${namespace}`)
+                throw new VMException(
+                    VMExceptionCode.InternalError,
+                    `unknown namespace ${namespace}`
+                )
         }
     }
 
     private newEval() {
         return new VMExprEvaluator(
             async e => await this.env.lookupAsync(e),
-            this.callEval()  // TODO: call expression for bound
+            this.callEval() // TODO: call expression for bound
         )
-    }    
-    
+    }
+
     private async evalExpressionAsync(e: jsep.Expression) {
         const expr = this.newEval()
         return await expr.evalAsync(e)

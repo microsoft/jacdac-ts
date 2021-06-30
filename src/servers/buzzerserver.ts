@@ -4,6 +4,12 @@ import Packet from "../jdom/packet"
 import JDRegisterServer from "../jdom/registerserver"
 import JDServiceServer, { ServerOptions } from "../jdom/serviceserver"
 
+export interface BuzzerTone {
+    frequency: number
+    duration: number
+    volume: number
+}
+
 export default class BuzzerServer extends JDServiceServer {
     readonly volume: JDRegisterServer<[number]>
 
@@ -22,7 +28,12 @@ export default class BuzzerServer extends JDServiceServer {
             "u16 u16 u16"
         )
         const frequency = 1000000 / period
+        const [volume] = this.volume.values()
 
-        this.emit(BuzzerServer.PLAY_TONE, [frequency, duration])
+        this.emit(BuzzerServer.PLAY_TONE, <BuzzerTone>{
+            frequency,
+            duration,
+            volume,
+        })
     }
 }
