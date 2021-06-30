@@ -1,7 +1,7 @@
 import { suite, test, afterEach } from "mocha"
 import { JDBus } from "../../src/jdom/bus"
 import JDServiceProvider from "../../src/jdom/serviceprovider"
-import { EVENT, SRV_BUTTON, SRV_BUTTON_GESTURE, DEVICE_ANNOUNCE } from "../../src/jdom/constants";
+import { EVENT, SRV_BUTTON, SRV_BUTTON_GESTURE, DEVICE_ANNOUNCE, ROLE_BOUND } from "../../src/jdom/constants";
 import { mkBus } from "../testutils";
 
 import ButtonGestureAdapter from "../../src/servers/buttongestureadapter"
@@ -10,6 +10,8 @@ import { JDEvent } from "../../src/jdom/event";
 import { JDDevice } from "../../src/jdom/device";
 import RoleManager from "../../src/servers/rolemanager"
 import JDServiceServer from "../../src/jdom/serviceserver";
+import { assert } from "../../src/jdom/utils";
+import { JDService } from "../../src/jdom/service";
 
 interface BusDevice {
     server: JDServiceServer,
@@ -34,19 +36,18 @@ function setEquals<T>(set1: Set<T>, set2: Set<T>): boolean {
 // TODO should a timeout live here? or should that be a higher level responsibility?
 async function createBus(busDevices: BusDevice[]): Promise<JDBus> {
     const bus = mkBus()
-    const roleManager = new RoleManager(bus)
 
-    const serverDeviceArray: [JDServiceServer, JDDevice][] = busDevices.map(busDevice => {
+    const serverDeviceRoleList: [JDServiceServer, JDDevice, string?][] = busDevices.map(busDevice => {
         const device = bus.addServiceProvider(new JDServiceProvider(
             [busDevice.server]
             ))  // TODO support multi-service devices?
-        return [busDevice.server, device]
+        return [busDevice.server, device, busDevice.roleName]
     })
 
     // Wait for created devices to be announced, so services become available
     // TODO is this a good way to write async code in TS?
     await new Promise((resolve, reject) => {
-        const devicesSet = new Set(serverDeviceArray.map(serviceDevice => serviceDevice[1]))
+        const devicesSet = new Set(serverDeviceRoleList.map(serviceDevice => serviceDevice[1]))
         const announcedSet = new Set()
         const onHandler = (device: JDDevice) => {
             if (devicesSet.has(device)) {
@@ -61,9 +62,31 @@ async function createBus(busDevices: BusDevice[]): Promise<JDBus> {
         bus.on(DEVICE_ANNOUNCE, onHandler)
     })
 
-    serverDeviceArray.forEach(serverDevice => {
-        console.log(`ready ${serverDevice[1].describe()} => ${serverDevice[1].services().map(service => service.specification.name)}`)
+    // Assign roles now that services are available
+    const roleNameToService: [string, JDService][] = serverDeviceRoleList.filter(([server, device, role]) => {
+        return !!role  // filter for where role name is availab;e
+    }).map(([server, device, role]) => {
+        const services = device.services({serviceClass: server.serviceClass})
+        assert(services.length > 0, `created device ${device.friendlyName} has no service of ${server.specification.name}`)
+        assert(services.length == 1, `created device ${device.friendlyName} has multiple service of ${server.specification.name}`)
+        return [role, services[0]]
     })
+
+    bus.on(ROLE_BOUND, (role: string) => {
+        console.log(`role bound ${role}`)
+    })
+
+
+    // TODO does this just work?!
+    roleNameToService.map(([roleName, service]) => {
+        service.role = roleName
+    })
+
+    // const roleManager = new RoleManager(bus)
+    // roleManager.setRoles(roleNameToService.map(([roleName, service]) => {
+    //     return (roleName, service)
+    // }))
+
 
     // Ensure adapters are ready
     // TODO WRITE ME
