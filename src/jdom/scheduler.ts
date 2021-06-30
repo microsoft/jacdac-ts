@@ -22,7 +22,9 @@ export class WallClockScheduler implements Scheduler {
 
     constructor() {
         this._now =
-            typeof performance !== "undefined" ? performance.now : Date.now
+            typeof performance !== "undefined"
+                ? () => performance.now()
+                : () => Date.now()
         this._startTime = this._now()
     }
 
