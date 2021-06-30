@@ -36,17 +36,17 @@ async function createBus(busDevices: BusDevice[]): Promise<JDBus> {
     const bus = mkBus()
     const roleManager = new RoleManager(bus)
 
-    const createdDevices = busDevices.map(busDevice => {
+    const serverDeviceArray: [JDServiceServer, JDDevice][] = busDevices.map(busDevice => {
         const device = bus.addServiceProvider(new JDServiceProvider(
             [busDevice.server]
             ))  // TODO support multi-service devices?
-        return device
+        return [busDevice.server, device]
     })
 
     // Wait for created devices to be announced, so services become available
     // TODO is this a good way to write async code in TS?
     await new Promise((resolve, reject) => {
-        const devicesSet = new Set(createdDevices)
+        const devicesSet = new Set(serverDeviceArray.map(serviceDevice => serviceDevice[1]))
         const announcedSet = new Set()
         const onHandler = (device: JDDevice) => {
             if (devicesSet.has(device)) {
@@ -61,8 +61,8 @@ async function createBus(busDevices: BusDevice[]): Promise<JDBus> {
         bus.on(DEVICE_ANNOUNCE, onHandler)
     })
 
-    createdDevices.forEach(device => {
-        console.log(`ready ${device.describe()} => ${device.services().map(service => service.specification.name)}`)
+    serverDeviceArray.forEach(serverDevice => {
+        console.log(`ready ${serverDevice[1].describe()} => ${serverDevice[1].services().map(service => service.specification.name)}`)
     })
 
     // Ensure adapters are ready
