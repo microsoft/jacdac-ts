@@ -101,6 +101,7 @@ export default class IFrameBridgeClient extends JDIFrameClient {
         this.mount(this.bus.subscribe(DEVICE_ANNOUNCE, this.handleResize))
         // force compute add blocks button
         this.mount(this.bus.subscribe(DEVICE_ANNOUNCE, () => this.emit(CHANGE)))
+        // don't use bus.schedulere here
         const id = setInterval(this.handleResize, 1000)
         this.mount(() => clearInterval(id))
 
