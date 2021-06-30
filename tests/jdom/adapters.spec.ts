@@ -77,7 +77,7 @@ suite('adapters', () => {
 
     afterEach(() => bus?.stop())
 
-    test('click detect event', async function(done) {
+    test('click detect event', async function() {
         console.log("start test")
 
         // These are here so we have a handle
@@ -90,31 +90,29 @@ suite('adapters', () => {
         ])
         console.log("bus created")
 
-        // Simple test stimulus, click cycle
-        setTimeout(() => { buttonServer.down() }, 300)
-        setTimeout(() => { buttonServer.up() }, 400)  // should generate click event
-
-        // Test stimulus, click and hold cycle
-        setTimeout(() => { buttonServer.down() }, 700)  // should generate click-and-hold event
-        setTimeout(() => { buttonServer.up() }, 1000)  // and release event
-        setTimeout(() => { done() }, 1200)
-
-        //
-        // TODO MIGRATE ME
-        //
-        bus.on(DEVICE_ANNOUNCE, (device: JDDevice) => {
-            // When the adapter is connected, set up the event handler and dump events
-            if (device.services({serviceClass: SRV_BUTTON_GESTURE}).length) {
-                const buttonGesture = bus.services({serviceClass: SRV_BUTTON_GESTURE})[0]
-
-                let eventCounts = 0
-                buttonGesture.on(EVENT, (evs: JDEvent[]) => {  // TODO make sure we're expecting the right events
-                    console.log(`${evs[0].name}  ${evs[0].code}`)
-
-                    eventCounts += 1  // TODO do something with this! Some kind of expect?
-                })
-            }
+        bus.services({serviceClass: SRV_BUTTON}).forEach(buttonService => {
+            console.log(`on SRV_BUTTON  ${buttonService.friendlyName}`)
+            buttonService.on(EVENT, (evs: JDEvent[]) => {  // TODO make sure we're expecting the right events
+                console.log(`SRV_BUTTON ${evs[0].parent.friendlyName}  ${evs[0].name}  ${evs[0].code}`)
+            })
         })
 
+        bus.services({serviceClass: SRV_BUTTON_GESTURE}).forEach(buttonService => {
+            console.log(`on SRV_BUTTON_GESTURE  ${buttonService.friendlyName}`)
+            buttonService.on(EVENT, (evs: JDEvent[]) => {  // TODO make sure we're expecting the right events
+                console.log(`SRV_BUTTON_GESTURE ${evs[0].parent.friendlyName}  ${evs[0].name}  ${evs[0].code}`)
+            })
+        })
+
+        // Simple test stimulus, click cycle
+        await setTimeout(() => { buttonServer.down() }, 300)
+        await setTimeout(() => { buttonServer.up() }, 100)  // should generate click event
+
+        // Test stimulus, click and hold cycle
+        await setTimeout(() => { buttonServer.down() }, 300)  // should generate click-and-hold event
+        await setTimeout(() => { buttonServer.up() }, 300)  // and release event
+        await setTimeout(() => { }, 200)
+
+        console.log("done")
     })
 });
