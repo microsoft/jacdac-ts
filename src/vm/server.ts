@@ -9,9 +9,27 @@ import { jdpack, PackedValues } from "../jdom/pack"
 import { atomic } from "./utils"
 import { CHANGE } from "../jdom/constants"
 import { Packet } from "../jdom/packet"
+import JDRegisterServer from "../jdom/registerserver"
 
 export const VM_SERVER_COMMAND_RECEIVED = "vmServerCommandReceived"
-export const VM_SERVER_REGISTER_CHANGED = "vmServerCommandReceived"
+export const VM_SERVER_SET_REGISTER_REQUEST = "vmServerSetRequest"
+export const VM_SERVER_GET_REGISTER_REQUEST = "vmServerGetRequest"
+
+class VMRegisterServer extends JDRegisterServer<PackedValues> {
+    constructor(private serviceServer: VMServiceServer, private reg: jdspec.PacketInfo, defaultValue?: PackedValues) {
+        super(serviceServer, reg.identifier, defaultValue)
+    }
+
+    // on a get request, we want to invoke a VM function to respond
+    // (if there is no function, we simply return the current value)
+    async sendGetAsync() {
+        this.serviceServer.raiseGetRegisterEvent(this.reg.name)
+    }
+
+    async theRealSendGetAsync() {
+        await super.sendGetAsync()
+    }
+}
 
 export class VMServiceServer extends JDServiceServer {
     private eventNameToId: SMap<number> = {}
@@ -23,13 +41,14 @@ export class VMServiceServer extends JDServiceServer {
         super(spec.classIdentifier)
 
         spec.packets.filter(isHighLevelRegister).map(reg => {
-            const regServer = this.addRegister(reg.identifier)
+            // TODO: we need to make our own register and add it here
+            const regServer = this.addExistingRegister(new VMRegisterServer(this, reg))
             this.regNameToId[reg.name] = reg.identifier
             reg.fields?.forEach((pkt, index) => {
                 this.regFieldToId[`${reg.name}:${pkt.name}`] = index
             })
             regServer.subscribe(CHANGE, () => {
-                this.emit(VM_SERVER_REGISTER_CHANGED, this.role, reg.name)
+                this.emit(VM_SERVER_SET_REGISTER_REQUEST, this.role, reg.name)
             })
         })
 
@@ -42,6 +61,10 @@ export class VMServiceServer extends JDServiceServer {
         spec.packets.filter(isHighLevelEvent).forEach(pkt => {
             this.eventNameToId[pkt.name] = pkt.identifier
         })
+    }
+
+    raiseGetRegisterEvent(regName: string) {
+        this.emit(VM_SERVER_GET_REGISTER_REQUEST, this.role, regName)
     }
 
     async sendEventNameAsync(eventName: string, values?: PackedValues) {
