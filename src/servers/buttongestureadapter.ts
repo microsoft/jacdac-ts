@@ -8,6 +8,7 @@ import SensorServer from "./sensorserver"
 import { JDEvent, JDService } from "../jdom/jacdac-jdom"
 
 export default class ButtonGestureAdapter extends SensorServer<[number]> {
+    protected ready = false  // whether it is bound to the source service
     protected state: "up" | "down_click" | "up_click" | "down_held" = "up"
 
     // TODO this is only used to gate timeouts using threading + wait.
@@ -19,7 +20,7 @@ export default class ButtonGestureAdapter extends SensorServer<[number]> {
     // reset upon a event being generated
     protected clickCounter = 0
 
-    constructor(button: JDService, instanceName?: string, 
+    constructor(buttonRole: string, instanceName?: string, 
         protected clickTimeoutMs = 200, protected multiClickTimeoutMs = 200) {
         // TODO should this take not a service so it can be instantiated before a button is announced on the bus?
         // (to avoid the async boilerplate nightmare)
@@ -27,16 +28,19 @@ export default class ButtonGestureAdapter extends SensorServer<[number]> {
             instanceName,
         })
 
-        button.on(EVENT, (evs: JDEvent[]) => {
-            evs.forEach((ev) => {
-                const now = this.device.bus.timestamp
-                if (ev.code == ButtonEvent.Down) {
-                    this.onSourceButtonDown()
-                } else if (ev.code == ButtonEvent.Up) {
-                    this.onSourceButtonUp()
-                }
-            })
-        })
+        // TODO fetch service from role manager
+        // TODO timeout if source role not available
+
+        // button.on(EVENT, (evs: JDEvent[]) => {
+        //     evs.forEach((ev) => {
+        //         const now = this.device.bus.timestamp
+        //         if (ev.code == ButtonEvent.Down) {
+        //             this.onSourceButtonDown()
+        //         } else if (ev.code == ButtonEvent.Up) {
+        //             this.onSourceButtonUp()
+        //         }
+        //     })
+        // })
         
     }
 

@@ -16,13 +16,27 @@ interface BusDevice {
     roleName?: string,
 }
 
-// Creates a bus with the specified servers, bound to the specified files.
+// how the heck is this not a native operation
+function setEquals<T>(set1: Set<T>, set2: Set<T>): boolean {
+    if (set1.size != set2.size) {
+        return false
+    }
+    set1.forEach(value => {
+        if (!set2.has(value)) {
+            return false
+        }
+    })
+    return true
+}
+
+// Creates a bus with the specified servers, bound to the specified roles.
 // Returns once all devices are registered, and adapters are ready.
+// TODO should a timeout live here? or should that be a higher level responsibility?
 async function createBus(busDevices: BusDevice[]): Promise<JDBus> {
     const bus = mkBus()
     const roleManager = new RoleManager(bus)
 
-    const createdDevices = busDevices.forEach(busDevice => {
+    const createdDevices = busDevices.map(busDevice => {
         const device = bus.addServiceProvider(new JDServiceProvider(
             [busDevice.server]
             ))  // TODO support multi-service devices?
@@ -32,19 +46,29 @@ async function createBus(busDevices: BusDevice[]): Promise<JDBus> {
     // Wait for created devices to be announced, so services become available
     // TODO is this a good way to write async code in TS?
     await new Promise((resolve, reject) => {
+        const devicesSet = new Set(createdDevices)
+        const announcedSet = new Set()
         const onHandler = (device: JDDevice) => {
-            // TODO handler logic here
-            console.log(`announce ${device.describe()} => ${device.services().map(service => service.specification.name)}`)
-
-            bus.off(DEVICE_ANNOUNCE, onHandler)
-            resolve(undefined)
+            if (devicesSet.has(device)) {
+                announcedSet.add(device)
+            }
+            
+            if (setEquals(devicesSet, announcedSet)) {
+                bus.off(DEVICE_ANNOUNCE, onHandler)
+                resolve(undefined)
+            }
         }
         bus.on(DEVICE_ANNOUNCE, onHandler)
+    })
+
+    createdDevices.forEach(device => {
+        console.log(`ready ${device.describe()} => ${device.services().map(service => service.specification.name)}`)
     })
 
     // Ensure adapters are ready
     // TODO WRITE ME
 
+    // TODO return devices as map?
     return bus
 }
 
@@ -58,34 +82,27 @@ suite('adapters', () => {
 
         // These are here so we have a handle
         const buttonServer = new ButtonServer("button")  // interface name is just a human-friendly name, not functional
-        // TODO pending role name refactor
-        // const gestureAdapter = new ButtonGestureAdapter("button", "gestureAdapter")
+        const gestureAdapter = new ButtonGestureAdapter("button", "gestureAdapter")
 
         bus = await createBus([
             {server: buttonServer, roleName: "button"},
-            // {server: gestureAdapter},
+            {server: gestureAdapter},
         ])
         console.log("bus created")
 
-        const roleManager = new RoleManager(bus)
+        // Simple test stimulus, click cycle
+        setTimeout(() => { buttonServer.down() }, 300)
+        setTimeout(() => { buttonServer.up() }, 400)  // should generate click event
 
+        // Test stimulus, click and hold cycle
+        setTimeout(() => { buttonServer.down() }, 700)  // should generate click-and-hold event
+        setTimeout(() => { buttonServer.up() }, 1000)  // and release event
+        setTimeout(() => { done() }, 1200)
+
+        //
+        // TODO MIGRATE ME
+        //
         bus.on(DEVICE_ANNOUNCE, (device: JDDevice) => {
-            // When the button is connected, setup the button adapter and queue test stimulus
-            if (device.services({serviceClass: SRV_BUTTON}).length) {
-                const button = bus.services({serviceClass: SRV_BUTTON})[0]  // TODO more robust to make sure we're getting the right button
-                const buttonAdapter = new ButtonGestureAdapter(button, "BG0")
-                bus.addServiceProvider(new JDServiceProvider([buttonAdapter]))
-
-                // Simple test stimulus, click cycle
-                setTimeout(() => { buttonServer.down() }, 300)
-                setTimeout(() => { buttonServer.up() }, 400)  // should generate click event
-
-                // Test stimulus, click and hold cycle
-                setTimeout(() => { buttonServer.down() }, 700)  // should generate click-and-hold event
-                setTimeout(() => { buttonServer.up() }, 1000)  // and release event
-                setTimeout(() => { done() }, 1200)
-            }
-
             // When the adapter is connected, set up the event handler and dump events
             if (device.services({serviceClass: SRV_BUTTON_GESTURE}).length) {
                 const buttonGesture = bus.services({serviceClass: SRV_BUTTON_GESTURE})[0]
