@@ -37,10 +37,6 @@ export default class RoleManager extends JDClient {
         )
 
         this.bindServices([])
-
-        // debug
-        //this.on(ROLE_UNBOUND, role => console.log(`role unbound`, { role }))
-        //this.on(ROLE_BOUND, role => console.log(`role bound`, { role }))
     }
 
     get bus() {
@@ -153,7 +149,6 @@ export default class RoleManager extends JDClient {
             const boundRoles = this.boundRoles
             const providedService = newRoles.find(p => p.role === binding.role)
             if (providedService?.service) {
-                // TODO: make sure service isn't already bound
                 binding.service = providedService?.service
             } else {
                 const service = this.bus

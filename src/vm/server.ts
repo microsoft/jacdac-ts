@@ -9,6 +9,7 @@ import { jdpack, PackedValues } from "../jdom/pack"
 import { atomic } from "./utils"
 import { CHANGE } from "../jdom/constants"
 import { Packet } from "../jdom/packet"
+import { DecodedPacket } from "../jdom/pretty"
 import JDRegisterServer from "../jdom/registerserver"
 
 export const VM_SERVER_COMMAND_RECEIVED = "vmServerCommandReceived"
@@ -20,8 +21,6 @@ class VMRegisterServer extends JDRegisterServer<PackedValues> {
         super(serviceServer, reg.identifier, defaultValue)
     }
 
-    // on a get request, we want to invoke a VM function to respond
-    // (if there is no function, we simply return the current value)
     async sendGetAsync() {
         this.serviceServer.raiseGetRegisterEvent(this.reg.name)
     }
@@ -35,13 +34,13 @@ export class VMServiceServer extends JDServiceServer {
     private eventNameToId: SMap<number> = {}
     private regNameToId: SMap<number> = {}
     private regFieldToId: SMap<number> = {}
-    private commandPackets: SMap<Packet> = {}
+    private commandPackets: SMap<DecodedPacket> = {}
+    private cmdFieldToId: SMap<number> = {}
 
     constructor(public role: string, public shortId: string, private spec: jdspec.ServiceSpec) {
         super(spec.classIdentifier)
 
         spec.packets.filter(isHighLevelRegister).map(reg => {
-            // TODO: we need to make our own register and add it here
             const regServer = this.addExistingRegister(new VMRegisterServer(this, reg))
             this.regNameToId[reg.name] = reg.identifier
             reg.fields?.forEach((pkt, index) => {
@@ -53,8 +52,12 @@ export class VMServiceServer extends JDServiceServer {
         })
 
         spec.packets.filter(isCommand).map(cmd => {
-            this.addCommand(cmd.identifier, pkt => {
-                this.emit(VM_SERVER_COMMAND_RECEIVED, this.role, pkt)
+            this.addCommand(cmd.identifier, (pkt: Packet) => {
+                this.commandPackets[cmd.identifier] = pkt.decoded
+                this.emit(VM_SERVER_COMMAND_RECEIVED, this.role, cmd.name)
+            })
+            cmd.fields?.forEach((pkt, index) => {
+                this.regFieldToId[`${cmd.name}:${pkt.name}`] = index
             })
         })
 
@@ -65,6 +68,11 @@ export class VMServiceServer extends JDServiceServer {
 
     raiseGetRegisterEvent(regName: string) {
         this.emit(VM_SERVER_GET_REGISTER_REQUEST, this.role, regName)
+    }
+
+    respondToGetRegisterEvent(regName: string) {
+        const reg = this.register(this.regNameToId[regName]) as VMRegisterServer
+        reg.theRealSendGetAsync()
     }
 
     async sendEventNameAsync(eventName: string, values?: PackedValues) {
@@ -88,8 +96,7 @@ export class VMServiceServer extends JDServiceServer {
             }
         } else if (this.commandPackets[root]) {
             const cmd = this.commandPackets[root]
-            // TODO: extract the field
-            return undefined
+            return cmd.decoded?.[this.cmdFieldToId[`${root}:${fld}`]]?.value
         }
         return undefined
     }
