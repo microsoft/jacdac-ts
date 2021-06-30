@@ -17,14 +17,33 @@ interface BusDevice {
 }
 
 // Creates a bus with the specified servers, bound to the specified files.
-// Returns once all devices are registeres, and adapters are ready.
-function createBus(busDevices: BusDevice[]): JDBus {
+// Returns once all devices are registered, and adapters are ready.
+async function createBus(busDevices: BusDevice[]): Promise<JDBus> {
     const bus = mkBus()
     const roleManager = new RoleManager(bus)
 
-    busDevices.forEach(busDevice => {
-        bus.addServiceProvider(new JDServiceProvider([busDevice.server]))  // TODO support multi-service devices?
+    const createdDevices = busDevices.forEach(busDevice => {
+        const device = bus.addServiceProvider(new JDServiceProvider(
+            [busDevice.server]
+            ))  // TODO support multi-service devices?
+        return device
     })
+
+    // Wait for created devices to be announced, so services become available
+    // TODO is this a good way to write async code in TS?
+    await new Promise((resolve, reject) => {
+        const onHandler = (device: JDDevice) => {
+            // TODO handler logic here
+            console.log(`announce ${device.describe()} => ${device.services().map(service => service.specification.name)}`)
+
+            bus.off(DEVICE_ANNOUNCE, onHandler)
+            resolve(undefined)
+        }
+        bus.on(DEVICE_ANNOUNCE, onHandler)
+    })
+
+    // Ensure adapters are ready
+    // TODO WRITE ME
 
     return bus
 }
@@ -34,7 +53,7 @@ suite('adapters', () => {
 
     afterEach(() => bus?.stop())
 
-    test('click detect event', function(done) {
+    test('click detect event', async function(done) {
         console.log("start test")
 
         // These are here so we have a handle
@@ -42,7 +61,7 @@ suite('adapters', () => {
         // TODO pending role name refactor
         // const gestureAdapter = new ButtonGestureAdapter("button", "gestureAdapter")
 
-        bus = createBus([
+        bus = await createBus([
             {server: buttonServer, roleName: "button"},
             // {server: gestureAdapter},
         ])
@@ -58,7 +77,6 @@ suite('adapters', () => {
                 bus.addServiceProvider(new JDServiceProvider([buttonAdapter]))
 
                 // Simple test stimulus, click cycle
-
                 setTimeout(() => { buttonServer.down() }, 300)
                 setTimeout(() => { buttonServer.up() }, 400)  // should generate click event
 
