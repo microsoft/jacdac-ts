@@ -1,4 +1,4 @@
-import { SMap } from "../jdom/utils"
+import { assert, SMap } from "../jdom/utils"
 import { JDService } from "../jdom/service"
 import JDServiceProvider from "../jdom/serviceprovider"
 import { JDEventSource } from "../jdom/eventsource"
@@ -7,13 +7,19 @@ import { serviceSpecificationFromName } from "../jdom/spec"
 import { RoleRegister, RoleEvent } from "./compile"
 import { VMEnvironmentInterface } from "./runner"
 import { VMRole } from "./ir"
-import { VMServiceServer } from "./server"
+import { VMServiceServer, VM_EXTERNAL_REQUEST } from "./server"
 import { VMServiceClient } from "./client"
 import { atomic } from "./utils"
 
 export const GLOBAL_CHANGE = "vmEnvGlobalChange"
 export const REGISTER_CHANGE = "vmEnvRegisterChange"
-export const EVENT_CHANGE = "vmEnvEventChange"
+export const EXTERNAL_REQUEST = "vmEnvEventChange"
+
+export interface ExternalRequest {
+    kind: "event" | "get" | "set" | "cmd"
+    role: string
+    tgt: string
+}
 
 export enum VMExceptionCode {
     RoleNoService = "vmEnvRoleNoService",
@@ -36,7 +42,7 @@ export class VMEnvironment
     extends JDEventSource
     implements VMEnvironmentInterface
 {
-    private _currentEvent: string = undefined
+    private _currentRequest: ExternalRequest = undefined
     private _clientEnvs: SMap<VMServiceClient> = {}
     private _serverEnvs: SMap<VMServiceServer> = {}
     private _globals: SMap<GlobalVariable> = {}
@@ -52,10 +58,18 @@ export class VMEnvironment
             const service = serviceSpecificationFromName(p.serviceShortId)
             if (service) {
                 // spin up JDServiceServer
-                this._serverEnvs[p.role] = new VMServiceServer(
+                const serviceServer = new VMServiceServer(
                     p.role,
                     p.serviceShortId,
                     service
+                )
+                this._serverEnvs[p.role] = serviceServer
+                serviceServer.subscribe(
+                    VM_EXTERNAL_REQUEST,
+                    (p: ExternalRequest) => {
+                        this._currentRequest = p
+                        this.emit(EXTERNAL_REQUEST, p)
+                    }
                 )
             }
         })
@@ -108,11 +122,11 @@ export class VMEnvironment
         })
     }
 
-    public registerEvent(role: string, ev: string) {
+    public registerEvent(role: string, tgt: string) {
         const serviceEnv = this.getService(role)
-        serviceEnv.registerEvent(ev, () => {
-            this._currentEvent = `${role}.${ev}`
-            this.emit(EVENT_CHANGE, this._currentEvent)
+        serviceEnv.registerEvent(tgt, () => {
+            this._currentRequest = { kind: "event", role, tgt }
+            this.emit(EXTERNAL_REQUEST, this._currentRequest)
         })
     }
 
@@ -184,8 +198,7 @@ export class VMEnvironment
                 ? undefined
                 : (ep.property as jsep.Identifier).name
         const serviceEnv = this.getService(e)
-        if (serviceEnv)
-            return await serviceEnv.lookupRegisterAsync(root, fld)
+        if (serviceEnv) return await serviceEnv.lookupRegisterAsync(root, fld)
         else {
             const server = this.getServer(e)
             return server.lookupRegister(root, fld)
@@ -200,8 +213,7 @@ export class VMEnvironment
         const me = e as jsep.MemberExpression
         if (me.property.type === "Identifier") {
             const reg = (me.property as jsep.Identifier).name
-            if (serviceEnv) 
-                await serviceEnv.writeRegisterAsync(reg, values)
+            if (serviceEnv) await serviceEnv.writeRegisterAsync(reg, values)
             else {
                 const server = this.getServer(e)
                 return server.writeRegister(reg, values)
@@ -250,19 +262,29 @@ export class VMEnvironment
         return false
     }
 
-    public clearEvents() {
-        this._currentEvent = undefined
+    public clearExternalStimulii() {
+        this._currentRequest = undefined
         this.rolesReset()
     }
 
-    public hasEvent(e: jsep.MemberExpression | string) {
+    public hasRequest(e: jsep.MemberExpression | string): ExternalRequest {
         const roleName = this.getRootName(e)
         const me = e as jsep.MemberExpression
         if (me.property.type === "Identifier") {
-            const event = (me.property as jsep.Identifier).name
-            return this._currentEvent === `${roleName}.${event}`
+            const op = (me.property as jsep.Identifier).name
+            if (
+                this._currentRequest.role === roleName &&
+                this._currentRequest.tgt === op
+            )
+                return this._currentRequest
         }
-        return false
+        return undefined
+    }
+
+    public async completeRequest(request: ExternalRequest) {
+        assert(request.kind === "get")
+        const server = this.getServer(request.role)
+        await server.respondToGetRegisterEvent(request.tgt)
     }
 
     // role events

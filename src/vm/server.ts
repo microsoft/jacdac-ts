@@ -11,13 +11,16 @@ import { CHANGE } from "../jdom/constants"
 import { Packet } from "../jdom/packet"
 import { DecodedPacket } from "../jdom/pretty"
 import JDRegisterServer from "../jdom/registerserver"
+import { ExternalRequest } from "./environment"
 
-export const VM_SERVER_COMMAND_RECEIVED = "vmServerCommandReceived"
-export const VM_SERVER_SET_REGISTER_REQUEST = "vmServerSetRequest"
-export const VM_SERVER_GET_REGISTER_REQUEST = "vmServerGetRequest"
+export const VM_EXTERNAL_REQUEST = "vmExternalRequest"
 
 class VMRegisterServer extends JDRegisterServer<PackedValues> {
-    constructor(private serviceServer: VMServiceServer, private reg: jdspec.PacketInfo, defaultValue?: PackedValues) {
+    constructor(
+        private serviceServer: VMServiceServer,
+        private reg: jdspec.PacketInfo,
+        defaultValue?: PackedValues
+    ) {
         super(serviceServer, reg.identifier, defaultValue)
     }
 
@@ -37,24 +40,37 @@ export class VMServiceServer extends JDServiceServer {
     private commandPackets: SMap<DecodedPacket> = {}
     private cmdFieldToId: SMap<number> = {}
 
-    constructor(public role: string, public shortId: string, private spec: jdspec.ServiceSpec) {
+    constructor(
+        public role: string,
+        public shortId: string,
+        private spec: jdspec.ServiceSpec
+    ) {
         super(spec.classIdentifier)
-
         spec.packets.filter(isHighLevelRegister).map(reg => {
-            const regServer = this.addExistingRegister(new VMRegisterServer(this, reg))
+            const regServer = this.addExistingRegister(
+                new VMRegisterServer(this, reg)
+            )
             this.regNameToId[reg.name] = reg.identifier
             reg.fields?.forEach((pkt, index) => {
                 this.regFieldToId[`${reg.name}:${pkt.name}`] = index
             })
             regServer.subscribe(CHANGE, () => {
-                this.emit(VM_SERVER_SET_REGISTER_REQUEST, this.role, reg.name)
+                this.emit(VM_EXTERNAL_REQUEST, <ExternalRequest>{
+                    kind: "set",
+                    role: this.role,
+                    tgt: reg.name,
+                })
             })
         })
 
         spec.packets.filter(isCommand).map(cmd => {
             this.addCommand(cmd.identifier, (pkt: Packet) => {
                 this.commandPackets[cmd.identifier] = pkt.decoded
-                this.emit(VM_SERVER_COMMAND_RECEIVED, this.role, cmd.name)
+                this.emit(VM_EXTERNAL_REQUEST, <ExternalRequest>{
+                    kind: "cmd",
+                    role: this.role,
+                    tgt: cmd.name,
+                })
             })
             cmd.fields?.forEach((pkt, index) => {
                 this.regFieldToId[`${cmd.name}:${pkt.name}`] = index
@@ -67,12 +83,16 @@ export class VMServiceServer extends JDServiceServer {
     }
 
     raiseGetRegisterEvent(regName: string) {
-        this.emit(VM_SERVER_GET_REGISTER_REQUEST, this.role, regName)
+        this.emit(VM_EXTERNAL_REQUEST,  <ExternalRequest>{
+            kind: "get",
+            role: this.role,
+            tgt: regName,
+        })
     }
 
-    respondToGetRegisterEvent(regName: string) {
+    async respondToGetRegisterEvent(regName: string) {
         const reg = this.register(this.regNameToId[regName]) as VMRegisterServer
-        reg.theRealSendGetAsync()
+        await reg.theRealSendGetAsync()
     }
 
     async sendEventNameAsync(eventName: string, values?: PackedValues) {

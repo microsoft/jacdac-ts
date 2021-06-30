@@ -1329,9 +1329,8 @@ export default function serviceProviderDefinitions() {
 export function addServiceProvider(
     bus: JDBus,
     definition: ServiceProviderDefinition,
-    serviceServer: JDServiceServer = undefined
 ) {
-    const services = serviceServer ? [serviceServer] : definition.services()
+    const services = definition.services()
     const options = {
         resetIn: definition.resetIn,
     }
