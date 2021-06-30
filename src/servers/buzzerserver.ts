@@ -30,6 +30,10 @@ export default class BuzzerServer extends JDServiceServer {
         const frequency = 1000000 / period
         const [volume] = this.volume.values()
 
-        this.emit(BuzzerServer.PLAY_TONE, <BuzzerTone>{ frequency, duration, volume })
+        this.emit(BuzzerServer.PLAY_TONE, <BuzzerTone>{
+            frequency,
+            duration,
+            volume,
+        })
     }
 }
