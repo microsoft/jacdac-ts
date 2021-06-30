@@ -11,14 +11,17 @@ import { atomic } from "./utils"
 export class VMServiceServer extends JDServiceServer {
     private eventNameToId: SMap<number> = {}
     private regNameToId: SMap<number> = {}
+    private regFieldToId: SMap<number> = {}
     constructor(public shortId: string, private spec: jdspec.ServiceSpec) {
         super(spec.classIdentifier)
 
         spec.packets.filter(isHighLevelRegister).map(reg => {
             this.addRegister(reg.identifier)
             this.regNameToId[reg.name] = reg.identifier
+            reg?.fields.forEach((pkt, index) => {
+                this.regFieldToId[`${reg.name}:${pkt.name}`] = index
+            })
 
-            
             // nothing to do on a read of register from outside (server maintains current value)
             // on a write from outside, notify the VM of CHANGE of value
             // on a write from VM, notify outside of CHANGE (done already)
@@ -52,17 +55,12 @@ export class VMServiceServer extends JDServiceServer {
         const reg = this.register(this.regNameToId[root])
         if (!fld) return reg.values()?.[0]
         else {
-            // reg.packFormat
-            // TODO
-            return undefined
-            //const field = reg.fields.find(f => f.name === fld)
-            //return field?.value
+            return reg.values()?.[this.regFieldToId[`${root}:${fld}`]]
         }
     }
 
     public writeRegister(root: string, ev: atomic[]) {
         const reg = this.register(this.regNameToId[root])
-        // TODO: need to deal with fields
-        // reg.packFormat
+        reg.setValues(ev)
     }
 }
