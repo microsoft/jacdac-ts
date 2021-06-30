@@ -17,12 +17,15 @@ export interface Scheduler {
 }
 
 export class WallClockScheduler implements Scheduler {
-    private _now: () => number;
+    private _now: () => number
     private _startTime: number
 
     constructor() {
-        this._now = typeof performance !== "undefined" ? performance.now : Date.now;
-        this._startTime = this._now();
+        this._now =
+            typeof performance !== "undefined"
+                ? () => performance.now()
+                : () => Date.now()
+        this._startTime = this._now()
     }
 
     get timestamp(): number {
