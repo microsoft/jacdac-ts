@@ -3,7 +3,7 @@ import { jdpack } from "../jdom/pack"
 import Packet from "../jdom/packet"
 import { OutPipe } from "../jdom/pipes"
 import JDServiceServer from "../jdom/serviceserver"
-import { bufferToString, SMap, stringToBuffer } from "../jdom/utils"
+import { fromHex, SMap, toHex } from "../jdom/utils"
 
 export default class SettingsServer extends JDServiceServer {
     private settings: SMap<string>
@@ -32,8 +32,7 @@ export default class SettingsServer extends JDServiceServer {
             const payload = new Uint8Array(1)
             payload[0] = 0
         } else {
-            // return value
-            payload = stringToBuffer(value)
+            payload = fromHex(value)
         }
 
         return payload
@@ -53,7 +52,7 @@ export default class SettingsServer extends JDServiceServer {
     private async handleSet(pkt: Packet) {
         const [key, value] = pkt.jdunpack<[string, Uint8Array]>("z b")
         console.log({ cmd: "set", key, value })
-        this.settings[key] = bufferToString(value)
+        this.settings[key] = toHex(value)
         await this.save()
     }
 

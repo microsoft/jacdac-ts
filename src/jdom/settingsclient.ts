@@ -27,7 +27,7 @@ export default class SettingsClient extends JDServiceClient {
         return keys.filter(k => !!k)
     }
 
-    async list(): Promise<{ key: string; value?: string }[]> {
+    async list(): Promise<{ key: string; value?: Uint8Array }[]> {
         const inp = new InPipeReader(this.bus)
         await this.service.sendPacketAsync(
             inp.openCommand(SettingsCmd.List),
@@ -36,29 +36,31 @@ export default class SettingsClient extends JDServiceClient {
         const { output } = await inp.readAll()
         return output
             .map(pkt => {
-                const [key, valueb] = pkt.jdunpack<[string, Uint8Array]>("z b")
-                const value =
-                    valueb.length > 0 ? bufferToString(valueb) : undefined
+                const [key, value] = pkt.jdunpack<[string, Uint8Array]>("z b")
                 return key && { key, value }
             })
             .filter(kv => !!kv)
     }
 
-    async setValue(key: string, value: string) {
+    async setValue(key: string, value: Uint8Array) {
         key = key.trim()
         if (value === undefined) {
             await this.deleteValue(key)
         } else {
             const pkt = Packet.from(
                 SettingsCmd.Set,
-                jdpack("z b", [key, stringToBuffer(value)])
+                jdpack("z b", [key, value])
             )
             await this.service.sendPacketAsync(pkt)
             this.emit(CHANGE)
         }
     }
 
-    async getValue(key: string): Promise<string> {
+    async setStringValue(key: string, value: string) {
+        await this.setValue(key, value ? stringToBuffer(value) : undefined)
+    }
+
+    async getValue(key: string): Promise<Uint8Array> {
         if (!key) return undefined
 
         key = key.trim()
@@ -71,7 +73,12 @@ export default class SettingsClient extends JDServiceClient {
             )
             return undefined
         }
-        return bufferToString(value)
+        return value
+    }
+
+    async getStringValue(key: string) {
+        const value = await this.getValue(key)
+        return value && bufferToString(value)
     }
 
     async deleteValue(key: string) {

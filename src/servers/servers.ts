@@ -78,13 +78,14 @@ import {
     JoystickButtons,
     SRV_HID_KEYBOARD,
     SRV_HID_MOUSE,
+    SRV_AZURE_IOT_HUB,
 } from "../jdom/constants"
 import JDServiceProvider from "../jdom/serviceprovider"
 import ProtocolTestServer from "../jdom/protocoltestserver"
 import JDServiceServer from "../jdom/serviceserver"
 import ButtonServer from "./buttonserver"
 import BuzzerServer from "./buzzerserver"
-import CharacterScreenServer from "./characterserver"
+import CharacterScreenServer from "./characterscreenserver"
 import HumidityServer from "./humidityserver"
 import JoystickServer, {
     JOYSTICK_ARCADE_BUTTONS,
@@ -118,6 +119,7 @@ import PowerServer from "./powerserver"
 import CapacitiveButtonServer from "./capacitivebuttonserver"
 import HIDKeyboardServer from "./hidkeyboardserver"
 import HIDMouseServer from "./hidmouseserver"
+import AzureIoTHubServer from "./azureiothubserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "indoor",
@@ -492,6 +494,16 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         ],
     },
     {
+        name: "joystick (stick + A + B)",
+        serviceClasses: [SRV_JOYSTICK],
+        services: () => [
+            new JoystickServer({
+                variant: JoystickVariant.Thumb,
+                buttonsAvailable: JoystickButtons.A | JoystickButtons.B,
+            }),
+        ],
+    },
+    {
         name: "joystick (stick)",
         serviceClasses: [SRV_JOYSTICK],
         services: () => [
@@ -507,16 +519,6 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
             new JoystickServer({
                 variant: JoystickVariant.Thumb,
                 buttonsAvailable: JoystickButtons.A,
-            }),
-        ],
-    },
-    {
-        name: "joystick (stick+AB)",
-        serviceClasses: [SRV_JOYSTICK],
-        services: () => [
-            new JoystickServer({
-                variant: JoystickVariant.Thumb,
-                buttonsAvailable: JoystickButtons.A | JoystickButtons.B,
             }),
         ],
     },
@@ -541,12 +543,12 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         ],
     },
     {
-        name: "LED (RGB through hole)",
+        name: "Red LED (RGB through hole)",
         serviceClasses: [SRV_LED],
         services: () => [
             new LEDServer({
                 variant: LedVariant.ThroughHole,
-                ledCount: 1,
+                ledCount: 2,
                 color: [255, 0, 0],
             }),
         ],
@@ -557,8 +559,8 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         services: () => [
             new LEDServer({
                 variant: LedVariant.ThroughHole,
-                waveLength: 624,
-                ledCount: 3,
+                waveLength: 450,
+                ledCount: 5,
                 color: [0, 0, 255],
             }),
         ],
@@ -1306,13 +1308,18 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     {
         name: "HID keyboard",
         serviceClasses: [SRV_HID_KEYBOARD],
-        services: () => [new HIDKeyboardServer()]
+        services: () => [new HIDKeyboardServer()],
     },
     {
         name: "HID mouse",
         serviceClasses: [SRV_HID_MOUSE],
-        services: () => [new HIDMouseServer()]
-    }
+        services: () => [new HIDMouseServer()],
+    },
+    {
+        name: "Azure IoT Hub",
+        serviceClasses: [SRV_AZURE_IOT_HUB],
+        services: () => [new AzureIoTHubServer()],
+    },
 ]
 
 export default function serviceProviderDefinitions() {
@@ -1323,6 +1330,7 @@ export function addServiceProvider(
     bus: JDBus,
     definition: ServiceProviderDefinition
 ) {
+    if (!definition) return undefined
     const services = definition.services()
     const options = {
         resetIn: definition.resetIn,
@@ -1342,4 +1350,12 @@ export function serviceProviderDefinitionFromServiceClass(
             provider.serviceClasses.length === 1 &&
             provider.serviceClasses[0] === serviceClass
     )
+}
+
+export function startServiceProviderFromServiceClass(
+    bus: JDBus,
+    serviceClass: number
+) {
+    const provider = serviceProviderDefinitionFromServiceClass(serviceClass)
+    return addServiceProvider(bus, provider)
 }

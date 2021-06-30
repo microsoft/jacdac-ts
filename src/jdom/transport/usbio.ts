@@ -8,6 +8,7 @@ import { Observable } from "../observable"
 import Proto from "./proto"
 import { assert, delay, throwError } from "../utils"
 import Flags from "../flags"
+import errorCode, { JDError } from "../error"
 
 export const USB_FILTERS = {
     filters: [
@@ -51,7 +52,7 @@ export default class USBIO {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onData = (v: Uint8Array) => {}
     onError = (e: Error) => {
-        console.warn("usb error: " + (e ? e.stack : e))
+        console.warn(`usb error: ${errorCode(e) || ""} ${e ? e.stack : e}`)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -124,12 +125,12 @@ export default class USBIO {
         return this.dev.transferIn(this.epIn.endpointNumber, 64).then(final)
     }
 
-    error(msg: string) {
-        this.onError(
-            new Error(
-                `device ${this.dev ? this.dev.productName : "n/a"} (${msg})`
-            )
+    error(msg: string, code?: string) {
+        const e = new JDError(
+            `device ${this.dev ? this.dev.productName : "n/a"} (${msg})`,
+            code
         )
+        this.onError(e)
     }
 
     private async readLoop() {

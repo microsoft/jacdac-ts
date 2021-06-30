@@ -1,9 +1,13 @@
 export interface TransportMessage {
+    jacdac: true
     type: "connect" | "disconnect" | "send" | "packet" | "frame" | "error"
     id?: string
     background?: boolean
     error?: {
         message?: string
+        stack?: string
+        name?: string
+        jacdacName?: string
     }
 }
 

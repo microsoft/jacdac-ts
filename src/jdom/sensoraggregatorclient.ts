@@ -65,9 +65,8 @@ export class SensorAggregatorClient extends JDServiceClient {
             const { deviceId, serviceIndex, serviceClass } = input
             if (!!deviceId !== !!serviceIndex)
                 error(`deviceId and serviceIndex must be specified together`)
-            const specification = serviceSpecificationFromClassIdentifier(
-                serviceClass
-            )
+            const specification =
+                serviceSpecificationFromClassIdentifier(serviceClass)
             if (!specification)
                 error(
                     `missing specification from service 0x${serviceClass.toString(

@@ -41,9 +41,10 @@ export function isMLModelSupported(model: Uint8Array, formatRegValue: number) {
 }
 
 export function getMLModelFormatName(model: Uint8Array) {
-    const map = serviceSpecificationFromClassIdentifier(SRV_MODEL_RUNNER).enums[
-        "ModelFormat"
-    ].members
+    const map =
+        serviceSpecificationFromClassIdentifier(SRV_MODEL_RUNNER).enums[
+            "ModelFormat"
+        ].members
     const m0 = U.read32(model, 0)
     const m1 = U.read32(model, 4)
     for (const v of Object.keys(map)) {

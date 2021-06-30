@@ -2,8 +2,10 @@ import {
     CharacterScreenReg,
     CharacterScreenTextDirection,
     CharacterScreenVariant,
+    CharacterScreenCmd,
     SRV_CHARACTER_SCREEN,
 } from "../jdom/constants"
+import Packet from "../jdom/packet"
 import JDRegisterServer from "../jdom/registerserver"
 import JDServiceServer from "../jdom/serviceserver"
 
@@ -24,13 +26,22 @@ export default class CharacterScreenServer extends JDServiceServer {
         textDirection?: CharacterScreenTextDirection
     }) {
         super(SRV_CHARACTER_SCREEN)
-        const { message, rows = 2, columns = 16, variant, textDirection, brightness = 100 } =
-            options || {}
+        const {
+            message = "",
+            rows = 2,
+            columns = 16,
+            variant,
+            textDirection,
+            brightness = 100,
+        } = options || {}
 
         this.message = this.addRegister<[string]>(CharacterScreenReg.Message, [
-            message || "",
+            message,
         ])
-        this.brightness = this.addRegister<[number]>(CharacterScreenReg.Brightness, [brightness]);
+        this.brightness = this.addRegister<[number]>(
+            CharacterScreenReg.Brightness,
+            [brightness]
+        )
         this.rows = this.addRegister<[number]>(CharacterScreenReg.Rows, [rows])
         this.columns = this.addRegister<[number]>(CharacterScreenReg.Columns, [
             columns,
@@ -46,5 +57,28 @@ export default class CharacterScreenServer extends JDServiceServer {
             CharacterScreenReg.TextDirection,
             [textDirection || CharacterScreenTextDirection.LeftToRight]
         )
+
+        this.addCommand(
+            CharacterScreenCmd.SetLine,
+            this.handleSetLine.bind(this)
+        )
+        this.addCommand(CharacterScreenCmd.Clear, this.handleClear.bind(this))
+    }
+
+    handleClear() {
+        this.message.setValues([""])
+    }
+
+    handleSetLine(pkt: Packet) {
+        const [line, lineMessage] = pkt.jdunpack<[number, string]>("u16 s")
+        const [rows] = this.rows.values()
+        if (line >= rows) return
+        const [columns] = this.columns.values()
+
+        const [message = ""] = this.message.values()
+        const lines = message.split("\n")
+        lines[line] = lineMessage.slice(0, columns) // clip as needed
+        const newMessage = lines.map(l => l || "").join("\n")
+        this.message.setValues([newMessage])
     }
 }

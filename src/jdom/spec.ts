@@ -20,7 +20,8 @@ import {
 } from "./constants"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-let _serviceSpecifications: jdspec.ServiceSpec[] = serviceSpecificationData as any
+let _serviceSpecifications: jdspec.ServiceSpec[] =
+    serviceSpecificationData as any
 let _customServiceSpecifications: SMap<jdspec.ServiceSpec> = {}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const _deviceRegistry: jdspec.DeviceSpec[] = deviceRegistryData as any
@@ -135,13 +136,16 @@ export function isInfrastructure(spec: jdspec.ServiceSpec) {
 
 /**
  * Looks up a service specification by name
- * @param name
+ * @param shortId
  */
-export function serviceSpecificationFromName(name: string): jdspec.ServiceSpec {
+export function serviceSpecificationFromName(
+    shortId: string
+): jdspec.ServiceSpec {
+    if (!shortId) return undefined
     return (
-        _serviceSpecifications.find(s => s.shortId == name) ||
+        _serviceSpecifications.find(s => s.shortId === shortId) ||
         Object.values(_customServiceSpecifications).find(
-            ser => ser.shortId == name
+            ser => ser.shortId === shortId
         )
     )
 }

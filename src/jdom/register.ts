@@ -57,6 +57,10 @@ export class JDRegister extends JDServiceMemberNode {
         return this._lastGetTimestamp
     }
 
+    clearGetTimestamp() {
+        this._lastGetTimestamp = -Infinity
+    }
+
     get lastGetAttempts() {
         return this._lastGetAttempts
     }
@@ -67,7 +71,10 @@ export class JDRegister extends JDServiceMemberNode {
         const pkt = Packet.from(cmd, data)
         this._lastSetTimestamp = this.service.device.bus.timestamp
         let p = this.service.sendPacketAsync(pkt, this.service.registersUseAcks)
-        if (autoRefresh) p = delay(50).then(() => this.sendGetAsync())
+        if (autoRefresh)
+            p = this.service.device.bus
+                .delay(50)
+                .then(() => this.sendGetAsync())
         return p
     }
 
@@ -189,11 +196,11 @@ export class JDRegister extends JDServiceMemberNode {
                 })
                 // re-send get if no answer within 40ms and 90ms
                 this.sendGetAsync()
-                    .then(() => delay(REGISTER_REFRESH_RETRY_0))
+                    .then(() => bus.delay(REGISTER_REFRESH_RETRY_0))
                     .then(() => {
                         if (resolve)
                             return this.sendGetAsync().then(() =>
-                                delay(REGISTER_REFRESH_RETRY_1)
+                                bus.delay(REGISTER_REFRESH_RETRY_1)
                             )
                     })
                     .then(() => {
@@ -210,7 +217,7 @@ export class JDRegister extends JDServiceMemberNode {
             // another device sent a set packet to this register
             // so most likely it's value changed
             // clear any data caching to force updating the value
-            this._lastGetTimestamp = -Infinity
+            this.clearGetTimestamp()
         }
     }
 
@@ -221,7 +228,7 @@ export class JDRegister extends JDServiceMemberNode {
         this._lastGetTimestamp = this.service.device.bus.timestamp // reset time counter too
         this.emit(REPORT_RECEIVE, this)
         if (updated) {
-            this.emit(REPORT_UPDATE, this)
+            this.emitPropagated(REPORT_UPDATE, this)
             this.emit(CHANGE)
         }
     }

@@ -150,8 +150,12 @@ export default class LedPixelServer extends JDServiceServer {
     ) {
         super(SRV_LED_PIXEL, options)
 
-        const { numColumns, maxPower = 200, maxPixels = 300, numPixels = 15 } =
-            options || {}
+        const {
+            numColumns,
+            maxPower = 200,
+            maxPixels = 300,
+            numPixels = 15,
+        } = options || {}
 
         this.brightness = this.addRegister<[number]>(LedPixelReg.Brightness, [
             15,

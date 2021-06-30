@@ -5,11 +5,11 @@ console.log(`patching version: ${version}`)
 
 // patch with cdn files
 async function patchDocs() {
-    const fn = `jacdac.umd.js`
+    const fn = `jacdac.js`
     await patch({
         files: "./*.html",
         from: `/dist/${fn}`,
-        to: `https://cdn.jsdelivr.net/npm/jacdac-ts@${version}/dist/${fn}`,
+        to: `https://unpkg.com/jacdac-ts@${version}/dist/${fn}`,
     })
 }
 

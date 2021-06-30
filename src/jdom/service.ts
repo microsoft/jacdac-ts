@@ -21,9 +21,10 @@ import {
     isValue,
     isIntensity,
     isOptionalReadingRegisterCode,
+    isConstRegister,
 } from "./spec"
 import { JDEvent } from "./event"
-import { delay, strcmp } from "./utils"
+import { strcmp } from "./utils"
 import {
     BaseEvent,
     BaseReg,
@@ -81,7 +82,7 @@ export class JDService extends JDNode {
     }
 
     get name() {
-        return serviceName(this.serviceClass)
+        return serviceName(this.serviceClass)?.toLowerCase()
     }
 
     get friendlyName() {
@@ -295,6 +296,10 @@ export class JDService extends JDNode {
         if (pkt.requiresAck) await this.device.sendPktWithAck(pkt)
         else await pkt.sendCmdAsync(this.device)
         this.emit(PACKET_SEND, pkt)
+
+        // invalid register after a command call to refresh their values asap
+        if (pkt.isCommand && !pkt.isRegisterGet && !pkt.isRegisterSet)
+            this.invalidateRegisterValues(pkt)
     }
 
     sendCmdAsync(cmd: number, data?: Uint8Array, ack?: boolean) {
@@ -303,6 +308,7 @@ export class JDService extends JDNode {
     }
 
     sendCmdAwaitResponseAsync(pkt: Packet, timeout = 500) {
+        const { bus } = this.device
         return new Promise<Packet>((resolve, reject) => {
             const handleRes = (resp: Packet) => {
                 if (resp.serviceCommand == pkt.serviceCommand) {
@@ -311,7 +317,7 @@ export class JDService extends JDNode {
                     resolve = null
                 }
             }
-            delay(timeout).then(() => {
+            bus.delay(timeout).then(() => {
                 if (!resolve) return
                 resolve = null
                 this.off(REPORT_RECEIVE, handleRes)
@@ -349,6 +355,14 @@ export class JDService extends JDNode {
             const reg = this.register(id)
             if (reg) reg.processPacket(pkt)
         }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private invalidateRegisterValues(pkt: Packet) {
+        //console.log(`clearing register get timestamp`, pkt)
+        this.registers()
+            .filter(r => r.specification && !isConstRegister(r.specification))
+            .forEach(r => r.clearGetTimestamp())
     }
 
     compareTo(b: JDService): number {

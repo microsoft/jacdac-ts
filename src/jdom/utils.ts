@@ -23,18 +23,6 @@ export function isAckError(e: Error) {
     return !!(e as any)?.__ack
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function log(msg: string, v?: any) {
-    if (v === undefined) console.log("JD: " + msg)
-    else console.log("JD: " + msg, v)
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function warn(msg: string, v?: any) {
-    if (v === undefined) console.log("JD-WARN: " + msg)
-    else console.log("JD-WARN: " + msg, v)
-}
-
 export function delay<T>(millis: number, value?: T): Promise<T | undefined> {
     return new Promise(resolve => setTimeout(() => resolve(value), millis))
 }
@@ -255,6 +243,12 @@ export function rgbToHtmlColor(rgb: number) {
     return `#${("000000" + rgb.toString(16)).slice(-6)}`
 }
 
+export function toFullHex(n: number[]) {
+    return (
+        "0x" + n.map(id => ("000000000" + id.toString(16)).slice(-8)).join("")
+    )
+}
+
 export function toHex(bytes: ArrayLike<number>) {
     if (!bytes) return undefined
     let r = ""
@@ -364,7 +358,12 @@ export function bufferConcatMany(bufs: Uint8Array[]) {
     return r
 }
 
-export function arrayConcatMany<T>(arrs: T[][]) {
+export function arrayConcatMany<T>(arrs: T[][]): T[] {
+    if (!arrs) return undefined
+
+    // weed out empty array
+    arrs = arrs.filter(a => !!a?.length)
+
     let sz = 0
     for (const buf of arrs) sz += buf.length
     const r: T[] = new Array(sz)
@@ -383,8 +382,14 @@ export function jsonCopyFrom<T>(trg: T, src: T) {
         ;(trg as any)[k] = (v as any)[k]
     }
 }
-export function assert(cond: boolean, msg = "Assertion failed") {
+export function assert(
+    cond: boolean,
+    msg = "Assertion failed",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    debugData?: any
+) {
     if (!cond) {
+        if (debugData) console.debug(`assertion filed ${msg}`, debugData)
         if (Flags.diagnostics)
             // eslint-disable-next-line no-debugger
             debugger
@@ -503,7 +508,6 @@ export function debounceAsync(
     }
 }
 
-
 export function JSONTryParse(src: string) {
     if (src === undefined || src === null) return src
 
@@ -549,6 +553,18 @@ export function uniqueMap<T, U>(
         }
     }
     return Object.values(r).map(converter)
+}
+
+export function toMap<T, V>(
+    a: T[],
+    keyConverter: (value: T, index: number) => string,
+    valueConverter: (value: T, index: number) => V
+): SMap<V> {
+    const m: SMap<V> = {}
+    if (a)
+        for (let i = 0; i < a.length; ++i)
+            m[keyConverter(a[i], i)] = valueConverter(a[i], i)
+    return m
 }
 
 export function ellipseJoin(

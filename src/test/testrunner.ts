@@ -4,30 +4,25 @@ import {
 } from "../../jacdac-spec/spectool/jdtestfuns"
 import { exprVisitor } from "../../jacdac-spec/spectool/jdutils"
 
-import { CHANGE, EVENT } from "../jdom/constants"
+import { CHANGE } from "../jdom/constants"
 import { JDEventSource } from "../jdom/eventsource"
 import { JDService } from "../jdom/service"
-import { JDRegister } from "../jdom/register"
-import { JDEvent } from "../jdom/event"
 import { JDServiceClient } from "../jdom/serviceclient"
-import {
-    isEvent,
-    isRegister,
-    serviceSpecificationFromClassIdentifier,
-} from "../jdom/spec"
 import { roundWithPrecision } from "../jdom/utils"
+import { unparse, VMExprEvaluator, CallEvaluator, StartMap } from "../vm/expr"
+import { VMServiceEnvironment } from "../vm/environment"
+
+export enum JDTestStatus {
+    NotReady,
+    Active,
+    Passed,
+    Failed,
+}
 
 export enum JDTestCommandStatus {
     NotReady,
     Active,
     RequiresUserInput,
-    Passed,
-    Failed,
-}
-
-export enum JDTestStatus {
-    NotReady,
-    Active,
     Passed,
     Failed,
 }
@@ -50,235 +45,6 @@ function commandStatusToTestStatus(status: JDTestCommandStatus) {
 function cmdToTestFunction(cmd: jdtest.TestCommandSpec) {
     const id = (<jsep.Identifier>cmd.call.callee).name
     return getTestCommandFunctions().find(t => t.id == id)
-}
-
-function unparse(e: jsep.Expression): string {
-    switch (e.type) {
-        case "ArrayExpression": {
-            const ae = e as jsep.ArrayExpression
-            return `[${ae.elements.map(unparse).join(", ")}]`
-        }
-        case "CallExpression": {
-            const caller = e as jsep.CallExpression
-            return `${unparse(caller.callee)}(${caller.arguments
-                .map(unparse)
-                .join(", ")})`
-        }
-        case "MemberExpression": {
-            const root = e as jsep.MemberExpression
-            return root.computed
-                ? `${unparse(root.object)}[${unparse(root.property)}]`
-                : `${unparse(root.object)}.${unparse(root.property)}`
-        }
-        case "BinaryExpression":
-        case "LogicalExpression": {
-            const be = e as any
-            return `(${unparse(be.left)} ${be.operator} ${unparse(be.right)})`
-        }
-        case "UnaryExpression": {
-            const ue = e as jsep.UnaryExpression
-            return `${ue.operator}${unparse(ue.argument)}`
-        }
-        case "Identifier": {
-            return (e as jsep.Identifier).name
-        }
-        case "Literal": {
-            return (e as jsep.Literal).raw
-        }
-        default:
-            return "TODO"
-    }
-}
-
-type SMap<T> = { [v: string]: T }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type StartMap = { e: jsep.Expression; v: any }[]
-
-type GetValue = (root: string, fld: string) => any
-
-class JDExprEvaluator {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private exprStack: any[] = []
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    constructor(private env: GetValue, private start: StartMap) {}
-
-    private tos() {
-        return this.exprStack[this.exprStack.length - 1]
-    }
-
-    public eval(e: jsep.Expression) {
-        this.exprStack = []
-        this.visitExpression(e)
-        return this.exprStack.pop()
-    }
-
-    private getStartVal(e: jsep.Expression) {
-        return this.start.find(r => r.e === e).v
-    }
-
-    private visitExpression(e: jsep.Expression) {
-        switch (e.type) {
-            case "ArrayExpression": {
-                // nothing to do here yet (only used for event function)
-                break
-            }
-
-            case "CallExpression": {
-                const caller = <jsep.CallExpression>e
-                const callee = <jsep.Identifier>caller.callee
-                switch (callee.name) {
-                    case "start": {
-                        this.exprStack.push(
-                            this.getStartVal(caller.arguments[0])
-                        )
-                        return
-                    }
-                    case "closeTo": {
-                        const args = caller.arguments
-                        const goal = this.getStartVal(args[1])
-                        const error = this.getStartVal(args[2])
-                        this.visitExpression(args[0])
-                        const ev = this.exprStack.pop()
-                        this.exprStack.push(
-                            ev >= goal - error && ev <= goal + error
-                        )
-                        break
-                    }
-                    default: // ERROR
-                }
-                break
-            }
-
-            case "BinaryExpression": {
-                const be = <jsep.BinaryExpression>e
-                this.visitExpression(be.left)
-                this.visitExpression(be.right)
-                const right = this.exprStack.pop()
-                const left = this.exprStack.pop()
-                switch (be.operator) {
-                    case "+":
-                        this.exprStack.push(left + right)
-                        return
-                    case "-":
-                        this.exprStack.push(left - right)
-                        return
-                    case "/":
-                        this.exprStack.push(left / right)
-                        return
-                    case "*":
-                        this.exprStack.push(left * right)
-                        return
-                    case "%":
-                        this.exprStack.push(left % right)
-                        return
-                    case ">>":
-                        this.exprStack.push(left >> right)
-                        return
-                    case ">>>":
-                        this.exprStack.push(left >>> right)
-                        return
-                    case "<<":
-                        this.exprStack.push(left << right)
-                        return
-                    case "|":
-                        this.exprStack.push(left | right)
-                        return
-                    case "&":
-                        this.exprStack.push(left & right)
-                        return
-                    case "^":
-                        this.exprStack.push(left ^ right)
-                        return
-                    case "==":
-                        this.exprStack.push(left == right)
-                        return
-                    case "!=":
-                        this.exprStack.push(left != right)
-                        return
-                    case "===":
-                        this.exprStack.push(left === right)
-                        return
-                    case "!==":
-                        this.exprStack.push(left !== right)
-                        return
-
-                    case "<":
-                        this.exprStack.push(left < right)
-                        return
-                    case ">":
-                        this.exprStack.push(left > right)
-                        return
-                    case "<=":
-                        this.exprStack.push(left <= right)
-                        return
-                    case ">=":
-                        this.exprStack.push(left >= right)
-                        return
-                }
-                break
-            }
-
-            case "UnaryExpression": {
-                const ue = <jsep.UnaryExpression>e
-                this.visitExpression(ue.argument)
-                const top = this.exprStack.pop()
-                switch (ue.operator) {
-                    case "!":
-                        this.exprStack.push(!top)
-                        return
-                    case "~":
-                        this.exprStack.push(~top)
-                        return
-                    case "-":
-                        this.exprStack.push(-top)
-                        return
-                    case "+":
-                        this.exprStack.push(+top)
-                        return
-                }
-                break
-            }
-
-            case "LogicalExpression": {
-                const le = <jsep.LogicalExpression>e
-                this.visitExpression(le.left)
-                switch (le.operator) {
-                    case "||":
-                        if (this.tos()) return
-                        else this.visitExpression(le.right)
-                        return
-                    case "&&":
-                        if (!this.tos()) return
-                        else this.visitExpression(le.right)
-                        return
-                    default:
-                }
-                break
-            }
-            case "MemberExpression": {
-                // member expressions are of form [register|event].field
-                const root = e as jsep.MemberExpression
-                const lhs = root.object as jsep.Identifier
-                const rhs = root.property as jsep.Identifier
-                const val = this.env(lhs.name, rhs.name)
-                // console.log(`${lhs.name}.${rhs.name} = ${val}`)
-                this.exprStack.push(val)
-                return
-            }
-            case "Identifier": {
-                const id = <jsep.Identifier>e
-                this.exprStack.push(this.env(id.name, ""))
-                return
-            }
-            case "Literal": {
-                const lit = <jsep.Literal>e
-                this.exprStack.push(lit.value)
-                return
-            }
-            default:
-        }
-    }
 }
 
 class JDCommandEvaluator {
@@ -305,8 +71,31 @@ class JDCommandEvaluator {
     }
 
     private get env() {
-        return (root: string, fld = "") => {
-            return this.testRunner.serviceTestRunner.lookup(root, fld)
+        return (e: jsep.MemberExpression | string) => {
+            return this.testRunner.serviceTestRunner.lookup(e)
+        }
+    }
+
+    private callEval(start: StartMap): CallEvaluator {
+        return (caller: jsep.CallExpression, ee: VMExprEvaluator) => {
+            function getStartVal(e: jsep.Expression) {
+                return start.find(r => r.e === e).v
+            }
+            const callee = <jsep.Identifier>caller.callee
+            switch (callee.name) {
+                case "start":
+                    return getStartVal(caller.arguments[0])
+                case "closeTo": {
+                    const args = caller.arguments
+                    const goal = getStartVal(args[1])
+                    const error = getStartVal(args[2])
+                    ee.visitExpressionAsync(args[0])
+                    const ev = ee.pop()
+                    return ev >= goal - error && ev <= goal + error
+                }
+                default: // ERROR
+            }
+            return null
         }
     }
 
@@ -358,19 +147,22 @@ class JDCommandEvaluator {
             case "events": {
                 const eventList = this.command.call
                     .arguments[0] as jsep.ArrayExpression
-                this._eventsComplete = (eventList.elements as jsep.Identifier[]).map(
-                    id => id.name
-                )
+                this._eventsComplete = (
+                    eventList.elements as jsep.Identifier[]
+                ).map(id => id.name)
                 break
             }
         }
         // evaluate the start expressions and store the results
         startExprs.forEach(child => {
             if (this._startExpressions.findIndex(r => r.e === child) < 0) {
-                const exprEval = new JDExprEvaluator(this.env, [])
+                const exprEval = new VMExprEvaluator(
+                    this.env,
+                    this.callEval([])
+                )
                 this._startExpressions.push({
                     e: child,
-                    v: exprEval.eval(child),
+                    v: exprEval.evalAsync(child),
                 })
             }
         })
@@ -406,8 +198,11 @@ class JDCommandEvaluator {
     public setEvent(ev: string) {}
 
     private checkExpression(e: jsep.Expression) {
-        const expr = new JDExprEvaluator(this.env, this._startExpressions)
-        return expr.eval(e)
+        const expr = new VMExprEvaluator(
+            this.env,
+            this.callEval(this._startExpressions)
+        )
+        return expr.evalAsync(e)
             ? JDTestCommandStatus.Passed
             : JDTestCommandStatus.Active
     }
@@ -416,7 +211,7 @@ class JDCommandEvaluator {
         return this._startExpressions.find(r => r.e === e)
     }
 
-    public evaluate() {
+    public async evaluateAsync() {
         const testFun = cmdToTestFunction(this.command)
         const args = this.command.call.arguments
         this._status = JDTestCommandStatus.Active
@@ -433,11 +228,11 @@ class JDCommandEvaluator {
             case "closeTo": {
                 const goal = this.getStart(args[1])
                 const error = this.getStart(args[2])
-                const expr = new JDExprEvaluator(
+                const expr = new VMExprEvaluator(
                     this.env,
-                    this._startExpressions
+                    this.callEval(this._startExpressions)
                 )
-                const ev = expr.eval(args[0]) as number
+                const ev = (await expr.evalAsync(args[0])) as number
                 if (Math.abs(ev - goal.v) <= error.v)
                     this._status = JDTestCommandStatus.Passed
                 this._progress = `current: ${pretify(ev)}; goal: ${pretify(
@@ -569,21 +364,18 @@ class JDCommandEvaluator {
                 break
             }
             case "assign": {
-                const reg = args[0] as jsep.Identifier
-                const jdreg = this.testRunner.serviceTestRunner.registers[
-                    reg.name
-                ]
-                const expr = new JDExprEvaluator(
+                const expr = new VMExprEvaluator(
                     this.env,
-                    this._startExpressions
+                    this.callEval(this._startExpressions)
                 )
-                const ev = expr.eval(args[1])
-                if (jdreg) {
-                    const fmt = jdreg.specification?.packFormat
-                    jdreg.sendSetPackedAsync(fmt, [ev])
-                    this._status = JDTestCommandStatus.Passed
-                    this._progress = `wrote ${ev} to register ${reg.name}`
-                }
+                const ev = expr.evalAsync(args[1])
+                const reg = args[0] as jsep.Identifier
+                await this.testRunner.serviceTestRunner.writeRegisterAsync(
+                    reg.name,
+                    ev
+                )
+                this._status = JDTestCommandStatus.Passed
+                this._progress = `wrote ${ev} to register ${reg.name}`
             }
         }
 
@@ -601,7 +393,7 @@ export interface JDCommandOutput {
 export class JDTestCommandRunner extends JDEventSource {
     private _status = JDTestCommandStatus.NotReady
     private _output: JDCommandOutput = { message: "", progress: "" }
-    private _commmandEvaluator: JDCommandEvaluator = null
+    private _commandEvaluator: JDCommandEvaluator = null
 
     constructor(
         private readonly testRunner: JDTestRunner,
@@ -653,48 +445,62 @@ export class JDTestCommandRunner extends JDEventSource {
     reset() {
         this.status = JDTestCommandStatus.NotReady
         this.output = { message: "", progress: "" }
-        this._commmandEvaluator = null
+        this._commandEvaluator = null
     }
 
-    start() {
+    async startAsync() {
         this.status = JDTestCommandStatus.Active
-        this._commmandEvaluator = new JDCommandEvaluator(
-            this.testRunner,
-            this.command
-        )
-        this._commmandEvaluator.start()
-        this.envChange()
+        this._commandEvaluator = undefined
+        await this.envChangeAsync()
     }
 
-    envChange() {
+    async envChangeAsync() {
         if (this.isActive) {
-            this._commmandEvaluator.evaluate()
-            const newOutput: JDCommandOutput = {
-                message: this._commmandEvaluator.prompt,
-                progress: this._commmandEvaluator.progress,
+            if (!this._commandEvaluator) {
+                this._commandEvaluator = new JDCommandEvaluator(
+                    this.testRunner,
+                    this.command
+                )
+                try {
+                    this._commandEvaluator.start()
+                } catch (e) {
+                    // we will try again on next environment change
+                    this._commandEvaluator = undefined
+                }
             }
-            this.output = newOutput
-            if (
-                this._commmandEvaluator.status ===
-                JDTestCommandStatus.RequiresUserInput
-            )
-                this.status = JDTestCommandStatus.RequiresUserInput
-            else this.finish(this._commmandEvaluator.status)
+            if (this._commandEvaluator) {
+                try {
+                    await this._commandEvaluator.evaluateAsync()
+                    const newOutput: JDCommandOutput = {
+                        message: this._commandEvaluator.prompt,
+                        progress: this._commandEvaluator.progress,
+                    }
+                    this.output = newOutput
+                    if (
+                        this._commandEvaluator.status ===
+                        JDTestCommandStatus.RequiresUserInput
+                    )
+                        this.status = JDTestCommandStatus.RequiresUserInput
+                    else await this.finishAsync(this._commandEvaluator.status)
+                } catch (e) {
+                    // show still be in the active state
+                }
+            }
         }
     }
 
-    cancel() {
-        this.finish(JDTestCommandStatus.Failed)
+    async cancelAsync() {
+        await this.finishAsync(JDTestCommandStatus.Failed)
     }
 
-    finish(s: JDTestCommandStatus) {
+    async finishAsync(s: JDTestCommandStatus) {
         if (
             this.isActive &&
             (s === JDTestCommandStatus.Failed ||
                 s === JDTestCommandStatus.Passed)
         ) {
             this.status = s
-            this.testRunner.finishCommand()
+            await this.testRunner.finishCommandAsync()
         }
     }
 }
@@ -715,7 +521,7 @@ export class JDTestRunner extends JDEventSource {
         )
     }
 
-    public reset() {
+    reset() {
         if (this.status !== JDTestStatus.NotReady) {
             this._status = JDTestStatus.NotReady
             this._commandIndex = undefined
@@ -725,11 +531,10 @@ export class JDTestRunner extends JDEventSource {
         }
     }
 
-    start() {
+    async startAsync() {
         this.reset()
         this.status = JDTestStatus.Active
-        this.commandIndex = 0
-        this.serviceTestRunner.refreshEnvironment()
+        this._commandIndex = 0
     }
 
     next() {
@@ -772,28 +577,28 @@ export class JDTestRunner extends JDEventSource {
         }
     }
 
-    private get commandIndex() {
+    private getCommandIndex() {
         return this._commandIndex
     }
 
-    private set commandIndex(index: number) {
+    private async setCommandIndex(index: number) {
         if (this._commandIndex !== index) {
             this._commandIndex = index
-            this.currentCommand?.start()
+            await this.currentCommand?.startAsync()
             this.emit(CHANGE)
         }
     }
 
-    public envChange() {
+    public async envChangeAsync() {
         if (this.status === JDTestStatus.Active) {
-            this.currentCommand?.envChange()
+            await this.currentCommand?.envChangeAsync()
         }
     }
 
-    public eventChange(event: string) {
+    public async eventChangeAsync(event: string) {
         if (this.status === JDTestStatus.Active) {
             this._currentEvent = event
-            this.envChange()
+            await this.envChangeAsync()
         }
     }
 
@@ -807,10 +612,10 @@ export class JDTestRunner extends JDEventSource {
         return ret
     }
 
-    public finishCommand() {
-        if (this.commandIndex === this.commands.length - 1)
+    public async finishCommandAsync() {
+        if (this.getCommandIndex() === this.commands.length - 1)
             this.finish(commandStatusToTestStatus(this.currentCommand.status))
-        else this.commandIndex++
+        else await this.setCommandIndex(this.getCommandIndex() + 1)
     }
 
     get currentCommand() {
@@ -818,22 +623,9 @@ export class JDTestRunner extends JDEventSource {
     }
 }
 
-async function refresh_env(registers: SMap<JDRegister>) {
-    for (const k in registers) {
-        const register = registers[k]
-        let retry = 0
-        let val: any = undefined
-        do {
-            await register.refresh()
-            val = register.unpackedValue?.[0]
-        } while (val === undefined && retry++ < 2)
-    }
-}
-
 export class JDServiceTestRunner extends JDServiceClient {
     private _testIndex = -1
-    private _registers: SMap<JDRegister> = {}
-    private _events: SMap<JDEvent> = {}
+    private _env: VMServiceEnvironment
     public readonly tests: JDTestRunner[]
 
     constructor(
@@ -841,70 +633,41 @@ export class JDServiceTestRunner extends JDServiceClient {
         service: JDService
     ) {
         super(service)
+        this._env = new VMServiceEnvironment(service)
         this.tests = this.testSpec.tests.map(t => new JDTestRunner(this, t))
-        const serviceSpec = serviceSpecificationFromClassIdentifier(
-            service.serviceClass
-        )
         this.testSpec.tests.forEach(t => {
-            t.events.forEach(eventName => {
-                if (!this.events[eventName]) {
-                    const pkt = serviceSpec.packets.find(
-                        pkt => isEvent(pkt) && pkt.name === eventName
-                    )
-                    const event = service.event(pkt.identifier)
-                    this.events[eventName] = event
-                    this.mount(
-                        event.subscribe(EVENT, () => {
-                            this.currentTest?.eventChange(eventName)
-                        })
-                    )
-                }
+            t.events.forEach(s => {
+                const eventName = s.substr(s.indexOf(".") + 1)
+                this._env.registerEvent(eventName, async () => {
+                    try {
+                        await this.currentTest?.eventChangeAsync(eventName)
+                    } catch (e) {
+                        //
+                    }
+                })
             })
-            t.registers.forEach(regName => {
-                if (!this._registers[regName]) {
-                    const pkt = serviceSpec.packets.find(
-                        pkt => isRegister(pkt) && pkt.name === regName
-                    )
-                    const register = service.register(pkt.identifier)
-                    this._registers[regName] = register
-                    this.mount(
-                        register.subscribe(CHANGE, () => {
-                            this.currentTest?.envChange()
-                        })
-                    )
-                }
+            t.registers.forEach(s => {
+                const regName = s.substr(s.indexOf(".") + 1)
+                this._env.registerRegister(regName, async () => {
+                    try {
+                        await this.currentTest?.envChangeAsync()
+                    } catch (e) {
+                        //
+                    }
+                })
             })
         })
         this.start()
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public lookup(root: string, fld = ""): any {
-        if (root in this.registers) {
-            if (!fld) return this.registers[root].unpackedValue?.[0]
-            else {
-                const field = this.registers[root].fields.find(
-                    f => f.name === fld
-                )
-                return field?.value
-            }
-        } else if (root in this.events) {
-            const field = this.events[root].fields?.find(f => f.name === fld)
-            return field?.value
-        }
-        return undefined
+    public lookup(e: jsep.MemberExpression | string): any {
+        return this._env.lookupRegisterAsync(e)
     }
 
-    public refreshEnvironment() {
-        refresh_env(this.registers)
-    }
-
-    public get registers() {
-        return this._registers
-    }
-
-    public get events() {
-        return this._events
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public async writeRegisterAsync(regName: string, val: any) {
+        await this._env.writeRegisterAsync(regName, val)
     }
 
     private get testIndex() {
@@ -920,7 +683,6 @@ export class JDServiceTestRunner extends JDServiceClient {
                     ct.cancel()
                 }
             }
-
             // update test
             this._testIndex = index
             this.emit(CHANGE)

@@ -45,8 +45,8 @@
         <div>waiting for message...</div>
     </div>
 
-    <script src="/dist/jacdac.umd.js"></script>
-    <script>
+    <script type="module">
+        import * as jacdac from "/dist/jacdac.js"
         const devicesDiv = document.getElementById("devices");
         const jd = jacdac.createUSBBus()
         jd.on(jacdac.ERROR, (evt) => log(`${evt.context} ${evt.exception.message}`))

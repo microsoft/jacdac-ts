@@ -67,9 +67,8 @@ class BluetoothTransport extends JDTransport {
         super(BLUETOOTH_TRANSPORT, { checkPulse: true })
 
         this.handleDisconnected = this.handleDisconnected.bind(this)
-        this.handleCharacteristicChanged = this.handleCharacteristicChanged.bind(
-            this
-        )
+        this.handleCharacteristicChanged =
+            this.handleCharacteristicChanged.bind(this)
     }
 
     protected async transportConnectAsync(background: boolean) {

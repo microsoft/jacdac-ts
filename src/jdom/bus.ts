@@ -44,6 +44,10 @@ import {
     TIMEOUT_DISCONNECT,
     REGISTER_POLL_STREAMING_INTERVAL,
     REPORT_RECEIVE,
+    CMD_SET_REG,
+    PING_LOGGERS_POLL,
+    RESET_IN_TIME_US,
+    REFRESH_REGISTER_POLL,
 } from "./constants"
 import { serviceClass } from "./pretty"
 import { JDNode } from "./node"
@@ -71,11 +75,12 @@ import { RoleManagerClient } from "./rolemanagerclient"
 import JDBridge from "./bridge"
 import IFrameBridgeClient from "./iframebridgeclient"
 import { randomDeviceId } from "./random"
-export interface BusOptions {
-    deviceLostDelay?: number
-    deviceDisconnectedDelay?: number
-    deviceId?: string
+import { ControlReg, SRV_CONTROL } from "../../jacdac-spec/dist/specconstants"
+import { Scheduler, WallClockScheduler } from "./scheduler"
 
+export interface BusOptions {
+    deviceId?: string
+    scheduler?: Scheduler
     parentOrigin?: string
 }
 
@@ -97,14 +102,24 @@ export interface DeviceFilter {
     physical?: boolean
 }
 
+export interface ServiceFilter {
+    serviceIndex?: number
+    serviceName?: string
+    serviceClass?: number
+    specification?: boolean
+    mixins?: boolean
+}
+
 /**
  * A Jacdac bus manager. This instance maintains the list of devices on the bus.
  */
 export class JDBus extends JDNode {
+    readonly selfDeviceId: string
+    readonly scheduler: Scheduler
+    readonly parentOrigin: string
     private readonly _transports: JDTransport[] = []
     private _bridges: JDBridge[] = []
     private _devices: JDDevice[] = []
-    private _startTime: number
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private _gcInterval: any
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -113,12 +128,13 @@ export class JDBus extends JDNode {
     private _safeBootInterval: any
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private _refreshRegistersInterval: any
+    private _lastPingLoggerTime = 0
+    private _lastResetInTime = 0
+    private _restartCounter = 0
     private _roleManagerClient: RoleManagerClient
-    private _minLoggerPriority = LoggerPriority.Log
+    private _minLoggerPriority = LoggerPriority.Debug
     private _firmwareBlobs: FirmwareBlob[]
-    private _announcing = false
     private _gcDevicesEnabled = 0
-
     private _serviceProviders: JDServiceProvider[] = []
 
     public readonly stats: BusStatsMonitor
@@ -128,22 +144,21 @@ export class JDBus extends JDNode {
      * Creates the bus with the given transport
      * @param sendPacket
      */
-    constructor(transports?: JDTransport[], public options?: BusOptions) {
+    constructor(transports?: JDTransport[], options?: BusOptions) {
         super()
+
+        this.selfDeviceId = options?.deviceId || randomDeviceId()
+        this.scheduler = options?.scheduler || new WallClockScheduler()
+        this.parentOrigin = options?.parentOrigin || "*"
+        this.stats = new BusStatsMonitor(this)
 
         transports?.filter(tr => !!tr).map(tr => this.addTransport(tr))
 
-        this.options = this.options || {}
-        if (!this.options.deviceId) this.options.deviceId = randomDeviceId()
-
-        this.stats = new BusStatsMonitor(this)
-        this.resetTime()
-
-        // tell loggers to send data
-        this.on(
-            DEVICE_ANNOUNCE,
-            debounceAsync(this.pingLoggers.bind(this), 1000)
-        )
+        // tell loggers to send data, every now and then
+        // send resetin packets
+        this.on(SELF_ANNOUNCE, this.sendAnnounce.bind(this))
+        this.on(SELF_ANNOUNCE, this.sendResetIn.bind(this))
+        this.on(SELF_ANNOUNCE, this.pingLoggers.bind(this))
         // tell RTC clock the computer time
         this.on(DEVICE_ANNOUNCE, this.handleRealTimeClockSync.bind(this))
         // grab the default role manager
@@ -215,17 +230,13 @@ export class JDBus extends JDNode {
 
     start() {
         if (!this._announceInterval)
-            this._announceInterval = setInterval(
+            this._announceInterval = this.scheduler.setInterval(
                 () => this.emit(SELF_ANNOUNCE),
                 499
             )
-        if (!this._refreshRegistersInterval)
-            this._refreshRegistersInterval = setInterval(
-                this.refreshRegisters.bind(this),
-                50
-            )
+        this.backgroundRefreshRegisters = true
         if (!this._gcInterval)
-            this._gcInterval = setInterval(
+            this._gcInterval = this.scheduler.setInterval(
                 () => this.gcDevices(),
                 JD_DEVICE_DISCONNECTED_DELAY
             )
@@ -234,16 +245,13 @@ export class JDBus extends JDNode {
     async stop() {
         await this.disconnect()
         if (this._announceInterval) {
-            clearInterval(this._announceInterval)
+            this.scheduler.clearInterval(this._announceInterval)
             this._announceInterval = undefined
         }
         this.safeBoot = false
-        if (this._refreshRegistersInterval) {
-            clearInterval(this._refreshRegistersInterval)
-            this._refreshRegistersInterval = undefined
-        }
+        this.backgroundRefreshRegisters = false
         if (this._gcInterval) {
-            clearInterval(this._gcInterval)
+            this.scheduler.clearInterval(this._gcInterval)
             this._gcInterval = undefined
         }
     }
@@ -260,14 +268,14 @@ export class JDBus extends JDNode {
 
     set safeBoot(enabled: boolean) {
         if (enabled && !this._safeBootInterval) {
-            this._safeBootInterval = setInterval(() => {
+            this._safeBootInterval = this.scheduler.setInterval(() => {
                 // don't send message if any device is flashing
                 if (this._devices.some(d => d.flashing)) return
                 sendStayInBootloaderCommand(this)
             }, 50)
             this.emit(CHANGE)
         } else if (!enabled && this._safeBootInterval) {
-            clearInterval(this._safeBootInterval)
+            this.scheduler.clearInterval(this._safeBootInterval)
             this._safeBootInterval = undefined
             this.emit(CHANGE)
         }
@@ -281,7 +289,7 @@ export class JDBus extends JDNode {
         return this._transports.every(t => t.disconnected)
     }
 
-    clear() {
+    clear(timestamp = 0) {
         // clear hosts
         if (this._serviceProviders?.length) {
             this._serviceProviders.forEach(host => (host.bus = undefined))
@@ -298,7 +306,7 @@ export class JDBus extends JDNode {
                 this.emit(DEVICE_CHANGE, dev)
             })
         }
-        this.resetTime()
+        this.resetTime(timestamp)
     }
 
     /**
@@ -356,9 +364,10 @@ export class JDBus extends JDNode {
 
     node(id: string): JDNode {
         const resolve = (): JDNode => {
-            const m = /^(?<type>bus|device|service|register|event|field)(:(?<dev>\w+)(:(?<srv>\w+)(:(?<reg>\w+(:(?<idx>\w+))?))?)?)?$/.exec(
-                id
-            )
+            const m =
+                /^(?<type>bus|device|service|register|event|field)(:(?<dev>\w+)(:(?<srv>\w+)(:(?<reg>\w+(:(?<idx>\w+))?))?)?)?$/.exec(
+                    id
+                )
             if (!m) return undefined
             const type = m.groups["type"]
             const dev = m.groups["dev"]
@@ -388,13 +397,19 @@ export class JDBus extends JDNode {
         return node
     }
 
-    private resetTime() {
-        this._startTime = Date.now()
+    private resetTime(delta = 0) {
+        this.scheduler.resetTime(delta)
         this.emit(CHANGE)
     }
 
     get timestamp(): number {
-        return Date.now() - this._startTime
+        return this.scheduler.timestamp
+    }
+
+    delay<T>(millis: number, value?: T): Promise<T | undefined> {
+        return new Promise(resolve =>
+            this.scheduler.setTimeout(() => resolve(value), millis)
+        )
     }
 
     get minLoggerPriority(): LoggerPriority {
@@ -413,10 +428,16 @@ export class JDBus extends JDNode {
     }
 
     private async pingLoggers() {
-        if (this._minLoggerPriority < LoggerPriority.Silent) {
+        if (
+            this._minLoggerPriority < LoggerPriority.Silent &&
+            this.timestamp - this._lastPingLoggerTime > PING_LOGGERS_POLL &&
+            this.devices({ ignoreSelf: true, serviceClass: SRV_LOGGER })
+                .length > 0
+        ) {
+            this._lastPingLoggerTime = this.timestamp
             const pkt = Packet.jdpacked<[LoggerPriority]>(
-                0x2000 | LoggerReg.MinPriority,
-                "i32",
+                CMD_SET_REG | LoggerReg.MinPriority,
+                "u8",
                 [this._minLoggerPriority]
             )
             await pkt.sendAsMultiCommandAsync(this, SRV_LOGGER)
@@ -501,7 +522,7 @@ export class JDBus extends JDNode {
             this._serviceProviders.push(provider)
             provider.bus = this
 
-            this.emit(SERVICE_PROVIDER_ADDED)
+            this.emit(SERVICE_PROVIDER_ADDED, provider)
             this.emit(CHANGE)
         }
 
@@ -509,7 +530,7 @@ export class JDBus extends JDNode {
     }
 
     /**
-     * Adds the service provider to the bus
+     * Removes the service provider from the bus
      * @param provider
      */
     removeServiceProvider(provider: JDServiceProvider) {
@@ -532,7 +553,7 @@ export class JDBus extends JDNode {
             // remove host
             this._serviceProviders.splice(i, 1)
             provider.bus = undefined
-            this.emit(SERVICE_PROVIDER_REMOVED)
+            this.emit(SERVICE_PROVIDER_REMOVED, provider)
 
             // removed host
             this.emit(CHANGE)
@@ -546,12 +567,7 @@ export class JDBus extends JDNode {
     /**
      * Gets the current list of services from all the known devices on the bus
      */
-    services(options?: {
-        serviceName?: string
-        serviceClass?: number
-        specification?: boolean
-        ignoreSelf?: boolean
-    }): JDService[] {
+    services(options?: ServiceFilter & DeviceFilter): JDService[] {
         return arrayConcatMany(
             this.devices(options).map(d => d.services(options))
         )
@@ -627,10 +643,8 @@ export class JDBus extends JDNode {
             return
         }
 
-        const LOST_DELAY = this.options?.deviceLostDelay || JD_DEVICE_LOST_DELAY
-        const DISCONNECTED_DELAY =
-            this.options?.deviceDisconnectedDelay ||
-            JD_DEVICE_DISCONNECTED_DELAY
+        const LOST_DELAY = JD_DEVICE_LOST_DELAY
+        const DISCONNECTED_DELAY = JD_DEVICE_DISCONNECTED_DELAY
         const lostCutoff = this.timestamp - LOST_DELAY
         const disconnectedCutoff = this.timestamp - DISCONNECTED_DELAY
 
@@ -688,6 +702,12 @@ export class JDBus extends JDNode {
                 if (pkt.serviceCommand == CMD_ADVERTISEMENT_DATA) {
                     isAnnounce = true
                     pkt.device.processAnnouncement(pkt)
+                } else if (
+                    pkt.isMultiCommand &&
+                    pkt.serviceCommand == (CMD_SET_REG | ControlReg.ResetIn)
+                ) {
+                    // someone else is doing reset in
+                    this._lastResetInTime = this.timestamp
                 }
             }
             pkt.device.processPacket(pkt)
@@ -703,36 +723,62 @@ export class JDBus extends JDNode {
         }
     }
 
-    get selfDeviceId() {
-        return this.options.deviceId
-    }
-
     get selfDevice() {
         return this.device(this.selfDeviceId)
     }
 
-    enableAnnounce() {
-        if (!this._announcing) return
-        this._announcing = true
-        let restartCounter = 0
-        this.on(SELF_ANNOUNCE, () => {
-            // we do not support any services (at least yet)
-            if (restartCounter < 0xf) restartCounter++
-            const pkt = Packet.jdpacked<[number]>(
-                CMD_ADVERTISEMENT_DATA,
-                "u32",
-                [restartCounter | 0x100]
-            )
-            pkt.serviceIndex = JD_SERVICE_INDEX_CTRL
-            pkt.deviceIdentifier = this.selfDeviceId
-            pkt.sendReportAsync(this.selfDevice)
-        })
+    private sendAnnounce() {
+        // we do not support any services (at least yet)
+        if (this._restartCounter < 0xf) this._restartCounter++
+        const pkt = Packet.jdpacked<[number]>(CMD_ADVERTISEMENT_DATA, "u32", [
+            this._restartCounter | 0x100,
+        ])
+        pkt.serviceIndex = JD_SERVICE_INDEX_CTRL
+        pkt.deviceIdentifier = this.selfDeviceId
+        pkt.sendReportAsync(this.selfDevice)
+    }
+
+    private sendResetIn() {
+        // don't send reset if already received
+        // or no devices
+        if (
+            this._lastResetInTime - this.timestamp > RESET_IN_TIME_US / 3 ||
+            !this.devices({ ignoreSelf: true }).length
+        )
+            return
+
+        this._lastResetInTime = this.timestamp
+        const rst = Packet.jdpacked<[number]>(
+            CMD_SET_REG | ControlReg.ResetIn,
+            "u32",
+            [RESET_IN_TIME_US]
+        )
+        rst.sendAsMultiCommandAsync(this, SRV_CONTROL)
+    }
+
+    get backgroundRefreshRegisters() {
+        return !!this._refreshRegistersInterval
+    }
+
+    set backgroundRefreshRegisters(value: boolean) {
+        if (!!value !== this.backgroundRefreshRegisters) {
+            if (!value) {
+                if (this._refreshRegistersInterval)
+                    this.scheduler.clearInterval(this._refreshRegistersInterval)
+                this._refreshRegistersInterval = undefined
+            } else {
+                this._refreshRegistersInterval = this.scheduler.setInterval(
+                    this.handleRefreshRegisters.bind(this),
+                    REFRESH_REGISTER_POLL
+                )
+            }
+        }
     }
 
     /**
      * Cycles through all known registers and refreshes the once that have REPORT_UPDATE registered
      */
-    private refreshRegisters() {
+    private handleRefreshRegisters() {
         const devices = this._devices.filter(
             device => device.announced && !device.lost
         ) // don't try lost devices or devices flashing

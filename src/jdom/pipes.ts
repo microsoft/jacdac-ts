@@ -11,10 +11,12 @@ import {
 } from "./constants"
 import Packet from "./packet"
 import { JDBus } from "./bus"
-import { signal, fromHex, throwError, warn, toHex } from "./utils"
+import { signal, fromHex, throwError, toHex } from "./utils"
 import { JDClient } from "./client"
 import { jdpack } from "./pack"
 import { randomUInt } from "./random"
+
+const { warn } = console
 
 export class OutPipe {
     private _count = 0
@@ -26,7 +28,6 @@ export class OutPipe {
     ) {}
 
     static from(bus: JDBus, pkt: Packet, hosted?: boolean) {
-        bus.enableAnnounce() // ned self device
         const [idbuf, port] = pkt.jdunpack<[Buffer, number]>("b[8] u16")
         const id = toHex(idbuf)
         const dev = bus.device(id, false, pkt)
@@ -107,7 +108,6 @@ export class InPipe extends JDClient {
 
         this._handlePacket = this._handlePacket.bind(this)
         this.allocPort()
-        this.bus.enableAnnounce()
         this.mount(
             this.bus.selfDevice.subscribe(PACKET_RECEIVE, this._handlePacket)
         )

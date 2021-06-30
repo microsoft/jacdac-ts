@@ -55,7 +55,8 @@ export const JD_DEVICE_LOST_DELAY = 1500
 // time without seeing a packet to be considered "disconnected"
 export const JD_DEVICE_DISCONNECTED_DELAY = 5000
 
-export const SRV_CTRL = 0
+export const RESET_IN_TIME_US = 2000000
+
 export const MAX_SERVICES_LENGTH = 59
 
 export const NEW_LISTENER = "newListener"
@@ -117,11 +118,15 @@ export const PACKET_EVENT = "packetEvent"
 export const PACKET_REPORT = "packetReport"
 export const PACKET_ANNOUNCE = "packetAnnounce"
 export const PACKET_INVALID_CRC = "packetInvalidCrc"
+export const PACKET_INVALID_DATA = "packetInvalidData"
+export const PACKET_DATA_NORMALIZE = "packetDataNormalize"
 
 export const REPORT_RECEIVE = "reportReceive"
 export const REPORT_UPDATE = "reportUpdate"
+export const COMMAND_RECEIVE = "commandReceive"
 
 export const ERROR = "error"
+export const TRACE = "trace"
 export const TIMEOUT = "timeout"
 export const TIMEOUT_DISCONNECT = "timeoutDisconnect"
 
@@ -145,8 +150,8 @@ export const COMMAND_NODE_NAME = "command"
 export const FIELD_NODE_NAME = "field"
 export const PIPE_NODE_NAME = "pipe"
 export const PIPE_REPORT_NODE_NAME = "pipe_report"
-export const CRC_ACK_NODE_NAME = "crc_ack"
-export const SERVICE_TEST_NODE_NAME = "service_test"
+export const CRC_ACK_NODE_NAME = "crcAck"
+export const SERVICE_TEST_NODE_NAME = "serviceTest"
 
 export const REGISTER_REFRESH_TIMEOUT = 150
 export const REGISTER_REFRESH_RETRY_0 = 30
@@ -158,7 +163,9 @@ export const REGISTER_POLL_REPORT_MAX_INTERVAL = 60000
 export const REGISTER_OPTIONAL_POLL_COUNT = 3
 export const STREAMING_DEFAULT_INTERVAL = 50
 
+export const PING_LOGGERS_POLL = 2400
 export const ROLE_MANAGER_POLL = 1500
+export const REFRESH_REGISTER_POLL = 50
 
 export const USB_TRANSPORT = "USB"
 export const BLUETOOTH_TRANSPORT = "Bluetooth"
@@ -175,11 +182,25 @@ export const TRACE_FILTER_HORIZON = 100
 export const EMBED_MIN_ASPECT_RATIO = 1.22
 
 export const BLUETOOTH_JACDAC_SERVICE = "f8530001-a97f-49f5-a554-3e373fbea2d5"
-export const BLUETOOTH_JACDAC_RX_CHARACTERISTIC = "f8530002-a97f-49f5-a554-3e373fbea2d5"
-export const BLUETOOTH_JACDAC_TX_CHARACTERISTIC = "f8530003-a97f-49f5-a554-3e373fbea2d5"
-export const BLUETOOTH_JACDAC_DIAG_CHARACTERISTIC = "f8530004-a97f-49f5-a554-3e373fbea2d5"
+export const BLUETOOTH_JACDAC_RX_CHARACTERISTIC =
+    "f8530002-a97f-49f5-a554-3e373fbea2d5"
+export const BLUETOOTH_JACDAC_TX_CHARACTERISTIC =
+    "f8530003-a97f-49f5-a554-3e373fbea2d5"
+export const BLUETOOTH_JACDAC_DIAG_CHARACTERISTIC =
+    "f8530004-a97f-49f5-a554-3e373fbea2d5"
 
 export const TRANSPORT_CONNECT_RETRY_DELAY = 500
-export const TRANSPORT_PULSE_TIMEOUT = JD_DEVICE_DISCONNECTED_DELAY
+export const TRANSPORT_PULSE_TIMEOUT = 15000 // don't interfere with manual flashing of devices
+
+export const ERROR_MICROBIT_V1 = "microbit/v1-not-supported"
+export const ERROR_MICROBIT_UNKNOWN = "microbit/unknown-hardware-revision"
+export const ERROR_MICROBIT_JACDAC_MISSING = "microbit/jacdac-missing"
+export const ERROR_MICROBIT_INVALID_MEMORY = "microbit/invalid-memory"
+
+export const ROLE_BOUND = "roleBound"
+export const ROLE_UNBOUND = "roleUnbound"
+export const ROLE_HAS_NO_SERVICE = "roleHasNoService"
+export const BOUND = "bound"
+export const UNBOUND = "unbound"
 
 export * from "../../jacdac-spec/dist/specconstants"

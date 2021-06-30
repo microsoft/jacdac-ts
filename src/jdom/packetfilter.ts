@@ -1,4 +1,9 @@
-import { SRV_LOGGER } from "../../jacdac-spec/dist/specconstants"
+import {
+    ControlReg,
+    LoggerReg,
+    SRV_CONTROL,
+    SRV_LOGGER,
+} from "../../jacdac-spec/dist/specconstants"
 import { JDBus } from "./bus"
 import Packet from "./packet"
 import { isInstanceOf, serviceSpecificationFromName } from "./spec"
@@ -9,6 +14,8 @@ export type CompiledPacketFilter = (pkt: Packet) => boolean
 export interface PacketFilterProps {
     announce?: boolean
     repeatedAnnounce?: boolean
+    resetIn?: boolean
+    minPriority?: boolean
     requiresAck?: boolean
     log?: boolean
     firmwareIdentifiers?: number[]
@@ -51,6 +58,8 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
     const firmwares = new Set<number>()
     let repeatedAnnounce: boolean = undefined
     let announce: boolean = undefined
+    let resetIn: boolean = undefined
+    let minPriority: boolean = undefined
     let regGet: boolean = undefined
     let regSet: boolean = undefined
     let requiresAck: boolean = undefined
@@ -91,6 +100,17 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
             case "ra":
                 repeatedAnnounce = parseBoolean(value)
                 break
+            case "reset-in":
+            case "ri":
+            case "resetin":
+                resetIn = parseBoolean(value)
+                break
+            case "min-priority":
+            case "minpri":
+            case "minpriority":
+            case "mi":
+                minPriority = parseBoolean(value)
+                break
             case "requires-ack":
             case "ack":
                 requiresAck = parseBoolean(value)
@@ -106,8 +126,9 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
                 // resolve device by name
                 const deviceId = bus
                     .devices()
-                    .find(d => d.shortId === value || d.name === value)
-                    ?.deviceId
+                    .find(
+                        d => d.shortId === value || d.name === value
+                    )?.deviceId
                 if (deviceId) {
                     const data =
                         devices[deviceId] ||
@@ -180,6 +201,8 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
     const props = {
         announce,
         repeatedAnnounce,
+        resetIn,
+        minPriority,
         requiresAck,
         collapseAck,
         log,
@@ -220,6 +243,8 @@ export function compileFilter(props: PacketFilterProps) {
     const {
         announce,
         repeatedAnnounce,
+        resetIn,
+        minPriority,
         requiresAck,
         log,
         firmwareIdentifiers,
@@ -243,6 +268,23 @@ export function compileFilter(props: PacketFilterProps) {
         filters.push(
             pkt =>
                 !pkt.isAnnounce || pkt.isRepeatedAnnounce === repeatedAnnounce
+        )
+    if (resetIn === false)
+        filters.push(
+            pkt =>
+                !(
+                    pkt.isRegisterSet &&
+                    pkt.serviceClass === SRV_CONTROL &&
+                    pkt.registerIdentifier === ControlReg.ResetIn
+                )
+        )
+    if (minPriority !== undefined)
+        filters.push(
+            pkt =>
+                (pkt.isRegisterSet &&
+                    pkt.serviceClass == SRV_LOGGER &&
+                    pkt.registerIdentifier === LoggerReg.MinPriority) ===
+                minPriority
         )
     if (requiresAck !== undefined)
         filters.push(pkt => pkt.requiresAck === requiresAck)

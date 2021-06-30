@@ -1,5 +1,4 @@
 import {
-    warn,
     crc,
     ALIGN,
     write16,
@@ -49,6 +48,8 @@ import {
 import { SystemCmd } from "../../jacdac-spec/dist/specconstants"
 import { jdpack, jdunpack, PackedValues } from "./pack"
 import { serviceSpecificationFromClassIdentifier } from "./spec"
+
+const { warn } = console
 
 export class Packet {
     private _header: Uint8Array
@@ -113,6 +114,10 @@ export class Packet {
 
     get frameFlags() {
         return this._header[3]
+    }
+
+    set frameFlags(v: number) {
+        this._header[3] = v
     }
 
     get isMultiCommand() {
@@ -378,8 +383,7 @@ export class Packet {
 
     // helpers
     get friendlyDeviceName(): string {
-        if (this.frameFlags & JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS)
-            return "*"
+        if (this.isMultiCommand) return "*"
         return this.device?.friendlyName || this.deviceIdentifier
     }
     get friendlyServiceName(): string {
@@ -410,8 +414,17 @@ export class Packet {
                 this.serviceClass
             )
             const code = this.eventCode
-            const pkt = spec.packets.find(
+            const pkt = spec?.packets.find(
                 pkt => pkt.kind === "event" && pkt.identifier === code
+            )
+            cmdname = pkt?.name
+        } else if (this.isReport) {
+            const spec = serviceSpecificationFromClassIdentifier(
+                this.serviceClass
+            )
+            const code = this.serviceCommand & ~CMD_GET_REG
+            const pkt = spec?.packets.find(
+                pkt => pkt.kind === "report" && pkt.identifier === code
             )
             cmdname = pkt?.name
         } else {
@@ -449,7 +462,7 @@ function frameToPackets(frame: Uint8Array, timestamp: number) {
                 frame.slice(0, 12),
                 frame.slice(ptr, ptr + psz)
             )
-            if (ptr + sz > 12 + frame[2])
+            if (ptr + psz > 12 + frame[2])
                 warn(
                     `${timestamp}ms: invalid frame compression, res len=${res.length}`
                 )

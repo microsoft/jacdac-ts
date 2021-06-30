@@ -26,9 +26,8 @@ export default class GamepadHostManager extends JDClient {
     constructor(readonly bus: JDBus) {
         super()
         this.handleGamepadConnected = this.handleGamepadConnected.bind(this)
-        this.handleGamepadDisconnected = this.handleGamepadDisconnected.bind(
-            this
-        )
+        this.handleGamepadDisconnected =
+            this.handleGamepadDisconnected.bind(this)
 
         this.mount(this.removeEventListener.bind(this))
         this.addEventListeners()

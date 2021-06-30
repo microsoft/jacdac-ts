@@ -1,10 +1,25 @@
+import { JACDAC_ERROR, JDError } from "../jdom/error"
 import TransportProxy from "./transportproxy"
 import { USBTransportProxy } from "./usbtransportproxy"
 
-const { debug, error } = console
+const { debug } = console
 
 debug(`jdsw: starting...`)
 let proxy: TransportProxy
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function handleError(resp: any, e: Error) {
+    postMessage({
+        ...resp,
+        error: {
+            message: e.message,
+            stack: e.stack,
+            name: e.name,
+            jacdacName:
+                e.name === JACDAC_ERROR ? (e as JDError).jacdacName : undefined,
+        },
+    })
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handleCommand(resp: any, handler: () => Promise<void>) {
@@ -12,19 +27,14 @@ async function handleCommand(resp: any, handler: () => Promise<void>) {
         await handler()
         postMessage(resp)
     } catch (e) {
-        postMessage({
-            ...resp,
-            error: {
-                message: e.message,
-            },
-        })
+        handleError(resp, e)
     }
 }
 
-onmessage = async event => {
+async function handleMessage(event: MessageEvent) {
     const { data } = event
-    const { type, payload } = data
-    //console.debug(`jdsw, onmessage ${type}`, data)
+    const { jacdac, type, payload } = data
+    if (!jacdac) return // someone else's message
     switch (type) {
         case "connect": {
             if (proxy) await proxy.disconnect()
@@ -38,7 +48,7 @@ onmessage = async event => {
             //info(`jdsw: send`)
             proxy?.send(payload).then(
                 () => {},
-                e => error(e)
+                e => handleError(payload, e)
             )
             // don't wait or acknowledge
             break
@@ -50,5 +60,7 @@ onmessage = async event => {
             break
     }
 }
+
+self.addEventListener("message", handleMessage)
 
 debug(`jdsw: ready...`)

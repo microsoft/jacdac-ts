@@ -4,7 +4,13 @@ import {
     SystemReg,
     SystemStatusCodes,
 } from "../../jacdac-spec/dist/specconstants"
-import { CHANGE, PACKET_RECEIVE, PACKET_SEND, REPORT_UPDATE } from "./constants"
+import {
+    CHANGE,
+    DEVICE_CHANGE,
+    PACKET_RECEIVE,
+    PACKET_SEND,
+    REPORT_UPDATE,
+} from "./constants"
 import JDServiceProvider from "./serviceprovider"
 import { JDEventSource } from "./eventsource"
 import Packet from "./packet"
@@ -32,7 +38,7 @@ export interface ServerOptions {
 
 export default class JDServiceServer extends JDEventSource {
     public serviceIndex = -1 // set by device
-    public device: JDServiceProvider
+    private _device: JDServiceProvider
     public readonly specification: jdspec.ServiceSpec
     private readonly _registers: JDRegisterServer<PackedValues>[] = []
     private readonly commands: {
@@ -101,6 +107,18 @@ export default class JDServiceServer extends JDEventSource {
         this.handleTwinPacket = this.handleTwinPacket.bind(this)
     }
 
+    get device() {
+        return this._device
+    }
+
+    set device(value: JDServiceProvider) {
+        if (this._device !== value) {
+            this._device = value
+            this.emit(DEVICE_CHANGE)
+            this.emit(CHANGE)
+        }
+    }
+
     get twin() {
         return this._twin
     }
@@ -141,6 +159,11 @@ export default class JDServiceServer extends JDEventSource {
 
     get registers() {
         return this._registers.slice(0)
+    }
+
+    get timestamp() {
+        const bus = this.device?.bus || this._twin?.device?.bus
+        return bus?.timestamp
     }
 
     register<TValues extends PackedValues = PackedValues>(
@@ -230,7 +253,7 @@ export default class JDServiceServer extends JDEventSource {
         // notify that calibration started
         this.statusCode.setValues([SystemStatusCodes.Calibrating, 0])
         // wait 5 seconds
-        await delay(CALIBRATION_DELAY)
+        await this.device.bus.delay(CALIBRATION_DELAY)
         // finish calibraion
         this.statusCode.setValues([SystemStatusCodes.Ready, 0])
     }

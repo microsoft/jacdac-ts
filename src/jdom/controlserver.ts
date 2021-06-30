@@ -4,7 +4,7 @@ import {
     ControlCmd,
     ControlReg,
     IDENTIFY,
-    SRV_CTRL,
+    SRV_CONTROL,
 } from "./constants"
 import { jdunpack } from "./pack"
 import Packet from "./packet"
@@ -21,7 +21,7 @@ export default class ControlServer extends JDServiceServer {
     statusLightColor: number = undefined
 
     constructor(options?: { resetIn?: boolean }) {
-        super(SRV_CTRL)
+        super(SRV_CONTROL)
         const { resetIn } = options || {}
         this.startTime = Date.now()
         this.deviceDescription = this.addRegister<[string]>(
