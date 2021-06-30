@@ -7,30 +7,35 @@ import {
 import { SMap } from "../jdom/utils"
 import { jdpack, PackedValues } from "../jdom/pack"
 import { atomic } from "./utils"
+import { CHANGE } from "../jdom/constants"
+import { Packet } from "../jdom/packet"
+
+export const VM_SERVER_COMMAND_RECEIVED = "vmServerCommandReceived"
+export const VM_SERVER_REGISTER_CHANGED = "vmServerCommandReceived"
 
 export class VMServiceServer extends JDServiceServer {
     private eventNameToId: SMap<number> = {}
     private regNameToId: SMap<number> = {}
     private regFieldToId: SMap<number> = {}
-    constructor(public shortId: string, private spec: jdspec.ServiceSpec) {
+    private commandPackets: SMap<Packet> = {}
+
+    constructor(public role: string, public shortId: string, private spec: jdspec.ServiceSpec) {
         super(spec.classIdentifier)
 
         spec.packets.filter(isHighLevelRegister).map(reg => {
-            this.addRegister(reg.identifier)
+            const regServer = this.addRegister(reg.identifier)
             this.regNameToId[reg.name] = reg.identifier
-            reg?.fields.forEach((pkt, index) => {
+            reg.fields?.forEach((pkt, index) => {
                 this.regFieldToId[`${reg.name}:${pkt.name}`] = index
             })
-
-            // nothing to do on a read of register from outside (server maintains current value)
-            // on a write from outside, notify the VM of CHANGE of value
-            // on a write from VM, notify outside of CHANGE (done already)
+            regServer.subscribe(CHANGE, () => {
+                this.emit(VM_SERVER_REGISTER_CHANGED, this.role, reg.name)
+            })
         })
 
         spec.packets.filter(isCommand).map(cmd => {
             this.addCommand(cmd.identifier, pkt => {
-                // raise event to execute the command
-                // sending the pkt along with the data
+                this.emit(VM_SERVER_COMMAND_RECEIVED, this.role, pkt)
             })
         })
 
@@ -52,11 +57,18 @@ export class VMServiceServer extends JDServiceServer {
     }
 
     lookupRegister(root: string, fld: string) {
-        const reg = this.register(this.regNameToId[root])
-        if (!fld) return reg.values()?.[0]
-        else {
-            return reg.values()?.[this.regFieldToId[`${root}:${fld}`]]
+        if (this.regNameToId[root]) {
+            const reg = this.register(this.regNameToId[root])
+            if (!fld) return reg.values()?.[0]
+            else {
+                return reg.values()?.[this.regFieldToId[`${root}:${fld}`]]
+            }
+        } else if (this.commandPackets[root]) {
+            const cmd = this.commandPackets[root]
+            // TODO: extract the field
+            return undefined
         }
+        return undefined
     }
 
     public writeRegister(root: string, ev: atomic[]) {

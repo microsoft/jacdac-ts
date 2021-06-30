@@ -53,6 +53,7 @@ export class VMEnvironment
             if (service) {
                 // spin up JDServiceServer
                 this._serverEnvs[p.role] = new VMServiceServer(
+                    p.role,
                     p.serviceShortId,
                     service
                 )
