@@ -7,7 +7,7 @@ export default class JDIFrameClient extends JDClient {
     }
 
     get origin() {
-        return this.bus.options?.parentOrigin || "*"
+        return this.bus.parentOrigin
     }
 
     protected isOriginValid(msg: MessageEvent) {
