@@ -105,17 +105,18 @@ suite('adapters', () => {
         })
 
         // Simple test stimulus, click cycle
-        await new Promise(resolve => setTimeout(resolve, 300))
+        await bus.delay(300)
         buttonServer.down()
-        await new Promise(resolve => setTimeout(resolve, 100))
+        await bus.delay(100)
         buttonServer.up()  // should generate click event
 
+        await bus.delay(300)
+
         // Test stimulus, click and hold cycle
-        await new Promise(resolve => setTimeout(resolve, 300))
         buttonServer.down()  // should generate click-and-hold event
-        await new Promise(resolve => setTimeout(resolve, 300))
+        await bus.delay(300)
         buttonServer.up()  // and release event
-        await new Promise(resolve => setTimeout(resolve, 200))
+        await bus.delay(100)
 
         console.log("done")
     })
