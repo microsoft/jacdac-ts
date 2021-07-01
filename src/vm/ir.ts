@@ -37,25 +37,51 @@ export interface VMRole {
 
 export interface VMProgram {
     roles: VMRole[]
+    serverRoles: VMRole[]
     handlers: VMHandler[]
 }
 
 export type VMFunctionNames =
-    | "awaitEvent"
-    | "awaitRegister"
-    | "awaitChange"
-    | "awaitCondition"
-    | "wait"
-    | "writeRegister"
-    | "writeLocal"
+    | "start"
     | "halt"
+    | "nop"
     | "label"
     | "jump"
     | "branchOnCondition"
+    | "wait"
+    | "awaitRegister"
+    | "awaitChange"
+    | "awaitEvent"
+    | "awaitCondition"
+    | "writeRegister"
+    | "writeLocal"
     | "watch"
     | "log"
+    | "roleBound"
+    | "roleBoundExpression"
+    | "onRoleConnected"
+    | "onRoleDisconnected"
+    | "raiseEvent"
 
 export const VMFunctions: jdtest.TestFunctionDescription[] = [
+    {
+        id: "start",
+        args: [],
+        prompt: `start block`,
+        context: "command",
+    },
+    {
+        id: "halt",
+        args: [],
+        prompt: `terminates the current handler`,
+        context: "command",
+    },
+    {
+        id: "nop",
+        args: [],
+        prompt: `no operation`,
+        context: "command",
+    },
     {
         id: "label",
         args: ["Identifier"],
@@ -75,6 +101,12 @@ export const VMFunctions: jdtest.TestFunctionDescription[] = [
         context: "command",
     },
     {
+        id: "wait",
+        args: ["number"],
+        prompt: `wait for {1} milliseconds`,
+        context: "command",
+    },
+    {
         id: "awaitRegister",
         args: ["register"],
         prompt: `wait on register {1} to change value`,
@@ -87,40 +119,10 @@ export const VMFunctions: jdtest.TestFunctionDescription[] = [
         context: "command",
     },
     {
-        id: "wait",
-        args: ["number"],
-        prompt: `wait for {1} milliseconds`,
-        context: "command",
-    },
-    {
-        id: "watch",
-        args: ["number"],
-        prompt: `watch expression {1}`,
-        context: "command",
-    },
-    {
-        id: "log",
-        args: ["number"],
-        prompt: `not used`,
-        context: "command",
-    },
-    {
         id: "awaitEvent",
         args: ["event", ["boolean", true]],
         prompt: `wait for event {1} and then check {2} (other events ignored)`,
         context: "command",
-    },
-    {
-        id: "roleBound",
-        args: ["Identifier", "Identifier"],
-        prompt: `role {1} {2}`,
-        context: "command",
-    },
-    {
-        id: "roleBoundExpression",
-        args: ["Identifier"],
-        prompt: `is role {1} bound?`,
-        context: "expression",
     },
     {
         id: "awaitCondition",
@@ -141,16 +143,28 @@ export const VMFunctions: jdtest.TestFunctionDescription[] = [
         context: "command",
     },
     {
-        id: "halt",
-        args: [],
-        prompt: `terminates the current handler`,
+        id: "watch",
+        args: ["number"],
+        prompt: `watch expression {1}`,
         context: "command",
     },
     {
-        id: "nop",
-        args: [],
-        prompt: `no operation`,
+        id: "log",
+        args: ["number"],
+        prompt: `not used`,
         context: "command",
+    },
+    {
+        id: "roleBound",
+        args: ["Identifier", "Identifier" ],
+        prompt: `role {1} {2}`,
+        context: "command",
+    },
+    {
+        id: "roleBoundExpression",
+        args: ["Identifier" ],
+        prompt: `is role {1} bound?`,
+        context: "expression",
     },
     {
         id: "onRoleConnected",
@@ -162,12 +176,6 @@ export const VMFunctions: jdtest.TestFunctionDescription[] = [
         id: "onRoleDisconnected",
         args: ["Identifier"],
         prompt: `fires when a role is disconnected`,
-        context: "command",
-    },
-    {
-        id: "start",
-        args: [],
-        prompt: `start block`,
         context: "command",
     },
 ]
