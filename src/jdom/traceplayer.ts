@@ -56,14 +56,14 @@ export default class TracePlayer extends JDClient {
         // this is the reference start time of this run
         this._busStartTimestamp = this.bus.timestamp
         this._index = 0
-        this._interval = setInterval(this.tick, 50)
+        this._interval = this.bus.scheduler.setInterval(this.tick, 50)
         this.emit(CHANGE)
         this.emitProgress(true)
     }
 
     stop() {
         if (this._interval) {
-            clearInterval(this._interval)
+            this.bus.scheduler.clearInterval(this._interval)
             this._interval = undefined
             this.emitProgress(true)
             this.emit(CHANGE)
