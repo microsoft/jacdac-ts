@@ -122,7 +122,7 @@ class VMCommandEvaluator {
     private newEval() {
         return new VMExprEvaluator(
             async e => await this.env.lookupAsync(e),
-            this.callEval() // TODO: call expression for bound
+            this.callEval()
         )
     }
 
@@ -160,7 +160,6 @@ class VMCommandEvaluator {
         if (this.cmd.command.callee.type === "MemberExpression") {
             // interpret as a service command (role.comand)
             const expr = this.newEval()
-            // TODO
             const values: atomic[] = []
             for (const a of this.cmd.command.arguments) {
                 values.push(await expr.evalAsync(a))
@@ -565,8 +564,14 @@ export class VMProgramRunner extends JDClient {
                     deviceId: "VMServiceProvider",
                 }
             )
-            // TODO: create the twin and bind its JDServices to server roles
-            this._provider.bus = roleManager.bus
+            // TODO: need to tell the RM what to bind to
+            servers.forEach(srv => {
+                // roleManager.addRoleService(,)
+            })
+            const bus = this._provider.bus = roleManager.bus
+            bus.addServiceProvider(this._provider)
+           
+            // what about the role Manager?
         }
 
         // TODO: can't add multiple handlers until we have deduplicate CHANGE on Event
@@ -594,9 +599,11 @@ export class VMProgramRunner extends JDClient {
                 (request: ExternalRequest) => {
                     switch (request.kind) {
                         case "get": {
-                            // TODO
-                            // in this case, we need to remember the request and
-                            // respond when the handler invocation is complete
+                            // TODO: in this case, if there is a handler
+                            // waiting on this Request then the function
+                            // handlerWokeOnRequest will be invoked. If 
+                            // it is not then we should just return the
+                            // current value of register 
                             break
                         }
                         // these handler invocations are "fire and forget"

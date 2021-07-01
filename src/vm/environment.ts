@@ -273,8 +273,8 @@ export class VMEnvironment
         if (me.property.type === "Identifier") {
             const op = (me.property as jsep.Identifier).name
             if (
-                this._currentRequest.role === roleName &&
-                this._currentRequest.tgt === op
+                this._currentRequest?.role === roleName &&
+                this._currentRequest?.tgt === op
             )
                 return this._currentRequest
         }
