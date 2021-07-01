@@ -16,8 +16,8 @@ import RoleManager from "./rolemanager"
 import JDServiceServer from "../jdom/serviceserver"
 
 export class AdapterServer extends JDServiceServer {
-    private roleManager? : RoleManager = undefined
-    
+    private roleManager?: RoleManager = undefined
+
     // This is a nasty hack that allows the role manager to be set after the server is instantiated.
     // The right solution would be to have this listen for role broadcasts for something
     // but that's not a now feature.
@@ -30,11 +30,11 @@ export class AdapterServer extends JDServiceServer {
     }
 
     // to be overloaded - code to run once a role manager is available
-    protected onRoleManager(roleManager: RoleManager) { }
+    protected onRoleManager(roleManager: RoleManager) {}
 }
 
 export default class ButtonGestureAdapter extends AdapterServer {
-    protected ready = false  // whether it is bound to the source service
+    protected ready = false // whether it is bound to the source service
     protected state: "up" | "down_click" | "up_click" | "down_held" = "up"
 
     // TODO this is only used to gate timeouts using threading + wait.
@@ -48,8 +48,12 @@ export default class ButtonGestureAdapter extends AdapterServer {
 
     protected readonly buttonRole: string
 
-    constructor(buttonRole: string, instanceName?: string, 
-        protected clickTimeoutMs = 200, protected multiClickTimeoutMs = 200) {
+    constructor(
+        buttonRole: string,
+        instanceName?: string,
+        protected clickTimeoutMs = 200,
+        protected multiClickTimeoutMs = 200
+    ) {
         // TODO should this take not a service so it can be instantiated before a button is announced on the bus?
         // (to avoid the async boilerplate nightmare)
         super(SRV_BUTTON_GESTURE, {
@@ -61,7 +65,7 @@ export default class ButtonGestureAdapter extends AdapterServer {
 
     protected onRoleManager(roleManager: RoleManager) {
         const service = roleManager.getService(this.buttonRole)
-        assert(service.serviceClass == SRV_BUTTON)  // TODO can this logic be moved into infrastructure?
+        assert(service.serviceClass == SRV_BUTTON) // TODO can this logic be moved into infrastructure?
 
         service.on(EVENT, (ev: JDEvent) => {
             const now = this.device.bus.timestamp
@@ -79,7 +83,7 @@ export default class ButtonGestureAdapter extends AdapterServer {
         this.state = "down_click"
 
         // TODO not use setTimeout, needs to use some bus-level timing / scheduler instead!
-        setTimeout( () => {
+        setTimeout(() => {
             if (this.eventCounter == thisEventCount) {
                 if (this.clickCounter == 0) {
                     this.sendEvent(ButtonGestureEvent.ClickHold)
@@ -110,7 +114,7 @@ export default class ButtonGestureAdapter extends AdapterServer {
             }
 
             // TODO not use setTimeout, needs to use some bus-level timing / scheduler instead!
-            setTimeout( () => {
+            setTimeout(() => {
                 if (this.eventCounter == thisEventCount) {
                     this.state = "up"
                     this.clickCounter = 0
@@ -118,7 +122,7 @@ export default class ButtonGestureAdapter extends AdapterServer {
             }, this.multiClickTimeoutMs)
         } else if (this.state == "down_held") {
             this.sendEvent(ButtonGestureEvent.HoldRelease)
-            
+
             this.state = "up"
             this.clickCounter = 0
         }
