@@ -39,8 +39,7 @@ interface BusDevice {
 // Returns once all devices are registered, and adapters are ready.
 // TODO should a timeout live here? or should that be a higher level responsibility?
 // TODO restructure as withBus that encapsulates teardown?
-// TODO return type  Promise<{JDBus, Map<JDServiceServer, JDService>}
-async function createBus(busDevices: BusDevice[]) {
+async function withBus(busDevices: BusDevice[], test: (bus: JDBus, serviceMap: Map<JDServiceServer, JDService>) => Promise<void>) {
     const bus = mkBus()
 
     const serverDeviceRoleList = busDevices.map(busDevice => {
@@ -121,46 +120,49 @@ async function createBus(busDevices: BusDevice[]) {
         })
     )
 
-    return {bus, serviceMap}
+    await test(bus, serviceMap)
+
+    bus.stop()
 }
 
 suite('adapters', () => {
     test('click detect event', async function() {
-        console.log("start test")
-
         // These are here so we have a handle
         const buttonServer = new ButtonServer("button")  // interface name is just a human-friendly name, not functional
         const gestureAdapter = new ButtonGestureAdapter("button", "gestureAdapter")
 
-        const {bus, serviceMap} = await createBus([
+        await withBus([
             {server: buttonServer, roleName: "button"},
             {server: gestureAdapter},
-        ])
-        console.log("bus created")
-
-        serviceMap.get(buttonServer).on(EVENT, (ev: JDEvent) => {
-            console.log(`SRV_BUTTON ${ev.parent.friendlyName}  ${ev.name} ${ev.code}`)
+        ], async (bus, serviceMap) => {
+            // TODO these should be handled by an expect / similar API instead of registering handlers
+            const buttonEventHandler = function (ev: JDEvent) {
+                console.log(`SRV_BUTTON ${ev.parent.friendlyName}  ${ev.name} ${ev.code}`)
+            }
+            serviceMap.get(buttonServer).on(EVENT, buttonEventHandler)
+    
+            const gestureEventHander = function (ev: JDEvent) { 
+                console.log(`SRV_BUTTON_GESTURE ${ev.parent.friendlyName}  ${ev.name} ${ev.code}`)
+            }
+            serviceMap.get(gestureAdapter).on(EVENT, gestureEventHander)
+    
+            // Simple test stimulus, click cycle
+            await bus.delay(300)
+            buttonServer.down()
+            await bus.delay(100)
+            buttonServer.up()  // should generate click event
+    
+            await bus.delay(300)
+    
+            // Test stimulus, click and hold cycle
+            buttonServer.down()  // should generate click-and-hold event
+            await bus.delay(300)
+            buttonServer.up()  // and release event
+            await bus.delay(100)
+    
+            serviceMap.get(buttonServer).off(EVENT, buttonEventHandler)
+            serviceMap.get(gestureAdapter).off(EVENT, gestureEventHander)
+            console.log("done")
         })
-
-        serviceMap.get(gestureAdapter).on(EVENT, (ev: JDEvent) => { 
-            console.log(`SRV_BUTTON_GESTURE ${ev.parent.friendlyName}  ${ev.name} ${ev.code}`)
-        })
-
-        // Simple test stimulus, click cycle
-        await bus.delay(300)
-        buttonServer.down()
-        await bus.delay(100)
-        buttonServer.up()  // should generate click event
-
-        await bus.delay(300)
-
-        // Test stimulus, click and hold cycle
-        buttonServer.down()  // should generate click-and-hold event
-        await bus.delay(300)
-        buttonServer.up()  // and release event
-        await bus.delay(100)
-
-        bus.stop()
-        console.log("done")
     })
 });
