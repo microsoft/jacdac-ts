@@ -16,21 +16,21 @@ import RoleManager from "./rolemanager"
 import JDServiceServer from "../jdom/serviceserver"
 
 export class AdapterServer extends JDServiceServer {
-    private roleManager? : RoleManager = null
+    private roleManager? : RoleManager = undefined
     
     // This is a nasty hack that allows the role manager to be set after the server is instantiated.
     // The right solution would be to have this listen for role broadcasts for something
     // but that's not a now feature.
     // TODO de-jankify
     public _hack_setRoleManager(roleManager: RoleManager) {
-        assert(roleManager == null, "resetting role manager")
+        assert(this.roleManager === undefined, "resetting role manager")
+
         this.roleManager = roleManager
         this.onRoleManager(roleManager)
     }
 
     // to be overloaded - code to run once a role manager is available
     protected onRoleManager(roleManager: RoleManager) { }
-
 }
 
 export default class ButtonGestureAdapter extends AdapterServer {
