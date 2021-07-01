@@ -63,15 +63,13 @@ export default class ButtonGestureAdapter extends AdapterServer {
         const service = roleManager.getService(this.buttonRole)
         assert(service.serviceClass == SRV_BUTTON)  // TODO can this logic be moved into infrastructure?
 
-        service.on(EVENT, (evs: JDEvent[]) => {
-            evs.forEach((ev) => {
-                const now = this.device.bus.timestamp
-                if (ev.code == ButtonEvent.Down) {
-                    this.onSourceButtonDown()
-                } else if (ev.code == ButtonEvent.Up) {
-                    this.onSourceButtonUp()
-                }
-            })
+        service.on(EVENT, (ev: JDEvent) => {
+            const now = this.device.bus.timestamp
+            if (ev.code == ButtonEvent.Down) {
+                this.onSourceButtonDown()
+            } else if (ev.code == ButtonEvent.Up) {
+                this.onSourceButtonUp()
+            }
         })
     }
 

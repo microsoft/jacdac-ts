@@ -90,7 +90,7 @@ async function createBus(busDevices: BusDevice[]): Promise<JDBus> {
     })
 
     // TODO HACK HACK HACK
-    // Give adapters a role manager
+    // Give adapters a role manager, so they can find underlying services
     serverDeviceRoleList.forEach(([server, device, role]) => {
         if (server instanceof AdapterServer) {
             server._hack_setRoleManager(roleManager)
@@ -123,14 +123,14 @@ suite('adapters', () => {
         console.log("bus created")
 
         bus.services({serviceClass: SRV_BUTTON}).forEach(buttonService => {
-            buttonService.on(EVENT, (evs: JDEvent[]) => {  // TODO make sure we're expecting the right events
-                console.log(`SRV_BUTTON ${evs[0].parent.friendlyName}  ${evs[0].name}  ${evs[0].code}`)
+            buttonService.on(EVENT, (ev: JDEvent) => {  // TODO make sure we're expecting the right events
+                console.log(`SRV_BUTTON ${ev.parent.friendlyName}  ${ev.name}  ${ev.code}`)
             })
         })
 
         bus.services({serviceClass: SRV_BUTTON_GESTURE}).forEach(buttonService => {
-            buttonService.on(EVENT, (evs: JDEvent[]) => {  // TODO make sure we're expecting the right events
-                console.log(`SRV_BUTTON_GESTURE ${evs[0].parent.friendlyName}  ${evs[0].name}  ${evs[0].code}`)
+            buttonService.on(EVENT, (ev: JDEvent) => {  // TODO make sure we're expecting the right events
+                console.log(`SRV_BUTTON_GESTURE ${ev.parent.friendlyName}  ${ev.name}  ${ev.code}`)
             })
         })
 
