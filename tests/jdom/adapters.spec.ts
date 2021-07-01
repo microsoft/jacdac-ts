@@ -89,16 +89,16 @@ async function createBus(busDevices: BusDevice[]): Promise<[JDBus, Map<JDService
         service.role = roleName
     })
 
-    // TODO HACK HACK HACK
+    
+    // Wait for adapters to be ready
+    // TODO WRITE ME
     // Give adapters a role manager, so they can find underlying services
+    // TODO HACK HACK HACK
     serverServiceRoleList.forEach(([server, service, roleName]) => {
         if (server instanceof AdapterServer) {
             server._hack_setRoleManager(roleManager)
         }
     })
-
-    // Ensure adapters are ready
-    // TODO WRITE ME
 
     // Return created services as a map from the source server
     const serverServiceMap = new Map(
