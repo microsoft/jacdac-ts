@@ -44,10 +44,10 @@ export abstract class JDNode extends JDEventSource {
     abstract get children(): JDNode[]
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    emitPropagated(event: string, ...args: any[]) {
+    emitPropagated(event: string, arg?: any) {
         let current = this as JDNode
         while (current) {
-            current.emit(event, args)
+            current.emit(event, arg)
             current = current.parent
         }
     }
