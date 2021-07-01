@@ -36,7 +36,7 @@ function setEquals<T>(set1: Set<T>, set2: Set<T>): boolean {
 // Creates a bus with the specified servers, bound to the specified roles.
 // Returns once all devices are registered, and adapters are ready.
 // TODO should a timeout live here? or should that be a higher level responsibility?
-async function createBus(busDevices: BusDevice[]): Promise<JDBus> {
+async function createBus(busDevices: BusDevice[]): Promise<[JDBus, Map<JDServiceServer, JDService>]> {
     const bus = mkBus()
 
     const serverDeviceRoleList: [JDServiceServer, JDDevice, string?][] = busDevices.map(busDevice => {
@@ -48,7 +48,7 @@ async function createBus(busDevices: BusDevice[]): Promise<JDBus> {
 
     // Wait for created devices to be announced, so services become available
     // TODO is this a good way to write async code in TS?
-    await new Promise((resolve, reject) => {
+    await new Promise(resolve => {
         const devicesSet = new Set(serverDeviceRoleList.map(serviceDevice => serviceDevice[1]))
         const announcedSet = new Set()
         const onHandler = (device: JDDevice) => {
@@ -65,17 +65,17 @@ async function createBus(busDevices: BusDevice[]): Promise<JDBus> {
     })
 
     // Assign roles now that services are available
-    const roleNameToService: [string, JDService][] = serverDeviceRoleList.filter(([server, device, role]) => {
-        return !!role  // filter for where role name is availab;e
-    }).map(([server, device, role]) => {
+    const serverServiceRoleList: [JDServiceServer, JDService, string][] = serverDeviceRoleList.filter(([server, device, roleName]) => {
+        return !!roleName  // filter for where role name is availab;e
+    }).map(([server, device, roleName]) => {
         const services = device.services({serviceClass: server.serviceClass})
         assert(services.length > 0, `created device ${device.friendlyName} has no service of ${server.specification.name}`)
         assert(services.length == 1, `created device ${device.friendlyName} has multiple service of ${server.specification.name}`)
-        return [role, services[0]]
+        return [server, services[0], roleName]
     })
 
     const roleManager = new RoleManager(bus)
-    roleManager.setRoles(roleNameToService.map(([roleName, service]) => {
+    roleManager.setRoles(serverServiceRoleList.map(([server, service, roleName]) => {
         // TODO role manager doesn't allow manual specificiation of binding role => services right now,
         // it's greedily / automatically allocated.
         // When manual specification is added this needs to perform that binding.
@@ -85,13 +85,14 @@ async function createBus(busDevices: BusDevice[]): Promise<JDBus> {
     }))
 
     // TODO this is (might be?) a nasty hack to associate a particular service with a role name
-    roleNameToService.map(([roleName, service]) => {
+    serverServiceRoleList.map(([server, service, roleName]) => {
         service.role = roleName
     })
 
     // TODO HACK HACK HACK
     // Give adapters a role manager, so they can find underlying services
-    serverDeviceRoleList.forEach(([server, device, role]) => {
+    // use serverDeviceRoleList before it doesn't filter by requiring role name
+    serverDeviceRoleList.forEach(([server, device, roleName]) => {
         if (server instanceof AdapterServer) {
             server._hack_setRoleManager(roleManager)
         }
@@ -100,8 +101,14 @@ async function createBus(busDevices: BusDevice[]): Promise<JDBus> {
     // Ensure adapters are ready
     // TODO WRITE ME
 
-    // TODO return devices as map?
-    return bus
+    // Return created services as a map from the source server
+    const serverServiceMap = new Map(
+        serverServiceRoleList.map(([server, service, roleName]) => {
+            return [server, service]
+        })
+    )
+
+    return [bus, serverServiceMap]
 }
 
 suite('adapters', () => {
@@ -115,18 +122,20 @@ suite('adapters', () => {
         // These are here so we have a handle
         const buttonServer = new ButtonServer("button")  // interface name is just a human-friendly name, not functional
         const gestureAdapter = new ButtonGestureAdapter("button", "gestureAdapter")
-
-        bus = await createBus([
+        let serviceMap: Map<JDServiceServer, JDService>
+        [bus, serviceMap] = await createBus([
             {server: buttonServer, roleName: "button"},
             {server: gestureAdapter},
         ])
         console.log("bus created")
 
-        bus.services({serviceClass: SRV_BUTTON}).forEach(buttonService => {
-            buttonService.on(EVENT, (ev: JDEvent) => {  // TODO make sure we're expecting the right events
-                console.log(`SRV_BUTTON ${ev.parent.friendlyName}  ${ev.name}  ${ev.code}`)
-            })
+        serviceMap[buttonServer].on(EVENT, (ev: JDEvent) => {  // TODO make sure we're expecting the right events
+            console.log(`SRV_BUTTON ${ev.parent.friendlyName}  ${ev.name}  ${ev.code}`)
         })
+
+        // bus.services({serviceClass: SRV_BUTTON}).forEach(buttonService => {
+        //     buttonService
+        // })
 
         bus.services({serviceClass: SRV_BUTTON_GESTURE}).forEach(buttonService => {
             buttonService.on(EVENT, (ev: JDEvent) => {  // TODO make sure we're expecting the right events
