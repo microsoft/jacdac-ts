@@ -65,9 +65,7 @@ async function createBus(busDevices: BusDevice[]): Promise<[JDBus, Map<JDService
     })
 
     // Assign roles now that services are available
-    const serverServiceRoleList: [JDServiceServer, JDService, string][] = serverDeviceRoleList.filter(([server, device, roleName]) => {
-        return !!roleName  // filter for where role name is availab;e
-    }).map(([server, device, roleName]) => {
+    const serverServiceRoleList: [JDServiceServer, JDService, string?][] = serverDeviceRoleList.map(([server, device, roleName]) => {
         const services = device.services({serviceClass: server.serviceClass})
         assert(services.length > 0, `created device ${device.friendlyName} has no service of ${server.specification.name}`)
         assert(services.length == 1, `created device ${device.friendlyName} has multiple service of ${server.specification.name}`)
@@ -75,7 +73,9 @@ async function createBus(busDevices: BusDevice[]): Promise<[JDBus, Map<JDService
     })
 
     const roleManager = new RoleManager(bus)
-    roleManager.setRoles(serverServiceRoleList.map(([server, service, roleName]) => {
+    roleManager.setRoles(serverServiceRoleList.filter(([server, service, roleName]) => {
+        return !!roleName  // filter for where role name is available
+    }).map(([server, service, roleName]) => {
         // TODO role manager doesn't allow manual specificiation of binding role => services right now,
         // it's greedily / automatically allocated.
         // When manual specification is added this needs to perform that binding.
@@ -91,8 +91,7 @@ async function createBus(busDevices: BusDevice[]): Promise<[JDBus, Map<JDService
 
     // TODO HACK HACK HACK
     // Give adapters a role manager, so they can find underlying services
-    // use serverDeviceRoleList before it doesn't filter by requiring role name
-    serverDeviceRoleList.forEach(([server, device, roleName]) => {
+    serverServiceRoleList.forEach(([server, service, roleName]) => {
         if (server instanceof AdapterServer) {
             server._hack_setRoleManager(roleManager)
         }
@@ -129,18 +128,12 @@ suite('adapters', () => {
         ])
         console.log("bus created")
 
-        serviceMap[buttonServer].on(EVENT, (ev: JDEvent) => {  // TODO make sure we're expecting the right events
+        serviceMap.get(buttonServer).on(EVENT, (ev: JDEvent) => {
             console.log(`SRV_BUTTON ${ev.parent.friendlyName}  ${ev.name}  ${ev.code}`)
         })
 
-        // bus.services({serviceClass: SRV_BUTTON}).forEach(buttonService => {
-        //     buttonService
-        // })
-
-        bus.services({serviceClass: SRV_BUTTON_GESTURE}).forEach(buttonService => {
-            buttonService.on(EVENT, (ev: JDEvent) => {  // TODO make sure we're expecting the right events
+        serviceMap.get(gestureAdapter).on(EVENT, (ev: JDEvent) => { 
                 console.log(`SRV_BUTTON_GESTURE ${ev.parent.friendlyName}  ${ev.name}  ${ev.code}`)
-            })
         })
 
         // Simple test stimulus, click cycle
