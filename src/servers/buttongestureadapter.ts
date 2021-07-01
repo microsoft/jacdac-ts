@@ -1,13 +1,39 @@
 import {
     ButtonEvent,
     ButtonGestureEvent,
+    CONNECT,
+    DEVICE_CHANGE,
+    DEVICE_CONNECT,
     EVENT,
+    ROLE_BOUND,
+    SELF_ANNOUNCE,
+    SRV_BUTTON,
     SRV_BUTTON_GESTURE,
 } from "../jdom/constants"
 import SensorServer from "./sensorserver"
-import { JDEvent, JDService } from "../jdom/jacdac-jdom"
+import { assert, JDDevice, JDEvent, JDService } from "../jdom/jacdac-jdom"
+import RoleManager from "./rolemanager"
+import JDServiceServer from "../jdom/serviceserver"
 
-export default class ButtonGestureAdapter extends SensorServer<[number]> {
+export class AdapterServer extends JDServiceServer {
+    private roleManager? : RoleManager = null
+    
+    // This is a nasty hack that allows the role manager to be set after the server is instantiated.
+    // The right solution would be to have this listen for role broadcasts for something
+    // but that's not a now feature.
+    // TODO de-jankify
+    public _hack_setRoleManager(roleManager: RoleManager) {
+        assert(roleManager == null, "resetting role manager")
+        this.roleManager = roleManager
+        this.onRoleManager(roleManager)
+    }
+
+    // to be overloaded - code to run once a role manager is available
+    protected onRoleManager(roleManager: RoleManager) { }
+
+}
+
+export default class ButtonGestureAdapter extends AdapterServer {
     protected ready = false  // whether it is bound to the source service
     protected state: "up" | "down_click" | "up_click" | "down_held" = "up"
 
@@ -20,6 +46,8 @@ export default class ButtonGestureAdapter extends SensorServer<[number]> {
     // reset upon a event being generated
     protected clickCounter = 0
 
+    protected readonly buttonRole: string
+
     constructor(buttonRole: string, instanceName?: string, 
         protected clickTimeoutMs = 200, protected multiClickTimeoutMs = 200) {
         // TODO should this take not a service so it can be instantiated before a button is announced on the bus?
@@ -28,20 +56,23 @@ export default class ButtonGestureAdapter extends SensorServer<[number]> {
             instanceName,
         })
 
-        // TODO fetch service from role manager
-        // TODO timeout if source role not available
+        this.buttonRole = buttonRole
+    }
 
-        // button.on(EVENT, (evs: JDEvent[]) => {
-        //     evs.forEach((ev) => {
-        //         const now = this.device.bus.timestamp
-        //         if (ev.code == ButtonEvent.Down) {
-        //             this.onSourceButtonDown()
-        //         } else if (ev.code == ButtonEvent.Up) {
-        //             this.onSourceButtonUp()
-        //         }
-        //     })
-        // })
-        
+    protected onRoleManager(roleManager: RoleManager) {
+        const service = roleManager.getService(this.buttonRole)
+        assert(service.serviceClass == SRV_BUTTON)  // TODO can this logic be moved into infrastructure?
+
+        service.on(EVENT, (evs: JDEvent[]) => {
+            evs.forEach((ev) => {
+                const now = this.device.bus.timestamp
+                if (ev.code == ButtonEvent.Down) {
+                    this.onSourceButtonDown()
+                } else if (ev.code == ButtonEvent.Up) {
+                    this.onSourceButtonUp()
+                }
+            })
+        })
     }
 
     private onSourceButtonDown() {

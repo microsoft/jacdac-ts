@@ -4,7 +4,7 @@ import JDServiceProvider from "../../src/jdom/serviceprovider"
 import { EVENT, SRV_BUTTON, SRV_BUTTON_GESTURE, DEVICE_ANNOUNCE, ROLE_BOUND } from "../../src/jdom/constants";
 import { mkBus } from "../testutils";
 
-import ButtonGestureAdapter from "../../src/servers/buttongestureadapter"
+import ButtonGestureAdapter, { AdapterServer } from "../../src/servers/buttongestureadapter"
 import ButtonServer from "../../src/servers/buttonserver"
 import { JDEvent } from "../../src/jdom/event";
 import { JDDevice } from "../../src/jdom/device";
@@ -12,6 +12,8 @@ import RoleManager from "../../src/servers/rolemanager"
 import JDServiceServer from "../../src/jdom/serviceserver";
 import { assert } from "../../src/jdom/utils";
 import { JDService } from "../../src/jdom/service";
+import { RoleManagerClient } from "../../src/jdom/rolemanagerclient";
+import { instanceOf } from "prop-types";
 
 interface BusDevice {
     server: JDServiceServer,
@@ -72,21 +74,28 @@ async function createBus(busDevices: BusDevice[]): Promise<JDBus> {
         return [role, services[0]]
     })
 
-    bus.on(ROLE_BOUND, (role: string) => {
-        console.log(`role bound ${role}`)
-    })
+    const roleManager = new RoleManager(bus)
+    roleManager.setRoles(roleNameToService.map(([roleName, service]) => {
+        // TODO role manager doesn't allow manual specificiation of binding role => services right now,
+        // it's greedily / automatically allocated.
+        // When manual specification is added this needs to perform that binding.
+        // For now this just allocates a role and type.
+        // IF YOU HAVE MORE THAN ONE SERVICE INSTANCE WEIRD THINGS CAN HAPPEN!
+        return {role: roleName, serviceShortId: service.specification.shortId}
+    }))
 
-
-    // TODO does this just work?!
+    // TODO this is (might be?) a nasty hack to associate a particular service with a role name
     roleNameToService.map(([roleName, service]) => {
         service.role = roleName
     })
 
-    // const roleManager = new RoleManager(bus)
-    // roleManager.setRoles(roleNameToService.map(([roleName, service]) => {
-    //     return (roleName, service)
-    // }))
-
+    // TODO HACK HACK HACK
+    // Give adapters a role manager
+    serverDeviceRoleList.forEach(([server, device, role]) => {
+        if (server instanceof AdapterServer) {
+            server._hack_setRoleManager(roleManager)
+        }
+    })
 
     // Ensure adapters are ready
     // TODO WRITE ME
@@ -114,14 +123,12 @@ suite('adapters', () => {
         console.log("bus created")
 
         bus.services({serviceClass: SRV_BUTTON}).forEach(buttonService => {
-            console.log(`on SRV_BUTTON  ${buttonService.friendlyName}`)
             buttonService.on(EVENT, (evs: JDEvent[]) => {  // TODO make sure we're expecting the right events
                 console.log(`SRV_BUTTON ${evs[0].parent.friendlyName}  ${evs[0].name}  ${evs[0].code}`)
             })
         })
 
         bus.services({serviceClass: SRV_BUTTON_GESTURE}).forEach(buttonService => {
-            console.log(`on SRV_BUTTON_GESTURE  ${buttonService.friendlyName}`)
             buttonService.on(EVENT, (evs: JDEvent[]) => {  // TODO make sure we're expecting the right events
                 console.log(`SRV_BUTTON_GESTURE ${evs[0].parent.friendlyName}  ${evs[0].name}  ${evs[0].code}`)
             })
