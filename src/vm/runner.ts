@@ -564,12 +564,8 @@ export class VMProgramRunner extends JDClient {
                     deviceId: "VMServiceProvider",
                 }
             )
-            // TODO: need to tell the RM what to bind to
-            servers.forEach(srv => {
-                // roleManager.addRoleService(,)
-            })
-            const bus = this._provider.bus = roleManager.bus
-            bus.addServiceProvider(this._provider)
+            this._provider.bus = roleManager.bus
+            // bus.addServiceProvider(this._provider)
            
             // what about the role Manager?
         }

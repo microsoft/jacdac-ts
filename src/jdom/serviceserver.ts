@@ -16,7 +16,6 @@ import { JDEventSource } from "./eventsource"
 import Packet from "./packet"
 import JDRegisterServer from "./registerserver"
 import { isRegister, serviceSpecificationFromClassIdentifier } from "./spec"
-import { delay } from "./utils"
 import { PackedValues } from "./pack"
 import { JDService } from "./service"
 
