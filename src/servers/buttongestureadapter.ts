@@ -6,17 +6,18 @@ import {
     DEVICE_CONNECT,
     EVENT,
     ROLE_BOUND,
+    ROLE_MANAGER_CHANGE,
     SELF_ANNOUNCE,
     SRV_BUTTON,
     SRV_BUTTON_GESTURE,
 } from "../jdom/constants"
 import SensorServer from "./sensorserver"
-import { assert, JDDevice, JDEvent, JDService } from "../jdom/jacdac-jdom"
+import { assert, JDDevice, JDEvent, JDService, RoleManagerClient } from "../jdom/jacdac-jdom"
 import RoleManager from "./rolemanager"
 import JDServiceServer from "../jdom/serviceserver"
 
 export class AdapterServer extends JDServiceServer {
-    private roleManager?: RoleManager = undefined
+    private roleManager: RoleManager = undefined
 
     // This is a nasty hack that allows the role manager to be set after the server is instantiated.
     // The right solution would be to have this listen for role broadcasts for something
@@ -54,10 +55,30 @@ export default class ButtonGestureAdapter extends AdapterServer {
         protected clickTimeoutMs = 200,
         protected multiClickTimeoutMs = 200
     ) {
-        // TODO should this take not a service so it can be instantiated before a button is announced on the bus?
-        // (to avoid the async boilerplate nightmare)
         super(SRV_BUTTON_GESTURE, {
             instanceName,
+        })
+
+        this.on(ROLE_MANAGER_CHANGE, (rm) => {
+            console.log(`root RMC ${rm}`)
+        })
+
+        this.on(DEVICE_CHANGE, () => {
+            console.log(`DEV_C  ${(this.device).shortId}`)
+
+            // wrong type of service (is server typed)
+            // this.rm = new RoleManagerClient(this.device.services()[0])
+
+            this.on(ROLE_MANAGER_CHANGE, (rm) => {
+                console.log(`DC RMC ${rm}`)
+            })
+
+            console.log(`DEV_C  ${(this.device.bus)}`)
+
+            // bus not available!
+            // this.device.bus.on(ROLE_MANAGER_CHANGE, (rm) => {
+            //     console.log(`DC BUS RMC ${rm}`)
+            // })
         })
 
         this.buttonRole = buttonRole
@@ -82,8 +103,7 @@ export default class ButtonGestureAdapter extends AdapterServer {
         const thisEventCount = this.eventCounter
         this.state = "down_click"
 
-        // TODO not use setTimeout, needs to use some bus-level timing / scheduler instead!
-        setTimeout(() => {
+        this.device.bus.scheduler.setTimeout(() => {
             if (this.eventCounter == thisEventCount) {
                 if (this.clickCounter == 0) {
                     this.sendEvent(ButtonGestureEvent.ClickHold)
@@ -113,8 +133,7 @@ export default class ButtonGestureAdapter extends AdapterServer {
                 // TODO pack number of clicks
             }
 
-            // TODO not use setTimeout, needs to use some bus-level timing / scheduler instead!
-            setTimeout(() => {
+            this.device.bus.scheduler.setTimeout(() => {
                 if (this.eventCounter == thisEventCount) {
                     this.state = "up"
                     this.clickCounter = 0
