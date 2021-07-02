@@ -38,7 +38,6 @@ interface BusDevice {
 // Creates a bus with the specified servers, bound to the specified roles.
 // Returns once all devices are registered, and adapters are ready.
 // TODO should a timeout live here? or should that be a higher level responsibility?
-// TODO restructure as withBus that encapsulates teardown?
 async function withBus(busDevices: BusDevice[], test: (bus: JDBus, serviceMap: Map<JDServiceServer, JDService>) => Promise<void>) {
     const bus = mkBus()
 
