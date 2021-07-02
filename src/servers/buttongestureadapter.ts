@@ -59,28 +59,6 @@ export default class ButtonGestureAdapter extends AdapterServer {
             instanceName,
         })
 
-        this.on(ROLE_MANAGER_CHANGE, (rm) => {
-            console.log(`root RMC ${rm}`)
-        })
-
-        this.on(DEVICE_CHANGE, () => {
-            console.log(`DEV_C  ${(this.device).shortId}`)
-
-            // wrong type of service (is server typed)
-            // this.rm = new RoleManagerClient(this.device.services()[0])
-
-            this.on(ROLE_MANAGER_CHANGE, (rm) => {
-                console.log(`DC RMC ${rm}`)
-            })
-
-            console.log(`DEV_C  ${(this.device.bus)}`)
-
-            // bus not available!
-            // this.device.bus.on(ROLE_MANAGER_CHANGE, (rm) => {
-            //     console.log(`DC BUS RMC ${rm}`)
-            // })
-        })
-
         this.buttonRole = buttonRole
     }
 

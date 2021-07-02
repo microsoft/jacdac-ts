@@ -1,7 +1,7 @@
 import { suite, test, afterEach } from "mocha"
 import { JDBus } from "../../src/jdom/bus"
 import JDServiceProvider from "../../src/jdom/serviceprovider"
-import { EVENT, SRV_BUTTON, SRV_BUTTON_GESTURE, DEVICE_ANNOUNCE, ROLE_BOUND } from "../../src/jdom/constants";
+import { EVENT, SRV_BUTTON, SRV_BUTTON_GESTURE, DEVICE_ANNOUNCE, ROLE_BOUND, ButtonGestureEvent } from "../../src/jdom/constants";
 import { mkBus } from "../testutils";
 
 import ButtonGestureAdapter, { AdapterServer } from "../../src/servers/buttongestureadapter"
@@ -126,6 +126,18 @@ async function withBus(busDevices: BusDevice[], test: (bus: JDBus, serviceMap: M
     bus.stop()
 }
 
+class JDBusTestUtil {
+    // TODO should this also encapsulate the serviceMap?
+    constructor(protected readonly bus: JDBus) {
+    }
+
+    public nextEventFrom(service: JDService): Promise<JDEvent> {
+        return new Promise(resolve => service.once(EVENT, (event: JDEvent) => {
+            resolve(event)
+        }))
+    }
+}
+
 suite('adapters', () => {
     test('click detect event', async function() {
         // These are here so we have a handle
@@ -136,34 +148,28 @@ suite('adapters', () => {
             {server: buttonServer, roleName: "button"},
             {server: gestureAdapter},
         ], async (bus, serviceMap) => {
-            // TODO these should be handled by an expect / similar API instead of registering handlers
-            const buttonEventHandler = function (ev: JDEvent) {
-                console.log(`SRV_BUTTON ${ev.parent.friendlyName}  ${ev.name} ${ev.code}`)
-            }
-            serviceMap.get(buttonServer).on(EVENT, buttonEventHandler)
-    
-            const gestureEventHander = function (ev: JDEvent) { 
-                console.log(`SRV_BUTTON_GESTURE ${ev.parent.friendlyName}  ${ev.name} ${ev.code}`)
-            }
-            serviceMap.get(gestureAdapter).on(EVENT, gestureEventHander)
+            const busTest = new JDBusTestUtil(bus)  // TODO needs better name
     
             // Simple test stimulus, click cycle
             await bus.delay(300)
             buttonServer.down()
             await bus.delay(100)
-            buttonServer.up()  // should generate click event
+            buttonServer.up()
+            // TODO can this be made cleaner? Without the await boilerplate
+            assert((await busTest.nextEventFrom(serviceMap.get(gestureAdapter))).code == ButtonGestureEvent.Click)
     
             await bus.delay(300)
     
             // Test stimulus, click and hold cycle
-            buttonServer.down()  // should generate click-and-hold event
+            buttonServer.down()
+            assert((await busTest.nextEventFrom(serviceMap.get(gestureAdapter))).code == ButtonGestureEvent.ClickHold)
+            // TODO this should be after the bus.delay, but would need an event queue, since the event would be generated
+            // after this fires. Or some notion of timing jitter.
             await bus.delay(300)
-            buttonServer.up()  // and release event
+            buttonServer.up()
+            assert((await busTest.nextEventFrom(serviceMap.get(gestureAdapter))).code == ButtonGestureEvent.HoldRelease)
+
             await bus.delay(100)
-    
-            serviceMap.get(buttonServer).off(EVENT, buttonEventHandler)
-            serviceMap.get(gestureAdapter).off(EVENT, gestureEventHander)
-            console.log("done")
         })
-    })
+    }).timeout(5000)
 });
