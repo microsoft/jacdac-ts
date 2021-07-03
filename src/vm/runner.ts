@@ -564,10 +564,9 @@ export class VMProgramRunner extends JDClient {
                     deviceId: "VMServiceProvider",
                 }
             )
-            this._provider.bus = roleManager.bus
-            // bus.addServiceProvider(this._provider)
-           
-            // what about the role Manager?
+            this.roleManager.bus.addServiceProvider(this._provider)
+            // TODO: provider deviceId to RoleManager so it only binds
+            // TODO: 
         }
 
         // TODO: can't add multiple handlers until we have deduplicate CHANGE on Event
