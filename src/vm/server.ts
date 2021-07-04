@@ -40,11 +40,7 @@ export class VMServiceServer extends JDServiceServer {
     private commandPackets: SMap<DecodedPacket> = {}
     private cmdFieldToId: SMap<number> = {}
 
-    constructor(
-        public role: string,
-        public shortId: string,
-        private spec: jdspec.ServiceSpec
-    ) {
+    constructor(public role: string, private spec: jdspec.ServiceSpec) {
         super(spec.classIdentifier)
         spec.packets.filter(isHighLevelRegister).map(reg => {
             const regServer = this.addExistingRegister(
@@ -83,7 +79,7 @@ export class VMServiceServer extends JDServiceServer {
     }
 
     raiseGetRegisterEvent(regName: string) {
-        this.emit(VM_EXTERNAL_REQUEST,  <ExternalRequest>{
+        this.emit(VM_EXTERNAL_REQUEST, <ExternalRequest>{
             kind: "get",
             role: this.role,
             tgt: regName,

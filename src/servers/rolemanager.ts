@@ -10,12 +10,13 @@ import {
 import { JDBus } from "../jdom/bus"
 import { JDDevice } from "../jdom/device"
 import { JDService } from "../jdom/service"
-import { serviceSpecificationFromName } from "../jdom/spec"
+import { serviceSpecificationFromClassIdentifier } from "../jdom/spec"
 import { JDClient } from "../jdom/client"
 
 export interface RoleBinding {
     role: string
-    serviceShortId: string
+    serviceClass: number
+    preferredDeviceId?: string
     service?: JDService
 }
 
@@ -59,15 +60,13 @@ export default class RoleManager extends JDClient {
         return this._roles.every(({ service }) => !!service)
     }
 
-    setRoles(
-        newRoles: RoleBinding[]
-    ) {
+    setRoles(newRoles: RoleBinding[]) {
         const oldBound = this.bound
         let changed = false
 
         // remove unknown roles
-        const supportedNewRoles = newRoles.filter(({ serviceShortId }) =>
-            serviceSpecificationFromName(serviceShortId)
+        const supportedNewRoles = newRoles.filter(({ serviceClass }) =>
+            serviceSpecificationFromClassIdentifier(serviceClass)
         )
 
         // unbind removed roles
@@ -90,10 +89,10 @@ export default class RoleManager extends JDClient {
                 // added role
                 changed = true
                 this._roles.push({ ...newRole })
-            } else if (existingRole.serviceShortId !== newRole.serviceShortId) {
+            } else if (existingRole.serviceClass !== newRole.serviceClass) {
                 // modified type, force rebinding
                 changed = true
-                existingRole.serviceShortId = newRole.serviceShortId
+                existingRole.serviceClass = newRole.serviceClass
                 if (existingRole.service) {
                     existingRole.service = undefined
                     this.emit(ROLE_UNBOUND, existingRole.role)
@@ -109,21 +108,21 @@ export default class RoleManager extends JDClient {
         return this._roles.find(r => r.role === role)?.service
     }
 
-    public addRoleService(role: string, serviceShortId: string) {
-        if (!serviceSpecificationFromName(serviceShortId)) return // unknown role type
+    public addRoleService(role: string, serviceClass: number) {
+        if (!serviceSpecificationFromClassIdentifier(serviceClass)) return // unknown role type
 
         let binding = this._roles.find(r => r.role === role)
 
         // check if we already have this role
-        if (binding && serviceShortId === binding.serviceShortId) return
+        if (binding && serviceClass === binding.serviceClass) return
 
         const oldBound = this.bound
         // new role
-        binding = { role, serviceShortId }
+        binding = { role, serviceClass }
         this._roles.push(binding)
 
         const ret = this.bus
-            .services({ ignoreSelf: true, serviceName: serviceShortId })
+            .services({ ignoreSelf: true, serviceClass })
             .find(s => !this._roles.find(r => r.service === s))
         if (ret) {
             binding.service = ret
@@ -140,12 +139,9 @@ export default class RoleManager extends JDClient {
         if (oldBound !== bound) this.emit(bound ? BOUND : UNBOUND)
     }
 
-    private bindServices(
-        newRoles: RoleBinding[],
-        changed?: boolean,
-    ) {
+    private bindServices(newRoles: RoleBinding[], changed?: boolean) {
         this.unboundRoles.forEach(binding => {
-            const shortId = binding.serviceShortId
+            const shortId = binding.serviceClass
             const boundRoles = this.boundRoles
             const providedService = newRoles.find(p => p.role === binding.role)
             if (providedService?.service) {
@@ -154,7 +150,7 @@ export default class RoleManager extends JDClient {
                 const service = this.bus
                     .services({
                         ignoreSelf: true,
-                        serviceName: shortId,
+                        serviceClass: shortId,
                     })
                     .find(srv => !boundRoles.find(b => b.service === srv))
                 binding.service = service
@@ -179,6 +175,6 @@ export default class RoleManager extends JDClient {
                 this.emit(ROLE_UNBOUND, r.role)
                 changed = true
             })
-        this.bindServices([],changed)
+        this.bindServices([], changed)
     }
 }

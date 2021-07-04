@@ -566,7 +566,7 @@ export class VMProgramRunner extends JDClient {
             )
             this.roleManager.bus.addServiceProvider(this._provider)
             // TODO: provider deviceId to RoleManager so it only binds
-            // TODO: 
+            // TODO:
         }
 
         // TODO: can't add multiple handlers until we have deduplicate CHANGE on Event
@@ -596,9 +596,9 @@ export class VMProgramRunner extends JDClient {
                         case "get": {
                             // TODO: in this case, if there is a handler
                             // waiting on this Request then the function
-                            // handlerWokeOnRequest will be invoked. If 
+                            // handlerWokeOnRequest will be invoked. If
                             // it is not then we should just return the
-                            // current value of register 
+                            // current value of register
                             break
                         }
                         // these handler invocations are "fire and forget"
@@ -884,14 +884,11 @@ export class VMProgramRunner extends JDClient {
             }
         } else if (h.status === VMInternalStatus.Completed) {
             const q = this._onCompletionOfExternalRequest
-            const index = q.findIndex(
-                p => p.handler === h
-            )
+            const index = q.findIndex(p => p.handler === h)
             if (index > -1) {
-                const [del] = q.splice(index,1)
+                const [del] = q.splice(index, 1)
                 await this._env.completeRequest(del.request)
             }
-
         }
     }
 
