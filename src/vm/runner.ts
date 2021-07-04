@@ -559,14 +559,17 @@ export class VMProgramRunner extends JDClient {
         const servers = this._env.servers()
         if (servers.length) {
             this._provider = new JDServiceProvider(
-                servers.map(s => s.server),
-                {
-                    deviceId: "VMServiceProvider",
-                }
+                servers.map(s => s.server)
+                // if we create a deviceId, then trouble ensues
+                // as a second device gets spun up later
+                //{
+                //    deviceId: "VMServiceProvider",
+                //}
             )
-            this.roleManager.bus.addServiceProvider(this._provider)
-            // TODO: provider deviceId to RoleManager so it only binds
-            // TODO:
+            const device = this.roleManager.bus.addServiceProvider(this._provider)
+            servers.forEach((s,index) => {
+                this.roleManager.addRoleService(`VM ${index}`, s.serviceClass, device.deviceId)
+            })
         }
 
         // TODO: can't add multiple handlers until we have deduplicate CHANGE on Event
