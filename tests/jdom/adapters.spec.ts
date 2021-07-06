@@ -14,6 +14,7 @@ import { assert } from "../../src/jdom/utils";
 import { JDService } from "../../src/jdom/service";
 import { RoleManagerClient } from "../../src/jdom/rolemanagerclient";
 import { instanceOf } from "prop-types";
+import { NumberFormat } from "../../src/jdom/buffer";
 
 
 // how the heck is this not a native operation
@@ -125,6 +126,11 @@ async function withBus(busDevices: BusDevice[], test: (bus: JDBus, serviceMap: M
     bus.stop()
 }
 
+interface EventWithinOptions {
+    after?: number
+    within?: number
+}
+
 class JDBusTestUtil {
     // TODO should this also encapsulate the serviceMap?
     constructor(protected readonly bus: JDBus) {
@@ -139,23 +145,34 @@ class JDBusTestUtil {
         }))
     }
 
+
+
     // Waits for the next event from a service, within some time.
     // If no event is triggered within the time, the promise is rejected at within time.
     // TODO support events in the past (negative timestamp?)
     public nextEventWithin(service: JDService,
-        after = 0, within: number = Number.POSITIVE_INFINITY): Promise<JDEvent> {
+        eventWithin: EventWithinOptions = {}): Promise<JDEvent> {
+        const after = (eventWithin.after === undefined) ? 0 : eventWithin.after
+        const within = (eventWithin.within === undefined) ? Number.POSITIVE_INFINITY : eventWithin.within
 
         // TODO check for code somewhere?
         const startTimestamp = this.bus.timestamp
         const nextEventPromise: Promise<JDEvent> = new Promise(resolve => 
             service.once(EVENT, (event: JDEvent) => { resolve(event) }
         ))
-        const timeoutPromise: Promise<null> = new Promise(resolve => 
-            this.bus.scheduler.setTimeout(() => { resolve(null) }, within))
-        const firstPromise: Promise<JDEvent | null> = Promise.race([
-            nextEventPromise,
-            timeoutPromise
-        ])
+        
+        let firstPromise: Promise<JDEvent | null>
+        if (within != Number.POSITIVE_INFINITY) {  // finite within, set a timeout
+            const timeoutPromise: Promise<null> = new Promise(resolve => 
+                this.bus.scheduler.setTimeout(() => { resolve(null) }, within))
+            firstPromise = Promise.race([
+                nextEventPromise,
+                timeoutPromise
+            ])
+        } else {  // infinite within, don't set a separate timeout
+            firstPromise = nextEventPromise
+        }
+
         return new Promise((resolve, reject) => {
             firstPromise.then(value => {
                 if (value != null) {
@@ -194,19 +211,17 @@ suite('adapters', () => {
             await bus.delay(100)
             buttonServer.up()
             // TODO timing here is a total fudge factor, it should be instantaneous
-            assert((await busTest.nextEventWithin(gestureService, 0, 100)).code == ButtonGestureEvent.Click)
+            assert((await busTest.nextEventWithin(gestureService, {within: 100})).code == ButtonGestureEvent.Click)
     
             await bus.delay(300)
     
             // Test stimulus, click and hold cycle
             buttonServer.down()
             // TODO timing here is a total fudge factor, it should be instantaneous
-            assert((await busTest.nextEventWithin(gestureService, 200, 300)).code == ButtonGestureEvent.ClickHold)
+            assert((await busTest.nextEventWithin(gestureService, {after: 200})).code == ButtonGestureEvent.ClickHold)
         
             buttonServer.up()
-            assert((await busTest.nextEventWithin(gestureService, 0, 100)).code == ButtonGestureEvent.HoldRelease)
-
-            await bus.delay(100)
+            assert((await busTest.nextEventWithin(gestureService, {within: 100})).code == ButtonGestureEvent.HoldRelease)
         })
     }).timeout(5000)
 });
