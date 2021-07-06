@@ -615,6 +615,7 @@ export class VMProgramRunner extends JDClient {
                 }
             )
         )
+        this._provider = this.provider()
         this.initializeRoleManagement()
     }
 
@@ -628,10 +629,10 @@ export class VMProgramRunner extends JDClient {
     }
 
     // spin up provider
-    get provider() {
+    private provider() {
         const servers = this._env.servers()
         if (servers.length) {
-            this._provider = new JDServiceProvider(
+            const provider = new JDServiceProvider(
                 servers.map(s => s.server)
                 // if we create a deviceId, then trouble ensues
                 // as a second device gets spun up later
@@ -640,7 +641,7 @@ export class VMProgramRunner extends JDClient {
                 //}
             )
             const device = this.roleManager.bus.addServiceProvider(
-                this._provider
+                provider
             )
             servers.forEach((s, index) => {
                 this.roleManager.addRoleService(
@@ -649,7 +650,7 @@ export class VMProgramRunner extends JDClient {
                     device.deviceId
                 )
             })
-            return this._provider
+            return provider
         }
         return undefined
     }
@@ -1046,5 +1047,8 @@ export class VMProgramRunner extends JDClient {
     public unmount() {
         console.log("VMProgram (unmount)")
         super.unmount()
+        if (this._provider) {
+            this.roleManager.bus.removeServiceProvider(this._provider)
+        }
     }
 }
