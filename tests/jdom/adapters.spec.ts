@@ -130,10 +130,43 @@ class JDBusTestUtil {
     constructor(protected readonly bus: JDBus) {
     }
 
+    // Waits for the next event from a service, and returns the event.
+    // The event must not have triggered already.
+    // TODO track prior events?
     public nextEventFrom(service: JDService): Promise<JDEvent> {
         return new Promise(resolve => service.once(EVENT, (event: JDEvent) => {
             resolve(event)
         }))
+    }
+
+    // Waits for the next event from a service, within some time.
+    // If no event is triggered within the time, the promise is rejected at within time.
+    // TODO support events in the past (negative timestamp?)
+    public nextEventWithin(service: JDService,
+        after = 0, within: number = Number.POSITIVE_INFINITY): Promise<JDEvent> {
+
+        // TODO check for code somewhere?
+        const startTime = this.bus.timestamp
+        const nextEventPromise: Promise<JDEvent> = new Promise(resolve => service.once(EVENT, (event: JDEvent) => {
+            resolve(event)
+        }))
+        // TOCO check for timeout and minimum
+        const timeoutPromise: Promise<null> = new Promise(resolve => setTimeout(() => resolve(null), within))
+        const firstPromise: Promise<JDEvent | null> = Promise.race([
+            nextEventPromise,
+            timeoutPromise
+        ])
+        return new Promise((resolve, reject) => {
+            firstPromise.then(value => {
+                if (value != null) {
+                    resolve(value)
+                } else {
+                    reject(new Error(`nextEventWithin timed out at ${within} ms`))
+                    
+                }
+            })
+           
+        })
     }
 }
 
@@ -155,13 +188,13 @@ suite('adapters', () => {
             await bus.delay(100)
             buttonServer.up()
             // TODO can this be made cleaner? Without the await boilerplate
-            assert((await busTest.nextEventFrom(serviceMap.get(gestureAdapter))).code == ButtonGestureEvent.Click)
+            assert((await busTest.nextEventWithin(serviceMap.get(gestureAdapter), 100, 150)).code == ButtonGestureEvent.Click)
     
             await bus.delay(300)
     
             // Test stimulus, click and hold cycle
             buttonServer.down()
-            assert((await busTest.nextEventFrom(serviceMap.get(gestureAdapter))).code == ButtonGestureEvent.ClickHold)
+            assert((await busTest.nextEventWithin(serviceMap.get(gestureAdapter), 100, 150)).code == ButtonGestureEvent.ClickHold)
             // TODO this should be after the bus.delay, but would need an event queue, since the event would be generated
             // after this fires. Or some notion of timing jitter.
             await bus.delay(300)
