@@ -146,12 +146,12 @@ class JDBusTestUtil {
         after = 0, within: number = Number.POSITIVE_INFINITY): Promise<JDEvent> {
 
         // TODO check for code somewhere?
-        const startTime = this.bus.timestamp
-        const nextEventPromise: Promise<JDEvent> = new Promise(resolve => service.once(EVENT, (event: JDEvent) => {
-            resolve(event)
-        }))
-        // TOCO check for timeout and minimum
-        const timeoutPromise: Promise<null> = new Promise(resolve => setTimeout(() => resolve(null), within))
+        const startTimestamp = this.bus.timestamp
+        const nextEventPromise: Promise<JDEvent> = new Promise(resolve => 
+            service.once(EVENT, (event: JDEvent) => { resolve(event) }
+        ))
+        const timeoutPromise: Promise<null> = new Promise(resolve => 
+            this.bus.scheduler.setTimeout(() => { resolve(null) }, within))
         const firstPromise: Promise<JDEvent | null> = Promise.race([
             nextEventPromise,
             timeoutPromise
@@ -159,10 +159,15 @@ class JDBusTestUtil {
         return new Promise((resolve, reject) => {
             firstPromise.then(value => {
                 if (value != null) {
-                    resolve(value)
-                } else {
-                    reject(new Error(`nextEventWithin timed out at ${within} ms`))
+                    const elapsedTime = this.bus.timestamp - startTimestamp
+                    if (elapsedTime < after) {
+                        reject(new Error(`nextEventWithin got event at ${elapsedTime} ms, before after=${after} ms`))
+                    } else {
+                        resolve(value)
+                    }
                     
+                } else {
+                    reject(new Error(`nextEventWithin timed out at within=${within} ms`))
                 }
             })
            
@@ -181,25 +186,25 @@ suite('adapters', () => {
             {server: gestureAdapter},
         ], async (bus, serviceMap) => {
             const busTest = new JDBusTestUtil(bus)  // TODO needs better name
+            const gestureService = serviceMap.get(gestureAdapter)  // TODO can this be made automatic so we don't need this?
     
             // Simple test stimulus, click cycle
             await bus.delay(300)
             buttonServer.down()
             await bus.delay(100)
             buttonServer.up()
-            // TODO can this be made cleaner? Without the await boilerplate
-            assert((await busTest.nextEventWithin(serviceMap.get(gestureAdapter), 100, 150)).code == ButtonGestureEvent.Click)
+            // TODO timing here is a total fudge factor, it should be instantaneous
+            assert((await busTest.nextEventWithin(gestureService, 0, 100)).code == ButtonGestureEvent.Click)
     
             await bus.delay(300)
     
             // Test stimulus, click and hold cycle
             buttonServer.down()
-            assert((await busTest.nextEventWithin(serviceMap.get(gestureAdapter), 100, 150)).code == ButtonGestureEvent.ClickHold)
-            // TODO this should be after the bus.delay, but would need an event queue, since the event would be generated
-            // after this fires. Or some notion of timing jitter.
-            await bus.delay(300)
+            // TODO timing here is a total fudge factor, it should be instantaneous
+            assert((await busTest.nextEventWithin(gestureService, 200, 300)).code == ButtonGestureEvent.ClickHold)
+        
             buttonServer.up()
-            assert((await busTest.nextEventFrom(serviceMap.get(gestureAdapter))).code == ButtonGestureEvent.HoldRelease)
+            assert((await busTest.nextEventWithin(gestureService, 0, 100)).code == ButtonGestureEvent.HoldRelease)
 
             await bus.delay(100)
         })
