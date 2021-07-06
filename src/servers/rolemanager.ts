@@ -150,7 +150,7 @@ export default class RoleManager extends JDClient {
                 )
                 if (newOne) theOne = newOne
             }
-            console.log("addRoleService", role.role, role.serviceClass, role.preferredDeviceId, theOne)
+            console.log("(succeed) addRoleService", role.role, role.serviceClass, role.preferredDeviceId, theOne)
             role.service = theOne
             this.emit(ROLE_BOUND, role)
             return true

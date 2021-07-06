@@ -49,10 +49,14 @@ export class VMEnvironment
     constructor(
         private registers: RoleRegister[],
         private events: RoleEvent[],
-        serverRoles: VMRole[]
+        private serverRoles: VMRole[]
     ) {
         super()
-        serverRoles.forEach(p => {
+        this.setupServers()
+    }
+
+    private setupServers() {
+        this.serverRoles.forEach(p => {
             // get the service
             const service = serviceSpecificationFromClassIdentifier(p.serviceClass)
             if (service) {

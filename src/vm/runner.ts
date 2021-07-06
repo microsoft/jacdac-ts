@@ -522,6 +522,7 @@ export class VMProgramRunner extends JDClient {
     private _handlerRunners: VMHandlerRunner[] = []
     private _env: VMEnvironment
     private _roles: VMRole[] = []
+    private _serverRoles: VMRole[] = []
     // running
     private _status: VMStatus
     private _waitQueue: VMHandlerRunner[] = []
@@ -536,7 +537,7 @@ export class VMProgramRunner extends JDClient {
     private _breaks: SMap<boolean> = {}
     private _breaksMutex: Mutex
     // providing new services
-    private _provider: JDServiceProvider
+    private _provider: JDServiceProvider = undefined
     private _onCompletionOfExternalRequest: {
         handler: VMHandlerRunner
         request: ExternalRequest
@@ -550,6 +551,7 @@ export class VMProgramRunner extends JDClient {
         const compiled = compileProgram(program)
         const { registers, events, errors } = checkProgram(compiled)
         this._roles = compiled.roles
+        this._serverRoles = compiled.serverRoles
         if (errors?.length) console.debug("ERRORS", errors)
 
         // data structures for running program
@@ -582,6 +584,7 @@ export class VMProgramRunner extends JDClient {
             this._env.subscribe(
                 EXTERNAL_REQUEST,
                 (request: ExternalRequest) => {
+                    console.log("ER", request)
                     switch (request.kind) {
                         case "get": {
                             // TODO: in this case, if there is a handler
@@ -615,8 +618,6 @@ export class VMProgramRunner extends JDClient {
                 }
             )
         )
-        this._provider = this.provider()
-        this.initializeRoleManagement()
     }
 
     public handlerWokeOnRequest(
@@ -629,7 +630,7 @@ export class VMProgramRunner extends JDClient {
     }
 
     // spin up provider
-    private provider() {
+    private async startProvider() {
         const servers = this._env.servers()
         if (servers.length) {
             const provider = new JDServiceProvider(
@@ -643,9 +644,14 @@ export class VMProgramRunner extends JDClient {
             const device = this.roleManager.bus.addServiceProvider(
                 provider
             )
+            // make sure it gets known (HACK)
+            for(const s of servers) {
+                await s.server.statusCode.sendGetAsync()
+            }
+            console.log("DS", device.services())
             servers.forEach((s, index) => {
                 this.roleManager.addRoleService(
-                    `VM ${index}`,
+                    `test ${this._serverRoles[index].role}`,
                     s.serviceClass,
                     device.deviceId
                 )
@@ -743,7 +749,9 @@ export class VMProgramRunner extends JDClient {
         if (this.status !== VMStatus.Stopped) return // already running
         this.trace("start")
         try {
-            this.roleManager.setRoles(this._roles)
+            if (!this._provider)
+                this._provider = await this.startProvider()
+            this.initializeRoleManagement()
             await this._waitRunMutex.acquire(async () => {
                 this._waitQueue = this._handlerRunners.slice(0)
                 this._waitQueue.forEach(h => h.reset())
@@ -1016,19 +1024,23 @@ export class VMProgramRunner extends JDClient {
         }
     }
 
+    // TODO: deal with server roles
+    private doneInit = false
     private initializeRoleManagement() {
+        if (this.doneInit) return
+        this.doneInit = true
         // adding a (role,service) binding
         const addRoleService = (role: string) => {
+            if (!this._roles.find(r => r.role === role))
+                return
             const service = this.roleManager.getService(role)
             if (service) {
                 this._env.serviceChanged(role, service)
             }
         }
-        // initialize
-        this.roleManager.roles.forEach(r => {
-            if (this._roles.find(rv => rv.role === r.role)) {
+        // initialize client
+        this._roles.forEach(r => {
                 addRoleService(r.role)
-            }
         })
         this.mount(
             this.roleManager.subscribe(ROLE_BOUND, async (role: string) => {
