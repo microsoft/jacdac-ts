@@ -514,7 +514,9 @@ export enum VMStatus {
     Running = "running",
     Paused = "paused",
 }
+
 const MAX_LOG = 100
+
 export class VMProgramRunner extends JDClient {
     // program, environment
     private _handlerRunners: VMHandlerRunner[] = []
@@ -556,21 +558,6 @@ export class VMProgramRunner extends JDClient {
         this._handlerRunners = compiled.handlers.map(
             (h, index) => new VMHandlerRunner(this, index, this._env, h)
         )
-        const servers = this._env.servers()
-        if (servers.length) {
-            this._provider = new JDServiceProvider(
-                servers.map(s => s.server)
-                // if we create a deviceId, then trouble ensues
-                // as a second device gets spun up later
-                //{
-                //    deviceId: "VMServiceProvider",
-                //}
-            )
-            const device = this.roleManager.bus.addServiceProvider(this._provider)
-            servers.forEach((s,index) => {
-                this.roleManager.addRoleService(`VM ${index}`, s.serviceClass, device.deviceId)
-            })
-        }
 
         // TODO: can't add multiple handlers until we have deduplicate CHANGE on Event
         /*
@@ -638,6 +625,33 @@ export class VMProgramRunner extends JDClient {
         if (request.kind === "get") {
             this._onCompletionOfExternalRequest.push({ handler, request })
         }
+    }
+
+    // spin up provider
+    get provider() {
+        const servers = this._env.servers()
+        if (servers.length) {
+            this._provider = new JDServiceProvider(
+                servers.map(s => s.server)
+                // if we create a deviceId, then trouble ensues
+                // as a second device gets spun up later
+                //{
+                //    deviceId: "VMServiceProvider",
+                //}
+            )
+            const device = this.roleManager.bus.addServiceProvider(
+                this._provider
+            )
+            servers.forEach((s, index) => {
+                this.roleManager.addRoleService(
+                    `VM ${index}`,
+                    s.serviceClass,
+                    device.deviceId
+                )
+            })
+            return this._provider
+        }
+        return undefined
     }
 
     // control of VM
@@ -1027,5 +1041,10 @@ export class VMProgramRunner extends JDClient {
                 this.waitingToRunning()
             })
         )
+    }
+
+    public unmount() {
+        console.log("VMProgram (unmount)")
+        super.unmount()
     }
 }
