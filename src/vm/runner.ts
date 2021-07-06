@@ -651,7 +651,7 @@ export class VMProgramRunner extends JDClient {
             console.log("DS", device.services())
             servers.forEach((s, index) => {
                 this.roleManager.addRoleService(
-                    `test ${this._serverRoles[index].role}`,
+                    this._serverRoles[index].role,
                     s.serviceClass,
                     device.deviceId
                 )

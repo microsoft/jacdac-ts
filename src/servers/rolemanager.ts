@@ -138,7 +138,6 @@ export default class RoleManager extends JDClient {
 
     // TODO: need to respect other (unbound) role's preferredDeviceId
     private bindRole(role: RoleBinding) {
-        console.log("(try) addRoleService", role.role, role.serviceClass, role.preferredDeviceId)
         const ret = this.bus
             .services({ ignoreSelf: true, serviceClass: role.serviceClass })
             .filter(s => !this.boundRoles.find(r => r.service === s))
@@ -150,7 +149,6 @@ export default class RoleManager extends JDClient {
                 )
                 if (newOne) theOne = newOne
             }
-            console.log("(succeed) addRoleService", role.role, role.serviceClass, role.preferredDeviceId, theOne)
             role.service = theOne
             this.emit(ROLE_BOUND, role)
             return true
