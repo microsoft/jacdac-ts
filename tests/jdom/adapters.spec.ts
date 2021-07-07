@@ -206,7 +206,6 @@ suite('adapters', () => {
             const gestureService = serviceMap.get(gestureAdapter)  // TODO can this be made automatic so we don't need this?
     
             // Simple test stimulus, click cycle
-            await bus.delay(300)
             buttonServer.down()
             await bus.delay(100)
             buttonServer.up()
@@ -217,10 +216,10 @@ suite('adapters', () => {
     
             // Test stimulus, click and hold cycle
             buttonServer.down()
-            // TODO timing here is a total fudge factor, it should be instantaneous
             assert((await busTest.nextEventWithin(gestureService, {after: 200})).code == ButtonGestureEvent.ClickHold)
         
             buttonServer.up()
+            // TODO timing here is a total fudge factor, it should be instantaneous
             assert((await busTest.nextEventWithin(gestureService, {within: 100})).code == ButtonGestureEvent.HoldRelease)
         })
     }).timeout(5000)
