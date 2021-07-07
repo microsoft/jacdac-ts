@@ -118,8 +118,12 @@ export default class RoleManager extends JDClient {
         let binding = this._roles.find(r => r.role === role)
 
         // check if we already have this role
-        if (binding && serviceClass === binding.serviceClass) return
-
+        if (binding && serviceClass === binding.serviceClass) {
+            if (!binding.service && preferredDeviceId) {
+                binding.preferredDeviceId = preferredDeviceId
+            }   
+            return
+        }
         const oldBound = this.bound
         // new role
         binding = { role, serviceClass, preferredDeviceId }

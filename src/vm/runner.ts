@@ -11,7 +11,7 @@ import {
 } from "./environment"
 import { VMExprEvaluator, unparse, CallEvaluator } from "./expr"
 import { JDEventSource } from "../jdom/eventsource"
-import { CHANGE, ROLE_BOUND, ROLE_UNBOUND, TRACE } from "../jdom/constants"
+import { CHANGE, ROLE_BOUND, ROLE_UNBOUND, SERVICE_PROVIDER_REMOVED, TRACE } from "../jdom/constants"
 import { checkProgram, compileProgram } from "./compile"
 import {
     VM_GLOBAL_CHANGE,
@@ -548,6 +548,7 @@ export class VMProgramRunner extends JDClient {
         readonly program: VMProgram
     ) {
         super()
+
         const compiled = compileProgram(program)
         const { registers, events, errors } = checkProgram(compiled)
         this._roles = compiled.roles
@@ -577,6 +578,13 @@ export class VMProgramRunner extends JDClient {
         this.mount(
             this._env.subscribe(REGISTER_CHANGE, (reg: string) => {
                 this.waitingToRunning()
+            })
+        )
+        this.mount(
+            this.roleManager.bus.subscribe(SERVICE_PROVIDER_REMOVED, (provider: JDServiceProvider) => {
+                if (provider === this._provider) {
+                    this._provider = undefined
+                }
             })
         )
         // control requests (client:{event}, server:{set, get, cmd})
@@ -718,11 +726,11 @@ export class VMProgramRunner extends JDClient {
         if (this.status !== VMStatus.Stopped) return // already running
         this.trace("start")
         try {
-            if (!this._provider) {
-                this._provider = await this.startProvider()
-            }
-
             await this._waitRunMutex.acquire(async () => {
+                if (!this._provider) {
+                    console.log("PROVIDER")
+                    this._provider = await this.startProvider()
+                }            
                 this._waitQueue = this._handlerRunners.slice(0)
                 this._waitQueue.forEach(h => h.reset())
                 this._runQueue = []
@@ -1035,12 +1043,6 @@ export class VMProgramRunner extends JDClient {
                 //}
             )
             const device = this.roleManager.bus.addServiceProvider(provider)
-            // make sure it gets known (HACK)
-            for (const s of servers) {
-                await s.server.statusCode.sendGetAsync()
-            }
-            // TODO: need to separate adding of role from
-            // TODO: specification of preferred deviceId
             servers.forEach((s, index) => {
                 this.roleManager.addRoleService(
                     this._serverRoles[index].role,
@@ -1048,6 +1050,10 @@ export class VMProgramRunner extends JDClient {
                     device.deviceId
                 )
             })
+            // make sure it gets known (HACK)
+            for (const s of servers) {
+                await s.server.statusCode.sendGetAsync()
+            }
             return provider
         }
         return undefined
