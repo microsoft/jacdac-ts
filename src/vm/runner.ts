@@ -584,7 +584,6 @@ export class VMProgramRunner extends JDClient {
             this._env.subscribe(
                 EXTERNAL_REQUEST,
                 (request: ExternalRequest) => {
-                    console.log("ER", request)
                     switch (request.kind) {
                         case "get": {
                             // TODO: in this case, if there is a handler
@@ -648,7 +647,8 @@ export class VMProgramRunner extends JDClient {
             for(const s of servers) {
                 await s.server.statusCode.sendGetAsync()
             }
-            console.log("DS", device.services())
+            // TODO: need to separate adding of role from
+            // TODO: specification of preferred deviceId
             servers.forEach((s, index) => {
                 this.roleManager.addRoleService(
                     this._serverRoles[index].role,
