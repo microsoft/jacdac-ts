@@ -728,7 +728,6 @@ export class VMProgramRunner extends JDClient {
         try {
             await this._waitRunMutex.acquire(async () => {
                 if (!this._provider) {
-                    console.log("PROVIDER")
                     this._provider = await this.startProvider()
                 }            
                 this._waitQueue = this._handlerRunners.slice(0)
