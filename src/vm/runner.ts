@@ -584,6 +584,7 @@ export class VMProgramRunner extends JDClient {
             this._env.subscribe(
                 EXTERNAL_REQUEST,
                 (request: ExternalRequest) => {
+
                     switch (request.kind) {
                         case "get": {
                             // TODO: in this case, if there is a handler
@@ -617,6 +618,7 @@ export class VMProgramRunner extends JDClient {
                 }
             )
         )
+        this.initializeRoleManagement()
     }
 
     public handlerWokeOnRequest(
@@ -626,39 +628,6 @@ export class VMProgramRunner extends JDClient {
         if (request.kind === "get") {
             this._onCompletionOfExternalRequest.push({ handler, request })
         }
-    }
-
-    // spin up provider
-    private async startProvider() {
-        const servers = this._env.servers()
-        if (servers.length) {
-            const provider = new JDServiceProvider(
-                servers.map(s => s.server)
-                // if we create a deviceId, then trouble ensues
-                // as a second device gets spun up later
-                //{
-                //    deviceId: "VMServiceProvider",
-                //}
-            )
-            const device = this.roleManager.bus.addServiceProvider(
-                provider
-            )
-            // make sure it gets known (HACK)
-            for(const s of servers) {
-                await s.server.statusCode.sendGetAsync()
-            }
-            // TODO: need to separate adding of role from
-            // TODO: specification of preferred deviceId
-            servers.forEach((s, index) => {
-                this.roleManager.addRoleService(
-                    this._serverRoles[index].role,
-                    s.serviceClass,
-                    device.deviceId
-                )
-            })
-            return provider
-        }
-        return undefined
     }
 
     // control of VM
@@ -749,9 +718,10 @@ export class VMProgramRunner extends JDClient {
         if (this.status !== VMStatus.Stopped) return // already running
         this.trace("start")
         try {
-            if (!this._provider)
+            if (!this._provider) {
                 this._provider = await this.startProvider()
-            this.initializeRoleManagement()
+            }
+
             await this._waitRunMutex.acquire(async () => {
                 this._waitQueue = this._handlerRunners.slice(0)
                 this._waitQueue.forEach(h => h.reset())
@@ -1024,15 +994,9 @@ export class VMProgramRunner extends JDClient {
         }
     }
 
-    // TODO: deal with server roles
-    private doneInit = false
     private initializeRoleManagement() {
-        if (this.doneInit) return
-        this.doneInit = true
         // adding a (role,service) binding
         const addRoleService = (role: string) => {
-            if (!this._roles.find(r => r.role === role))
-                return
             const service = this.roleManager.getService(role)
             if (service) {
                 this._env.serviceChanged(role, service)
@@ -1040,20 +1004,53 @@ export class VMProgramRunner extends JDClient {
         }
         // initialize client
         this._roles.forEach(r => {
-                addRoleService(r.role)
+            addRoleService(r.role)
         })
         this.mount(
             this.roleManager.subscribe(ROLE_BOUND, async (role: string) => {
+                if (this._serverRoles.find(r => r.role === role)) return
                 addRoleService(role)
                 this.waitingToRunning()
             })
         )
         this.mount(
             this.roleManager.subscribe(ROLE_UNBOUND, (role: string) => {
+                if (this._serverRoles.find(r => r.role === role)) return
                 this._env.serviceChanged(role, undefined)
                 this.waitingToRunning()
             })
         )
+    }
+
+    // spin up provider
+    private async startProvider() {
+        const servers = this._env.servers()
+        if (servers.length) {
+            const provider = new JDServiceProvider(
+                servers.map(s => s.server)
+                // if we create a deviceId, then trouble ensues
+                // as a second device gets spun up later
+                //{
+                //    deviceId: "VMServiceProvider",
+                //}
+            )
+            const device = this.roleManager.bus.addServiceProvider(provider)
+            // make sure it gets known (HACK)
+            for (const s of servers) {
+                await s.server.statusCode.sendGetAsync()
+            }
+            // TODO: need to separate adding of role from
+            // TODO: specification of preferred deviceId
+            servers.forEach((s, index) => {
+                this.roleManager.addRoleService(
+                    this._serverRoles[index].role,
+                    s.serviceClass,
+                    device.deviceId
+                )
+            })
+            return provider
+        }
+        return undefined
     }
 
     public unmount() {

@@ -150,7 +150,7 @@ export default class RoleManager extends JDClient {
                 if (newOne) theOne = newOne
             }
             role.service = theOne
-            this.emit(ROLE_BOUND, role)
+            this.emit(ROLE_BOUND, role.role)
             return true
         }
         return false
