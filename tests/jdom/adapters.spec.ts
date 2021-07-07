@@ -22,11 +22,10 @@ suite('adapters', () => {
             const busTest = new JDBusTestUtil(bus)  // TODO needs better name
             const gestureService = serviceMap.get(gestureAdapter)  // TODO can this be made automatic so we don't need this?
 
+            
+            // TODO TEST CODE
             const buttonService = serviceMap.get(buttonServer)
             buttonService.register(SystemReg.Reading).on(REPORT_UPDATE, () => {})
-
-
-            // TODO TEST CODE
             bus.on(PACKET_SEND, (packet: Packet) => {
                 if (packet.registerIdentifier == buttonServer.reading.identifier) {
                     console.log(`button server snd  ${packet.registerIdentifier}  ${packet}`)
