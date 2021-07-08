@@ -12,6 +12,7 @@ import { Packet } from "../jdom/packet"
 import { DecodedPacket } from "../jdom/pretty"
 import JDRegisterServer from "../jdom/registerserver"
 import { ExternalRequest } from "./environment"
+import SensorServer from "../servers/sensorserver"
 
 export const VM_EXTERNAL_REQUEST = "vmExternalRequest"
 
@@ -33,19 +34,20 @@ class VMRegisterServer extends JDRegisterServer<PackedValues> {
     }
 }
 
-export class VMServiceServer extends JDServiceServer {
+// TODO: need to take specification into account and
+// TOOD: implement the proper base class (SensorServer)
+export class VMServiceServer extends SensorServer<any[]> {
     private eventNameToId: SMap<number> = {}
     private regNameToId: SMap<number> = {}
     private regFieldToId: SMap<number> = {}
     private commandPackets: SMap<DecodedPacket> = {}
     private cmdFieldToId: SMap<number> = {}
 
-    constructor(
-        public role: string,
-        public shortId: string,
-        private spec: jdspec.ServiceSpec
-    ) {
-        super(spec.classIdentifier)
+    constructor(public role: string, private spec: jdspec.ServiceSpec) {
+        super(spec.classIdentifier, {
+            readingValues: [false],
+            streamingInterval: 50,
+        })
         spec.packets.filter(isHighLevelRegister).map(reg => {
             const regServer = this.addExistingRegister(
                 new VMRegisterServer(this, reg)

@@ -1,4 +1,7 @@
-import { serviceSpecificationFromName } from "../jdom/spec"
+import {
+    serviceSpecificationFromClassIdentifier,
+    serviceSpecificationFromName,
+} from "../jdom/spec"
 import {
     VMBase,
     VMCommand,
@@ -173,16 +176,18 @@ export interface RoleEvent {
 
 export const getServiceFromRole = (info: VMProgram) => (role: string) => {
     // lookup in roles first
-    let shortId = info.roles.find(pair => pair.role === role)
+    let roleFound = info.roles.find(pair => pair.role === role)
     let client = true
-    if (!shortId) {
-        shortId = info.serverRoles.find(pair => pair.role === role)
+    if (!roleFound) {
+        roleFound = info.serverRoles.find(pair => pair.role === role)
         client = false
     }
-    if (shortId) {
+    if (roleFound) {
         // must succeed
-        const spec = serviceSpecificationFromName(shortId.serviceShortId)
-        assert(!!spec, `service ${shortId.serviceShortId} not resolved`)
+        const spec = serviceSpecificationFromClassIdentifier(
+            roleFound.serviceClass
+        )
+        assert(!!spec, `service class ${roleFound.serviceClass} not resolved`)
         return { spec, client }
     } else {
         const spec = serviceSpecificationFromName(role)

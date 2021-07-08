@@ -1,9 +1,8 @@
 import { assert, SMap } from "../jdom/utils"
 import { JDService } from "../jdom/service"
-import JDServiceProvider from "../jdom/serviceprovider"
 import { JDEventSource } from "../jdom/eventsource"
 import { PackedValues } from "../jdom/pack"
-import { serviceSpecificationFromName } from "../jdom/spec"
+import { serviceSpecificationFromClassIdentifier } from "../jdom/spec"
 import { RoleRegister, RoleEvent } from "./compile"
 import { VMEnvironmentInterface } from "./runner"
 import { VMRole } from "./ir"
@@ -50,19 +49,21 @@ export class VMEnvironment
     constructor(
         private registers: RoleRegister[],
         private events: RoleEvent[],
-        serverRoles: VMRole[]
+        private serverRoles: VMRole[]
     ) {
         super()
-        serverRoles.forEach(p => {
+        this.setupServers()
+    }
+
+    private setupServers() {
+        this.serverRoles.forEach(p => {
             // get the service
-            const service = serviceSpecificationFromName(p.serviceShortId)
+            const service = serviceSpecificationFromClassIdentifier(
+                p.serviceClass
+            )
             if (service) {
                 // spin up JDServiceServer
-                const serviceServer = new VMServiceServer(
-                    p.role,
-                    p.serviceShortId,
-                    service
-                )
+                const serviceServer = new VMServiceServer(p.role, service)
                 this._serverEnvs[p.role] = serviceServer
                 serviceServer.subscribe(
                     VM_EXTERNAL_REQUEST,
@@ -83,7 +84,7 @@ export class VMEnvironment
         return Object.keys(this._serverEnvs).map(k => {
             return {
                 role: k,
-                shortId: this._serverEnvs[k].shortId,
+                serviceClass: this._serverEnvs[k].serviceClass,
                 server: this._serverEnvs[k],
             }
         })
