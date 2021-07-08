@@ -1,10 +1,8 @@
 import { suite, test } from "mocha"
-import { ButtonGestureEvent, PACKET_SEND, REPORT_UPDATE, SystemReg } from "../../src/jdom/constants";
 
-import ButtonGestureAdapter from "../../src/servers/buttongestureadapter"
+import { ButtonGestureAdapter } from "../../src/servers/buttongestureadapter"
 import ButtonServer from "../../src/servers/buttonserver"
 import { assert } from "../../src/jdom/utils";
-import Packet from "../../src/jdom/packet";
 
 import {withBus, JDBusTestUtil} from "./tester";
 
@@ -12,9 +10,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { parseTrace } from "../../src/jdom/logparser";
 import TracePlayer from "../../src/jdom/traceplayer";
+import { shortDeviceId } from "../../src/jdom/jacdac-jdom";
 
 
-suite('adapters', () => {
+suite('replay', () => {
     test('replay slider', async function() {
         // TODO this needs to be cleaned up to avoid this much boilerplate on every test
         const trace = parseTrace(fs.readFileSync(
@@ -22,10 +21,11 @@ suite('adapters', () => {
         // note pot register has device ID b62b82ccd740bde5, service command 4353, short name (?) BP95
 
         console.log(trace.packets.map(packet => {
-            return `${packet.sender}  DID=${packet.deviceIdentifier}  SC=${packet.serviceCommand}  ${packet.data}`
+            return `${packet.sender}  DID=${packet.deviceIdentifier} (${shortDeviceId(packet.deviceIdentifier)})  SC=${packet.serviceCommand}  ${packet.data}`
         }))
 
         // These are here so we have a handle
+        // TODO this mixes legacy and nanoservice buttons, fix me
         const buttonServer = new ButtonServer("button")  // interface name is just a human-friendly name, not functional
         const gestureAdapter = new ButtonGestureAdapter("button", "gestureAdapter")
         
