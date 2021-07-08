@@ -1,18 +1,17 @@
 import {
+    ButtonEdgeEvent,
     ButtonEvent,
     ButtonGestureEvent,
-    CONNECT,
-    DEVICE_CHANGE,
-    DEVICE_CONNECT,
     EVENT,
-    ROLE_BOUND,
-    ROLE_MANAGER_CHANGE,
-    SELF_ANNOUNCE,
+    REPORT_RECEIVE,
+    REPORT_UPDATE,
     SRV_BUTTON,
+    SRV_BUTTON_EDGE,
     SRV_BUTTON_GESTURE,
+    SRV_BUTTON_STREAMING,
+    SystemReg,
 } from "../jdom/constants"
-import SensorServer from "./sensorserver"
-import { assert, JDDevice, JDEvent, JDService, RoleManagerClient } from "../jdom/jacdac-jdom"
+import { assert, JDEvent, Packet } from "../jdom/jacdac-jdom"
 import RoleManager from "./rolemanager"
 import JDServiceServer from "../jdom/serviceserver"
 
@@ -34,8 +33,7 @@ export class AdapterServer extends JDServiceServer {
     protected onRoleManager(roleManager: RoleManager) {}
 }
 
-export default class ButtonGestureAdapter extends AdapterServer {
-    protected ready = false // whether it is bound to the source service
+export class LegacyButtonGestureAdapter extends AdapterServer {
     protected state: "up" | "down_click" | "up_click" | "down_held" = "up"
 
     // TODO this is only used to gate timeouts using threading + wait.
@@ -123,5 +121,43 @@ export default class ButtonGestureAdapter extends AdapterServer {
             this.state = "up"
             this.clickCounter = 0
         }
+    }
+}
+
+export class ButtonEdgeAdapter extends AdapterServer {
+    protected lastState: "none" | "up" | "down" = "none"
+
+    protected readonly buttonRole: string
+
+    constructor(
+        buttonRole: string,
+        instanceName?: string,
+    ) {
+        super(SRV_BUTTON_EDGE, {
+            instanceName,
+        })
+
+        this.buttonRole = buttonRole
+    }
+
+    protected onRoleManager(roleManager: RoleManager) {
+        const service = roleManager.getService(this.buttonRole)
+        assert(service.serviceClass == SRV_BUTTON_STREAMING) // TODO can this logic be moved into infrastructure?
+
+        service.register(SystemReg.Reading).on(REPORT_RECEIVE, (packet: Packet) => {
+            if (this.lastState == "none") {  // ignore the first sample
+                if (!packet.data[0]) {
+                    this.lastState = "up"
+                } else {
+                    this.lastState = "down"
+                }
+            } else if (this.lastState == "up" && !!packet.data[0]) {
+                this.sendEvent(ButtonEdgeEvent.Down)
+                this.lastState = "down"
+            } else if (this.lastState == "down" && !packet.data[0]) {
+                this.sendEvent(ButtonEdgeEvent.Up)
+                this.lastState = "up"
+            }
+        })
     }
 }

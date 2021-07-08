@@ -1,19 +1,18 @@
 import { suite, test } from "mocha"
-import { ButtonGestureEvent, PACKET_SEND, REPORT_UPDATE, SystemReg } from "../../src/jdom/constants";
+import { ButtonGestureEvent } from "../../src/jdom/constants";
 
-import ButtonGestureAdapter from "../../src/servers/buttongestureadapter"
+import { LegacyButtonGestureAdapter } from "../../src/servers/buttongestureadapter"
 import ButtonServer from "../../src/servers/buttonserver"
 import { assert } from "../../src/jdom/utils";
-import Packet from "../../src/jdom/packet";
 
 import {withBus, JDBusTestUtil} from "./tester";
 
 
-suite('adapters', () => {
+suite('legacy button adapters', () => {
     test('click detect event', async function() {
         // These are here so we have a handle
         const buttonServer = new ButtonServer("button")  // interface name is just a human-friendly name, not functional
-        const gestureAdapter = new ButtonGestureAdapter("button", "gestureAdapter")
+        const gestureAdapter = new LegacyButtonGestureAdapter("button", "gestureAdapter")
 
         await withBus([
             {server: buttonServer, roleName: "button"},
@@ -21,17 +20,6 @@ suite('adapters', () => {
         ], async (bus, serviceMap) => {
             const busTest = new JDBusTestUtil(bus)  // TODO needs better name
             const gestureService = serviceMap.get(gestureAdapter)  // TODO can this be made automatic so we don't need this?
-
-            
-            // TODO TEST CODE
-            const buttonService = serviceMap.get(buttonServer)
-            buttonService.register(SystemReg.Reading).on(REPORT_UPDATE, () => {})
-            bus.on(PACKET_SEND, (packet: Packet) => {
-                if (packet.registerIdentifier == buttonServer.reading.identifier) {
-                    console.log(`button server snd  ${packet.registerIdentifier}  ${packet}`)
-                }
-            })
-
 
             // Simple test stimulus, click cycle
             buttonServer.down()
