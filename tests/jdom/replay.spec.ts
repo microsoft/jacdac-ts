@@ -17,7 +17,7 @@ suite('replay', () => {
     test('replay slider', async function() {
         // TODO this needs to be cleaned up to avoid this much boilerplate on every test
         const trace = parseTrace(fs.readFileSync(
-            path.join(__dirname, "BP95_pot_slow_slow_fast_fast.txt"), "utf-8").toString())
+            path.join(__dirname, "BP95_pot_join_slow_slow_fast_fast.txt"), "utf-8").toString())
         // note pot register has device ID b62b82ccd740bde5, service command 4353, short name (?) BP95
 
         console.log(trace.packets.map(packet => {
