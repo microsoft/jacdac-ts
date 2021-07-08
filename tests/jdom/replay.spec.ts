@@ -21,22 +21,17 @@ suite('replay', () => {
         // note pot register has device ID b62b82ccd740bde5, service command 4353, short name (?) BP95
 
         console.log(trace.packets.map(packet => {
-            return `${packet.sender}  DID=${packet.deviceIdentifier} (${shortDeviceId(packet.deviceIdentifier)})  SC=${packet.serviceCommand}  ${packet.data}`
+            return `${packet.sender}  DID=${packet.deviceIdentifier} (${shortDeviceId(packet.deviceIdentifier)})  SC=${packet.serviceCommand}  RG=${packet.isRegisterGet},RS=${packet.isRegisterSet},RID=${packet.registerIdentifier}  ${packet.data}`
         }))
 
         // These are here so we have a handle
         // TODO this mixes legacy and nanoservice buttons, fix me
         const buttonServer = new ButtonServer("button")  // interface name is just a human-friendly name, not functional
-        const gestureAdapter = new ButtonGestureAdapter("button", "gestureAdapter")
-        
-
 
         await withBus([
             {server: buttonServer, roleName: "button"},
-            {server: gestureAdapter},
         ], async (bus, serviceMap) => {
             const busTest = new JDBusTestUtil(bus)  // TODO needs better name
-
 
             const player = new TracePlayer(bus)
             player.trace = trace

@@ -4,7 +4,6 @@ import {
     ButtonGestureEvent,
     EVENT,
     REPORT_RECEIVE,
-    REPORT_UPDATE,
     SRV_BUTTON,
     SRV_BUTTON_EDGE,
     SRV_BUTTON_GESTURE,
