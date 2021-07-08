@@ -11,7 +11,7 @@ import {
 } from "./environment"
 import { VMExprEvaluator, unparse, CallEvaluator } from "./expr"
 import { JDEventSource } from "../jdom/eventsource"
-import { CHANGE, ROLE_BOUND, ROLE_UNBOUND, TRACE } from "../jdom/constants"
+import { CHANGE, ROLE_BOUND, ROLE_UNBOUND, SERVICE_PROVIDER_REMOVED, TRACE } from "../jdom/constants"
 import { checkProgram, compileProgram } from "./compile"
 import {
     VM_GLOBAL_CHANGE,
@@ -514,12 +514,15 @@ export enum VMStatus {
     Running = "running",
     Paused = "paused",
 }
+
 const MAX_LOG = 100
+
 export class VMProgramRunner extends JDClient {
     // program, environment
     private _handlerRunners: VMHandlerRunner[] = []
     private _env: VMEnvironment
     private _roles: VMRole[] = []
+    private _serverRoles: VMRole[] = []
     // running
     private _status: VMStatus
     private _waitQueue: VMHandlerRunner[] = []
@@ -534,7 +537,7 @@ export class VMProgramRunner extends JDClient {
     private _breaks: SMap<boolean> = {}
     private _breaksMutex: Mutex
     // providing new services
-    private _provider: JDServiceProvider
+    private _provider: JDServiceProvider = undefined
     private _onCompletionOfExternalRequest: {
         handler: VMHandlerRunner
         request: ExternalRequest
@@ -545,9 +548,11 @@ export class VMProgramRunner extends JDClient {
         readonly program: VMProgram
     ) {
         super()
+
         const compiled = compileProgram(program)
         const { registers, events, errors } = checkProgram(compiled)
         this._roles = compiled.roles
+        this._serverRoles = compiled.serverRoles
         if (errors?.length) console.debug("ERRORS", errors)
 
         // data structures for running program
@@ -556,19 +561,6 @@ export class VMProgramRunner extends JDClient {
         this._handlerRunners = compiled.handlers.map(
             (h, index) => new VMHandlerRunner(this, index, this._env, h)
         )
-        const servers = this._env.servers()
-        if (servers.length) {
-            this._provider = new JDServiceProvider(
-                servers.map(s => s.server),
-                {
-                    deviceId: "VMServiceProvider",
-                }
-            )
-            this._provider.bus = roleManager.bus
-            // bus.addServiceProvider(this._provider)
-           
-            // what about the role Manager?
-        }
 
         // TODO: can't add multiple handlers until we have deduplicate CHANGE on Event
         /*
@@ -588,18 +580,26 @@ export class VMProgramRunner extends JDClient {
                 this.waitingToRunning()
             })
         )
+        this.mount(
+            this.roleManager.bus.subscribe(SERVICE_PROVIDER_REMOVED, (provider: JDServiceProvider) => {
+                if (provider === this._provider) {
+                    this._provider = undefined
+                }
+            })
+        )
         // control requests (client:{event}, server:{set, get, cmd})
         this.mount(
             this._env.subscribe(
                 EXTERNAL_REQUEST,
                 (request: ExternalRequest) => {
+
                     switch (request.kind) {
                         case "get": {
                             // TODO: in this case, if there is a handler
                             // waiting on this Request then the function
-                            // handlerWokeOnRequest will be invoked. If 
+                            // handlerWokeOnRequest will be invoked. If
                             // it is not then we should just return the
-                            // current value of register 
+                            // current value of register
                             break
                         }
                         // these handler invocations are "fire and forget"
@@ -726,8 +726,10 @@ export class VMProgramRunner extends JDClient {
         if (this.status !== VMStatus.Stopped) return // already running
         this.trace("start")
         try {
-            this.roleManager.setRoles(this._roles)
             await this._waitRunMutex.acquire(async () => {
+                if (!this._provider) {
+                    this._provider = await this.startProvider()
+                }            
                 this._waitQueue = this._handlerRunners.slice(0)
                 this._waitQueue.forEach(h => h.reset())
                 this._runQueue = []
@@ -885,14 +887,11 @@ export class VMProgramRunner extends JDClient {
             }
         } else if (h.status === VMInternalStatus.Completed) {
             const q = this._onCompletionOfExternalRequest
-            const index = q.findIndex(
-                p => p.handler === h
-            )
+            const index = q.findIndex(p => p.handler === h)
             if (index > -1) {
-                const [del] = q.splice(index,1)
+                const [del] = q.splice(index, 1)
                 await this._env.completeRequest(del.request)
             }
-
         }
     }
 
@@ -1010,23 +1009,60 @@ export class VMProgramRunner extends JDClient {
                 this._env.serviceChanged(role, service)
             }
         }
-        // initialize
-        this.roleManager.roles.forEach(r => {
-            if (this._roles.find(rv => rv.role === r.role)) {
-                addRoleService(r.role)
-            }
+        // initialize client
+        this._roles.forEach(r => {
+            addRoleService(r.role)
         })
         this.mount(
             this.roleManager.subscribe(ROLE_BOUND, async (role: string) => {
+                if (this._serverRoles.find(r => r.role === role)) return
                 addRoleService(role)
                 this.waitingToRunning()
             })
         )
         this.mount(
             this.roleManager.subscribe(ROLE_UNBOUND, (role: string) => {
+                if (this._serverRoles.find(r => r.role === role)) return
                 this._env.serviceChanged(role, undefined)
                 this.waitingToRunning()
             })
         )
+    }
+
+    // spin up provider
+    private async startProvider() {
+        const servers = this._env.servers()
+        if (servers.length) {
+            const provider = new JDServiceProvider(
+                servers.map(s => s.server)
+                // if we create a deviceId, then trouble ensues
+                // as a second device gets spun up later
+                //{
+                //    deviceId: "VMServiceProvider",
+                //}
+            )
+            const device = this.roleManager.bus.addServiceProvider(provider)
+            servers.forEach((s, index) => {
+                this.roleManager.addRoleService(
+                    this._serverRoles[index].role,
+                    s.serviceClass,
+                    device.deviceId
+                )
+            })
+            // make sure it gets known (HACK)
+            for (const s of servers) {
+                await s.server.statusCode.sendGetAsync()
+            }
+            return provider
+        }
+        return undefined
+    }
+
+    public unmount() {
+        console.log("VMProgram (unmount)")
+        super.unmount()
+        if (this._provider) {
+            this.roleManager.bus.removeServiceProvider(this._provider)
+        }
     }
 }

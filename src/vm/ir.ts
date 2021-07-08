@@ -32,7 +32,7 @@ export interface VMHandler {
 
 export interface VMRole {
     role: string
-    serviceShortId: string
+    serviceClass: number
 }
 
 export interface VMProgram {
