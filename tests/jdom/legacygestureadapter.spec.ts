@@ -1,7 +1,7 @@
 import { suite, test } from "mocha"
 import { ButtonGestureEvent } from "../../src/jdom/constants";
 
-import { LegacyButtonGestureAdapter } from "../../src/servers/buttongestureadapter"
+import { LegacyButtonEdgeAdapter, ButtonGestureAdapter } from "../../src/servers/buttongestureadapter"
 import ButtonServer from "../../src/servers/buttonserver"
 import { assert } from "../../src/jdom/utils";
 
@@ -11,11 +11,13 @@ import {withBus, JDBusTestUtil} from "./tester";
 suite('legacy button adapters', () => {
     test('click detect event', async function() {
         // These are here so we have a handle
-        const buttonServer = new ButtonServer("button")  // interface name is just a human-friendly name, not functional
-        const gestureAdapter = new LegacyButtonGestureAdapter("button", "gestureAdapter")
+        const buttonServer = new ButtonServer("legacyButton")  // interface name is just a human-friendly name, not functional
+        const buttonAdapter = new LegacyButtonEdgeAdapter("legacyButton", "button")
+        const gestureAdapter = new ButtonGestureAdapter("button", "gestureAdapter")
 
         await withBus([
-            {server: buttonServer, roleName: "button"},
+            {server: buttonServer, roleName: "legacyButton"},
+            {server: buttonAdapter, roleName: "button"},
             {server: gestureAdapter},
         ], async (bus, serviceMap) => {
             const busTest = new JDBusTestUtil(bus)  // TODO needs better name

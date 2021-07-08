@@ -33,7 +33,48 @@ export class AdapterServer extends JDServiceServer {
     protected onRoleManager(roleManager: RoleManager) {}
 }
 
-export class LegacyButtonGestureAdapter extends AdapterServer {
+// Edge detection  (up, down) on top of the basic state-streaming button
+export class ButtonEdgeAdapter extends AdapterServer {
+    protected lastState: "none" | "up" | "down" = "none"
+
+    protected readonly buttonRole: string
+
+    constructor(
+        buttonRole: string,
+        instanceName?: string,
+    ) {
+        super(SRV_BUTTON_EDGE, {
+            instanceName,
+        })
+
+        this.buttonRole = buttonRole
+    }
+
+    protected onRoleManager(roleManager: RoleManager) {
+        const service = roleManager.getService(this.buttonRole)
+        assert(service !== undefined, `no consumed service ${this.buttonRole}`)
+        assert(service.serviceClass == SRV_BUTTON_STREAMING) // TODO can this logic be moved into infrastructure?
+
+        service.register(SystemReg.Reading).on(REPORT_RECEIVE, (packet: Packet) => {
+            if (this.lastState == "none") {  // ignore the first sample
+                if (!packet.data[0]) {
+                    this.lastState = "up"
+                } else {
+                    this.lastState = "down"
+                }
+            } else if (this.lastState == "up" && !!packet.data[0]) {
+                this.sendEvent(ButtonEdgeEvent.Down)
+                this.lastState = "down"
+            } else if (this.lastState == "down" && !packet.data[0]) {
+                this.sendEvent(ButtonEdgeEvent.Up)
+                this.lastState = "up"
+            }
+        })
+    }
+}
+
+// Gesture detection (click, click-and-hold, double-click, ...) on top of ButtonEdge
+export class ButtonGestureAdapter extends AdapterServer {
     protected state: "up" | "down_click" | "up_click" | "down_held" = "up"
 
     // TODO this is only used to gate timeouts using threading + wait.
@@ -62,13 +103,14 @@ export class LegacyButtonGestureAdapter extends AdapterServer {
 
     protected onRoleManager(roleManager: RoleManager) {
         const service = roleManager.getService(this.buttonRole)
-        assert(service.serviceClass == SRV_BUTTON) // TODO can this logic be moved into infrastructure?
+        assert(service !== undefined, `no consumed service ${this.buttonRole}`)
+        assert(service.serviceClass == SRV_BUTTON_EDGE) // TODO can this logic be moved into infrastructure?
 
         service.on(EVENT, (ev: JDEvent) => {
             const now = this.device.bus.timestamp
-            if (ev.code == ButtonEvent.Down) {
+            if (ev.code == ButtonEdgeEvent.Down) {
                 this.onSourceButtonDown()
-            } else if (ev.code == ButtonEvent.Up) {
+            } else if (ev.code == ButtonEdgeEvent.Up) {
                 this.onSourceButtonUp()
             }
         })
@@ -124,9 +166,8 @@ export class LegacyButtonGestureAdapter extends AdapterServer {
     }
 }
 
-export class ButtonEdgeAdapter extends AdapterServer {
-    protected lastState: "none" | "up" | "down" = "none"
-
+// Adapts a legacy button to a ButtonEdge
+export class LegacyButtonEdgeAdapter extends AdapterServer {
     protected readonly buttonRole: string
 
     constructor(
@@ -142,21 +183,15 @@ export class ButtonEdgeAdapter extends AdapterServer {
 
     protected onRoleManager(roleManager: RoleManager) {
         const service = roleManager.getService(this.buttonRole)
-        assert(service.serviceClass == SRV_BUTTON_STREAMING) // TODO can this logic be moved into infrastructure?
+        assert(service !== undefined, `no consumed service ${this.buttonRole}`)
+        assert(service.serviceClass == SRV_BUTTON) // TODO can this logic be moved into infrastructure?
 
-        service.register(SystemReg.Reading).on(REPORT_RECEIVE, (packet: Packet) => {
-            if (this.lastState == "none") {  // ignore the first sample
-                if (!packet.data[0]) {
-                    this.lastState = "up"
-                } else {
-                    this.lastState = "down"
-                }
-            } else if (this.lastState == "up" && !!packet.data[0]) {
+        service.on(EVENT, (ev: JDEvent) => {
+            const now = this.device.bus.timestamp
+            if (ev.code == ButtonEvent.Down) {
                 this.sendEvent(ButtonEdgeEvent.Down)
-                this.lastState = "down"
-            } else if (this.lastState == "down" && !packet.data[0]) {
+            } else if (ev.code == ButtonEvent.Up) {
                 this.sendEvent(ButtonEdgeEvent.Up)
-                this.lastState = "up"
             }
         })
     }
