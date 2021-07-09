@@ -49,7 +49,6 @@ export async function withBus(busDevices: BusDevice[], test: (bus: JDBus, servic
     })
 
     bus.start()  // TODO is this the right place to start the bus?
-    console.log(`BUS BRR ${bus.backgroundRefreshRegisters}`)
 
     // Wait for created devices to be announced, so services become available
     // TODO is this a good way to write async code in TS?
@@ -118,8 +117,6 @@ export async function withBus(busDevices: BusDevice[], test: (bus: JDBus, servic
             return [elt.server, elt.service]
         })
     )
-
-    console.log(`BUS BRR ${bus.backgroundRefreshRegisters}`)
 
     await test(bus, serviceMap)
 
