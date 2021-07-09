@@ -10,19 +10,30 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { parseTrace } from "../../src/jdom/logparser";
 import TracePlayer from "../../src/jdom/traceplayer";
-import { shortDeviceId } from "../../src/jdom/jacdac-jdom";
+import { Packet, shortDeviceId } from "../../src/jdom/jacdac-jdom";
+import Trace from "../../src/jdom/trace";
 
 
 suite('replay', () => {
     test('replay slider', async function() {
         // TODO this needs to be cleaned up to avoid this much boilerplate on every test
-        const trace = parseTrace(fs.readFileSync(
+        const traceRaw = parseTrace(fs.readFileSync(
             path.join(__dirname, "BP95_pot_join_slow_slow_fast_fast.txt"), "utf-8").toString())
         // note pot register has device ID b62b82ccd740bde5, service command 4353, short name (?) BP95
 
-        console.log(trace.packets.map(packet => {
-            return `${packet.sender}  DID=${packet.deviceIdentifier} (${shortDeviceId(packet.deviceIdentifier)})  SC=${packet.serviceCommand}  RG=${packet.isRegisterGet},RS=${packet.isRegisterSet},RID=${packet.registerIdentifier}  ${packet.data}`
-        }))
+        // TODO de-inline into utility
+        const filteredPackets = traceRaw.packets.filter(packet => {
+            return shortDeviceId(packet.deviceIdentifier) == "BP95"
+        })
+        assert(filteredPackets.length > 0, "no packets from device")
+        assert(filteredPackets[0].isAnnounce, "first packet from device in trace must be announce")
+        const retimedPackets = filteredPackets.map(packet => {  // announce at t=0
+            const clone = packet.clone()
+            clone.timestamp = clone.timestamp - filteredPackets[0].timestamp
+            return clone
+        })
+        const trace = new Trace(retimedPackets, traceRaw.description)
+
 
         // These are here so we have a handle
         // TODO this mixes legacy and nanoservice buttons, fix me
@@ -35,15 +46,21 @@ suite('replay', () => {
 
             const player = new TracePlayer(bus)
             player.trace = trace
-            console.log("Trace start")
             player.start()
 
-            await bus.delay(3000)
+            // TODO
+            // pot_service = bus.awaitReady("BP95", SERVICE_POT)
+            // Some way to bind the role? - on the new virtual bus
+
+            await bus.delay(2000)
 
             console.log(bus.devices().map(device => {
-                return `${device.services().length} ${device.friendlyName} ${device.shortId}`
+                const servicesStr = device.services().map ( service => {
+                    return `${service.name}=${service.specification.name}`
+                } )
+                return `${device.friendlyName}: ${servicesStr}`
             }))
 
         })
-    }).timeout(5000)
+    }).timeout(3000)
 });
