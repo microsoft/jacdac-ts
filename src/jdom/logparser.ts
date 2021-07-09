@@ -10,7 +10,7 @@ export function parseTrace(contents: string): Trace {
     const packets: Packet[] = []
     contents?.split(/\r?\n/).forEach(ln => {
         // parse data
-        const m = /(\d+)\s+([a-f0-9]{12,})/i.exec(ln)
+        const m = /^(\d+.?\d*)\s+([a-f0-9]{12,})/i.exec(ln)
         if (!m) {
             // probably junk data
             if (packets.length == 0) description.push(ln)
