@@ -36,6 +36,7 @@ export class TraceServer {
     readonly deviceId: string  // the full device id, from the packet in the trace
 
     protected nextPacketIndex: number | undefined = undefined
+    protected bus: JDBus | undefined = undefined
 
     constructor(traceFilename: string, readonly shortId: string) {
         const traceRaw = parseTrace(fs.readFileSync(traceFilename, "utf-8").toString())
@@ -58,31 +59,31 @@ export class TraceServer {
         this.trace = new Trace(retimedPackets, traceRaw.description)
     }
 
-    
+    // Called when the next packet is ready to be processed, processes it, and schedules the packet afterwards
+    // (if not at end).
+    protected nextPacket() {
+        while (this.nextPacketIndex < this.trace.packets.length
+            && this.trace.packets[this.nextPacketIndex].timestamp <= this.bus.timestamp) {
+            // replay code from TracePlayer.tick()
+            const pkt = this.trace.packets[this.nextPacketIndex].clone()
+            pkt.replay = true
+            this.bus.processPacket(pkt)
+
+            this.nextPacketIndex++
+        }
+
+        if (this.nextPacketIndex < this.trace.packets.length) {
+            this.bus.scheduler.setTimeout(this.nextPacket, 
+                this.trace.packets[this.nextPacketIndex].timestamp - this.bus.timestamp)
+        }
+    }
+
     public start(bus: JDBus) {
         assert(this.nextPacketIndex == undefined, "can't restart trace device")
         this.nextPacketIndex = 0
+        this.bus = bus
 
-        // Called when the next packet is ready to be processed, processes it, and schedules the packet afterwards
-        // (if not at end).
-        function nextPacket() {
-
-            while (this.nextPacketIndex < this.trace.packets.length
-                && this.trace.packets[this.nextPacketIndex].timestamp <= bus.timestamp) {
-                // replay code from TracePlayer.tick()
-                const pkt = this.trace.packets[this.nextPacketIndex].clone()
-                pkt.replay = true
-                bus.processPacket(pkt)
-
-                this.nextPacketIndex++
-            }
-
-            if (this.nextPacketIndex < this.trace.packets.length) {
-                bus.scheduler.setTimeout(nextPacket, 
-                    this.trace.packets[this.nextPacketIndex].timestamp - bus.timestamp)
-            }
-        }
-        bus.scheduler.setTimeout(nextPacket, 0)
+        bus.scheduler.setTimeout(this.nextPacket, 0)
     }
 }
 
@@ -105,7 +106,9 @@ export async function withBus(busDevices: (BusDevice | TraceDevice)[],
     test: (bus: JDBus, serviceMap: Map<JDServiceServer, JDService>) => Promise<void>) {
     const bus = mkBus()
 
-    const serverDeviceRoleList = busDevices.map(busDevice => {
+    const serverDeviceRoleList = busDevices.filter(busDevice => {
+        return (busDevice instanceof BusDevice)
+    }).map(busDevice => {
         const device = bus.addServiceProvider(new JDServiceProvider(
             [busDevice.server]
             ))  // TODO support multi-service devices?
