@@ -57,6 +57,8 @@ export class TraceServer {
             return clone
         })
         this.trace = new Trace(retimedPackets, traceRaw.description)
+
+        assert(this.trace !== undefined, `failed to create trace from ${traceFilename}`)
     }
 
     // Called when the next packet is ready to be processed, processes it, and schedules the packet afterwards
@@ -94,44 +96,75 @@ interface TraceDevice {
 }
 
 
-interface BusDevice {
+interface ServerDevice {
     server: JDServiceServer,
     roleName?: string,
 }
 
+function isTraceDevice(obj: ServerDevice | TraceDevice): obj is TraceDevice {
+    return 'trace' in obj
+}
+
+function isServerDevice(obj: ServerDevice | TraceDevice): obj is ServerDevice {
+    return 'server' in obj
+}
+
+
 // Creates a bus with the specified servers, bound to the specified roles.
 // Returns once all devices are registered, and adapters are ready.
 // TODO should a timeout live here? or should that be a higher level responsibility?
-export async function withBus(busDevices: (BusDevice | TraceDevice)[], 
+export async function withBus(devices: (ServerDevice | TraceDevice)[], 
     test: (bus: JDBus, serviceMap: Map<JDServiceServer, JDService>) => Promise<void>) {
     const bus = mkBus()
 
-    const serverDeviceRoleList = busDevices.filter(busDevice => {
-        return (busDevice instanceof BusDevice)
-    }).map(busDevice => {
-        const device = bus.addServiceProvider(new JDServiceProvider(
-            [busDevice.server]
-            ))  // TODO support multi-service devices?
+    // For server devices: add the service provider on the bus and return the device
+    const serverDevices = devices.filter(device => {
+        return isServerDevice(device)
+    }).map(device => {
+        const busDevice = bus.addServiceProvider(new JDServiceProvider(
+            [(<ServerDevice>device).server] 
+        ))
         return {
-            server: busDevice.server,
-            device: device,
-            roleName: busDevice.roleName
+            server: (<ServerDevice>device).server,
+            busDevice: busDevice,
+            roleName: (<ServerDevice>device).roleName,
         }
     })
 
+    // For trace devices: start the device on the bus
+    const traceDevices = devices.filter(device => {
+        return isTraceDevice(device)
+    }).map(device => {
+        (<TraceDevice>device).trace.start(bus)
+        return <TraceDevice>device
+    })
+
+
     bus.start()  // TODO is this the right place to start the bus?
+
+    // Map device IDs to listen for, so we can get a bus device from the traces
+    const traceDeviceIds = traceDevices.map(elt => {
+        return elt.trace.deviceId
+    })
+    const traceDeviceMap = new Map<string, JDDevice>()  // deviceId -> bus JDDevice
 
     // Wait for created devices to be announced, so services become available
     // TODO is this a good way to write async code in TS?
+    const serverDeviceIds = serverDevices.map(elt => {
+        return elt.busDevice.deviceId
+    })
     await new Promise(resolve => {
-        const devicesSet = new Set(serverDeviceRoleList.map(elt => elt.device))
-        const announcedSet = new Set()
+        const devicesIdSet = new Set(traceDeviceIds.concat(serverDeviceIds))
+        const announcedIdSet = new Set()
         const onHandler = (device: JDDevice) => {
-            if (devicesSet.has(device)) {
-                announcedSet.add(device)
+            if (devicesIdSet.has(device.deviceId)) {
+                announcedIdSet.add(device.deviceId)
             }
-            
-            if (setEquals(devicesSet, announcedSet)) {
+            if (device.deviceId in traceDeviceIds) {
+                traceDeviceMap.set(device.deviceId, device)
+            }
+
+            if (setEquals(devicesIdSet, announcedIdSet)) {
                 bus.off(DEVICE_ANNOUNCE, onHandler)
                 resolve(undefined)
             }
@@ -139,22 +172,34 @@ export async function withBus(busDevices: (BusDevice | TraceDevice)[],
         bus.on(DEVICE_ANNOUNCE, onHandler)
     })
 
-    // Assign roles now that services are available
-    const serverServiceRoleList = serverDeviceRoleList.map(elt => {
-        const services = elt.device.services({serviceClass: elt.server.serviceClass})
+    // Get server service -> roleName mappings
+    const serverServiceRoles = serverDevices.map(elt => {
+        const services = elt.busDevice.services({serviceClass: elt.server.serviceClass})
         assert(services.length > 0, 
-            `created device ${elt.device.friendlyName} has no service of ${elt.server.specification.name}`)
+            `created device ${elt.busDevice.friendlyName} has no service of ${elt.server.specification.name}`)
         assert(services.length == 1, 
-            `created device ${elt.device.friendlyName} has multiple service of ${elt.server.specification.name}`)
+            `created device ${elt.busDevice.friendlyName} has multiple service of ${elt.server.specification.name}`)
         return {
-            server: elt.server,
             service: services[0],
             roleName: elt.roleName
         }
     })
 
-    const roleManager = new RoleManager(bus)
-    roleManager.setRoles(serverServiceRoleList.filter(elt => {
+    // Get trace service -> roleName mappings
+    const traceServiceRoles = traceDevices.map(elt => {
+        const busDevice = traceDeviceMap.get(elt.trace.deviceId)
+        const services = busDevice.services({serviceClass: elt.service})
+        assert(services.length > 0, 
+            // TODO needs better debug output instead of service number
+            `created trace device ${busDevice.friendlyName} has no service of ${elt.service}`)
+        assert(services.length == 1, 
+            `created trace device ${busDevice.friendlyName} has multiple service of ${elt.service}`)
+        return {
+            service: services[0],
+            roleName: elt.roleName
+        }
+    })
+    const roleNamesToServiceId = serverServiceRoles.concat(traceServiceRoles).filter(elt => {
         return !!elt.roleName  // filter for where role name is available
     }).map(elt => {
         // TODO role manager doesn't allow manual specificiation of binding role => services right now,
@@ -163,32 +208,36 @@ export async function withBus(busDevices: (BusDevice | TraceDevice)[],
         // For now this just allocates a role and type.
         // IF YOU HAVE MORE THAN ONE SERVICE INSTANCE WEIRD THINGS CAN HAPPEN!
         return {role: elt.roleName, serviceShortId: elt.service.specification.shortId}
-    }))
+    })
+
+    const roleManager = new RoleManager(bus)
+    roleManager.setRoles(roleNamesToServiceId)
 
     // TODO this is (might be?) a nasty hack to associate a particular service with a role name
-    serverServiceRoleList.map(elt => {
-        elt.service.role = elt.roleName
-    })
+    // serverServiceRoles.map(elt => {
+    //     elt.service.role = elt.roleName
+    // })
 
     
     // Wait for adapters to be ready
     // TODO WRITE ME
     // Give adapters a role manager, so they can find underlying services
     // TODO HACK HACK HACK
-    serverServiceRoleList.forEach(elt => {
+    serverDevices.forEach(elt => {
         if (elt.server instanceof AdapterServer) {
             elt.server._hack_setRoleManager(roleManager)
         }
     })
 
-
     // Return created services as a map from the source server
+    // Trace devices are ignored here, since handles aren't (currently?) needed
     const serviceMap = new Map(
-        serverServiceRoleList.map(elt => {
-            return [elt.server, elt.service]
+        serverDevices.map(elt => {
+            return [elt.server, elt.busDevice.services({serviceClass: elt.server.serviceClass})[0]]
         })
     )
 
+    // Actually run the test here
     await test(bus, serviceMap)
 
     bus.stop()
