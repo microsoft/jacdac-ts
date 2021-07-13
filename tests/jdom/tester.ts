@@ -42,7 +42,6 @@ export class TraceServer {
     constructor(traceFilename: string, readonly shortId: string) {
         const traceRaw = parseTrace(fs.readFileSync(traceFilename, "utf-8").toString())
 
-        // TODO de-inline into utility
         const filteredPackets = traceRaw.packets.filter(packet => {
             return shortDeviceId(packet.deviceIdentifier) == shortId
         })
@@ -166,7 +165,6 @@ export async function withBus(devices: (ServerDevice | TraceDevice)[],
     const deviceIdToDeviceMap = new Map<string, JDDevice>()  // deviceId -> bus JDDevice
 
     // Wait for created devices to be announced, so services become available
-    // TODO is this a good way to write async code in TS?
     const serverDeviceIds = serverDevices.map(elt => {
         return elt.busDevice.deviceId
     })
@@ -187,6 +185,7 @@ export async function withBus(devices: (ServerDevice | TraceDevice)[],
         bus.on(DEVICE_ANNOUNCE, onHandler)
     })
 
+    // Bind services to roles
     // Get server service -> roleName mappings
     const serverServiceRoles = serverDevices.map(elt => {
         const services = elt.busDevice.services({serviceClass: elt.server.serviceClass})
@@ -199,7 +198,6 @@ export async function withBus(devices: (ServerDevice | TraceDevice)[],
             roleName: elt.roleName
         }
     })
-
     // Get trace service -> roleName mappings
     const traceServiceRoles = traceDevices.map(elt => {
         assert(deviceIdToDeviceMap.has(elt.trace.deviceId), `missing trace ${elt.trace.deviceId} in map of ${deviceIdToDeviceMap.keys()}`)
@@ -229,14 +227,6 @@ export async function withBus(devices: (ServerDevice | TraceDevice)[],
     const roleManager = new RoleManager(bus)
     roleManager.setRoles(roleNamesToServiceId)
 
-    // TODO this is (might be?) a nasty hack to associate a particular service with a role name
-    // serverServiceRoles.map(elt => {
-    //     elt.service.role = elt.roleName
-    // })
-
-    
-    // Wait for adapters to be ready
-    // TODO WRITE ME
     // Give adapters a role manager, so they can find underlying services
     // TODO HACK HACK HACK
     serverDevices.forEach(elt => {
@@ -246,7 +236,7 @@ export async function withBus(devices: (ServerDevice | TraceDevice)[],
     })
 
     // Return created services as a map from the source server
-    // Trace devices are ignored here, since handles aren't (currently?) needed
+    // Trace devices are ignored here, since handles aren't (currently?) useful
     const serviceMap = new Map(
         serverDevices.map(elt => {
             return [elt.server, elt.busDevice.services({serviceClass: elt.server.serviceClass})[0]]
@@ -299,7 +289,6 @@ export class JDBusTestUtil {
             within = (eventWithin.within === undefined) ? Number.POSITIVE_INFINITY : eventWithin.within
         }
 
-        // TODO check for code somewhere?
         const startTimestamp = this.bus.timestamp
         const nextEventPromise: Promise<JDEvent> = new Promise(resolve => 
             service.once(EVENT, (event: JDEvent) => { resolve(event) }
