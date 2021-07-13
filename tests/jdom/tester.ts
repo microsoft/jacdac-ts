@@ -75,8 +75,9 @@ export class TraceServer {
         }
 
         if (this.nextPacketIndex < this.trace.packets.length) {
-            this.bus.scheduler.setTimeout(this.nextPacket, 
-                this.trace.packets[this.nextPacketIndex].timestamp - this.bus.timestamp)
+            this.bus.scheduler.setTimeout(() => {
+                this.nextPacket()
+            }, this.trace.packets[this.nextPacketIndex].timestamp - this.bus.timestamp)
         }
     }
 
@@ -85,7 +86,9 @@ export class TraceServer {
         this.nextPacketIndex = 0
         this.bus = bus
 
-        bus.scheduler.setTimeout(this.nextPacket, 0)
+        bus.scheduler.setTimeout(() => {
+            this.nextPacket()
+        }, 0)
     }
 }
 
@@ -146,7 +149,7 @@ export async function withBus(devices: (ServerDevice | TraceDevice)[],
     const traceDeviceIds = traceDevices.map(elt => {
         return elt.trace.deviceId
     })
-    const traceDeviceMap = new Map<string, JDDevice>()  // deviceId -> bus JDDevice
+    const deviceIdToDeviceMap = new Map<string, JDDevice>()  // deviceId -> bus JDDevice
 
     // Wait for created devices to be announced, so services become available
     // TODO is this a good way to write async code in TS?
@@ -157,13 +160,11 @@ export async function withBus(devices: (ServerDevice | TraceDevice)[],
         const devicesIdSet = new Set(traceDeviceIds.concat(serverDeviceIds))
         const announcedIdSet = new Set()
         const onHandler = (device: JDDevice) => {
+            deviceIdToDeviceMap.set(device.deviceId, device)
+
             if (devicesIdSet.has(device.deviceId)) {
                 announcedIdSet.add(device.deviceId)
             }
-            if (device.deviceId in traceDeviceIds) {
-                traceDeviceMap.set(device.deviceId, device)
-            }
-
             if (setEquals(devicesIdSet, announcedIdSet)) {
                 bus.off(DEVICE_ANNOUNCE, onHandler)
                 resolve(undefined)
@@ -187,7 +188,8 @@ export async function withBus(devices: (ServerDevice | TraceDevice)[],
 
     // Get trace service -> roleName mappings
     const traceServiceRoles = traceDevices.map(elt => {
-        const busDevice = traceDeviceMap.get(elt.trace.deviceId)
+        assert(deviceIdToDeviceMap.has(elt.trace.deviceId), `missing trace ${elt.trace.deviceId} in map of ${deviceIdToDeviceMap.keys()}`)
+        const busDevice = deviceIdToDeviceMap.get(elt.trace.deviceId)
         const services = busDevice.services({serviceClass: elt.service})
         assert(services.length > 0, 
             // TODO needs better debug output instead of service number
