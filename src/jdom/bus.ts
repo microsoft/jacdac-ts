@@ -156,9 +156,7 @@ export class JDBus extends JDNode {
 
         // tell loggers to send data, every now and then
         // send resetin packets
-        this.on(SELF_ANNOUNCE, this.sendAnnounce.bind(this))
-        this.on(SELF_ANNOUNCE, this.sendResetIn.bind(this))
-        this.on(SELF_ANNOUNCE, this.pingLoggers.bind(this))
+        this.on(SELF_ANNOUNCE, this.handleSelfAnnounce.bind(this))
         // tell RTC clock the computer time
         this.on(DEVICE_ANNOUNCE, this.handleRealTimeClockSync.bind(this))
         // grab the default role manager
@@ -427,22 +425,6 @@ export class JDBus extends JDNode {
         return undefined
     }
 
-    private async pingLoggers() {
-        if (
-            this._minLoggerPriority < LoggerPriority.Silent &&
-            this.timestamp - this._lastPingLoggerTime > PING_LOGGERS_POLL &&
-            this.devices({ ignoreSelf: true, serviceClass: SRV_LOGGER })
-                .length > 0
-        ) {
-            this._lastPingLoggerTime = this.timestamp
-            const pkt = Packet.jdpacked<[LoggerPriority]>(
-                CMD_SET_REG | LoggerReg.MinPriority,
-                "u8",
-                [this._minLoggerPriority]
-            )
-            await pkt.sendAsMultiCommandAsync(this, SRV_LOGGER)
-        }
-    }
     private async handleRealTimeClockSync(device: JDDevice) {
         // tell time to the RTC clocks
         if (device.hasService(SRV_REAL_TIME_CLOCK))
@@ -652,9 +634,6 @@ export class JDBus extends JDNode {
         for (let i = 0; i < this._devices.length; ++i) {
             const dev = this._devices[i]
 
-            // don't gc traces
-            if (dev.replay) continue
-
             if (dev.lastSeen < disconnectedCutoff) {
                 this._devices.splice(i, 1)
                 i--
@@ -727,7 +706,15 @@ export class JDBus extends JDNode {
         return this.device(this.selfDeviceId)
     }
 
-    private sendAnnounce() {
+    private handleSelfAnnounce(): Promise<void> {
+        return Promise.all([
+            this.sendAnnounce(),
+            this.sendResetIn(),
+            this.pingLoggers(),
+        ]).then(() => {})
+    }
+
+    private async sendAnnounce() {
         // we do not support any services (at least yet)
         if (this._restartCounter < 0xf) this._restartCounter++
         const pkt = Packet.jdpacked<[number]>(CMD_ADVERTISEMENT_DATA, "u32", [
@@ -735,10 +722,10 @@ export class JDBus extends JDNode {
         ])
         pkt.serviceIndex = JD_SERVICE_INDEX_CTRL
         pkt.deviceIdentifier = this.selfDeviceId
-        pkt.sendReportAsync(this.selfDevice)
+        await pkt.sendReportAsync(this.selfDevice)
     }
 
-    private sendResetIn() {
+    private async sendResetIn() {
         // don't send reset if already received
         // or no devices
         if (
@@ -753,7 +740,24 @@ export class JDBus extends JDNode {
             "u32",
             [RESET_IN_TIME_US]
         )
-        rst.sendAsMultiCommandAsync(this, SRV_CONTROL)
+        await rst.sendAsMultiCommandAsync(this, SRV_CONTROL)
+    }
+
+    private async pingLoggers() {
+        if (
+            this._minLoggerPriority < LoggerPriority.Silent &&
+            this.timestamp - this._lastPingLoggerTime > PING_LOGGERS_POLL &&
+            this.devices({ ignoreSelf: true, serviceClass: SRV_LOGGER })
+                .length > 0
+        ) {
+            this._lastPingLoggerTime = this.timestamp
+            const pkt = Packet.jdpacked<[LoggerPriority]>(
+                CMD_SET_REG | LoggerReg.MinPriority,
+                "u8",
+                [this._minLoggerPriority]
+            )
+            await pkt.sendAsMultiCommandAsync(this, SRV_LOGGER)
+        }
     }
 
     get backgroundRefreshRegisters() {

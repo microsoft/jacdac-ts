@@ -122,13 +122,13 @@ export default class JDServiceProvider extends JDEventSource {
 
     private handleSelfAnnounce() {
         if (this._restartCounter < 0xf) this._restartCounter++
-
         // async
         this.controlService.announce()
         // also send status codes, for non-zero codes
-        this.services()
-            .filter(srv => !isBufferEmpty(srv.statusCode.data))
-            .forEach(srv => srv.statusCode.sendGetAsync())
+        const activeServices = this.services().filter(
+            srv => !isBufferEmpty(srv.statusCode.data)
+        )
+        activeServices.forEach(srv => srv.statusCode.sendGetAsync())
 
         // reset counter
         this._packetCount = 0

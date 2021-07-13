@@ -16,7 +16,6 @@ import { JDEventSource } from "./eventsource"
 import Packet from "./packet"
 import JDRegisterServer from "./registerserver"
 import { isRegister, serviceSpecificationFromClassIdentifier } from "./spec"
-import { delay } from "./utils"
 import { PackedValues } from "./pack"
 import { JDService } from "./service"
 
@@ -172,6 +171,13 @@ export default class JDServiceServer extends JDEventSource {
         return this._registers.find(
             reg => reg.identifier === code
         ) as JDRegisterServer<TValues>
+    }
+
+    protected addExistingRegister<TValues extends PackedValues = PackedValues>(
+        reg: JDRegisterServer<TValues>
+    ) {
+        this._registers.push(reg)
+        return reg
     }
 
     protected addRegister<TValues extends PackedValues = PackedValues>(

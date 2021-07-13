@@ -8,6 +8,7 @@ import serviceSpecificationData from "../../jacdac-spec/dist/services.json"
 import deviceRegistryData from "../../jacdac-spec/dist/devices.json"
 import { fromHex, SMap, toHex } from "./utils"
 import {
+    SystemEvent,
     SystemReg,
     SensorReg,
     SRV_CONTROL,
@@ -195,6 +196,30 @@ export function isRegister(pkt: jdspec.PacketInfo) {
 
 export function isReading(pkt: jdspec.PacketInfo) {
     return pkt && pkt.kind == "ro" && pkt.identifier == SystemReg.Reading
+}
+
+const includedRegisters = [
+    SystemReg.Reading,
+    SystemReg.Value,
+    SystemReg.Intensity,
+]
+
+export function isHighLevelRegister(pkt: jdspec.PacketInfo) {
+    return (
+        isRegister(pkt) &&
+        !pkt.lowLevel &&
+        includedRegisters.indexOf(pkt.identifier) > -1
+    )
+}
+
+const ignoredEvents = [SystemEvent.StatusCodeChanged]
+
+export function isHighLevelEvent(pkt: jdspec.PacketInfo) {
+    return (
+        isEvent(pkt) &&
+        !pkt.lowLevel &&
+        ignoredEvents.indexOf(pkt.identifier) < 0
+    )
 }
 
 export function isOptionalReadingRegisterCode(code: number) {

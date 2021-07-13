@@ -6,12 +6,18 @@ import {
     VMExceptionCode,
     GLOBAL_CHANGE,
     REGISTER_CHANGE,
-    EVENT_CHANGE,
+    EXTERNAL_REQUEST,
+    ExternalRequest,
 } from "./environment"
 import { VMExprEvaluator, unparse, CallEvaluator } from "./expr"
-import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource"
-import { CHANGE, ROLE_BOUND, ROLE_UNBOUND, TRACE } from "../jdom/constants"
+import {
+    CHANGE,
+    ROLE_BOUND,
+    ROLE_UNBOUND,
+    SERVICE_PROVIDER_REMOVED,
+    TRACE,
+} from "../jdom/constants"
 import { checkProgram, compileProgram } from "./compile"
 import {
     VM_GLOBAL_CHANGE,
@@ -22,9 +28,10 @@ import {
     VM_LOG_ENTRY,
     VM_ROLE_MISSING,
 } from "./events"
-import { Mutex } from "./utils"
+import { Mutex, atomic } from "./utils"
 import { assert, SMap } from "../jdom/utils"
 import { JDClient } from "../jdom/client"
+import JDServiceProvider from "../jdom/serviceprovider"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type VMTraceContext = any
@@ -40,12 +47,10 @@ enum VMInternalStatus {
 
 const VM_WAKE_SLEEPER = "vmWakeSleeper"
 
-export type atomic = string | boolean | number
-
 export interface VMEnvironmentInterface {
     writeRegisterAsync: (
         e: jsep.MemberExpression | string,
-        v: atomic
+        v: atomic[]
     ) => Promise<void>
     sendCommandAsync: (
         command: jsep.MemberExpression,
@@ -53,10 +58,9 @@ export interface VMEnvironmentInterface {
     ) => Promise<void>
     lookupAsync: (e: jsep.MemberExpression | string) => Promise<atomic>
     writeGlobal: (e: jsep.MemberExpression | string, v: atomic) => boolean
-    hasEvent: (e: jsep.MemberExpression | string) => boolean
+    hasRequest: (e: jsep.MemberExpression | string) => ExternalRequest
     roleTransition: (role: string, direction: string) => boolean
     roleBound: (role: string) => boolean
-    unsubscribe: () => void
 }
 
 class VMJumpException extends Error {
@@ -71,22 +75,28 @@ class VMTimerException extends Error {
     }
 }
 
+class VMRequestException extends Error {
+    constructor(public request: ExternalRequest) {
+        super()
+    }
+}
+
 class VMCommandEvaluator {
     private _regSaved: number = undefined
     private _changeSaved: number = undefined
     private _started = false
     constructor(
         public parent: VMCommandRunner,
-        private readonly env: VMEnvironment,
-        private readonly gc: VMCommand
+        private readonly env: VMEnvironmentInterface,
+        private readonly cmd: VMCommand
     ) {}
 
     trace(msg: string, context: VMTraceContext = {}) {
-        this.parent.trace(msg, { command: this.gc.command.type, ...context })
+        this.parent.trace(msg, { command: this.cmd.command.type, ...context })
     }
 
     private get inst() {
-        return (this.gc.command.callee as jsep.Identifier)?.name
+        return (this.cmd.command.callee as jsep.Identifier)?.name
     }
 
     private callEval(): CallEvaluator {
@@ -118,7 +128,7 @@ class VMCommandEvaluator {
     private newEval() {
         return new VMExprEvaluator(
             async e => await this.env.lookupAsync(e),
-            this.callEval() // TODO: call expression for bound
+            this.callEval()
         )
     }
 
@@ -133,11 +143,11 @@ class VMCommandEvaluator {
 
     private async startAsync() {
         if (
-            this.gc.command.callee.type !== "MemberExpression" &&
+            this.cmd.command.callee.type !== "MemberExpression" &&
             (this.inst === "awaitRegister" || this.inst === "awaitChange")
         ) {
             // need to capture register value for awaitChange/awaitRegister
-            const args = this.gc.command.arguments
+            const args = this.cmd.command.arguments
             this._regSaved = await this.evalExpressionAsync(args[0])
             if (this.inst === "awaitChange")
                 this._changeSaved = await this.evalExpressionAsync(args[1])
@@ -152,17 +162,16 @@ class VMCommandEvaluator {
             this._started = true
             if (neededStart) return VMInternalStatus.Running
         }
-        const args = this.gc.command.arguments
-        if (this.gc.command.callee.type === "MemberExpression") {
+        const args = this.cmd.command.arguments
+        if (this.cmd.command.callee.type === "MemberExpression") {
             // interpret as a service command (role.comand)
             const expr = this.newEval()
-            // TODO
             const values: atomic[] = []
-            for (const a of this.gc.command.arguments) {
+            for (const a of this.cmd.command.arguments) {
                 values.push(await expr.evalAsync(a))
             }
             await this.env.sendCommandAsync(
-                this.gc.command.callee as jsep.MemberExpression,
+                this.cmd.command.callee as jsep.MemberExpression,
                 values
             )
             return VMInternalStatus.Completed
@@ -183,10 +192,11 @@ class VMCommandEvaluator {
             }
             case "awaitEvent": {
                 const event = args[0] as jsep.MemberExpression
-                if (this.env.hasEvent(event)) {
-                    return (await this.checkExpressionAsync(args[1]))
-                        ? VMInternalStatus.Completed
-                        : VMInternalStatus.Running
+                const request = this.env.hasRequest(event)
+                if (request) {
+                    if (await this.checkExpressionAsync(args[1])) {
+                        throw new VMRequestException(request)
+                    }
                 }
                 return VMInternalStatus.Running
             }
@@ -225,29 +235,32 @@ class VMCommandEvaluator {
             case "writeRegister":
             case "writeLocal": {
                 const expr = this.newEval()
-                const ev = await expr.evalAsync(args[1])
+                const values: atomic[] = []
+                for (const a of this.cmd.command.arguments.slice(1)) {
+                    values.push(await expr.evalAsync(a))
+                }
                 this.trace("eval-end", { expr: unparse(args[1]) })
                 const reg = args[0] as jsep.MemberExpression
                 if (this.inst === "writeRegister") {
-                    await this.env.writeRegisterAsync(reg, ev)
+                    await this.env.writeRegisterAsync(reg, values)
                     this.trace("write-after-wait", {
                         reg: unparse(reg),
-                        expr: ev,
+                        expr: values[0],
                     })
-                } else this.env.writeGlobal(reg, ev)
+                } else this.env.writeGlobal(reg, values[0])
                 return VMInternalStatus.Completed
             }
             case "watch": {
                 const expr = this.newEval()
                 const ev = await expr.evalAsync(args[0])
-                this.parent.watch(this.gc?.sourceId, ev)
+                this.parent.watch(this.cmd?.sourceId, ev)
                 return VMInternalStatus.Completed
             }
             case "log": {
                 const expr = this.newEval()
                 const ev = await expr.evalAsync(args[0])
                 const evString = ev + ""
-                this.parent.writeLog(this.gc?.sourceId, evString)
+                this.parent.writeLog(this.cmd?.sourceId, evString)
                 return VMInternalStatus.Completed
             }
             case "halt": {
@@ -277,9 +290,9 @@ class VMCommandRunner {
         public readonly parent: VMHandlerRunner,
         private handlerId: number,
         env: VMEnvironment,
-        public gc: VMCommand
+        public cmd: VMCommand
     ) {
-        this._eval = new VMCommandEvaluator(this, env, gc)
+        this._eval = new VMCommandEvaluator(this, env, cmd)
     }
 
     trace(msg: string, context: VMTraceContext = {}) {
@@ -304,7 +317,7 @@ class VMCommandRunner {
 
     async stepAsync() {
         if (this.status === VMInternalStatus.Running) {
-            this.trace(unparse(this.gc.command))
+            this.trace(unparse(this.cmd.command))
             this.status = await this._eval.evaluate()
         }
     }
@@ -381,11 +394,6 @@ class VMHandlerRunner extends JDEventSource {
         this.stopped = false
     }
 
-    cancel() {
-        this.stopped = true
-        this.env.unsubscribe()
-    }
-
     wake() {
         if (this._currentCommand) {
             this._currentCommand.status = VMInternalStatus.Completed
@@ -433,7 +441,7 @@ class VMHandlerRunner extends JDEventSource {
 
     private async singleStepCheckBreakAsync(singleStep = false) {
         this.trace("step begin")
-        const sid = this._currentCommand.gc?.sourceId
+        const sid = this._currentCommand.cmd?.sourceId
         if (!singleStep && (await this.parent.breakpointOnAsync(sid))) {
             return true
         }
@@ -443,7 +451,6 @@ class VMHandlerRunner extends JDEventSource {
     }
 
     private async singleStepAsync() {
-        const sid = this._currentCommand.gc.sourceId
         try {
             await this._currentCommand.stepAsync()
         } catch (e) {
@@ -453,11 +460,15 @@ class VMHandlerRunner extends JDEventSource {
                 this.commandIndex = index
                 this._currentCommand.status = VMInternalStatus.Completed
             } else if (e instanceof VMTimerException) {
-                const vmt = e as VMTimerException
+                const { ms } = e as VMTimerException
                 this._currentCommand.status = VMInternalStatus.Sleeping
-                await this.parent.sleepAsync(this, vmt.ms)
+                await this.parent.sleepAsync(this, ms)
+            } else if (e instanceof VMRequestException) {
+                const { request } = e as VMRequestException
+                this._currentCommand.status = VMInternalStatus.Completed
+                this.parent.handlerWokeOnRequest(this, request)
             } else {
-                this.emit(VM_COMMAND_FAILED, this._currentCommand.gc.sourceId)
+                this.emit(VM_COMMAND_FAILED, this._currentCommand.cmd.sourceId)
                 throw e
             }
         }
@@ -509,12 +520,15 @@ export enum VMStatus {
     Running = "running",
     Paused = "paused",
 }
+
 const MAX_LOG = 100
+
 export class VMProgramRunner extends JDClient {
     // program, environment
     private _handlerRunners: VMHandlerRunner[] = []
     private _env: VMEnvironment
     private _roles: VMRole[] = []
+    private _serverRoles: VMRole[] = []
     // running
     private _status: VMStatus
     private _waitQueue: VMHandlerRunner[] = []
@@ -528,23 +542,32 @@ export class VMProgramRunner extends JDClient {
     private _log: { text: string; count: number }[] = []
     private _breaks: SMap<boolean> = {}
     private _breaksMutex: Mutex
+    // providing new services
+    private _provider: JDServiceProvider = undefined
+    private _onCompletionOfExternalRequest: {
+        handler: VMHandlerRunner
+        request: ExternalRequest
+    }[] = []
 
     constructor(
-        readonly bus: JDBus,
         readonly roleManager: RoleManager,
         readonly program: VMProgram
     ) {
         super()
+
         const compiled = compileProgram(program)
         const { registers, events, errors } = checkProgram(compiled)
         this._roles = compiled.roles
+        this._serverRoles = compiled.serverRoles
         if (errors?.length) console.debug("ERRORS", errors)
+
         // data structures for running program
         this._status = VMStatus.Stopped
-        this._env = new VMEnvironment(registers, events)
+        this._env = new VMEnvironment(registers, events, compiled.serverRoles)
         this._handlerRunners = compiled.handlers.map(
             (h, index) => new VMHandlerRunner(this, index, this._env, h)
         )
+
         // TODO: can't add multiple handlers until we have deduplicate CHANGE on Event
         /*
         const len = this._handlerRunners.length
@@ -564,9 +587,38 @@ export class VMProgramRunner extends JDClient {
             })
         )
         this.mount(
-            this._env.subscribe(EVENT_CHANGE, (event: string) => {
-                this.waitingToRunning()
-            })
+            this.roleManager.bus.subscribe(
+                SERVICE_PROVIDER_REMOVED,
+                (provider: JDServiceProvider) => {
+                    if (provider === this._provider) {
+                        this._provider = undefined
+                    }
+                }
+            )
+        )
+        // control requests (client:{event}, server:{set, get, cmd})
+        this.mount(
+            this._env.subscribe(
+                EXTERNAL_REQUEST,
+                (request: ExternalRequest) => {
+                    switch (request.kind) {
+                        case "get": {
+                            // TODO: in this case, if there is a handler
+                            // waiting on this Request then the function
+                            // handlerWokeOnRequest will be invoked. If
+                            // it is not then we should just return the
+                            // current value of register
+                            break
+                        }
+                        // these handler invocations are "fire and forget"
+                        case "set":
+                        case "cmd":
+                        case "event":
+                            break
+                    }
+                    this.waitingToRunning()
+                }
+            )
         )
         this.mount(
             this._env.subscribe(GLOBAL_CHANGE, name => {
@@ -583,6 +635,15 @@ export class VMProgramRunner extends JDClient {
             )
         )
         this.initializeRoleManagement()
+    }
+
+    public handlerWokeOnRequest(
+        handler: VMHandlerRunner,
+        request: ExternalRequest
+    ) {
+        if (request.kind === "get") {
+            this._onCompletionOfExternalRequest.push({ handler, request })
+        }
     }
 
     // control of VM
@@ -673,13 +734,16 @@ export class VMProgramRunner extends JDClient {
         if (this.status !== VMStatus.Stopped) return // already running
         this.trace("start")
         try {
-            this.roleManager.setRoles(this._roles)
             await this._waitRunMutex.acquire(async () => {
+                if (!this._provider) {
+                    this._provider = await this.startProvider()
+                }
                 this._waitQueue = this._handlerRunners.slice(0)
                 this._waitQueue.forEach(h => h.reset())
                 this._runQueue = []
                 this._everyQueue = []
-                this._env.clearEvents()
+                this._onCompletionOfExternalRequest = []
+                this._env.clearExternalStimulii()
                 this._env.initRoles()
                 this.stopSleepers()
                 // make sure to have another handler for every
@@ -770,7 +834,7 @@ export class VMProgramRunner extends JDClient {
             h,
             h.status === VMInternalStatus.Completed
                 ? ""
-                : h.command.gc?.sourceId
+                : h.command.cmd?.sourceId
         )
     }
 
@@ -829,6 +893,13 @@ export class VMProgramRunner extends JDClient {
                     })
                 }
             }
+        } else if (h.status === VMInternalStatus.Completed) {
+            const q = this._onCompletionOfExternalRequest
+            const index = q.findIndex(p => p.handler === h)
+            if (index > -1) {
+                const [del] = q.splice(index, 1)
+                await this._env.completeRequest(del.request)
+            }
         }
     }
 
@@ -866,7 +937,7 @@ export class VMProgramRunner extends JDClient {
                 })
             })
             await this.runAsync()
-            this._env.clearEvents()
+            this._env.clearExternalStimulii()
         }
     }
 
@@ -946,23 +1017,60 @@ export class VMProgramRunner extends JDClient {
                 this._env.serviceChanged(role, service)
             }
         }
-        // initialize
-        this.roleManager.roles.forEach(r => {
-            if (this._roles.find(rv => rv.role === r.role)) {
-                addRoleService(r.role)
-            }
+        // initialize client
+        this._roles.forEach(r => {
+            addRoleService(r.role)
         })
         this.mount(
             this.roleManager.subscribe(ROLE_BOUND, async (role: string) => {
+                if (this._serverRoles.find(r => r.role === role)) return
                 addRoleService(role)
                 this.waitingToRunning()
             })
         )
         this.mount(
             this.roleManager.subscribe(ROLE_UNBOUND, (role: string) => {
+                if (this._serverRoles.find(r => r.role === role)) return
                 this._env.serviceChanged(role, undefined)
                 this.waitingToRunning()
             })
         )
+    }
+
+    // spin up provider
+    private async startProvider() {
+        const servers = this._env.servers()
+        if (servers.length) {
+            const provider = new JDServiceProvider(
+                servers.map(s => s.server)
+                // if we create a deviceId, then trouble ensues
+                // as a second device gets spun up later
+                //{
+                //    deviceId: "VMServiceProvider",
+                //}
+            )
+            const device = this.roleManager.bus.addServiceProvider(provider)
+            servers.forEach((s, index) => {
+                this.roleManager.addRoleService(
+                    this._serverRoles[index].role,
+                    s.serviceClass,
+                    device.deviceId
+                )
+            })
+            // make sure it gets known (HACK)
+            for (const s of servers) {
+                await s.server.statusCode.sendGetAsync()
+            }
+            return provider
+        }
+        return undefined
+    }
+
+    public unmount() {
+        console.log("VMProgram (unmount)")
+        super.unmount()
+        if (this._provider) {
+            this.roleManager.bus.removeServiceProvider(this._provider)
+        }
     }
 }

@@ -8,19 +8,22 @@ const RECORDING_TRACE_MAX_ITEMS = 100000
 export default class TraceRecorder extends JDClient {
     public maxRecordingLength = RECORDING_TRACE_MAX_ITEMS
     private _trace: Trace
+    private _subscription: () => void
 
     constructor(public readonly bus: JDBus) {
         super()
         this.handlePacket = this.handlePacket.bind(this)
 
-        this.mount(
-            this.bus.subscribe([PACKET_PROCESS, PACKET_SEND], this.handlePacket)
-        )
+        this.mount(() => this._subscription?.())
     }
 
     start() {
         if (this.recording) return
 
+        this._subscription = this.bus.subscribe(
+            [PACKET_PROCESS, PACKET_SEND],
+            this.handlePacket
+        )
         this._trace = new Trace()
         this.emit(START)
         this.emit(CHANGE)
@@ -29,6 +32,8 @@ export default class TraceRecorder extends JDClient {
     stop() {
         if (!this.recording) return
 
+        this._subscription?.()
+        this._subscription = undefined
         const t = this._trace
         this._trace = undefined
         this.emit(STOP)
@@ -46,8 +51,6 @@ export default class TraceRecorder extends JDClient {
     }
 
     private handlePacket(pkt: Packet) {
-        if (!this.recording) return
-
         // record packets in traces
         this._trace.addPacket(pkt, this.maxRecordingLength)
         // notify that this packet has been processed
