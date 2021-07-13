@@ -12,18 +12,13 @@ suite('replay', () => {
     test('replay slider', async function() {
         // These are here so we have a handle
         const potTrace = new TraceServer(path.join(__dirname, "BP95_pot_join_slow_slow_fast_fast.txt"), "BP95")
-        const buttonAdapter = new PotentiometerToButtonEdgeAdapter("pot", 64, "buttonAdapter")
+        const buttonAdapter = new PotentiometerToButtonEdgeAdapter("pot", 0.5, "buttonAdapter")
 
         await withBus([
             {trace: potTrace, service: SRV_POTENTIOMETER, roleName: "pot"},
             {server: buttonAdapter},
         ], async (bus, serviceMap) => {
             const busTest = new JDBusTestUtil(bus)  // TODO needs better name
-
-
-            // TODO
-            // pot_service = bus.awaitReady("BP95", SERVICE_POT)
-            // Some way to bind the role? - on the new virtual bus
 
             await bus.delay(2000)
 
