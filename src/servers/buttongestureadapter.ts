@@ -32,7 +32,7 @@ export class AdapterServer extends JDServiceServer {
     protected onRoleManager(roleManager: RoleManager) {}
 }
 
-// Edge detection  (up, down) on top of the basic state-streaming button
+// Edge detection (up, down) on top of the basic state-streaming button
 export class ButtonEdgeAdapter extends AdapterServer {
     protected lastState: "none" | "up" | "down" = "none"
 
@@ -55,7 +55,7 @@ export class ButtonEdgeAdapter extends AdapterServer {
         assert(service.serviceClass == SRV_BUTTON_STREAMING) // TODO can this logic be moved into infrastructure?
 
         service.register(SystemReg.Reading).on(REPORT_RECEIVE, (packet: Packet) => {
-            if (this.lastState == "none") {  // ignore the first sample
+            if (this.lastState == "none") {  // first sample sets the initial state
                 if (!packet.data[0]) {
                     this.lastState = "up"
                 } else {

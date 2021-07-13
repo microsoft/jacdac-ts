@@ -19,8 +19,8 @@ suite('button adapters', () => {
             {server: buttonServer, roleName: "button"},
             {server: edgeAdapter},
         ], async (bus, serviceMap) => {
-            const busTest = new JDBusTestUtil(bus)  // TODO needs better name
-            const edgeService = serviceMap.get(edgeAdapter)  // TODO can this be made automatic so we don't need this?
+            const busTest = new JDBusTestUtil(bus)  // TODO needs better name, also boilerplate
+            const edgeService = serviceMap.get(edgeAdapter)  // TODO boilerplate, think about how to eliminate
 
             // This is needed for the edge detector to initialize to the first sample
             // TODO is there a way to register the dependency more accurately?
@@ -34,8 +34,6 @@ suite('button adapters', () => {
         })
     })
 
-    // TODO separate gesture detect only test?
-
     test('whole stack gesture detect', async function() {
         // These are here so we have a handle
         const buttonServer = new SensorServer<[boolean]>(SRV_BUTTON_STREAMING, 
@@ -48,11 +46,8 @@ suite('button adapters', () => {
             {server: edgeAdapter, roleName: "edgeAdapter"},
             {server: gestureAdapter},
         ], async (bus, serviceMap) => {
-            const busTest = new JDBusTestUtil(bus)  // TODO needs better name
-            const gestureService = serviceMap.get(gestureAdapter)  // TODO can this be made automatic so we don't need this?
-
-            // TODO this is a total replication of the legacy gesture adapter, but with a streaming button
-            // instead of a legacy button
+            const busTest = new JDBusTestUtil(bus)  // TODO needs better name, also boilerplate
+            const gestureService = serviceMap.get(gestureAdapter)  // TODO boilerplate, think about how to eliminate
 
             // This is needed for the edge detector to initialize to the first sample
             // TODO is there a way to register the dependency more accurately?

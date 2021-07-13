@@ -12,7 +12,6 @@ import { assert } from "../../src/jdom/utils";  // TODO another assertion librar
 
 suite('replay', () => {
     test('replay slider, to button edge', async function() {
-        // These are here so we have a handle
         const potTrace = new TraceServer(path.join(__dirname, "BP95_pot_join_slow_slow_fast_fast.txt"), "BP95")
         const buttonAdapter = new PotentiometerToButtonEdgeAdapter("pot", 0.5, "buttonAdapter")
 
@@ -20,13 +19,12 @@ suite('replay', () => {
             {trace: potTrace, service: SRV_POTENTIOMETER, roleName: "pot"},
             {server: buttonAdapter, roleName: "buttonAdapter"},
         ], async (bus, serviceMap) => {
-            const busTest = new JDBusTestUtil(bus)  // TODO needs better name
-            const buttonService = serviceMap.get(buttonAdapter)  // TODO can this be made automatic so we don't need this?
+            const busTest = new JDBusTestUtil(bus)  // TODO needs better name, also boilerplate
+            const buttonService = serviceMap.get(buttonAdapter)  // TODO boilerplate, think about how to eliminate
 
             const timeOffset = bus.timestamp  // TODO this is ugly, but needed to account for the ~500ms of setup time
             // TODO remove after simulator time is a thing
 
-            // TODO specify as after (center) with tolerance?
             assert((await busTest.nextEventWithin(buttonService, {after: 2200 - timeOffset, tolerance: 200}))
                 .code == ButtonEdgeEvent.Down)
             assert((await busTest.nextEventWithin(buttonService, {after: 900, tolerance: 200}))
@@ -45,19 +43,18 @@ suite('replay', () => {
     }).timeout(10000)
 
     test('replay slider, full stack with gesture adapter', async function() {
-        // These are here so we have a handle
         const potTrace = new TraceServer(path.join(__dirname, "BP95_pot_join_slow_slow_fast_fast.txt"), "BP95")
         const buttonAdapter = new PotentiometerToButtonEdgeAdapter("pot", 0.5, "buttonAdapter")
+        // longer click timeout to work with the replay trace
         const gestureAdapter = new ButtonGestureAdapter("buttonAdapter", "gestureAdapter", 500)
-        // use a longer click timeout to force detection
 
         await withBus([
             {trace: potTrace, service: SRV_POTENTIOMETER, roleName: "pot"},
             {server: buttonAdapter, roleName: "buttonAdapter"},
             {server: gestureAdapter},
         ], async (bus, serviceMap) => {
-            const busTest = new JDBusTestUtil(bus)  // TODO needs better name
-            const gestureService = serviceMap.get(gestureAdapter)  // TODO can this be made automatic so we don't need this?
+            const busTest = new JDBusTestUtil(bus)  // TODO needs better name, also boilerplate
+            const gestureService = serviceMap.get(gestureAdapter)  // TODO boilerplate, think about how to eliminate
 
             const timeOffset = bus.timestamp  // TODO this is ugly, but needed to account for the ~500ms of setup time
             // TODO remove after simulator time is a thing

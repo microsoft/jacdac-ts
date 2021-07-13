@@ -20,8 +20,8 @@ suite('legacy button adapters', () => {
             {server: buttonAdapter, roleName: "button"},
             {server: gestureAdapter},
         ], async (bus, serviceMap) => {
-            const busTest = new JDBusTestUtil(bus)  // TODO needs better name
-            const gestureService = serviceMap.get(gestureAdapter)  // TODO can this be made automatic so we don't need this?
+            const busTest = new JDBusTestUtil(bus)  // TODO needs better name, also boilerplate
+            const gestureService = serviceMap.get(gestureAdapter)  // TODO boilerplate, think about how to eliminate
 
             // Simple test stimulus, click cycle
             buttonServer.down()
