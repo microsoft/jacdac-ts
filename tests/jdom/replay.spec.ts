@@ -27,19 +27,19 @@ suite('replay', () => {
             // TODO remove after simulator time is a thing
 
             // TODO specify as after (center) with tolerance?
-            assert((await busTest.nextEventWithin(buttonService, {after: 2000 - timeOffset, within: 2400}))
+            assert((await busTest.nextEventWithin(buttonService, {after: 2200 - timeOffset, tolerance: 400}))
                 .code == ButtonEdgeEvent.Down)
-            assert((await busTest.nextEventWithin(buttonService, {after: 700, within: 1100}))
+            assert((await busTest.nextEventWithin(buttonService, {after: 900, tolerance: 400}))
                 .code == ButtonEdgeEvent.Up)
 
-            assert((await busTest.nextEventWithin(buttonService, {after: 900, within: 1300}))
+            assert((await busTest.nextEventWithin(buttonService, {after: 1100, tolerance: 400}))
                 .code == ButtonEdgeEvent.Down)
-            assert((await busTest.nextEventWithin(buttonService, {after: 1200, within: 1600}))
+            assert((await busTest.nextEventWithin(buttonService, {after: 1400, tolerance: 400}))
                 .code == ButtonEdgeEvent.Up)
 
-            assert((await busTest.nextEventWithin(buttonService, {after: 1000, within: 1400}))
+            assert((await busTest.nextEventWithin(buttonService, {after: 1200, tolerance: 400}))
                 .code == ButtonEdgeEvent.Down)
-            assert((await busTest.nextEventWithin(buttonService, {after: 200, within: 600}))
+            assert((await busTest.nextEventWithin(buttonService, {after: 600, tolerance: 400}))
                 .code == ButtonEdgeEvent.Up)
         })
     }).timeout(10000)
@@ -62,17 +62,17 @@ suite('replay', () => {
             const timeOffset = bus.timestamp  // TODO this is ugly, but needed to account for the ~500ms of setup time
             // TODO remove after simulator time is a thing
 
-            assert((await busTest.nextEventWithin(gestureService, {after: 2000 - timeOffset, within: 2400 + 500}))
+            assert((await busTest.nextEventWithin(gestureService, {after: 2200 + 500 - timeOffset, tolerance: 400}))
                 .code == ButtonGestureEvent.ClickHold)
-            assert((await busTest.nextEventWithin(gestureService, {after: 700 - 500, within: 1100 - 500}))
+            assert((await busTest.nextEventWithin(gestureService, {after: 900 - 500, tolerance: 400}))
                 .code == ButtonGestureEvent.HoldRelease)
 
-            assert((await busTest.nextEventWithin(gestureService, {after: 900, within: 1300 + 500}))
+            assert((await busTest.nextEventWithin(gestureService, {after: 1100 + 500, tolerance: 400}))
                 .code == ButtonGestureEvent.ClickHold)
-            assert((await busTest.nextEventWithin(gestureService, {after: 1200 - 500, within: 1600 - 500}))
+            assert((await busTest.nextEventWithin(gestureService, {after: 1400 - 500, tolerance: 400}))
                 .code == ButtonGestureEvent.HoldRelease)
 
-            assert((await busTest.nextEventWithin(gestureService, {after: 900, within: 1300 + 500}))
+            assert((await busTest.nextEventWithin(gestureService, {after: 1200 + 600, tolerance: 400}))
                 .code == ButtonGestureEvent.Click)
         })
     }).timeout(10000)

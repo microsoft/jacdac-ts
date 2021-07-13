@@ -264,8 +264,10 @@ export async function withBus(devices: (ServerDevice | TraceDevice)[],
 }
 
 interface EventWithinOptions {
-    after?: number
-    within?: number
+    after?: number  // event must happen at least this many ms after the current time (by default, 0)
+    within?: number  // event must happen within this many ms after the current time (by default, infinite)
+    tolerance?: number  // when after is set, moves after ahead by tolerance/2, and fills within to be after + tolerance/2
+                        // is an error if within is set, or after is not set
 }
 
 export class JDBusTestUtil {
@@ -282,15 +284,20 @@ export class JDBusTestUtil {
         }))
     }
 
-
-
     // Waits for the next event from a service, within some time.
     // If no event is triggered within the time, the promise is rejected at within time.
     // TODO support events in the past (negative timestamp?)
-    public nextEventWithin(service: JDService,
-        eventWithin: EventWithinOptions = {}): Promise<JDEvent> {
-        const after = (eventWithin.after === undefined) ? 0 : eventWithin.after
-        const within = (eventWithin.within === undefined) ? Number.POSITIVE_INFINITY : eventWithin.within
+    public nextEventWithin(service: JDService, eventWithin: EventWithinOptions = {}): Promise<JDEvent> {
+        let after: number, within: number
+        if (eventWithin.tolerance !== undefined) {
+            assert(eventWithin.after !== undefined, "tolerance must be used with after")
+            assert(eventWithin.within == undefined, "tolerance may not be used with within")
+            after = eventWithin.after - eventWithin.tolerance / 2
+            within = eventWithin.after + eventWithin.tolerance / 2
+        } else {
+            after = (eventWithin.after === undefined) ? 0 : eventWithin.after
+            within = (eventWithin.within === undefined) ? Number.POSITIVE_INFINITY : eventWithin.within
+        }
 
         // TODO check for code somewhere?
         const startTimestamp = this.bus.timestamp
