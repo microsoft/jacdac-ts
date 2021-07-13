@@ -14,7 +14,7 @@ import { parseTrace } from "../../src/jdom/logparser";
 import * as fs from 'fs';
 import { shortDeviceId } from "../../src/jdom/jacdac-jdom";
 import Trace from "../../src/jdom/trace";
-import TracePlayer from "../../src/jdom/traceplayer";
+
 
 // how the heck is this not a native operation
 function setEquals<T>(set1: Set<T>, set2: Set<T>): boolean {
