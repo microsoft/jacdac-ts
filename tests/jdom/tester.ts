@@ -37,6 +37,7 @@ export class TraceServer {
 
     protected nextPacketIndex: number
     protected bus: JDBus
+    protected stopped = false
 
     constructor(traceFilename: string, readonly shortId: string) {
         const traceRaw = parseTrace(fs.readFileSync(traceFilename, "utf-8").toString())
@@ -64,6 +65,10 @@ export class TraceServer {
     // Called when the next packet is ready to be processed, processes it, and schedules the packet afterwards
     // (if not at end).
     protected nextPacket() {
+        if (this.stopped) {
+            return  // nop, don't schedule future events
+        }
+
         while (this.nextPacketIndex < this.trace.packets.length
             && this.trace.packets[this.nextPacketIndex].timestamp <= this.bus.timestamp) {
             // replay code from TracePlayer.tick()
@@ -89,6 +94,15 @@ export class TraceServer {
         bus.scheduler.setTimeout(() => {
             this.nextPacket()
         }, 0)
+    }
+
+    // Stops the trace device.
+    // May only be called after start() has been called, and only once.
+    // May be called after packets have drained (effective a nop).
+    public stop() {
+        assert(this.nextPacketIndex != undefined, "can't stop unstarted trace device")
+        assert(!this.stopped, "trace device already stopped")
+        this.stopped = true
     }
 }
 
@@ -241,6 +255,10 @@ export async function withBus(devices: (ServerDevice | TraceDevice)[],
 
     // Actually run the test here
     await test(bus, serviceMap)
+
+    traceDevices.forEach(trace => {
+        trace.trace.stop()
+    })
 
     bus.stop()
 }
