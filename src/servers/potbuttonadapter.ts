@@ -42,7 +42,6 @@ export class PotentiometerToButtonEdgeAdapter extends AdapterServer {
 
         service.register(SystemReg.Reading).on(REPORT_RECEIVE, (packet: Packet) => {
             const unpackedData = (jdunpack(packet.data, potDataSpec.packFormat) as [number])[0]
-            console.log(`${this.timestamp}: ${unpackedData}`)
 
             if (this.lastState == "none") {  // ignore the first sample
                 if (unpackedData < this.threshold) {
@@ -53,11 +52,9 @@ export class PotentiometerToButtonEdgeAdapter extends AdapterServer {
             } else if (this.lastState == "up" && (unpackedData >= this.threshold)) {
                 this.sendEvent(ButtonEdgeEvent.Down)
                 this.lastState = "down"
-                console.log("down")
             } else if (this.lastState == "down" && (unpackedData < this.threshold)) {
                 this.sendEvent(ButtonEdgeEvent.Up)
                 this.lastState = "up"
-                console.log("up")
             }
         })
     }

@@ -30,7 +30,6 @@ function setEquals<T>(set1: Set<T>, set2: Set<T>): boolean {
 }
 
 
-
 export class TraceServer {
     readonly trace: Trace
     readonly deviceId: string  // the full device id, from the packet in the trace
@@ -165,6 +164,7 @@ export async function withBus(devices: (ServerDevice | TraceDevice)[],
     const deviceIdToDeviceMap = new Map<string, JDDevice>()  // deviceId -> bus JDDevice
 
     // Wait for created devices to be announced, so services become available
+    // TODO this advances bus time, including replay packets. Is this a good idea?
     const serverDeviceIds = serverDevices.map(elt => {
         return elt.busDevice.deviceId
     })
@@ -213,19 +213,18 @@ export async function withBus(devices: (ServerDevice | TraceDevice)[],
             roleName: elt.roleName
         }
     })
-    const roleNamesToServiceId = serverServiceRoles.concat(traceServiceRoles).filter(elt => {
+    const roleBindings = serverServiceRoles.concat(traceServiceRoles).filter(elt => {
         return !!elt.roleName  // filter for where role name is available
     }).map(elt => {
-        // TODO role manager doesn't allow manual specificiation of binding role => services right now,
-        // it's greedily / automatically allocated.
-        // When manual specification is added this needs to perform that binding.
-        // For now this just allocates a role and type.
-        // IF YOU HAVE MORE THAN ONE SERVICE INSTANCE WEIRD THINGS CAN HAPPEN!
-        return {role: elt.roleName, serviceShortId: elt.service.specification.shortId}
+        return {
+            role: elt.roleName, 
+            serviceClass: elt.service.specification.classIdentifier,
+            service: elt.service,
+        }
     })
 
     const roleManager = new RoleManager(bus)
-    roleManager.setRoles(roleNamesToServiceId)
+    roleManager.setRoles(roleBindings)
 
     // Give adapters a role manager, so they can find underlying services
     // TODO HACK HACK HACK
@@ -256,7 +255,7 @@ export async function withBus(devices: (ServerDevice | TraceDevice)[],
 interface EventWithinOptions {
     after?: number  // event must happen at least this many ms after the current time (by default, 0)
     within?: number  // event must happen within this many ms after the current time (by default, infinite)
-    tolerance?: number  // when after is set, moves after ahead by tolerance/2, and fills within to be after + tolerance/2
+    tolerance?: number  // when after is set, sets the allowable range for the event to be tolerance on either side of after
                         // is an error if within is set, or after is not set
 }
 
@@ -282,8 +281,8 @@ export class JDBusTestUtil {
         if (eventWithin.tolerance !== undefined) {
             assert(eventWithin.after !== undefined, "tolerance must be used with after")
             assert(eventWithin.within == undefined, "tolerance may not be used with within")
-            after = eventWithin.after - eventWithin.tolerance / 2
-            within = eventWithin.after + eventWithin.tolerance / 2
+            after = eventWithin.after - eventWithin.tolerance
+            within = eventWithin.after + eventWithin.tolerance
         } else {
             after = (eventWithin.after === undefined) ? 0 : eventWithin.after
             within = (eventWithin.within === undefined) ? Number.POSITIVE_INFINITY : eventWithin.within
@@ -311,16 +310,23 @@ export class JDBusTestUtil {
                 if (value != null) {
                     const elapsedTime = this.bus.timestamp - startTimestamp
                     if (elapsedTime < after) {
-                        reject(new Error(`nextEventWithin got event at ${elapsedTime} ms, before after=${after} ms`))
+                        if (eventWithin.tolerance !== undefined) {
+                            reject(new Error(`nextEventWithin got event at ${elapsedTime} ms, before after=${after} ms (${eventWithin.after}±${eventWithin.tolerance} ms)`))
+                        } else {
+                            reject(new Error(`nextEventWithin got event at ${elapsedTime} ms, before after=${after} ms`))
+                        }
                     } else {
                         resolve(value)
                     }
-                    
                 } else {
-                    reject(new Error(`nextEventWithin timed out at within=${within} ms`))
+                    if (eventWithin.tolerance !== undefined) {
+                        reject(new Error(`nextEventWithin timed out at within=${within} ms (${eventWithin.after}±${eventWithin.tolerance} ms)`))
+                    } else {
+                        reject(new Error(`nextEventWithin timed out at within=${within} ms`))
+                    }
                 }
             })
-           
+    
         })
     }
 }
