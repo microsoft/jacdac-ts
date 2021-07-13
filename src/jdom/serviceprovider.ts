@@ -125,8 +125,9 @@ export default class JDServiceProvider extends JDEventSource {
         // async
         this.controlService.announce()
         // also send status codes, for non-zero codes
-        const activeServices = this.services()
-            .filter(srv => !isBufferEmpty(srv.statusCode.data))
+        const activeServices = this.services().filter(
+            srv => !isBufferEmpty(srv.statusCode.data)
+        )
         activeServices.forEach(srv => srv.statusCode.sendGetAsync())
 
         // reset counter

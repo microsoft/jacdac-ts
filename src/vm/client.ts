@@ -42,10 +42,7 @@ export class VMServiceClient extends JDServiceClient {
         }
     }
 
-    public async sendCommandAsync(
-        commandName: string,
-        values: PackedValues
-    ) {
+    public async sendCommandAsync(commandName: string, values: PackedValues) {
         const pkt = this.service.specification.packets.find(
             p => isCommand(p) && p.name === commandName
         )

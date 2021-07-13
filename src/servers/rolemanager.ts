@@ -121,7 +121,7 @@ export default class RoleManager extends JDClient {
         if (binding && serviceClass === binding.serviceClass) {
             if (!binding.service && preferredDeviceId) {
                 binding.preferredDeviceId = preferredDeviceId
-            }   
+            }
             return
         }
         const oldBound = this.bound
@@ -162,8 +162,7 @@ export default class RoleManager extends JDClient {
 
     private bindServices(changed?: boolean) {
         this.unboundRoles.forEach(binding => {
-            if (this.bindRole(binding))
-                changed = true
+            if (this.bindRole(binding)) changed = true
         })
         if (changed) this.emit(CHANGE)
     }

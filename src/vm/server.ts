@@ -34,7 +34,7 @@ class VMRegisterServer extends JDRegisterServer<PackedValues> {
     }
 }
 
-// TODO: need to take specification into account and 
+// TODO: need to take specification into account and
 // TOOD: implement the proper base class (SensorServer)
 export class VMServiceServer extends SensorServer<any[]> {
     private eventNameToId: SMap<number> = {}
@@ -44,7 +44,10 @@ export class VMServiceServer extends SensorServer<any[]> {
     private cmdFieldToId: SMap<number> = {}
 
     constructor(public role: string, private spec: jdspec.ServiceSpec) {
-        super(spec.classIdentifier, { readingValues: [false], streamingInterval: 50 })
+        super(spec.classIdentifier, {
+            readingValues: [false],
+            streamingInterval: 50,
+        })
         spec.packets.filter(isHighLevelRegister).map(reg => {
             const regServer = this.addExistingRegister(
                 new VMRegisterServer(this, reg)

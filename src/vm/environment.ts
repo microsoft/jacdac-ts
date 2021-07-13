@@ -58,13 +58,12 @@ export class VMEnvironment
     private setupServers() {
         this.serverRoles.forEach(p => {
             // get the service
-            const service = serviceSpecificationFromClassIdentifier(p.serviceClass)
+            const service = serviceSpecificationFromClassIdentifier(
+                p.serviceClass
+            )
             if (service) {
                 // spin up JDServiceServer
-                const serviceServer = new VMServiceServer(
-                    p.role,
-                    service
-                )
+                const serviceServer = new VMServiceServer(p.role, service)
                 this._serverEnvs[p.role] = serviceServer
                 serviceServer.subscribe(
                     VM_EXTERNAL_REQUEST,

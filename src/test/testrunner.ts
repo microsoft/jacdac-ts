@@ -625,7 +625,7 @@ export class JDTestRunner extends JDEventSource {
 
 export class JDServiceTestRunner extends JDServiceClient {
     private _testIndex = -1
-    private _env: VMServiceClient;
+    private _env: VMServiceClient
     public readonly tests: JDTestRunner[]
 
     constructor(
@@ -663,7 +663,7 @@ export class JDServiceTestRunner extends JDServiceClient {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public lookup(e: jsep.MemberExpression | string): any {
         // TODO: fix up test runner
-        return undefined; // this._env.lookupRegisterAsync(e)
+        return undefined // this._env.lookupRegisterAsync(e)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

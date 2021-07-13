@@ -11,7 +11,13 @@ import {
 } from "./environment"
 import { VMExprEvaluator, unparse, CallEvaluator } from "./expr"
 import { JDEventSource } from "../jdom/eventsource"
-import { CHANGE, ROLE_BOUND, ROLE_UNBOUND, SERVICE_PROVIDER_REMOVED, TRACE } from "../jdom/constants"
+import {
+    CHANGE,
+    ROLE_BOUND,
+    ROLE_UNBOUND,
+    SERVICE_PROVIDER_REMOVED,
+    TRACE,
+} from "../jdom/constants"
 import { checkProgram, compileProgram } from "./compile"
 import {
     VM_GLOBAL_CHANGE,
@@ -581,18 +587,20 @@ export class VMProgramRunner extends JDClient {
             })
         )
         this.mount(
-            this.roleManager.bus.subscribe(SERVICE_PROVIDER_REMOVED, (provider: JDServiceProvider) => {
-                if (provider === this._provider) {
-                    this._provider = undefined
+            this.roleManager.bus.subscribe(
+                SERVICE_PROVIDER_REMOVED,
+                (provider: JDServiceProvider) => {
+                    if (provider === this._provider) {
+                        this._provider = undefined
+                    }
                 }
-            })
+            )
         )
         // control requests (client:{event}, server:{set, get, cmd})
         this.mount(
             this._env.subscribe(
                 EXTERNAL_REQUEST,
                 (request: ExternalRequest) => {
-
                     switch (request.kind) {
                         case "get": {
                             // TODO: in this case, if there is a handler
@@ -729,7 +737,7 @@ export class VMProgramRunner extends JDClient {
             await this._waitRunMutex.acquire(async () => {
                 if (!this._provider) {
                     this._provider = await this.startProvider()
-                }            
+                }
                 this._waitQueue = this._handlerRunners.slice(0)
                 this._waitQueue.forEach(h => h.reset())
                 this._runQueue = []

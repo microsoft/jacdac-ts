@@ -182,9 +182,8 @@ export default class JDServiceServer extends JDEventSource {
 
     protected addRegister<TValues extends PackedValues = PackedValues>(
         identifier: number,
-        defaultValue?: TValues,
+        defaultValue?: TValues
     ): JDRegisterServer<TValues> {
-
         let reg = this._registers.find(
             r => r.identifier === identifier
         ) as JDRegisterServer<TValues>
