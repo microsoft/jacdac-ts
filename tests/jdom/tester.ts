@@ -35,8 +35,8 @@ export class TraceServer {
     readonly trace: Trace
     readonly deviceId: string  // the full device id, from the packet in the trace
 
-    protected nextPacketIndex: number | undefined = undefined
-    protected bus: JDBus | undefined = undefined
+    protected nextPacketIndex: number
+    protected bus: JDBus
 
     constructor(traceFilename: string, readonly shortId: string) {
         const traceRaw = parseTrace(fs.readFileSync(traceFilename, "utf-8").toString())
