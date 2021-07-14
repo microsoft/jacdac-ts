@@ -121,7 +121,7 @@ export async function withBus(
     bus.stop()
 }
 
-interface EventWithinOptions {
+export interface EventWithinOptions {
     after?: number // event must happen at least this many ms after the current time (by default, 0)
     within?: number // event must happen within this many ms after the current time (by default, infinite)
     tolerance?: number // when after is set, sets the allowable range for the event to be tolerance on either side of after

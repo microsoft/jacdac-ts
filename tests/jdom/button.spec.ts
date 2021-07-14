@@ -26,6 +26,16 @@ suite("button server", () => {
                 (await busTest.nextEventWithin(buttonService, { within: 100 }))
                     .code == ButtonEvent.Up
             )
+
+            buttonServer.down()
+            assert(
+                (await busTest.nextEventWithin(buttonService, { within: 100 }))
+                    .code == ButtonEvent.Down
+            )
+            assert(
+                (await busTest.nextEventWithin(buttonService, { after: 500, tolerance: 100 }))
+                    .code == ButtonEvent.Hold
+            )  
         })
     })
 })
