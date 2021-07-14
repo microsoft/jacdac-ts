@@ -50,6 +50,48 @@ suite("button server", () => {
         })
     })
 
+    test("repeatedly raise hold events when held", async function () {
+        const buttonServer = new ButtonServer("button", false)
+
+        await withBus([{ server: buttonServer }], async (bus, serviceMap) => {
+            const buttonService = serviceMap.get(buttonServer) // TODO boilerplate, think about how to eliminate
+
+            buttonServer.down()
+            assert(
+                (await nextEventFrom(buttonService, { within: 100 })).code ==
+                    ButtonEvent.Down
+            )
+            assert(
+                (
+                    await nextEventFrom(buttonService, {
+                        after: 500,
+                        tolerance: 100,
+                    })
+                ).code == ButtonEvent.Hold
+            )
+            assert(
+                (
+                    await nextEventFrom(buttonService, {
+                        after: 500,
+                        tolerance: 100,
+                    })
+                ).code == ButtonEvent.Hold
+            )
+
+            buttonServer.up()
+            assert(
+                (await nextEventFrom(buttonService, { within: 100 })).code ==
+                    ButtonEvent.Up
+            )
+            await nextEventFrom(buttonService, { within: 1000 }).then(
+                () => {
+                    assert(false, "got event from button after release")
+                },
+                () => {}
+            ) // rejection is the expected case and nothing happens there
+        })
+    }).timeout(3000) // TODO remove when we can fast-forward tests
+
     test("detects repeated holds", async function () {
         const buttonServer = new ButtonServer("button", false)
 
