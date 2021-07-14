@@ -1,18 +1,27 @@
+import { suite, test } from "mocha"
+import { ButtonEvent } from "../../src/jdom/constants";
+import {withBus, nextEventFrom, nextUpdateFrom} from "./tester";
+import { assert } from "../../src/jdom/utils";
+
 import { DEVICE_CHANGE, REFRESH, SensorReg, SRV_POTENTIOMETER, SystemReg } from "../../src/jdom/constants";
 import { jdpack, PackedValues } from "../../src/jdom/pack";
 import JDServiceServer from "../../src/jdom/serviceserver";
 import { isRegister, serviceSpecificationFromClassIdentifier } from "../../src/jdom/spec";
 import SensorServer, { SensorServiceOptions } from "../../src/servers/sensorserver";
 
+
+
 /**
+ * WIP / TODO: move into its own file, that's not in the test folder.
+ * 
  * A ServiceServer that loads data from a CSV-like data structure.
  * No CSV parsed here, no animals were harmed in the making of this class.
  * 
  * "CSV" is formatted as (for example):
  * [
- *   [   0, 24.0],
- *   [1000, 24.1],
- *   [1200, 23.9],
+ *   [  0, 24.0],
+ *   [1.0, 24.1],
+ *   [1.2, 23.9],
  *   ...
  * ]
  * 
@@ -35,12 +44,16 @@ export class JDCsvSensorServer extends SensorServer<[number]> {
         this.on(REFRESH, this.handleRefresh.bind(this))
     }
 
+    // TODO should this have a start() function for a timestamp offset?
+
     protected handleRefresh() {
         const now = this.device.bus.timestamp
 
-        while (this.nextDataIndex < this.data.length && this.data[this.nextDataIndex][0] <= now) {
+        while (this.nextDataIndex < this.data.length && 
+            this.data[this.nextDataIndex][0] * 1000 <= now) {
             const value = this.data[this.nextDataIndex][1]
             this.reading.setValues([value])
+            this.nextDataIndex++
         }   
     }
 }
@@ -48,7 +61,7 @@ export class JDCsvSensorServer extends SensorServer<[number]> {
 
 suite('"CSV" trace server', () => {
     test('reads from CSVs', async function() {
-        const buttonServer = new JDCsvSensorServer(SRV_POTENTIOMETER, [
+        const potServer = new JDCsvSensorServer(SRV_POTENTIOMETER, [
             [0,   0.0],
             [0.3, 0.5],
             [0.6, 1.0],
@@ -57,18 +70,27 @@ suite('"CSV" trace server', () => {
         ], {})
 
         await withBus([
-            {server: buttonServer},
+            {server: potServer},
         ], async (bus, serviceMap) => {
-            const busTest = new JDBusTestUtil(bus)  // TODO needs better name, also boilerplate?
-            const buttonService = serviceMap.get(buttonServer)  // TODO boilerplate, think about how to eliminate
+            const potService = serviceMap.get(potServer)  // TODO boilerplate, think about how to eliminate
 
-            buttonServer.down()
-            assert((await busTest.nextEventWithin(buttonService, {within: 100})).code == 
-                ButtonEvent.Down)
+            console.log(bus.timestamp)
+            console.log(await nextUpdateFrom(potService.register(SystemReg.Reading)))
+            
+            console.log(bus.timestamp)
+            console.log(await nextUpdateFrom(potService.register(SystemReg.Reading)))
+            
+            console.log(bus.timestamp)
+            console.log(await nextUpdateFrom(potService.register(SystemReg.Reading)))
 
-            buttonServer.up()
-            assert((await busTest.nextEventWithin(buttonService, {within: 100})).code == 
-                ButtonEvent.Up)
+            console.log(bus.timestamp)
+            console.log(await nextUpdateFrom(potService.register(SystemReg.Reading)))
+
+            console.log(bus.timestamp)
+            console.log(await nextUpdateFrom(potService.register(SystemReg.Reading)))
+
+            console.log(bus.timestamp)
+            console.log(await nextUpdateFrom(potService.register(SystemReg.Reading)))
         })
     })
 });
