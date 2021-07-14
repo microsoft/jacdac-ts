@@ -23,6 +23,7 @@ export interface PacketFilterProps {
     regGet?: boolean
     regSet?: boolean
     devices?: SMap<{ from?: boolean; to?: boolean }>
+    selfDevice?: boolean
     serviceClasses?: number[]
     pkts?: string[]
     before?: number
@@ -73,6 +74,7 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
     let collapseAck = true
     let collapsePipes = true
     let collapseGets = true
+    let selfDevice: boolean = undefined
     text.split(/\s+/g).forEach(part => {
         const [, prefix, , value] =
             /([a-z\-_]+)([:=]([^\s]+))?/.exec(part) || []
@@ -99,6 +101,9 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
             case "repeated-announce":
             case "ra":
                 repeatedAnnounce = parseBoolean(value)
+                break
+            case "self":
+                selfDevice = parseBoolean(value)
                 break
             case "reset-in":
             case "ri":
@@ -211,6 +216,7 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
         regGet,
         regSet,
         devices,
+        selfDevice,
         serviceClasses:
             !!serviceClasses.size && Array.from(serviceClasses.keys()),
         pkts: !!pkts.size && Array.from(pkts.keys()),
@@ -252,6 +258,7 @@ export function compileFilter(props: PacketFilterProps) {
         regGet,
         regSet,
         devices,
+        selfDevice,
         serviceClasses,
         pkts,
         before,
@@ -305,6 +312,13 @@ export function compileFilter(props: PacketFilterProps) {
         filters.push(
             pkt => (pkt.serviceClass === SRV_LOGGER && pkt.isReport) === log
         )
+    if (selfDevice !== undefined) {
+        filters.push(pkt => {
+            const { device } = pkt
+            if (!device) return true
+            return (device === device.bus.selfDevice) === selfDevice
+        })
+    }
     if (Object.keys(devices).length)
         filters.push(pkt => {
             if (!pkt.device) return false

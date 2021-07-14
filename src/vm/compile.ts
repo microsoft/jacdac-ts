@@ -1,4 +1,7 @@
-import { serviceSpecificationFromName } from "../jdom/spec"
+import {
+    serviceSpecificationFromClassIdentifier,
+    serviceSpecificationFromName,
+} from "../jdom/spec"
 import {
     VMBase,
     VMCommand,
@@ -58,12 +61,12 @@ function handlerVisitor(
     }
 }
 
-export function compileProgram(prog: VMProgram) {
-    const newProgram: VMProgram = { roles: prog.roles.slice(0), handlers: [] }
+export function compileProgram({ roles, serverRoles, handlers }: VMProgram) {
+    const newProgram: VMProgram = { roles, serverRoles, handlers: [] }
     // process start blocks
-    prog.handlers.forEach(startBlock)
+    handlers.forEach(startBlock)
     // remove if-then-else
-    newProgram.handlers = prog.handlers.map(h => {
+    newProgram.handlers = handlers.map(h => {
         return { commands: removeIfThenElse(h), errors: h?.errors }
     })
     return newProgram
@@ -173,15 +176,22 @@ export interface RoleEvent {
 
 export const getServiceFromRole = (info: VMProgram) => (role: string) => {
     // lookup in roles first
-    const shortId = info.roles.find(pair => pair.role === role)
-    if (shortId) {
+    let roleFound = info.roles.find(pair => pair.role === role)
+    let client = true
+    if (!roleFound) {
+        roleFound = info.serverRoles.find(pair => pair.role === role)
+        client = false
+    }
+    if (roleFound) {
         // must succeed
-        const def = serviceSpecificationFromName(shortId.serviceShortId)
-        assert(!!def, `service ${shortId.serviceShortId} not resolved`)
-        return def
+        const spec = serviceSpecificationFromClassIdentifier(
+            roleFound.serviceClass
+        )
+        assert(!!spec, `service class ${roleFound.serviceClass} not resolved`)
+        return { spec, client }
     } else {
-        const service = serviceSpecificationFromName(role)
-        return service
+        const spec = serviceSpecificationFromName(role)
+        return { spec, client: true }
     }
 }
 
