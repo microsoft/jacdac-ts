@@ -11,7 +11,7 @@ import { assert } from "../../src/jdom/utils";
 import { JDService } from "../../src/jdom/service";
 
 
-// how the heck is this not a native operation
+// Set equals is not a built-in operation.
 function setEquals<T>(set1: Set<T>, set2: Set<T>): boolean {
     if (set1.size != set2.size) {
         return false
@@ -39,13 +39,11 @@ export async function withBus(devices: ServerDevice[],
 
     // For server devices: add the service provider on the bus and return the device
     const serverDevices = devices.map(device => {
-        const busDevice = bus.addServiceProvider(new JDServiceProvider(
-            [(<ServerDevice>device).server] 
-        ))
+        const busDevice = bus.addServiceProvider(new JDServiceProvider([device.server]))
         return {
-            server: (<ServerDevice>device).server,
+            server: device.server,
             busDevice: busDevice,
-            roleName: (<ServerDevice>device).roleName,
+            roleName: device.roleName,
         }
     })
 
