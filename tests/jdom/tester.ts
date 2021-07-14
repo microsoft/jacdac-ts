@@ -50,9 +50,9 @@ export async function withBus(devices: ServerDevice[],
     bus.start()
 
     // Wait for created devices to be announced, so services become available
-    const serverDeviceIds = serverDevices.map(elt => {
-        return elt.busDevice.deviceId
-    })
+    const serverDeviceIds = serverDevices.map(elt =>
+        elt.busDevice.deviceId
+    )
     await new Promise(resolve => {
         const devicesIdSet = new Set(serverDeviceIds)
         const announcedIdSet = new Set()
@@ -82,9 +82,9 @@ export async function withBus(devices: ServerDevice[],
         }
     })
 
-    const roleBindings = serverServiceRoles.filter(elt => {
-        return !!elt.roleName  // filter for where role name is available
-    }).map(elt => {
+    const roleBindings = serverServiceRoles.filter(elt =>
+        !!elt.roleName  // filter for where role name is available
+    ).map(elt => {
         return {
             role: elt.roleName, 
             serviceClass: elt.service.specification.classIdentifier,
@@ -98,9 +98,9 @@ export async function withBus(devices: ServerDevice[],
     // Return created services as a map from the source server
     // Trace devices are ignored here, since handles aren't (currently?) useful
     const serviceMap = new Map(
-        serverDevices.map(elt => {
-            return [elt.server, elt.busDevice.services({serviceClass: elt.server.serviceClass})[0]]
-        })
+        serverDevices.map(elt =>
+            [elt.server, elt.busDevice.services({serviceClass: elt.server.serviceClass})[0]]
+        )
     )
 
     // Actually run the test here
