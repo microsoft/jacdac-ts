@@ -31,8 +31,8 @@ interface ServerDevice {
 }
 
 
-// Creates a bus with the specified servers, bound to the specified roles.
-// Returns once all devices are registered, and adapters are ready.
+// Creates a bus with the specified servers (optionally bound to the specified roles),
+// then runs the test function.
 export async function withBus(devices: ServerDevice[], 
     test: (bus: JDBus, serviceMap: Map<JDServiceServer, JDService>) => Promise<void>) {
     const bus = mkBus()
