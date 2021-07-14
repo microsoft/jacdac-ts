@@ -128,106 +128,92 @@ export interface EventWithinOptions {
     // is an error if within is set, or after is not set
 }
 
-export class JDBusTestUtil {
-    // TODO should this also encapsulate the serviceMap?
-    constructor(protected readonly bus: JDBus) {}
-
-    // Waits for the next event from a service, and returns the event.
-    // The event must not have triggered already.
-    // TODO should events in the past be supported?
-    public nextEventFrom(service: JDService): Promise<JDEvent> {
-        return new Promise(resolve =>
-            service.once(EVENT, (event: JDEvent) => {
-                resolve(event)
-            })
+// Waits for the next event from a service, within some time.
+// If no event is triggered within the time, the promise is rejected at within time.
+// TODO should events in the past be supported (negative after / within)?
+export function nextEventFrom(
+    service: JDService,
+    eventWithin: EventWithinOptions = {}
+): Promise<JDEvent> {
+    let after: number, within: number
+    if (eventWithin.tolerance !== undefined) {
+        assert(
+            eventWithin.after !== undefined,
+            "tolerance must be used with after"
         )
+        assert(
+            eventWithin.within == undefined,
+            "tolerance may not be used with within"
+        )
+        after = eventWithin.after - eventWithin.tolerance
+        within = eventWithin.after + eventWithin.tolerance
+    } else {
+        after = eventWithin.after === undefined ? 0 : eventWithin.after
+        within =
+            eventWithin.within === undefined
+                ? Number.POSITIVE_INFINITY
+                : eventWithin.within
     }
 
-    // Waits for the next event from a service, within some time.
-    // If no event is triggered within the time, the promise is rejected at within time.
-    // TODO should events in the past be supported (negative after / within)?
-    public nextEventWithin(
-        service: JDService,
-        eventWithin: EventWithinOptions = {}
-    ): Promise<JDEvent> {
-        let after: number, within: number
-        if (eventWithin.tolerance !== undefined) {
-            assert(
-                eventWithin.after !== undefined,
-                "tolerance must be used with after"
-            )
-            assert(
-                eventWithin.within == undefined,
-                "tolerance may not be used with within"
-            )
-            after = eventWithin.after - eventWithin.tolerance
-            within = eventWithin.after + eventWithin.tolerance
-        } else {
-            after = eventWithin.after === undefined ? 0 : eventWithin.after
-            within =
-                eventWithin.within === undefined
-                    ? Number.POSITIVE_INFINITY
-                    : eventWithin.within
-        }
+    const bus = service.device.bus
 
-        const startTimestamp = this.bus.timestamp
-        const nextEventPromise: Promise<JDEvent> = new Promise(resolve =>
-            service.once(EVENT, (event: JDEvent) => {
-                resolve(event)
-            })
+    const startTimestamp = bus.timestamp
+    const nextEventPromise: Promise<JDEvent> = new Promise(resolve =>
+        service.once(EVENT, (event: JDEvent) => {
+            resolve(event)
+        })
+    )
+
+    let firstPromise: Promise<JDEvent | null>
+    if (within != Number.POSITIVE_INFINITY) {
+        // finite within, set a timeout
+        const timeoutPromise: Promise<null> = new Promise(resolve =>
+            bus.scheduler.setTimeout(() => {
+                resolve(null)
+            }, within)
         )
+        firstPromise = Promise.race([nextEventPromise, timeoutPromise])
+    } else {
+        // infinite within, don't set a separate timeout
+        firstPromise = nextEventPromise
+    }
 
-        let firstPromise: Promise<JDEvent | null>
-        if (within != Number.POSITIVE_INFINITY) {
-            // finite within, set a timeout
-            const timeoutPromise: Promise<null> = new Promise(resolve =>
-                this.bus.scheduler.setTimeout(() => {
-                    resolve(null)
-                }, within)
-            )
-            firstPromise = Promise.race([nextEventPromise, timeoutPromise])
-        } else {
-            // infinite within, don't set a separate timeout
-            firstPromise = nextEventPromise
-        }
-
-        return new Promise((resolve, reject) => {
-            firstPromise.then(value => {
-                if (value != null) {
-                    const elapsedTime = this.bus.timestamp - startTimestamp
-                    if (elapsedTime < after) {
-                        if (eventWithin.tolerance !== undefined) {
-                            reject(
-                                new Error(
-                                    `nextEventWithin got event at ${elapsedTime} ms, before after=${after} ms (${eventWithin.after}±${eventWithin.tolerance} ms)`
-                                )
-                            )
-                        } else {
-                            reject(
-                                new Error(
-                                    `nextEventWithin got event at ${elapsedTime} ms, before after=${after} ms`
-                                )
-                            )
-                        }
-                    } else {
-                        resolve(value)
-                    }
-                } else {
+    return new Promise((resolve, reject) => {
+        firstPromise.then(value => {
+            if (value != null) {
+                const elapsedTime = bus.timestamp - startTimestamp
+                if (elapsedTime < after) {
                     if (eventWithin.tolerance !== undefined) {
                         reject(
                             new Error(
-                                `nextEventWithin timed out at within=${within} ms (${eventWithin.after}±${eventWithin.tolerance} ms)`
+                                `nextEventWithin got event at ${elapsedTime} ms, before after=${after} ms (${eventWithin.after}±${eventWithin.tolerance} ms)`
                             )
                         )
                     } else {
                         reject(
                             new Error(
-                                `nextEventWithin timed out at within=${within} ms`
+                                `nextEventWithin got event at ${elapsedTime} ms, before after=${after} ms`
                             )
                         )
                     }
+                } else {
+                    resolve(value)
                 }
-            })
+            } else {
+                if (eventWithin.tolerance !== undefined) {
+                    reject(
+                        new Error(
+                            `nextEventWithin timed out at within=${within} ms (${eventWithin.after}±${eventWithin.tolerance} ms)`
+                        )
+                    )
+                } else {
+                    reject(
+                        new Error(
+                            `nextEventWithin timed out at within=${within} ms`
+                        )
+                    )
+                }
+            }
         })
-    }
+    })
 }
