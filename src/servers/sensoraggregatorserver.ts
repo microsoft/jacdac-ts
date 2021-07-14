@@ -1,4 +1,4 @@
-import { NumberFormat } from "../jdom/buffer"
+import { NumberFormat, setNumber, sizeOfNumberFormat } from "../jdom/buffer"
 import {
     CMD_GET_REG,
     SensorAggregatorReg,
@@ -9,8 +9,10 @@ import {
 } from "../jdom/constants"
 import { JDDevice } from "../jdom/device"
 import { jdunpack } from "../jdom/pack"
+import { Packet } from "../jdom/packet"
 import JDRegisterServer from "../jdom/registerserver"
 import JDServiceServer, { ServerOptions } from "../jdom/serviceserver"
+import { idiv } from "../jdom/utils"
 
 function numberFmt(stype: SensorAggregatorSampleType) {
     switch (stype) {
@@ -29,7 +31,7 @@ function numberFmt(stype: SensorAggregatorSampleType) {
     }
 }
 
-class Collector extends Client {
+class Collector {
     private requiredServiceNum: number
     lastSample: Uint8Array
     private parent: SensorAggregatorServer
@@ -42,7 +44,8 @@ class Collector extends Client {
             this.parent._newData(packet.timestamp, false)
             const arr = packet.data.toArray(numberFmt(this.sampleType))
             for (let i = 0; i < arr.length; ++i)
-                this.lastSample.setNumber(
+                setNumber(
+                    this.lastSample,
                     NumberFormat.Float32LE,
                     i << 2,
                     arr[i] * this.sampleMult
@@ -89,9 +92,9 @@ class Collector extends Client {
             sh++
         }
 
-        this.numElts = Math.idiv(
+        this.numElts = idiv(
             sampleSize,
-            Buffer.sizeOfNumberFormat(numberFmt(this.sampleType))
+            sizeOfNumberFormat(numberFmt(this.sampleType))
         )
         this.lastSample = new Uint8Array(this.numElts * 4)
 
@@ -182,7 +185,7 @@ export default class SensorAggregatorServer extends JDServiceServer {
     _newData(timestamp: number, isPost: boolean) {
         if (!this.lastSample) this.lastSample = timestamp
         const d = timestamp - this.lastSample
-        let numSamples = Math.idiv(d + (d >> 1), this.samplingInterval)
+        let numSamples = idiv(d + (d >> 1), this.samplingInterval)
         if (!numSamples) return
         if (isPost) {
             this.lastSample = timestamp
