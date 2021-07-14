@@ -64,7 +64,8 @@ class Collector {
         this.setReg(SensorReg.StreamingSamples, "u8", [255])
     }
 
-    constructor(parent: SensorAggregatorServer, config: Uint8Array) {
+    // config = [deviceId, serviceClass, serviceNum, sampleSize, sampleType, sampleShift]
+    constructor(parent: SensorAggregatorServer, config: number[]) {
         const [
             devIdBuf,
             serviceClass,
@@ -72,8 +73,8 @@ class Collector {
             sampleSize,
             sampleType,
             sampleShift,
-        ] = jdunpack(config, "b[8] u32 u8 u8 u8 i8")
-        const devId =
+        ] = config
+        const devId = toHex(devIdBuf)
             devIdBuf.getNumber(NumberFormat.Int32LE, 0) == 0
                 ? null
                 : devIdBuf.toHex()
@@ -146,8 +147,13 @@ export default class SensorAggregatorServer extends JDServiceServer {
         )
     }
 
+    get samplingInterval() {
+        const [v] = this.inputs.values()
+        return v
+    }
+
     get samplesInWindow() {
-        const [_, value] = this.inputs.values()
+        const [, value] = this.inputs.values()
         return value
     }
 
@@ -169,8 +175,9 @@ export default class SensorAggregatorServer extends JDServiceServer {
     }
 
     private pushData() {
-        this.samplesBuffer.shift(this.sampleSize)
-        let off = this.samplesBuffer.length - this.sampleSize
+        const [sampleSize] = this.sampleSize.values()
+        this.samplesBuffer.shift(sampleSize)
+        let off = this.samplesBuffer.length - sampleSize
         for (const coll of this.collectors) {
             this.samplesBuffer.write(off, coll.lastSample)
             off += coll.lastSample.length
@@ -204,34 +211,21 @@ export default class SensorAggregatorServer extends JDServiceServer {
     }
 
     private configureInputs() {
-        const config = this.inputSettings
-        if (!config)
-            return /*
-            rw inputs @ 0x80 {
-                sampling_interval: u16 ms
-                samples_in_window: u16
-                reserved: u32
-            repeats:
-                device_id: u64
-                service_class: u32
-                service_num: u8
-                sample_size: u8 bytes
-                sample_type: SampleType
-                sample_shift: i8
-            }
-            */
-        ;[this.samplingInterval] = jdunpack(config, "u16")
+        const config = this.inputs.values()
+        const [samplingInterval, samplesInWindow, rest] = this.inputs.values()
+        // const [deviceId, serviceClass, serviceNum, sampleSize, sampleType, sampleShift] = rest[0]
+        if (samplingInterval === undefined) return
         const entrySize = 16
         let off = 8
         for (const coll of this.collectors || []) coll.destroy()
         this.collectors = []
         let frameSz = 0
-        while (off < config.length) {
-            const coll = new Collector(this, config.slice(off, entrySize))
-            coll.setReg(jacdac.SensorReg.StreamingInterval, "u32", [
-                this.samplingInterval,
-            ])
-            coll.setReg(jacdac.SensorReg.StreamingSamples, "u8", [255])
+        for(const collectorConfig of rest) {
+            const coll = new Collector(this, collectorConfig)
+            //coll.setReg(jacdac.SensorReg.StreamingInterval, "u32", [
+            //    this.samplingInterval,
+            //])
+            //coll.setReg(jacdac.SensorReg.StreamingSamples, "u8", [255])
             this.collectors.push(coll)
             frameSz += coll.lastSample.length
             off += entrySize
