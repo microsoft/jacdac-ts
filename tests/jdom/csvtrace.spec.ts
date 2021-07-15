@@ -8,6 +8,7 @@ import { jdpack, PackedValues } from "../../src/jdom/pack";
 import JDServiceServer from "../../src/jdom/serviceserver";
 import { isRegister, serviceSpecificationFromClassIdentifier } from "../../src/jdom/spec";
 import SensorServer, { SensorServiceOptions } from "../../src/servers/sensorserver";
+import ButtonServer from "../../src/servers/buttonserver";
 
 
 
@@ -57,7 +58,7 @@ export class SensorServerCsvSource {
 }
 
 
-// Configured to ignore differences forr a 16-bit fixed point
+// Configured to ignore differences for a 16-bit fixed point
 function approxEquals(a: number, b: number, maxPctDiff = 1/32767) {
     return (Math.abs(b-a) / Math.min(b, a)) < maxPctDiff
 }
@@ -94,6 +95,34 @@ suite('"CSV" trace server', () => {
 
             await bus.delay(1200 + 50 - bus.timestamp)  // 50ms tolerance for update
             assert(approxEquals((await nextUpdateFrom(potService.register(SystemReg.Reading)))[0], 0.6))
+        })
+    })
+
+    test('produces derived events supported by the underlying server', async function() {
+        const buttonServer = new ButtonServer()
+        const buttonStreamer = new SensorServerCsvSource(buttonServer, [
+            // takes about 500ms for the bus to spin up
+            [0.0, ButtonServer.INACTIVE_VALUE],
+            [0.7, ButtonServer.ACTIVE_VALUE],
+            [0.9, ButtonServer.INACTIVE_VALUE],
+        ])
+
+        await withBus([
+            {server: buttonServer},
+        ], async (bus, serviceMap) => {
+            const buttonService = serviceMap.get(buttonServer)  // TODO boilerplate, think about how to eliminate
+
+            await bus.delay(700 - bus.timestamp)
+            assert(
+                (await nextEventFrom(buttonService, { within: 100 })).code ==
+                    ButtonEvent.Down
+            )
+
+            await bus.delay(900 - bus.timestamp)
+            assert(
+                (await nextEventFrom(buttonService, { within: 100 })).code ==
+                    ButtonEvent.Up
+            )
         })
     })
 });
