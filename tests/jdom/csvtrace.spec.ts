@@ -59,6 +59,12 @@ export class JDCsvSensorServer extends SensorServer<[number]> {
 }
 
 
+// Configured to ignore differences forr a 16-bit fixed point
+function approxEquals(a: number, b: number, maxPctDiff = 1/32767) {
+    return (Math.abs(b-a) / Math.min(b, a)) < maxPctDiff
+}
+
+
 suite('"CSV" trace server', () => {
     test('reads from CSVs', async function() {
         const potServer = new JDCsvSensorServer(SRV_POTENTIOMETER, [
@@ -75,18 +81,16 @@ suite('"CSV" trace server', () => {
             const potService = serviceMap.get(potServer)  // TODO boilerplate, think about how to eliminate
 
             await bus.delay(600 + 50 - bus.timestamp)  // 50ms tolerance for update
-            assert((await nextUpdateFrom(potService.register(SystemReg.Reading)))[0] == 0.5)
+            assert(approxEquals((await nextUpdateFrom(potService.register(SystemReg.Reading)))[0], 0.5))
 
             await bus.delay(800 + 50 - bus.timestamp)  // 50ms tolerance for update
-            const a = (await nextUpdateFrom(potService.register(SystemReg.Reading)))[0]
-            console.log(a)
-            assert(a == 1.0)
+            assert(approxEquals((await nextUpdateFrom(potService.register(SystemReg.Reading)))[0], 1.0))
 
             await bus.delay(1000 + 50 - bus.timestamp)  // 50ms tolerance for update
-            assert((await nextUpdateFrom(potService.register(SystemReg.Reading)))[0] == 0.8)
+            assert(approxEquals((await nextUpdateFrom(potService.register(SystemReg.Reading)))[0], 0.8))
 
             await bus.delay(1200 + 50 - bus.timestamp)  // 50ms tolerance for update
-            assert((await nextUpdateFrom(potService.register(SystemReg.Reading)))[0] == 0.6)
+            assert(approxEquals((await nextUpdateFrom(potService.register(SystemReg.Reading)))[0], 0.6))
         })
     })
 });
