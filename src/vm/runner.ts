@@ -57,6 +57,7 @@ export interface VMEnvironmentInterface {
         values: atomic[]
     ) => Promise<void>
     lookupAsync: (e: jsep.MemberExpression | string) => Promise<atomic>
+    setStatusAsync: (status: number) => Promise<void>
     writeGlobal: (e: jsep.MemberExpression | string, v: atomic) => boolean
     hasRequest: (e: jsep.MemberExpression | string) => ExternalRequest
     roleTransition: (role: string, direction: string) => boolean
@@ -211,6 +212,12 @@ class VMCommandEvaluator {
                 return (await this.checkExpressionAsync(args[0]))
                     ? VMInternalStatus.Completed
                     : VMInternalStatus.Running
+            }
+            case "setStatus": {
+                // send command to all devices
+                const val = await this.evalExpressionAsync(args[0])
+                await (this.env.setStatusAsync(val))
+                return VMInternalStatus.Completed
             }
             case "awaitChange":
             case "awaitRegister": {
