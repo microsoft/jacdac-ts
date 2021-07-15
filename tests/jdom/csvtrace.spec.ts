@@ -62,10 +62,11 @@ export class JDCsvSensorServer extends SensorServer<[number]> {
 suite('"CSV" trace server', () => {
     test('reads from CSVs', async function() {
         const potServer = new JDCsvSensorServer(SRV_POTENTIOMETER, [
-            [0,   0.0],
-            [0.3, 0.5],
-            [0.6, 1.0],
-            [0.9, 0.8],
+            [0,   0.0],  // discarded, takes about 500ms for the bus to spin up
+            // TODO fix timestamps when we control simulator time
+            [0.6, 0.5],
+            [0.8, 1.0],
+            [1.0, 0.8],
             [1.2, 0.6],
         ], {})
 
@@ -74,23 +75,37 @@ suite('"CSV" trace server', () => {
         ], async (bus, serviceMap) => {
             const potService = serviceMap.get(potServer)  // TODO boilerplate, think about how to eliminate
 
-            console.log(bus.timestamp)
             console.log(await nextUpdateFrom(potService.register(SystemReg.Reading)))
+            console.log(potService.register(SystemReg.Reading).unpackedValue)
+            console.log(bus.timestamp)
             
-            console.log(bus.timestamp)
             console.log(await nextUpdateFrom(potService.register(SystemReg.Reading)))
+            console.log(potService.register(SystemReg.Reading).unpackedValue)
+            console.log(bus.timestamp)
             
-            console.log(bus.timestamp)
             console.log(await nextUpdateFrom(potService.register(SystemReg.Reading)))
+            console.log(potService.register(SystemReg.Reading).unpackedValue)
+            console.log(bus.timestamp)
 
-            console.log(bus.timestamp)
             console.log(await nextUpdateFrom(potService.register(SystemReg.Reading)))
+            console.log(potService.register(SystemReg.Reading).unpackedValue)
+            console.log(bus.timestamp)
 
-            console.log(bus.timestamp)
             console.log(await nextUpdateFrom(potService.register(SystemReg.Reading)))
+            console.log(potService.register(SystemReg.Reading).unpackedValue)
+            console.log(bus.timestamp)
 
-            console.log(bus.timestamp)
             console.log(await nextUpdateFrom(potService.register(SystemReg.Reading)))
+            console.log(potService.register(SystemReg.Reading).unpackedValue)
+            console.log(bus.timestamp)
+
+            console.log(await nextUpdateFrom(potService.register(SystemReg.Reading)))
+            console.log(potService.register(SystemReg.Reading).unpackedValue)
+            console.log(bus.timestamp)
+
+            console.log(await nextUpdateFrom(potService.register(SystemReg.Reading)))
+            console.log(potService.register(SystemReg.Reading).unpackedValue)
+            console.log(bus.timestamp)
         })
     })
 });
