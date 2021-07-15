@@ -14,8 +14,8 @@ import SensorServer, { SensorServiceOptions } from "../../src/servers/sensorserv
 /**
  * WIP / TODO: move into its own file, that's not in the test folder.
  * 
- * A ServiceServer that loads data from a CSV-like data structure.
- * No CSV parsed here, no animals were harmed in the making of this class.
+ * Streams data from a "CSV" into a SensorServer, using its sensorServer.reading.setValues(...)
+ * interface.
  * 
  * "CSV" is formatted as (for example):
  * [
@@ -31,31 +31,26 @@ import SensorServer, { SensorServiceOptions } from "../../src/servers/sensorserv
  * Note that this only writes to registers and DOES NOT generate derived events.
  * For example, if used with the button, it will not generate up and down events.
  */
-export class JDCsvSensorServer extends SensorServer<[number]> {
+export class SensorServerCsvSource {
     protected nextDataIndex = 0  // index (in this.data) of next value
 
     constructor(
-        public readonly serviceClass: number,
+        protected readonly sensorServer: SensorServer<[number]>,
         protected readonly data: number[][],
-        options: SensorServiceOptions<[number]>,
     ) {
-        super(serviceClass, options)
-
         // TODO timings are only approximate, perhaps this should use bus.scheduler.setTimeout
         // instead, but that needs a bus handle and there isn't an event when a device has its
         // bus assigned.
-        this.on(REFRESH, this.handleRefresh.bind(this))
+        sensorServer.on(REFRESH, this.handleRefresh.bind(this))
     }
 
-    // TODO should this have a start() function for a timestamp offset?
-
     protected handleRefresh() {
-        const now = this.device.bus.timestamp
+        const now = this.sensorServer.device.bus.timestamp
 
         while (this.nextDataIndex < this.data.length && 
             this.data[this.nextDataIndex][0] * 1000 <= now) {
             const value = this.data[this.nextDataIndex][1]
-            this.reading.setValues([value])
+            this.sensorServer.reading.setValues([value])
             this.nextDataIndex++
         }   
     }
@@ -70,13 +65,14 @@ function approxEquals(a: number, b: number, maxPctDiff = 1/32767) {
 
 suite('"CSV" trace server', () => {
     test('produces register data as expected', async function() {
-        const potServer = new JDCsvSensorServer(SRV_POTENTIOMETER, [
+        const potServer = new SensorServer<[number]>(SRV_POTENTIOMETER)
+        const potStreamer = new SensorServerCsvSource(potServer, [
             // takes about 500ms for the bus to spin up
             [0.6, 0.5],
             [0.8, 1.0],
             [1.0, 0.8],
             [1.2, 0.6],
-        ], {})
+        ])
 
         await withBus([
             {server: potServer},
