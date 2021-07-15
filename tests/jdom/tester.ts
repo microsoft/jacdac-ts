@@ -220,14 +220,17 @@ export function nextEventFrom(
 }
 
 
+// Waits for the next update packet from a register, and returns the new value from the packet.
+// TODO: should there be a timing API? These packets are repeating, so timining may not mean much,
+// though a different API (expect-value-through-some-time, which operates on packets instead of polling)
+// might be useful.
 export function nextUpdateFrom(
     register: JDRegister
 ): Promise<PackedValues> {
     const packFormat = register.specification.packFormat
 
-    // TODO option timing stuff
     const nextReportPromise: Promise<PackedValues> = new Promise(resolve =>
-        register.on(REPORT_RECEIVE, (packet: Packet) => {
+        register.once(REPORT_RECEIVE, (packet: Packet) => {
             const unpackedData = jdunpack(packet.data, packFormat)
             resolve(unpackedData)
          })

@@ -66,7 +66,7 @@ function approxEquals(a: number, b: number, maxPctDiff = 1/32767) {
 
 
 suite('"CSV" trace server', () => {
-    test('reads from CSVs', async function() {
+    test('produces register data as expected', async function() {
         const potServer = new JDCsvSensorServer(SRV_POTENTIOMETER, [
             // takes about 500ms for the bus to spin up
             [0.6, 0.5],
@@ -79,6 +79,10 @@ suite('"CSV" trace server', () => {
             {server: potServer},
         ], async (bus, serviceMap) => {
             const potService = serviceMap.get(potServer)  // TODO boilerplate, think about how to eliminate
+
+            // TODO ideally this would use potService.register(SystemReg.Reading).unpackedValue
+            // but timing of the update seems really iffy, so the tests are instead synchronized
+            // to register events.
 
             await bus.delay(600 + 50 - bus.timestamp)  // 50ms tolerance for update
             assert(approxEquals((await nextUpdateFrom(potService.register(SystemReg.Reading)))[0], 0.5))
