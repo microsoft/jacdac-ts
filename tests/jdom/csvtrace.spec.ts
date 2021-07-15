@@ -41,6 +41,9 @@ export class JDCsvSensorServer extends SensorServer<[number]> {
     ) {
         super(serviceClass, options)
 
+        // TODO timings are only approximate, perhaps this should use bus.scheduler.setTimeout
+        // instead, but that needs a bus handle and there isn't an event when a device has its
+        // bus assigned.
         this.on(REFRESH, this.handleRefresh.bind(this))
     }
 
