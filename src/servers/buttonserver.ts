@@ -9,7 +9,6 @@ import SensorServer from "./sensorserver"
 import RegisterServer from "../jdom/registerserver"
 import { jdpack } from "../jdom/pack"
 
-
 export default class ButtonServer extends SensorServer<[number]> {
     public static readonly HOLD_TIME = 500
     public static readonly INACTIVE_VALUE = 0
@@ -62,7 +61,8 @@ export default class ButtonServer extends SensorServer<[number]> {
                 // hold
             } else if (now > this._nextHold) {
                 const time = now - this._downTime
-                this._nextHold = this.device.bus.timestamp + ButtonServer.HOLD_TIME
+                this._nextHold =
+                    this.device.bus.timestamp + ButtonServer.HOLD_TIME
                 await this.sendEvent(
                     ButtonEvent.Hold,
                     jdpack<[number]>("u32", [time])
