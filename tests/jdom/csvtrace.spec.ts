@@ -62,8 +62,7 @@ export class JDCsvSensorServer extends SensorServer<[number]> {
 suite('"CSV" trace server', () => {
     test('reads from CSVs', async function() {
         const potServer = new JDCsvSensorServer(SRV_POTENTIOMETER, [
-            [0,   0.0],  // discarded, takes about 500ms for the bus to spin up
-            // TODO fix timestamps when we control simulator time
+            // takes about 500ms for the bus to spin up
             [0.6, 0.5],
             [0.8, 1.0],
             [1.0, 0.8],
@@ -75,37 +74,19 @@ suite('"CSV" trace server', () => {
         ], async (bus, serviceMap) => {
             const potService = serviceMap.get(potServer)  // TODO boilerplate, think about how to eliminate
 
-            console.log(await nextUpdateFrom(potService.register(SystemReg.Reading)))
-            console.log(potService.register(SystemReg.Reading).unpackedValue)
-            console.log(bus.timestamp)
-            
-            console.log(await nextUpdateFrom(potService.register(SystemReg.Reading)))
-            console.log(potService.register(SystemReg.Reading).unpackedValue)
-            console.log(bus.timestamp)
-            
-            console.log(await nextUpdateFrom(potService.register(SystemReg.Reading)))
-            console.log(potService.register(SystemReg.Reading).unpackedValue)
-            console.log(bus.timestamp)
+            await bus.delay(600 + 50 - bus.timestamp)  // 50ms tolerance for update
+            assert((await nextUpdateFrom(potService.register(SystemReg.Reading)))[0] == 0.5)
 
-            console.log(await nextUpdateFrom(potService.register(SystemReg.Reading)))
-            console.log(potService.register(SystemReg.Reading).unpackedValue)
-            console.log(bus.timestamp)
+            await bus.delay(800 + 50 - bus.timestamp)  // 50ms tolerance for update
+            const a = (await nextUpdateFrom(potService.register(SystemReg.Reading)))[0]
+            console.log(a)
+            assert(a == 1.0)
 
-            console.log(await nextUpdateFrom(potService.register(SystemReg.Reading)))
-            console.log(potService.register(SystemReg.Reading).unpackedValue)
-            console.log(bus.timestamp)
+            await bus.delay(1000 + 50 - bus.timestamp)  // 50ms tolerance for update
+            assert((await nextUpdateFrom(potService.register(SystemReg.Reading)))[0] == 0.8)
 
-            console.log(await nextUpdateFrom(potService.register(SystemReg.Reading)))
-            console.log(potService.register(SystemReg.Reading).unpackedValue)
-            console.log(bus.timestamp)
-
-            console.log(await nextUpdateFrom(potService.register(SystemReg.Reading)))
-            console.log(potService.register(SystemReg.Reading).unpackedValue)
-            console.log(bus.timestamp)
-
-            console.log(await nextUpdateFrom(potService.register(SystemReg.Reading)))
-            console.log(potService.register(SystemReg.Reading).unpackedValue)
-            console.log(bus.timestamp)
+            await bus.delay(1200 + 50 - bus.timestamp)  // 50ms tolerance for update
+            assert((await nextUpdateFrom(potService.register(SystemReg.Reading)))[0] == 0.6)
         })
     })
 });
