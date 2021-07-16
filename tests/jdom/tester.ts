@@ -42,7 +42,7 @@ export async function withBus(
     loadSpecifications()
     const scheduler = new FastForwardScheduler()
     const bus = new JDBus([], {
-        // scheduler: scheduler
+        scheduler: scheduler
     })
 
     // For server devices: add the service provider on the bus and return the device
