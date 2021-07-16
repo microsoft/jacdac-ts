@@ -42,7 +42,7 @@ export async function withBus(
     loadSpecifications()
     const scheduler = new FastForwardScheduler()
     const bus = new JDBus([], {
-        scheduler: scheduler
+        // scheduler: scheduler
     })
 
     // For server devices: add the service provider on the bus and return the device
@@ -62,7 +62,7 @@ export async function withBus(
     bus.start()
 
     console.log("bus started")
-    const schedStep = scheduler.stepTo(1000)
+    const schedStep = scheduler.stepTo(3000)
 
     // Wait for created devices to be announced, so services become available
     const serverDeviceIds = serverDevices.map(elt => elt.busDevice.deviceId)

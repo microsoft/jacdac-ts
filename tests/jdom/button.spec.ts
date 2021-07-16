@@ -12,130 +12,125 @@ suite("button server", () => {
         const buttonServer = new ButtonServer("button", false)
 
         await withBus([{ server: buttonServer }], async (bus, serviceMap) => {
-            console.log("Started")
             const buttonService = serviceMap.get(buttonServer) // TODO boilerplate, think about how to eliminate
 
             buttonServer.down()
-            console.log("Down")
             assert(
                 (await nextEventFrom(buttonService, { within: 100 })).code ==
                     ButtonEvent.Down
             )
-            console.log("Down Event")
 
             buttonServer.up()
-            console.log("Up")
             assert(
                 (await nextEventFrom(buttonService, { within: 100 })).code ==
                     ButtonEvent.Up
             )
-            console.log("Up Evt")
         })
     })
 
-    // test("fires both down and hold events when held", async function () {
-    //     const buttonServer = new ButtonServer("button", false)
+    test("fires both down and hold events when held", async function () {
+        const buttonServer = new ButtonServer("button", false)
 
-    //     await withBus([{ server: buttonServer }], async (bus, serviceMap) => {
-    //         const buttonService = serviceMap.get(buttonServer) // TODO boilerplate, think about how to eliminate
+        await withBus([{ server: buttonServer }], async (bus, serviceMap) => {
+            const buttonService = serviceMap.get(buttonServer) // TODO boilerplate, think about how to eliminate
 
-    //         buttonServer.down()
-    //         assert(
-    //             (await nextEventFrom(buttonService, { within: 100 })).code ==
-    //                 ButtonEvent.Down
-    //         )
-    //         assert(
-    //             (
-    //                 await nextEventFrom(buttonService, {
-    //                     after: 500,
-    //                     tolerance: 100,
-    //                 })
-    //             ).code == ButtonEvent.Hold
-    //         )
-    //     })
-    // })
+            buttonServer.down()
+            assert(
+                (await nextEventFrom(buttonService, { within: 100 })).code ==
+                    ButtonEvent.Down
+            )
+            assert(
+                (
+                    await nextEventFrom(buttonService, {
+                        after: 500,
+                        tolerance: 100,
+                    })
+                ).code == ButtonEvent.Hold
+            )
+        })
+    })
 
-    // test("repeatedly raise hold events when held", async function () {
-    //     const buttonServer = new ButtonServer("button", false)
+    test("repeatedly raise hold events when held", async function () {
+        const buttonServer = new ButtonServer("button", false)
 
-    //     await withBus([{ server: buttonServer }], async (bus, serviceMap) => {
-    //         const buttonService = serviceMap.get(buttonServer) // TODO boilerplate, think about how to eliminate
+        await withBus([{ server: buttonServer }], async (bus, serviceMap) => {
+            const buttonService = serviceMap.get(buttonServer) // TODO boilerplate, think about how to eliminate
 
-    //         buttonServer.down()
-    //         assert(
-    //             (await nextEventFrom(buttonService, { within: 100 })).code ==
-    //                 ButtonEvent.Down
-    //         )
-    //         assert(
-    //             (
-    //                 await nextEventFrom(buttonService, {
-    //                     after: 500,
-    //                     tolerance: 100,
-    //                 })
-    //             ).code == ButtonEvent.Hold
-    //         )
-    //         assert(
-    //             (
-    //                 await nextEventFrom(buttonService, {
-    //                     after: 500,
-    //                     tolerance: 100,
-    //                 })
-    //             ).code == ButtonEvent.Hold
-    //         )
+            buttonServer.down()
+            assert(
+                (await nextEventFrom(buttonService, { within: 100 })).code ==
+                    ButtonEvent.Down
+            )
+            assert(
+                (
+                    await nextEventFrom(buttonService, {
+                        after: 500,
+                        tolerance: 100,
+                    })
+                ).code == ButtonEvent.Hold
+            )
+            assert(
+                (
+                    await nextEventFrom(buttonService, {
+                        after: 500,
+                        tolerance: 100,
+                    })
+                ).code == ButtonEvent.Hold
+            )
 
-    //         buttonServer.up()
-    //         assert(
-    //             (await nextEventFrom(buttonService, { within: 100 })).code ==
-    //                 ButtonEvent.Up
-    //         )
-    //         await nextEventFrom(buttonService, { within: 1000 }).then(
-    //             () => {
-    //                 assert(false, "got event from button after release")
-    //             },
-    //             () => {}
-    //         ) // rejection is the expected case and nothing happens there
-    //     })
-    // }).timeout(3000) // TODO remove when we can fast-forward tests
+            buttonServer.up()
+            assert(
+                (await nextEventFrom(buttonService, { within: 100 })).code ==
+                    ButtonEvent.Up
+            )
+            await nextEventFrom(buttonService, { within: 1000 }).then(
+                () => {
+                    assert(false, "got event from button after release")
+                },
+                () => {}
+            ) // rejection is the expected case and nothing happens there
+        })
+    }).timeout(3000) // TODO remove when we can fast-forward tests
 
-    // test("detects repeated holds", async function () {
-    //     const buttonServer = new ButtonServer("button", false)
+    test("detects repeated holds", async function () {
+        const buttonServer = new ButtonServer("button", false)
 
-    //     await withBus([{ server: buttonServer }], async (bus, serviceMap) => {
-    //         const buttonService = serviceMap.get(buttonServer) // TODO boilerplate, think about how to eliminate
+        await withBus([{ server: buttonServer }], async (bus, serviceMap) => {
+            const buttonService = serviceMap.get(buttonServer) // TODO boilerplate, think about how to eliminate
 
-    //         buttonServer.down()
-    //         assert(
-    //             (await nextEventFrom(buttonService, { within: 100 })).code ==
-    //                 ButtonEvent.Down
-    //         )
-    //         assert(
-    //             (
-    //                 await nextEventFrom(buttonService, {
-    //                     after: 500,
-    //                     tolerance: 100,
-    //                 })
-    //             ).code == ButtonEvent.Hold
-    //         )
+            buttonServer.down()
+            assert(
+                (await nextEventFrom(buttonService, { within: 100 })).code ==
+                    ButtonEvent.Down
+            )
+            assert(
+                (
+                    await nextEventFrom(buttonService, {
+                        after: 500,
+                        tolerance: 100,
+                    })
+                ).code == ButtonEvent.Hold
+            )
 
-    //         buttonServer.up()
-    //         assert(
-    //             (await nextEventFrom(buttonService, { within: 100 })).code ==
-    //                 ButtonEvent.Up
-    //         )
+            buttonServer.up()
+            assert(
+                (await nextEventFrom(buttonService, { within: 100 })).code ==
+                    ButtonEvent.Up
+            )
 
-    //         buttonServer.down()
-    //         assert(
-    //             (await nextEventFrom(buttonService, { within: 100 })).code ==
-    //                 ButtonEvent.Down
-    //         )
-    //         assert(
-    //             (
-    //                 await nextEventFrom(buttonService, {
-    //                     after: 500,
-    //                     tolerance: 100,
-    //                 })
-    //             ).code == ButtonEvent.Hold
-    //         )
-    //     })
-    // })
+            buttonServer.down()
+            assert(
+                (await nextEventFrom(buttonService, { within: 100 })).code ==
+                    ButtonEvent.Down
+            )
+            assert(
+                (
+                    await nextEventFrom(buttonService, {
+                        after: 500,
+                        tolerance: 100,
+                    })
+                ).code == ButtonEvent.Hold
+            )
+        })
+    })
 })
