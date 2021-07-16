@@ -15,7 +15,7 @@ suite("button server", () => {
             const { button } = await createServices(bus, {
                 button: buttonServer,
             })
-            
+
             buttonServer.down()
             assert(
                 (await nextEventFrom(button, { within: 100 })).code ==

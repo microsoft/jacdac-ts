@@ -35,7 +35,16 @@ export async function withBus(test: (bus: JDBus) => Promise<void>) {
     bus.stop()
 }
 
-// TODO NAMING
+// Creates devices around the given servers, specified as mapping of names to objects.
+// These devices are attached to the bus, and waited on for announcement so services are ready.
+// Returns the services, as an object mapping the input names to the corresponding services.
+//
+// For example,
+// const { button } = await createServices(bus, {
+//   button: new ButtonServer(),
+// })
+//
+// button is a JDServiceServer with service type SRV_BUTTON
 export async function createServices<T extends Record<string, JDServiceServer>>(
     bus: JDBus,
     servers: T
