@@ -1,5 +1,5 @@
 import { BuzzerCmd, BuzzerReg, SRV_BUZZER } from "../jdom/constants"
-import { jdunpack } from "../jdom/pack"
+import { jdpack, jdunpack } from "../jdom/pack"
 import Packet from "../jdom/packet"
 import JDRegisterServer from "../jdom/registerserver"
 import JDServiceServer, { ServerOptions } from "../jdom/serviceserver"
@@ -8,6 +8,12 @@ export interface BuzzerTone {
     frequency: number
     duration: number
     volume: number
+}
+
+export function tonePayload(frequency: number, ms: number, volume: number) {
+    const period = Math.round(1000000 / frequency)
+    const duty = (period * volume) >> 11
+    return jdpack("u16 u16 u16", [period, duty, ms])
 }
 
 export default class BuzzerServer extends JDServiceServer {
