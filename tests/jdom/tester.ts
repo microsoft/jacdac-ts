@@ -57,7 +57,11 @@ export async function withBus(
         }
     })
 
+    console.log("bus starting")
+
     bus.start()
+
+    console.log("bus started")
     const schedStep = scheduler.stepTo(1000)
 
     // Wait for created devices to be announced, so services become available
@@ -66,6 +70,8 @@ export async function withBus(
         const devicesIdSet = new Set(serverDeviceIds)
         const announcedIdSet = new Set()
         const onHandler = (device: JDDevice) => {
+            console.log(`announce ${device}`)
+
             if (devicesIdSet.has(device.deviceId)) {
                 announcedIdSet.add(device.deviceId)
             }
@@ -76,6 +82,8 @@ export async function withBus(
         }
         bus.on(DEVICE_ANNOUNCE, onHandler)
     })
+
+    console.log("device services announced")
 
     // Bind services to roles
     // Start by geting server service -> roleName mappings
@@ -112,6 +120,8 @@ export async function withBus(
     const roleManager = new RoleManager(bus)
     roleManager.setRoles(roleBindings)
 
+    console.log("roles bound")
+
     // Return created services as a map from the source server
     const serviceMap = new Map(
         serverDevices.map(elt => [
@@ -122,8 +132,7 @@ export async function withBus(
         ])
     )
 
-    console.log(scheduler.timestamp)
-    await schedStep
+    console.log("test started")
 
     // Actually run the test here
     await test(bus, serviceMap)

@@ -76,9 +76,7 @@ export class FastForwardScheduler implements Scheduler {
         this.maxTime = until
         let nextTime = this.maxTime  // TODO this logic or naming needs serious TLC
 
-        console.log(`scheduler: stepTo ${until}`)
         while (nextTime <= this.maxTime) {
-            console.log(`scheduler: iterate at t=${this.currentTime} next=${nextTime} ? ${this.maxTime}`)
             // Find the next time where there's a handler pending (can be now)
             // this is a bad algorithm and I feel bad about it
             // TODO use a priority queue or some other non-braindead data structure that isn't O(n)
@@ -120,6 +118,10 @@ export class FastForwardScheduler implements Scheduler {
                 console.log(`scheduler: max to ${until}`)
                 this.currentTime = until
             }
+
+            // Let background events run
+            // TODO is this needed?
+            await new Promise(resolve => setTimeout(resolve, 0))
         }
 
     }
