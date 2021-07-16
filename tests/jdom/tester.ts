@@ -5,7 +5,6 @@ import { mkBus } from "../testutils"
 
 import { JDEvent } from "../../src/jdom/event"
 import { JDDevice } from "../../src/jdom/device"
-import RoleManager from "../../src/servers/rolemanager"
 import JDServiceServer from "../../src/jdom/serviceserver"
 import { assert } from "../../src/jdom/utils"
 import { JDService } from "../../src/jdom/service"
@@ -25,11 +24,7 @@ function setEquals<T>(set1: Set<T>, set2: Set<T>): boolean {
 
 // Creates a test bus, runs the test body function, and tears down the test bus.
 // Bus setup should be handled within the test body
-export async function withBus(
-    test: (
-        bus: JDBus
-    ) => Promise<void>
-) {
+export async function withBus(test: (bus: JDBus) => Promise<void>) {
     const bus = mkBus()
 
     bus.start()
@@ -40,21 +35,18 @@ export async function withBus(
     bus.stop()
 }
 
-
 // TODO NAMING
 export async function createServices<T extends Record<string, JDServiceServer>>(
     bus: JDBus,
     servers: T
-): Promise<{[key in keyof T]: JDService}> {
+): Promise<{ [key in keyof T]: JDService }> {
     // attach servers to the bus as devices
-    const devices = Object.entries(servers).map(([name, server]) =>  {
-        const device = bus.addServiceProvider(
-            new JDServiceProvider([server])
-        )
+    const devices = Object.entries(servers).map(([name, server]) => {
+        const device = bus.addServiceProvider(new JDServiceProvider([server]))
         return {
             name: name,
             server: server,
-            device: device
+            device: device,
         }
     })
 
@@ -76,22 +68,30 @@ export async function createServices<T extends Record<string, JDServiceServer>>(
     })
 
     // Create the output map
-    const output =  Object.fromEntries(devices.map(({name, server, device}) => {
-        const services = device.services({serviceClass: server.serviceClass})
-        assert(
-            services.length > 0,
-            `created device ${device.friendlyName} has no service of ${server.specification.name}`
-        )
-        assert(
-            services.length == 1,
-            `created device ${device.friendlyName} has multiple service of ${server.specification.name}`
-        )
-        return [name, services[0]]
-    }))
+    const namesToServices: [string, JDService][] = devices.map(
+        ({ name, server, device }) => {
+            const services = device.services({
+                serviceClass: server.serviceClass,
+            })
+            assert(
+                services.length > 0,
+                `created device ${device.friendlyName} has no service of ${server.specification.name}`
+            )
+            assert(
+                services.length == 1,
+                `created device ${device.friendlyName} has multiple service of ${server.specification.name}`
+            )
+            return [name, services[0]]
+        }
+    )
 
-    return output as {[key in keyof T]: JDService}
+    const namesToServicesObject = namesToServices.reduce(
+        (last, [name, service]) => Object.assign(last, { [name]: service }),
+        {}
+    )
+
+    return namesToServicesObject as { [key in keyof T]: JDService }
 }
-
 
 export interface EventWithinOptions {
     after?: number // event must happen at least this many ms after the current time (by default, 0)

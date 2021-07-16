@@ -12,8 +12,10 @@ suite("button server", () => {
         const buttonServer = new ButtonServer("button", false)
 
         await withBus(async bus => {
-            const {button} = await createServices(bus, {button: buttonServer})
-
+            const { button } = await createServices(bus, {
+                button: buttonServer,
+            })
+            
             buttonServer.down()
             assert(
                 (await nextEventFrom(button, { within: 100 })).code ==
@@ -32,7 +34,9 @@ suite("button server", () => {
         const buttonServer = new ButtonServer("button", false)
 
         await withBus(async bus => {
-            const {button} = await createServices(bus, {button: buttonServer})
+            const { button } = await createServices(bus, {
+                button: buttonServer,
+            })
 
             buttonServer.down()
             assert(
@@ -54,7 +58,9 @@ suite("button server", () => {
         const buttonServer = new ButtonServer("button", false)
 
         await withBus(async bus => {
-            const {button} = await createServices(bus, {button: buttonServer})
+            const { button } = await createServices(bus, {
+                button: buttonServer,
+            })
 
             buttonServer.down()
             assert(
@@ -96,7 +102,9 @@ suite("button server", () => {
         const buttonServer = new ButtonServer("button", false)
 
         await withBus(async bus => {
-            const {button} = await createServices(bus, {button: buttonServer})
+            const { button } = await createServices(bus, {
+                button: buttonServer,
+            })
 
             buttonServer.down()
             assert(
