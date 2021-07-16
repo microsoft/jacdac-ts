@@ -23,40 +23,45 @@ function setEquals<T>(set1: Set<T>, set2: Set<T>): boolean {
     return true
 }
 
-interface ServerDevice {
-    server: JDServiceServer
-    roleName?: string
-}
-
-// Creates a bus with the specified servers (optionally bound to the specified roles),
-// then runs the test function.
+// Creates a test bus, runs the test body function, and tears down the test bus.
+// Bus setup should be handled within the test body
 export async function withBus(
-    devices: ServerDevice[],
     test: (
-        bus: JDBus,
-        serviceMap: Map<JDServiceServer, JDService>
+        bus: JDBus
     ) => Promise<void>
 ) {
     const bus = mkBus()
 
-    // For server devices: add the service provider on the bus and return the device
-    const serverDevices = devices.map(device => {
-        const busDevice = bus.addServiceProvider(
-            new JDServiceProvider([device.server])
+    bus.start()
+
+    // Actually run the test here
+    await test(bus)
+
+    bus.stop()
+}
+
+
+// TODO NAMING
+export async function createServices<T extends Record<string, JDServiceServer>>(
+    bus: JDBus,
+    servers: T
+): Promise<{[key in keyof T]: JDService}> {
+    // attach servers to the bus as devices
+    const devices = Object.entries(servers).map(([name, server]) =>  {
+        const device = bus.addServiceProvider(
+            new JDServiceProvider([server])
         )
         return {
-            server: device.server,
-            busDevice: busDevice,
-            roleName: device.roleName,
+            name: name,
+            server: server,
+            device: device
         }
     })
 
-    bus.start()
-
-    // Wait for created devices to be announced, so services become available
-    const serverDeviceIds = serverDevices.map(elt => elt.busDevice.deviceId)
+    // wait for created devices to be announced, so services become available
+    const deviceIds = devices.map(elt => elt.device.deviceId)
     await new Promise(resolve => {
-        const devicesIdSet = new Set(serverDeviceIds)
+        const devicesIdSet = new Set(deviceIds)
         const announcedIdSet = new Set()
         const onHandler = (device: JDDevice) => {
             if (devicesIdSet.has(device.deviceId)) {
@@ -70,56 +75,23 @@ export async function withBus(
         bus.on(DEVICE_ANNOUNCE, onHandler)
     })
 
-    // Bind services to roles
-    // Start by geting server service -> roleName mappings
-    const serverServiceRoles = serverDevices.map(elt => {
-        const services = elt.busDevice.services({
-            serviceClass: elt.server.serviceClass,
-        })
+    // Create the output map
+    const output =  Object.fromEntries(devices.map(({name, server, device}) => {
+        const services = device.services({serviceClass: server.serviceClass})
         assert(
             services.length > 0,
-            `created device ${elt.busDevice.friendlyName} has no service of ${elt.server.specification.name}`
+            `created device ${device.friendlyName} has no service of ${server.specification.name}`
         )
         assert(
             services.length == 1,
-            `created device ${elt.busDevice.friendlyName} has multiple service of ${elt.server.specification.name}`
+            `created device ${device.friendlyName} has multiple service of ${server.specification.name}`
         )
-        return {
-            service: services[0],
-            roleName: elt.roleName,
-        }
-    })
+        return [name, services[0]]
+    }))
 
-    const roleBindings = serverServiceRoles
-        .filter(
-            elt => !!elt.roleName // filter for where role name is available
-        )
-        .map(elt => {
-            return {
-                role: elt.roleName,
-                serviceClass: elt.service.specification.classIdentifier,
-                service: elt.service,
-            }
-        })
-
-    const roleManager = new RoleManager(bus)
-    roleManager.setRoles(roleBindings)
-
-    // Return created services as a map from the source server
-    const serviceMap = new Map(
-        serverDevices.map(elt => [
-            elt.server,
-            elt.busDevice.services({
-                serviceClass: elt.server.serviceClass,
-            })[0],
-        ])
-    )
-
-    // Actually run the test here
-    await test(bus, serviceMap)
-
-    bus.stop()
+    return output as {[key in keyof T]: JDService}
 }
+
 
 export interface EventWithinOptions {
     after?: number // event must happen at least this many ms after the current time (by default, 0)
