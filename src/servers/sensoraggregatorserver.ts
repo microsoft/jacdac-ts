@@ -1,0 +1,272 @@
+import { NumberFormat, setNumber, sizeOfNumberFormat } from "../jdom/buffer"
+import {
+    CMD_GET_REG,
+    SensorAggregatorReg,
+    SensorAggregatorSampleType,
+    SensorReg,
+    SRV_SENSOR_AGGREGATOR,
+    SystemReg,
+} from "../jdom/constants"
+import { JDDevice } from "../jdom/device"
+import { jdunpack } from "../jdom/pack"
+import { Packet } from "../jdom/packet"
+import JDRegisterServer from "../jdom/registerserver"
+import JDServiceServer, { ServerOptions } from "../jdom/serviceserver"
+import { idiv } from "../jdom/utils"
+
+function numberFmt(stype: SensorAggregatorSampleType) {
+    switch (stype) {
+        case SensorAggregatorSampleType.U8:
+            return NumberFormat.UInt8LE
+        case SensorAggregatorSampleType.I8:
+            return NumberFormat.Int8LE
+        case SensorAggregatorSampleType.U16:
+            return NumberFormat.UInt16LE
+        case SensorAggregatorSampleType.I16:
+            return NumberFormat.Int16LE
+        case SensorAggregatorSampleType.U32:
+            return NumberFormat.UInt32LE
+        case SensorAggregatorSampleType.I32:
+            return NumberFormat.Int32LE
+    }
+}
+
+class Collector {
+    private requiredServiceNum: number
+    lastSample: Uint8Array
+    private parent: SensorAggregatorServer
+    private numElts: number
+    private sampleType: SensorAggregatorSampleType
+    private sampleMult: number
+
+    handlePacket(packet: Packet) {
+        if (packet.serviceCommand == (CMD_GET_REG | SystemReg.Reading)) {
+            this.parent._newData(packet.timestamp, false)
+            const arr = packet.data.toArray(numberFmt(this.sampleType))
+            for (let i = 0; i < arr.length; ++i)
+                setNumber(
+                    this.lastSample,
+                    NumberFormat.Float32LE,
+                    i << 2,
+                    arr[i] * this.sampleMult
+                )
+            this.parent._newData(packet.timestamp, true)
+        }
+    }
+
+    _attach(dev: JDDevice, serviceNum: number) {
+        if (this.requiredServiceNum && serviceNum != this.requiredServiceNum)
+            return false
+        return super._attach(dev, serviceNum)
+    }
+
+    announceCallback() {
+        this.setReg(SensorReg.StreamingSamples, "u8", [255])
+    }
+
+    // config = [deviceId, serviceClass, serviceNum, sampleSize, sampleType, sampleShift]
+    constructor(parent: SensorAggregatorServer, config: number[]) {
+        const [
+            devIdBuf,
+            serviceClass,
+            serviceNum,
+            sampleSize,
+            sampleType,
+            sampleShift,
+        ] = config
+        const devId = toHex(devIdBuf)
+            devIdBuf.getNumber(NumberFormat.Int32LE, 0) == 0
+                ? null
+                : devIdBuf.toHex()
+        super(serviceClass, devId + ":" + serviceNum)
+        this.requiredServiceNum = serviceNum
+        this.sampleType = sampleType
+
+        this.sampleMult = 1
+        let sh = sampleShift
+        while (sh > 0) {
+            this.sampleMult /= 2
+            sh--
+        }
+        while (sh < 0) {
+            this.sampleMult *= 2
+            sh++
+        }
+
+        this.numElts = idiv(
+            sampleSize,
+            sizeOfNumberFormat(numberFmt(this.sampleType))
+        )
+        this.lastSample = new Uint8Array(this.numElts * 4)
+
+        this.parent = parent
+    }
+}
+
+export default class SensorAggregatorServer extends JDServiceServer {
+    readonly inputs: JDRegisterServer<
+        [
+            number,
+            number,
+            [
+                Uint8Array,
+                number,
+                number,
+                number,
+                SensorAggregatorSampleType,
+                number
+            ][]
+        ]
+    >
+    readonly numSamples: JDRegisterServer<[number]>
+    readonly sampleSize: JDRegisterServer<[number]>
+    readonly streamingSamples: JDRegisterServer<[number]>
+    readonly currentSample: JDRegisterServer<[Uint8Array]>
+
+    private collectors: Collector[]
+    private lastSample: number
+    private samplesBuffer: Uint8Array
+
+    newDataCallback: () => void
+
+    constructor(options?: ServerOptions) {
+        super(SRV_SENSOR_AGGREGATOR, options)
+
+        // const [samplingInterval, samplesInWindow, rest] = jdunpack<[number, number, ([Uint8Array, number, number, number, SensorAggregatorSampleType, number])[]]>(buf, "u16 u16 x[4] r: b[8] u32 u8 u8 u8 i8")
+        // const [deviceId, serviceClass, serviceNum, sampleSize, sampleType, sampleShift] = rest[0]
+        this.inputs = this.addRegister(SensorAggregatorReg.Inputs, [50, 10, []])
+        this.numSamples = this.addRegister(SensorAggregatorReg.NumSamples, [0])
+        this.sampleSize = this.addRegister(SensorAggregatorReg.SampleSize, [0])
+        this.streamingSamples = this.addRegister(
+            SensorAggregatorReg.StreamingSamples,
+            [0]
+        )
+        this.currentSample = this.addRegister(
+            SensorAggregatorReg.CurrentSample,
+            [new Uint8Array(0)]
+        )
+    }
+
+    get samplingInterval() {
+        const [v] = this.inputs.values()
+        return v
+    }
+
+    get samplesInWindow() {
+        const [, value] = this.inputs.values()
+        return value
+    }
+
+    set samplesInWindow(v: number) {
+        if (!v || v <= 1) v = 1
+        const inputValues = this.inputs.values()
+        inputValues[1] = v
+        this.inputs.setValues(inputValues)
+        this.syncWindow()
+    }
+
+    private syncWindow() {
+        const samplesInWindow = this.samplesInWindow
+        const [sampleSize] = this.sampleSize.values()
+
+        if (sampleSize)
+            this.samplesBuffer = new Uint8Array(samplesInWindow * sampleSize)
+        else this.samplesBuffer = new Uint8Array(samplesInWindow)
+    }
+
+    private pushData() {
+        const [sampleSize] = this.sampleSize.values()
+        this.samplesBuffer.shift(sampleSize)
+        let off = this.samplesBuffer.length - sampleSize
+        for (const coll of this.collectors) {
+            this.samplesBuffer.write(off, coll.lastSample)
+            off += coll.lastSample.length
+        }
+        this.numSamples++
+        if (this.streamSamples > 0) {
+            this.streamSamples--
+            this.sendLastSample()
+        }
+    }
+
+    _newData(timestamp: number, isPost: boolean) {
+        if (!this.lastSample) this.lastSample = timestamp
+        const d = timestamp - this.lastSample
+        let numSamples = idiv(d + (d >> 1), this.samplingInterval)
+        if (!numSamples) return
+        if (isPost) {
+            this.lastSample = timestamp
+            this.pushData()
+            if (this.newDataCallback) this.newDataCallback()
+        } else {
+            numSamples--
+            if (numSamples > 5) numSamples = 5
+            while (numSamples-- > 0) this.pushData()
+        }
+    }
+
+    start() {
+        super.start()
+        this.configureInputs()
+    }
+
+    private configureInputs() {
+        const config = this.inputs.values()
+        const [samplingInterval, samplesInWindow, rest] = this.inputs.values()
+        // const [deviceId, serviceClass, serviceNum, sampleSize, sampleType, sampleShift] = rest[0]
+        if (samplingInterval === undefined) return
+        const entrySize = 16
+        let off = 8
+        for (const coll of this.collectors || []) coll.destroy()
+        this.collectors = []
+        let frameSz = 0
+        for(const collectorConfig of rest) {
+            const coll = new Collector(this, collectorConfig)
+            //coll.setReg(jacdac.SensorReg.StreamingInterval, "u32", [
+            //    this.samplingInterval,
+            //])
+            //coll.setReg(jacdac.SensorReg.StreamingSamples, "u8", [255])
+            this.collectors.push(coll)
+            frameSz += coll.lastSample.length
+            off += entrySize
+        }
+        this.sampleSize = frameSz
+        this.numSamples = 0
+        this.syncWindow()
+    }
+
+    private sendLastSample() {
+        const buf = this.samplesBuffer.slice(
+            this.samplesBuffer.length - this.sampleSize,
+            this.sampleSize
+        )
+        this.sendReport(
+            JDPacket.from(
+                jacdac.SensorAggregatorReg.CurrentSample | CMD_GET_REG,
+                buf
+            )
+        )
+    }
+
+    handlePacket(packet: JDPacket) {
+        switch (packet.serviceCommand) {
+            case jacdac.SensorAggregatorReg.Inputs | CMD_GET_REG:
+                this.sendReport(
+                    JDPacket.from(packet.serviceCommand, this.inputSettings)
+                )
+                break
+            case jacdac.SensorAggregatorReg.Inputs | CMD_SET_REG:
+                if (
+                    this.inputSettings &&
+                    packet.data.equals(this.inputSettings)
+                )
+                    return // already done
+                settings.writeBuffer(inputsSettingsKey, packet.data)
+                this.configureInputs()
+                break
+            case jacdac.SensorAggregatorReg.CurrentSample | CMD_GET_REG:
+                this.sendLastSample()
+                break
+        }
+    }
+}
