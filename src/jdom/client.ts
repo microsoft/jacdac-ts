@@ -5,6 +5,7 @@ export class JDClient extends JDEventSource {
     protected unmounted = false
     constructor() {
         super()
+        this.unmounted = false
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
