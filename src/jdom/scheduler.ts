@@ -1,3 +1,5 @@
+import { assert } from "./jacdac-jdom"
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface Scheduler {
     get timestamp(): number
@@ -53,5 +55,66 @@ export class WallClockScheduler implements Scheduler {
     }
     clearInterval(handle: any): void {
         clearInterval(handle)
+    }
+}
+
+interface IntervalDefinition {
+    start: number
+    interval: number
+}
+
+
+export class FastForwardScheduler implements Scheduler {
+
+    protected currentTime = 0
+    protected maxTime = 0
+
+    protected intervalMap = new Map<(...args: any[]) => void, IntervalDefinition>()
+    protected timeoutMap = new Map<(...args: any[]) => void, number>()  // time when it expires
+
+    // TODO this API needs some serious thought
+    public async stepTo(until: number) {
+        this.maxTime = until
+    }
+
+    get timestamp(): number {
+        return this.currentTime
+    }
+
+    public resetTime(delta: number): void {
+        // TODO semantics for rewinding time and setTimeout / setInterval
+        throw Error("can't go back in time")
+    }
+
+    public setTimeout(
+        handler: (...args: any[]) => void,
+        delay: number,
+        ...args: any[]
+    ): any {
+        assert(!this.timeoutMap.has(handler), "TODO support duplicate handlers")
+        this.timeoutMap.set(handler, this.timestamp + delay)
+        return handler
+    }
+
+    public clearTimeout(handle: any): void {
+        if (this.timeoutMap.has(handle)) {  // TODO should the clear-on-nonexistent policy be silent drop?
+            this.timeoutMap.delete(handle)
+        }
+    }
+
+    public setInterval(
+        handler: (...args: any[]) => void,
+        delay: number,
+        ...args: any[]
+    ): any {
+        assert(!this.intervalMap.has(handler), "TODO support duplicate handlers")
+        this.intervalMap.set(handler, {start: this.timestamp, interval: delay})
+        return handler
+    }
+
+    public clearInterval(handle: any): void {
+        if (this.intervalMap.has(handle)) {  // TODO should the clear-on-nonexistent policy be silent drop?
+            this.intervalMap.delete(handle)
+        }
     }
 }
