@@ -59,13 +59,12 @@ export class WallClockScheduler implements Scheduler {
 }
 
 interface IntervalDefinition {
-    start: number
+    nextTime: number
     interval: number
 }
 
 
 export class FastForwardScheduler implements Scheduler {
-
     protected currentTime = 0
     protected maxTime = 0
 
@@ -75,6 +74,54 @@ export class FastForwardScheduler implements Scheduler {
     // TODO this API needs some serious thought
     public async stepTo(until: number) {
         this.maxTime = until
+        let nextTime = this.maxTime  // TODO this logic or naming needs serious TLC
+
+        console.log(`scheduler: stepTo ${until}`)
+        while (nextTime <= this.maxTime) {
+            console.log(`scheduler: iterate at t=${this.currentTime} next=${nextTime} ? ${this.maxTime}`)
+            // Find the next time where there's a handler pending (can be now)
+            // this is a bad algorithm and I feel bad about it
+            // TODO use a priority queue or some other non-braindead data structure that isn't O(n)
+            nextTime = Number.POSITIVE_INFINITY
+            let earliestHandler: (...args: any[]) => void
+            let earliestIsTimeout  // TODO replace w/ unified stack
+
+            this.timeoutMap.forEach((value, key) => {
+                if (value < nextTime) {
+                    nextTime = value
+                    earliestHandler = key
+                    earliestIsTimeout = true
+                }
+            })
+            this.intervalMap.forEach((value, key) => {
+                if (value.nextTime < nextTime) {
+                    nextTime = value.nextTime
+                    earliestHandler = key
+                    earliestIsTimeout = false
+                }
+            })
+
+            // Run that handler and advance time
+            if (earliestHandler !== undefined) {
+                console.log(`scheduler: handler at ${nextTime}`)
+                this.currentTime = nextTime
+                earliestHandler()
+
+                if (earliestIsTimeout) {
+                    this.timeoutMap.delete(earliestHandler)
+                } else {
+                    const intervalDef = this.intervalMap.get(earliestHandler)
+                    this.intervalMap.set(earliestHandler, {
+                        nextTime: this.currentTime + intervalDef.interval,
+                         interval: intervalDef.interval
+                        })
+                }
+            } else { // advance current time to limit
+                console.log(`scheduler: max to ${until}`)
+                this.currentTime = until
+            }
+        }
+
     }
 
     get timestamp(): number {
@@ -108,7 +155,7 @@ export class FastForwardScheduler implements Scheduler {
         ...args: any[]
     ): any {
         assert(!this.intervalMap.has(handler), "TODO support duplicate handlers")
-        this.intervalMap.set(handler, {start: this.timestamp, interval: delay})
+        this.intervalMap.set(handler, {nextTime: this.timestamp + delay, interval: delay})
         return handler
     }
 

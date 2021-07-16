@@ -1,7 +1,7 @@
 import { JDBus } from "../../src/jdom/bus"
 import JDServiceProvider from "../../src/jdom/serviceprovider"
 import { EVENT, DEVICE_ANNOUNCE } from "../../src/jdom/constants"
-import { mkBus } from "../testutils"
+import { loadSpecifications, mkBus } from "../testutils"
 
 import { JDEvent } from "../../src/jdom/event"
 import { JDDevice } from "../../src/jdom/device"
@@ -9,6 +9,7 @@ import RoleManager from "../../src/servers/rolemanager"
 import JDServiceServer from "../../src/jdom/serviceserver"
 import { assert } from "../../src/jdom/utils"
 import { JDService } from "../../src/jdom/service"
+import { FastForwardScheduler } from "../../src/jdom/scheduler"
 
 // Set equals is not a built-in operation.
 function setEquals<T>(set1: Set<T>, set2: Set<T>): boolean {
@@ -37,7 +38,12 @@ export async function withBus(
         serviceMap: Map<JDServiceServer, JDService>
     ) => Promise<void>
 ) {
-    const bus = mkBus()
+    // TODO this reimplements mkBus
+    loadSpecifications()
+    const scheduler = new FastForwardScheduler()
+    const bus = new JDBus([], {
+        scheduler: scheduler
+    })
 
     // For server devices: add the service provider on the bus and return the device
     const serverDevices = devices.map(device => {
@@ -52,6 +58,7 @@ export async function withBus(
     })
 
     bus.start()
+    const schedStep = scheduler.stepTo(1000)
 
     // Wait for created devices to be announced, so services become available
     const serverDeviceIds = serverDevices.map(elt => elt.busDevice.deviceId)
@@ -114,6 +121,9 @@ export async function withBus(
             })[0],
         ])
     )
+
+    console.log(scheduler.timestamp)
+    await schedStep
 
     // Actually run the test here
     await test(bus, serviceMap)
