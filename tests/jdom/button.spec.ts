@@ -9,43 +9,39 @@ import ButtonServer from "../../src/servers/buttonserver"
 
 suite("button server", () => {
     test("fires edge events after changing state", async function () {
-        const buttonServer = new ButtonServer("button", false)
-
         await withBus(async bus => {
             const { button } = await createServices(bus, {
-                button: buttonServer,
+                button: new ButtonServer("button", false),
             })
 
-            buttonServer.down()
+            button.server.down()
             assert(
-                (await nextEventFrom(button, { within: 100 })).code ==
+                (await nextEventFrom(button.service, { within: 100 })).code ==
                     ButtonEvent.Down
             )
 
-            buttonServer.up()
+            button.server.up()
             assert(
-                (await nextEventFrom(button, { within: 100 })).code ==
+                (await nextEventFrom(button.service, { within: 100 })).code ==
                     ButtonEvent.Up
             )
         })
     })
 
     test("fires both down and hold events when held", async function () {
-        const buttonServer = new ButtonServer("button", false)
-
         await withBus(async bus => {
             const { button } = await createServices(bus, {
-                button: buttonServer,
+                button: new ButtonServer("button", false),
             })
 
-            buttonServer.down()
+            button.server.down()
             assert(
-                (await nextEventFrom(button, { within: 100 })).code ==
+                (await nextEventFrom(button.service, { within: 100 })).code ==
                     ButtonEvent.Down
             )
             assert(
                 (
-                    await nextEventFrom(button, {
+                    await nextEventFrom(button.service, {
                         after: 500,
                         tolerance: 100,
                     })
@@ -55,21 +51,19 @@ suite("button server", () => {
     })
 
     test("repeatedly raise hold events when held", async function () {
-        const buttonServer = new ButtonServer("button", false)
-
         await withBus(async bus => {
             const { button } = await createServices(bus, {
-                button: buttonServer,
+                button: new ButtonServer("button", false),
             })
 
-            buttonServer.down()
+            button.server.down()
             assert(
-                (await nextEventFrom(button, { within: 100 })).code ==
+                (await nextEventFrom(button.service, { within: 100 })).code ==
                     ButtonEvent.Down
             )
             assert(
                 (
-                    await nextEventFrom(button, {
+                    await nextEventFrom(button.service, {
                         after: 500,
                         tolerance: 100,
                     })
@@ -77,19 +71,19 @@ suite("button server", () => {
             )
             assert(
                 (
-                    await nextEventFrom(button, {
+                    await nextEventFrom(button.service, {
                         after: 500,
                         tolerance: 100,
                     })
                 ).code == ButtonEvent.Hold
             )
 
-            buttonServer.up()
+            button.server.up()
             assert(
-                (await nextEventFrom(button, { within: 100 })).code ==
+                (await nextEventFrom(button.service, { within: 100 })).code ==
                     ButtonEvent.Up
             )
-            await nextEventFrom(button, { within: 1000 }).then(
+            await nextEventFrom(button.service, { within: 1000 }).then(
                 () => {
                     assert(false, "got event from button after release")
                 },
@@ -99,41 +93,39 @@ suite("button server", () => {
     }).timeout(3000) // TODO remove when we can fast-forward tests
 
     test("detects repeated holds", async function () {
-        const buttonServer = new ButtonServer("button", false)
-
         await withBus(async bus => {
             const { button } = await createServices(bus, {
-                button: buttonServer,
+                button: new ButtonServer("button", false),
             })
 
-            buttonServer.down()
+            button.server.down()
             assert(
-                (await nextEventFrom(button, { within: 100 })).code ==
+                (await nextEventFrom(button.service, { within: 100 })).code ==
                     ButtonEvent.Down
             )
             assert(
                 (
-                    await nextEventFrom(button, {
+                    await nextEventFrom(button.service, {
                         after: 500,
                         tolerance: 100,
                     })
                 ).code == ButtonEvent.Hold
             )
 
-            buttonServer.up()
+            button.server.up()
             assert(
-                (await nextEventFrom(button, { within: 100 })).code ==
+                (await nextEventFrom(button.service, { within: 100 })).code ==
                     ButtonEvent.Up
             )
 
-            buttonServer.down()
+            button.server.down()
             assert(
-                (await nextEventFrom(button, { within: 100 })).code ==
+                (await nextEventFrom(button.service, { within: 100 })).code ==
                     ButtonEvent.Down
             )
             assert(
                 (
-                    await nextEventFrom(button, {
+                    await nextEventFrom(button.service, {
                         after: 500,
                         tolerance: 100,
                     })

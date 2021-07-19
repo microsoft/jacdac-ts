@@ -35,6 +35,14 @@ export async function withBus(test: (bus: JDBus) => Promise<void>) {
     bus.stop()
 }
 
+// Structure returned from createServices for each server, that contains the server passed in,
+// the created device, and the service on the device corresponding to the server.
+export interface CreatedServerService<ServiceType extends JDServiceServer> {
+    server: ServiceType
+    device: JDDevice
+    service: JDService
+}
+
 // Creates devices around the given servers, specified as mapping of names to objects.
 // These devices are attached to the bus, and waited on for announcement so services are ready.
 // Returns the services, as an object mapping the input names to the corresponding services.
@@ -44,11 +52,14 @@ export async function withBus(test: (bus: JDBus) => Promise<void>) {
 //   button: new ButtonServer(),
 // })
 //
-// button is a JDServiceServer with service type SRV_BUTTON
+// button is an object containing:
+// - server, the server passed in
+// - device, the device on the bus created
+// - service, the service on the device corresponding to the server
 export async function createServices<T extends Record<string, JDServiceServer>>(
     bus: JDBus,
     servers: T
-): Promise<{ [key in keyof T]: JDService }> {
+): Promise<{ [key in keyof T]: CreatedServerService<T[key]> }> {
     // attach servers to the bus as devices
     const devices = Object.entries(servers).map(([name, server]) => {
         const device = bus.addServiceProvider(new JDServiceProvider([server]))
@@ -77,8 +88,8 @@ export async function createServices<T extends Record<string, JDServiceServer>>(
     })
 
     // Create the output map
-    const namesToServices: [string, JDService][] = devices.map(
-        ({ name, server, device }) => {
+    const namesToServices: [string, CreatedServerService<JDServiceServer>][] =
+        devices.map(({ name, server, device }) => {
             const services = device.services({
                 serviceClass: server.serviceClass,
             })
@@ -90,16 +101,24 @@ export async function createServices<T extends Record<string, JDServiceServer>>(
                 services.length == 1,
                 `created device ${device.friendlyName} has multiple service of ${server.specification.name}`
             )
-            return [name, services[0]]
-        }
-    )
+            return [
+                name,
+                {
+                    server: server,
+                    device: device,
+                    service: services[0],
+                },
+            ]
+        })
 
     const namesToServicesObject = namesToServices.reduce(
         (last, [name, service]) => Object.assign(last, { [name]: service }),
         {}
     )
 
-    return namesToServicesObject as { [key in keyof T]: JDService }
+    return namesToServicesObject as {
+        [key in keyof T]: CreatedServerService<T[key]>
+    }
 }
 
 export interface EventWithinOptions {
