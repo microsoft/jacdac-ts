@@ -5,7 +5,6 @@ import { loadSpecifications, mkBus } from "../testutils"
 
 import { JDEvent } from "../../src/jdom/event"
 import { JDDevice } from "../../src/jdom/device"
-import RoleManager from "../../src/servers/rolemanager"
 import JDServiceServer from "../../src/jdom/serviceserver"
 import { assert } from "../../src/jdom/utils"
 import { JDService } from "../../src/jdom/service"
@@ -24,20 +23,9 @@ function setEquals<T>(set1: Set<T>, set2: Set<T>): boolean {
     return true
 }
 
-interface ServerDevice {
-    server: JDServiceServer
-    roleName?: string
-}
-
-// Creates a bus with the specified servers (optionally bound to the specified roles),
-// then runs the test function.
-export async function withBus(
-    devices: ServerDevice[],
-    test: (
-        bus: JDBus,
-        serviceMap: Map<JDServiceServer, JDService>
-    ) => Promise<void>
-) {
+// Creates a test bus, runs the test body function, and tears down the test bus.
+// Bus setup should be handled within the test body
+export async function withBus(test: (bus: JDBus) => Promise<void>) {
     // TODO this reimplements mkBus
     loadSpecifications()
     const scheduler = new FastForwardScheduler()
@@ -45,29 +33,54 @@ export async function withBus(
         scheduler: scheduler
     })
 
-    // For server devices: add the service provider on the bus and return the device
-    const serverDevices = devices.map(device => {
-        const busDevice = bus.addServiceProvider(
-            new JDServiceProvider([device.server])
-        )
+    bus.start()
+
+    // Actually run the test here
+    scheduler.stepTo(3000)  // TODO needs to be integrated with time-advancing test primitives
+    await test(bus)
+
+    bus.stop()
+}
+
+// Structure returned from createServices for each server, that contains the server passed in,
+// the created device, and the service on the device corresponding to the server.
+export interface CreatedServerService<ServiceType extends JDServiceServer> {
+    server: ServiceType
+    device: JDDevice
+    service: JDService
+}
+
+// Creates devices around the given servers, specified as mapping of names to objects.
+// These devices are attached to the bus, and waited on for announcement so services are ready.
+// Returns the services, as an object mapping the input names to the corresponding services.
+//
+// For example,
+// const { button } = await createServices(bus, {
+//   button: new ButtonServer(),
+// })
+//
+// button is an object containing:
+// - server, the server passed in
+// - device, the device on the bus created
+// - service, the service on the device corresponding to the server
+export async function createServices<T extends Record<string, JDServiceServer>>(
+    bus: JDBus,
+    servers: T
+): Promise<{ [key in keyof T]: CreatedServerService<T[key]> }> {
+    // attach servers to the bus as devices
+    const devices = Object.entries(servers).map(([name, server]) => {
+        const device = bus.addServiceProvider(new JDServiceProvider([server]))
         return {
-            server: device.server,
-            busDevice: busDevice,
-            roleName: device.roleName,
+            name: name,
+            server: server,
+            device: device,
         }
     })
 
-    console.log("bus starting")
-
-    bus.start()
-
-    console.log("bus started")
-    const schedStep = scheduler.stepTo(3000)
-
-    // Wait for created devices to be announced, so services become available
-    const serverDeviceIds = serverDevices.map(elt => elt.busDevice.deviceId)
+    // wait for created devices to be announced, so services become available
+    const deviceIds = devices.map(elt => elt.device.deviceId)
     await new Promise(resolve => {
-        const devicesIdSet = new Set(serverDeviceIds)
+        const devicesIdSet = new Set(deviceIds)
         const announcedIdSet = new Set()
         const onHandler = (device: JDDevice) => {
             console.log(`announce ${device}`)
@@ -83,61 +96,38 @@ export async function withBus(
         bus.on(DEVICE_ANNOUNCE, onHandler)
     })
 
-    console.log("device services announced")
-
-    // Bind services to roles
-    // Start by geting server service -> roleName mappings
-    const serverServiceRoles = serverDevices.map(elt => {
-        const services = elt.busDevice.services({
-            serviceClass: elt.server.serviceClass,
-        })
-        assert(
-            services.length > 0,
-            `created device ${elt.busDevice.friendlyName} has no service of ${elt.server.specification.name}`
-        )
-        assert(
-            services.length == 1,
-            `created device ${elt.busDevice.friendlyName} has multiple service of ${elt.server.specification.name}`
-        )
-        return {
-            service: services[0],
-            roleName: elt.roleName,
-        }
-    })
-
-    const roleBindings = serverServiceRoles
-        .filter(
-            elt => !!elt.roleName // filter for where role name is available
-        )
-        .map(elt => {
-            return {
-                role: elt.roleName,
-                serviceClass: elt.service.specification.classIdentifier,
-                service: elt.service,
-            }
+    // Create the output map
+    const namesToServices: [string, CreatedServerService<JDServiceServer>][] =
+        devices.map(({ name, server, device }) => {
+            const services = device.services({
+                serviceClass: server.serviceClass,
+            })
+            assert(
+                services.length > 0,
+                `created device ${device.friendlyName} has no service of ${server.specification.name}`
+            )
+            assert(
+                services.length == 1,
+                `created device ${device.friendlyName} has multiple service of ${server.specification.name}`
+            )
+            return [
+                name,
+                {
+                    server: server,
+                    device: device,
+                    service: services[0],
+                },
+            ]
         })
 
-    const roleManager = new RoleManager(bus)
-    roleManager.setRoles(roleBindings)
-
-    console.log("roles bound")
-
-    // Return created services as a map from the source server
-    const serviceMap = new Map(
-        serverDevices.map(elt => [
-            elt.server,
-            elt.busDevice.services({
-                serviceClass: elt.server.serviceClass,
-            })[0],
-        ])
+    const namesToServicesObject = namesToServices.reduce(
+        (last, [name, service]) => Object.assign(last, { [name]: service }),
+        {}
     )
 
-    console.log("test started")
-
-    // Actually run the test here
-    await test(bus, serviceMap)
-
-    bus.stop()
+    return namesToServicesObject as {
+        [key in keyof T]: CreatedServerService<T[key]>
+    }
 }
 
 export interface EventWithinOptions {
