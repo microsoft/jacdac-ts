@@ -78,9 +78,7 @@ export async function createServices<T extends Record<string, JDServiceServer>>(
 
     // wait for created devices to be announced, so services become available
     const deviceIds = devices.map(elt => elt.device.deviceId)
-
-    let done = false
-
+    await (bus.scheduler as FastForwardScheduler).runToPromise( new Promise(resolve => {
         const devicesIdSet = new Set(deviceIds)
         const announcedIdSet = new Set()
         const onHandler = (device: JDDevice) => {
@@ -91,15 +89,12 @@ export async function createServices<T extends Record<string, JDServiceServer>>(
             }
             if (setEquals(devicesIdSet, announcedIdSet)) {
                 bus.off(DEVICE_ANNOUNCE, onHandler)
-                
-                // FINISHED - do something here
-                done = true
+                resolve(undefined)
             }
         }
         bus.on(DEVICE_ANNOUNCE, onHandler)
-
-        await (bus.scheduler as FastForwardScheduler).runToCondition(() => done)
-
+    }) )
+    
 
     // Create the output map
     const namesToServices: [string, CreatedServerService<JDServiceServer>][] =

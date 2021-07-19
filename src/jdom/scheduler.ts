@@ -87,9 +87,15 @@ export class FastForwardScheduler implements Scheduler {
 
     // Runs the scheduler until (at least) some condition is met, resolving the promise on the timestep
     // afterward.
-    public async runToCondition(condition: () => boolean): Promise<void> {
+    public async runToPromise<T>(promise: Promise<T>): Promise<T> {
         // TODO do we need some mutex to prevent this from being called from multiple places?
         let done = false
+        let value: T
+        promise.then((arg) => { 
+            value = arg
+            done = true 
+        })
+
         while (!done) {
             // Find the next time where there's a handler pending (can be now)
             // this is a bad algorithm and I feel bad about it
@@ -100,12 +106,10 @@ export class FastForwardScheduler implements Scheduler {
             // TODO is this needed?
             await new Promise(resolve => setTimeout(resolve, 0))
 
-            if (condition()) {
-                done = true
-            } else {
-                assert(thisCycleRuns, `empty scheduler at ${this.currentTime} but done condition not met`)
-            }
+            assert(!done || thisCycleRuns, `empty scheduler at ${this.currentTime} but done condition not met`)
         }
+        
+        return value
     }
 
     // Tries to run a scheduler cycle, returning true if anything ran, or false if there are no simulator

@@ -90,7 +90,7 @@ suite("button server", () => {
                 () => {}
             ) // rejection is the expected case and nothing happens there
         })
-    }).timeout(3000) // TODO remove when we can fast-forward tests
+    })
 
     test("detects repeated holds", async function () {
         await withBus(async bus => {
