@@ -1,7 +1,8 @@
 import { suite, test } from "mocha"
 import { readdirSync, readFileSync } from "fs"
 import { join } from "path"
-import VMFile from "../../src/vm/file"
+import { VMProgram } from "../../src/vm/ir"
+import { VMProgramRunner } from "../../src/vm/runner"
 
 suite("vm", () => {
     suite("json baselines", () => {
@@ -12,11 +13,10 @@ suite("vm", () => {
                 const jsonpath = join(dir, match)
 
                 console.log(`test ${match}`)
-                const file: VMFile = JSON.parse(readFileSync(jsonpath, "utf8"))
-                const { xml, program } = file
-
-                // TODO compile blocks and compare that it match vm
-
+                const program: VMProgram = JSON.parse(readFileSync(jsonpath, "utf8"))
+                // TODO: spin up bus and RoleManager
+                const runner = new VMProgramRunner(null, program)
+                runner.startAsync()
                 done()
             })
         })
