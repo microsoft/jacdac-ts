@@ -7,6 +7,7 @@ import { withTestBus, createServices, nextEventFrom } from "./tester"
 import { assert } from "../../src/jdom/utils"
 import ButtonServer from "../../src/servers/buttonserver"
 
+
 suite("button server", () => {
     test("fires edge events after changing state", async function () {
         await withTestBus(async bus => {

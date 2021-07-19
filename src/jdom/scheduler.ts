@@ -1,4 +1,5 @@
 import { assert } from "./jacdac-jdom"
+import Heap from 'heap-js'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface Scheduler {
@@ -58,35 +59,31 @@ export class WallClockScheduler implements Scheduler {
     }
 }
 
-interface IntervalDefinition {
-    nextTime: number
-    interval: number
-}
-
 interface EventRecord {
     callback: (...args: any[]) => void
     callbackArgs: any[]
-    startTime: number
+    nextTime: number
     interval?: number  // how often this event recurs, or undefined for non-recurring
+}
 
+function eventMinComparator(a: EventRecord, b: EventRecord) {
+    if (a.nextTime > b.nextTime) {
+        return 1
+    } else if (a.nextTime < b.nextTime) {
+        return -1
+    } else {
+        return 0
+    }
 }
 
 
 export class FastForwardScheduler implements Scheduler {
     protected currentTime = 0
 
-    // TODO unified priority queue, and use a priority queue to be more efficient
-    protected intervalMap = new Map<(...args: any[]) => void, IntervalDefinition>()
-    protected timeoutMap = new Map<(...args: any[]) => void, number>()  // time when it expires
+    protected eventQueue = new Heap<EventRecord>(eventMinComparator)
 
-    // External callbacks, as map from condition (function) to callback (function).
-    // The scheduler checks conditions during each time step, and when conditions are met,
-    // fires the callback (blocking).
-    // The scheduler only runs and advances time when there are external callbacks.
-    protected externalCallbacksMap = new Map<() => boolean, () => Promise<void>>()
-
-    // Runs the scheduler until (at least) some condition is met, resolving the promise on the timestep
-    // afterward.
+    // Runs the scheduler until (at least) some condition is met, resolving the promise
+    // after processing for that instant.
     public async runToPromise<T>(promise: Promise<T>): Promise<T> {
         // TODO do we need some mutex to prevent this from being called from multiple places?
         // TODO these would really be better as status: "wait" | "resolved" | "rejected"
@@ -125,49 +122,23 @@ export class FastForwardScheduler implements Scheduler {
     // Updates this.currentTime (if needed) and scheduler state.
     // Synchronous, but can't guarantee that interval and timeout callbacks don't put things on the event queue.
     public tryRunCycle(): boolean {
-        // Find the next time where there's a handler pending (can be now)
-        // this is a bad algorithm and I feel bad about it
-        // TODO use a priority queue or some other non-braindead data structure that isn't O(n)
-
-        let earliestTime = Number.POSITIVE_INFINITY
-        let earliestHandler: (...args: any[]) => void
-        let earliestIsTimeout  // TODO replace w/ unified stack
-
-        // TODO unify interval and single-shot queues
-        this.timeoutMap.forEach((value, key) => {
-            if (value < earliestTime) {
-                earliestTime = value
-                earliestHandler = key
-                earliestIsTimeout = true
-            }
-        })
-        this.intervalMap.forEach((value, key) => {
-            if (value.nextTime < earliestTime) {
-                earliestTime = value.nextTime
-                earliestHandler = key
-                earliestIsTimeout = false
-            }
-        })
-
-        // Run that handler and advance time
-        if (earliestHandler !== undefined) {
-            this.currentTime = earliestTime
-            earliestHandler()
-
-            // TODO unify interval and single-shot queues
-            if (earliestIsTimeout) {
-                this.timeoutMap.delete(earliestHandler)
-            } else {
-                const intervalDef = this.intervalMap.get(earliestHandler)
-                this.intervalMap.set(earliestHandler, {
-                    nextTime: this.currentTime + intervalDef.interval,
-                     interval: intervalDef.interval
-                })
-            }
-            return true
-        } else { // advance current time to limit
+        if (this.eventQueue.isEmpty()) {
             return false
         }
+
+        const nextEvent  = this.eventQueue.pop()
+        assert(nextEvent.nextTime >= this.currentTime)
+
+        nextEvent.callback(nextEvent.callbackArgs)
+        this.currentTime = nextEvent.nextTime
+
+        if (nextEvent.interval !== undefined) { // for intervals, push a new event
+            // update events in-place so handles remain valid
+            nextEvent.nextTime += nextEvent.interval
+            this.eventQueue.push(nextEvent)
+        }
+
+        return true
     }
 
     get timestamp(): number {
@@ -184,15 +155,18 @@ export class FastForwardScheduler implements Scheduler {
         delay: number,
         ...args: any[]
     ): any {
-        assert(!this.timeoutMap.has(handler), "TODO support duplicate handlers")
-        this.timeoutMap.set(handler, this.timestamp + delay)
-        return handler
+        const eventQueueElt = {
+            callback: handler,
+            callbackArgs: args,
+            nextTime: this.timestamp + delay
+        }
+        this.eventQueue.push(eventQueueElt)
+
+        return eventQueueElt
     }
 
     public clearTimeout(handle: any): void {
-        if (this.timeoutMap.has(handle)) {  // TODO should the clear-on-nonexistent policy be silent drop?
-            this.timeoutMap.delete(handle)
-        }
+        this.eventQueue.remove(handle)
     }
 
     public setInterval(
@@ -200,14 +174,17 @@ export class FastForwardScheduler implements Scheduler {
         delay: number,
         ...args: any[]
     ): any {
-        assert(!this.intervalMap.has(handler), "TODO support duplicate handlers")
-        this.intervalMap.set(handler, {nextTime: this.timestamp + delay, interval: delay})
-        return handler
+        const eventQueueElt = {
+            callback: handler,
+            callbackArgs: args,
+            nextTime: this.timestamp + delay, 
+            interval: delay}
+        this.eventQueue.push(eventQueueElt)
+
+        return eventQueueElt
     }
 
     public clearInterval(handle: any): void {
-        if (this.intervalMap.has(handle)) {  // TODO should the clear-on-nonexistent policy be silent drop?
-            this.intervalMap.delete(handle)
-        }
+        this.eventQueue.remove(handle)
     }
 }
