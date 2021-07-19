@@ -89,26 +89,34 @@ export class FastForwardScheduler implements Scheduler {
     // afterward.
     public async runToPromise<T>(promise: Promise<T>): Promise<T> {
         // TODO do we need some mutex to prevent this from being called from multiple places?
-        let done = false
+        // TODO these would really be better as status: "wait" | "resolved" | "rejected"
+        // but TS doesn't seem to understand the promise.then can run while in the while loop...
+        let promiseResolved = false
+        let promiseRejected = false
         let value: T
-        promise.then((arg) => { 
-            value = arg
-            done = true 
+        let rejectedValue: any
+        promise.then((fulfilled) => { 
+            value = fulfilled
+            promiseResolved = true
+        }, (rejected) => {
+            rejectedValue = rejected
+            promiseRejected = true
         })
 
-        while (!done) {
-            // Find the next time where there's a handler pending (can be now)
-            // this is a bad algorithm and I feel bad about it
-            // TODO use a priority queue or some other non-braindead data structure that isn't O(n)
-
+        while (!promiseResolved) {
             const thisCycleRuns = this.tryRunCycle()
-            // Let background events run
-            // TODO is this needed?
+
+            // Let background events run - including any promise resolutions
             await new Promise(resolve => setTimeout(resolve, 0))
 
-            assert(!done || thisCycleRuns, `empty scheduler at ${this.currentTime} but done condition not met`)
+            if (promiseRejected) {
+                throw rejectedValue
+            }
+
+            assert(!promiseResolved || thisCycleRuns, 
+                `empty scheduler at ${this.currentTime} but done condition not met`)
         }
-        
+
         return value
     }
 
@@ -117,6 +125,10 @@ export class FastForwardScheduler implements Scheduler {
     // Updates this.currentTime (if needed) and scheduler state.
     // Synchronous, but can't guarantee that interval and timeout callbacks don't put things on the event queue.
     public tryRunCycle(): boolean {
+        // Find the next time where there's a handler pending (can be now)
+        // this is a bad algorithm and I feel bad about it
+        // TODO use a priority queue or some other non-braindead data structure that isn't O(n)
+
         let earliestTime = Number.POSITIVE_INFINITY
         let earliestHandler: (...args: any[]) => void
         let earliestIsTimeout  // TODO replace w/ unified stack
@@ -139,7 +151,6 @@ export class FastForwardScheduler implements Scheduler {
 
         // Run that handler and advance time
         if (earliestHandler !== undefined) {
-            console.log(`scheduler: handler at ${earliestTime}`)
             this.currentTime = earliestTime
             earliestHandler()
 

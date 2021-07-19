@@ -3,13 +3,13 @@
 
 import { suite, test } from "mocha"
 import { ButtonEvent } from "../../src/jdom/constants"
-import { withBus, createServices, nextEventFrom } from "./tester"
+import { withTestBus, createServices, nextEventFrom } from "./tester"
 import { assert } from "../../src/jdom/utils"
 import ButtonServer from "../../src/servers/buttonserver"
 
 suite("button server", () => {
     test("fires edge events after changing state", async function () {
-        await withBus(async bus => {
+        await withTestBus(async bus => {
             const { button } = await createServices(bus, {
                 button: new ButtonServer("button", false),
             })
@@ -29,7 +29,7 @@ suite("button server", () => {
     })
 
     test("fires both down and hold events when held", async function () {
-        await withBus(async bus => {
+        await withTestBus(async bus => {
             const { button } = await createServices(bus, {
                 button: new ButtonServer("button", false),
             })
@@ -51,7 +51,7 @@ suite("button server", () => {
     })
 
     test("repeatedly raise hold events when held", async function () {
-        await withBus(async bus => {
+        await withTestBus(async bus => {
             const { button } = await createServices(bus, {
                 button: new ButtonServer("button", false),
             })
@@ -93,7 +93,7 @@ suite("button server", () => {
     })
 
     test("detects repeated holds", async function () {
-        await withBus(async bus => {
+        await withTestBus(async bus => {
             const { button } = await createServices(bus, {
                 button: new ButtonServer("button", false),
             })

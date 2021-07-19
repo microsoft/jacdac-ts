@@ -1,7 +1,7 @@
 import { JDBus } from "../../src/jdom/bus"
 import JDServiceProvider from "../../src/jdom/serviceprovider"
 import { EVENT, DEVICE_ANNOUNCE } from "../../src/jdom/constants"
-import { loadSpecifications, mkBus } from "../testutils"
+import { loadSpecifications } from "../testutils"
 
 import { JDEvent } from "../../src/jdom/event"
 import { JDDevice } from "../../src/jdom/device"
@@ -24,8 +24,8 @@ function setEquals<T>(set1: Set<T>, set2: Set<T>): boolean {
 }
 
 // Creates a test bus, runs the test body function, and tears down the test bus.
-// Bus setup should be handled within the test body
-export async function withBus(test: (bus: JDBus) => Promise<void>) {
+// Bus setup should be handled within the test body.
+export async function withTestBus(test: (bus: JDBus) => Promise<void>) {
     // TODO this reimplements mkBus
     loadSpecifications()
     const scheduler = new FastForwardScheduler()
@@ -187,7 +187,7 @@ export function nextEventFrom(
         firstPromise = nextEventPromise
     }
 
-    return new Promise((resolve, reject) => {
+    return (bus.scheduler as FastForwardScheduler).runToPromise( new Promise((resolve, reject) => {
         firstPromise.then(value => {
             if (value != null) {
                 const elapsedTime = bus.timestamp - startTimestamp
@@ -224,5 +224,5 @@ export function nextEventFrom(
                 }
             }
         })
-    })
+    }))
 }
