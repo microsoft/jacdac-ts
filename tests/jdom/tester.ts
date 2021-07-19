@@ -36,7 +36,6 @@ export async function withBus(test: (bus: JDBus) => Promise<void>) {
     bus.start()
 
     // Actually run the test here
-    scheduler.stepTo(3000)  // TODO needs to be integrated with time-advancing test primitives
     await test(bus)
 
     bus.stop()
@@ -79,7 +78,9 @@ export async function createServices<T extends Record<string, JDServiceServer>>(
 
     // wait for created devices to be announced, so services become available
     const deviceIds = devices.map(elt => elt.device.deviceId)
-    await new Promise(resolve => {
+
+    let done = false
+
         const devicesIdSet = new Set(deviceIds)
         const announcedIdSet = new Set()
         const onHandler = (device: JDDevice) => {
@@ -90,11 +91,15 @@ export async function createServices<T extends Record<string, JDServiceServer>>(
             }
             if (setEquals(devicesIdSet, announcedIdSet)) {
                 bus.off(DEVICE_ANNOUNCE, onHandler)
-                resolve(undefined)
+                
+                // FINISHED - do something here
+                done = true
             }
         }
         bus.on(DEVICE_ANNOUNCE, onHandler)
-    })
+
+        await (bus.scheduler as FastForwardScheduler).runToCondition(() => done)
+
 
     // Create the output map
     const namesToServices: [string, CreatedServerService<JDServiceServer>][] =

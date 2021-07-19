@@ -63,67 +63,96 @@ interface IntervalDefinition {
     interval: number
 }
 
+interface EventRecord {
+    callback: (...args: any[]) => void
+    callbackArgs: any[]
+    startTime: number
+    interval?: number  // how often this event recurs, or undefined for non-recurring
+
+}
+
 
 export class FastForwardScheduler implements Scheduler {
     protected currentTime = 0
-    protected maxTime = 0
 
+    // TODO unified priority queue, and use a priority queue to be more efficient
     protected intervalMap = new Map<(...args: any[]) => void, IntervalDefinition>()
     protected timeoutMap = new Map<(...args: any[]) => void, number>()  // time when it expires
 
-    // TODO this API needs some serious thought
-    public async stepTo(until: number) {
-        this.maxTime = until
-        let nextTime = this.maxTime  // TODO this logic or naming needs serious TLC
+    // External callbacks, as map from condition (function) to callback (function).
+    // The scheduler checks conditions during each time step, and when conditions are met,
+    // fires the callback (blocking).
+    // The scheduler only runs and advances time when there are external callbacks.
+    protected externalCallbacksMap = new Map<() => boolean, () => Promise<void>>()
 
-        while (nextTime <= this.maxTime) {
+    // Runs the scheduler until (at least) some condition is met, resolving the promise on the timestep
+    // afterward.
+    public async runToCondition(condition: () => boolean): Promise<void> {
+        // TODO do we need some mutex to prevent this from being called from multiple places?
+        let done = false
+        while (!done) {
             // Find the next time where there's a handler pending (can be now)
             // this is a bad algorithm and I feel bad about it
             // TODO use a priority queue or some other non-braindead data structure that isn't O(n)
-            nextTime = Number.POSITIVE_INFINITY
-            let earliestHandler: (...args: any[]) => void
-            let earliestIsTimeout  // TODO replace w/ unified stack
 
-            this.timeoutMap.forEach((value, key) => {
-                if (value < nextTime) {
-                    nextTime = value
-                    earliestHandler = key
-                    earliestIsTimeout = true
-                }
-            })
-            this.intervalMap.forEach((value, key) => {
-                if (value.nextTime < nextTime) {
-                    nextTime = value.nextTime
-                    earliestHandler = key
-                    earliestIsTimeout = false
-                }
-            })
-
-            // Run that handler and advance time
-            if (earliestHandler !== undefined) {
-                console.log(`scheduler: handler at ${nextTime}`)
-                this.currentTime = nextTime
-                earliestHandler()
-
-                if (earliestIsTimeout) {
-                    this.timeoutMap.delete(earliestHandler)
-                } else {
-                    const intervalDef = this.intervalMap.get(earliestHandler)
-                    this.intervalMap.set(earliestHandler, {
-                        nextTime: this.currentTime + intervalDef.interval,
-                         interval: intervalDef.interval
-                        })
-                }
-            } else { // advance current time to limit
-                console.log(`scheduler: max to ${until}`)
-                this.currentTime = until
-            }
-
+            const thisCycleRuns = this.tryRunCycle()
             // Let background events run
             // TODO is this needed?
             await new Promise(resolve => setTimeout(resolve, 0))
-        }
 
+            if (condition()) {
+                done = true
+            } else {
+                assert(thisCycleRuns, `empty scheduler at ${this.currentTime} but done condition not met`)
+            }
+        }
+    }
+
+    // Tries to run a scheduler cycle, returning true if anything ran, or false if there are no simulator
+    // events pending.
+    // Updates this.currentTime (if needed) and scheduler state.
+    // Synchronous, but can't guarantee that interval and timeout callbacks don't put things on the event queue.
+    public tryRunCycle(): boolean {
+        let earliestTime = Number.POSITIVE_INFINITY
+        let earliestHandler: (...args: any[]) => void
+        let earliestIsTimeout  // TODO replace w/ unified stack
+
+        // TODO unify interval and single-shot queues
+        this.timeoutMap.forEach((value, key) => {
+            if (value < earliestTime) {
+                earliestTime = value
+                earliestHandler = key
+                earliestIsTimeout = true
+            }
+        })
+        this.intervalMap.forEach((value, key) => {
+            if (value.nextTime < earliestTime) {
+                earliestTime = value.nextTime
+                earliestHandler = key
+                earliestIsTimeout = false
+            }
+        })
+
+        // Run that handler and advance time
+        if (earliestHandler !== undefined) {
+            console.log(`scheduler: handler at ${earliestTime}`)
+            this.currentTime = earliestTime
+            earliestHandler()
+
+            // TODO unify interval and single-shot queues
+            if (earliestIsTimeout) {
+                this.timeoutMap.delete(earliestHandler)
+            } else {
+                const intervalDef = this.intervalMap.get(earliestHandler)
+                this.intervalMap.set(earliestHandler, {
+                    nextTime: this.currentTime + intervalDef.interval,
+                     interval: intervalDef.interval
+                })
+            }
+            return true
+        } else { // advance current time to limit
+            return false
+        }
     }
 
     get timestamp(): number {
