@@ -27,6 +27,14 @@ export class FastForwardScheduler implements Scheduler {
 
     protected eventQueue = new Heap<EventRecord>(eventMinComparator)
 
+    // Runs the scheduler for some duration of simulated time.
+    public async runForDelay(delayMs: number) {
+        const promise = new Promise(resolve => {
+            this.setTimeout(() => { resolve(undefined) }, delayMs)
+        })
+        return this.runToPromise(promise)
+    }
+
     // Runs the scheduler until (at least) some condition is met, resolving the promise
     // after processing for that instant.
     // TODO: is this the right API?
