@@ -1,5 +1,5 @@
 import { assert } from "./jacdac-jdom"
-import Heap from 'heap-js'
+import Heap from "heap-js"
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface Scheduler {
@@ -63,7 +63,7 @@ interface EventRecord {
     callback: (...args: any[]) => void
     callbackArgs: any[]
     nextTime: number
-    interval?: number  // how often this event recurs, or undefined for non-recurring
+    interval?: number // how often this event recurs, or undefined for non-recurring
 }
 
 function eventMinComparator(a: EventRecord, b: EventRecord) {
@@ -75,7 +75,6 @@ function eventMinComparator(a: EventRecord, b: EventRecord) {
         return 0
     }
 }
-
 
 // Fast forward scheduler that is independent of wall time, where time advance is controlled by runToPromise
 // but runs as fast as possible within that.
@@ -95,24 +94,31 @@ export class FastForwardScheduler implements Scheduler {
         let promiseRejected = false
         let value: T
         let rejectedValue: any
-        promise.then((fulfilled) => { 
-            value = fulfilled
-            promiseResolved = true
-        }, (rejected) => {
-            rejectedValue = rejected
-            promiseRejected = true
-        })
+        promise.then(
+            fulfilled => {
+                value = fulfilled
+                promiseResolved = true
+            },
+            rejected => {
+                rejectedValue = rejected
+                promiseRejected = true
+            }
+        )
 
         while (!promiseResolved) {
             // Run the event scheduled for the next event in time
-            assert(!this.eventQueue.isEmpty(), "empty scheduler before promise resolved")
-            const nextEvent  = this.eventQueue.pop()
+            assert(
+                !this.eventQueue.isEmpty(),
+                "empty scheduler before promise resolved"
+            )
+            const nextEvent = this.eventQueue.pop()
             assert(nextEvent.nextTime >= this.currentTime)
-    
+
             nextEvent.callback(nextEvent.callbackArgs)
             this.currentTime = nextEvent.nextTime
-    
-            if (nextEvent.interval !== undefined) { // for intervals, push a new event
+
+            if (nextEvent.interval !== undefined) {
+                // for intervals, push a new event
                 // update events in-place so handles remain valid
                 nextEvent.nextTime += nextEvent.interval
                 this.eventQueue.push(nextEvent)
@@ -146,7 +152,7 @@ export class FastForwardScheduler implements Scheduler {
         const eventQueueElt = {
             callback: handler,
             callbackArgs: args,
-            nextTime: this.timestamp + delay
+            nextTime: this.timestamp + delay,
         }
         this.eventQueue.push(eventQueueElt)
 
@@ -165,8 +171,9 @@ export class FastForwardScheduler implements Scheduler {
         const eventQueueElt = {
             callback: handler,
             callbackArgs: args,
-            nextTime: this.timestamp + delay, 
-            interval: delay}
+            nextTime: this.timestamp + delay,
+            interval: delay,
+        }
         this.eventQueue.push(eventQueueElt)
 
         return eventQueueElt

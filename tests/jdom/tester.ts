@@ -30,7 +30,7 @@ export async function withTestBus(test: (bus: JDBus) => Promise<void>) {
     loadSpecifications()
     const scheduler = new FastForwardScheduler()
     const bus = new JDBus([], {
-        scheduler: scheduler
+        scheduler: scheduler,
     })
 
     bus.start()
@@ -78,23 +78,24 @@ export async function createServices<T extends Record<string, JDServiceServer>>(
     // wait for created devices to be announced, so services become available
     // TODO: where should runToPromise exist?
     const deviceIds = devices.map(elt => elt.device.deviceId)
-    await (bus.scheduler as FastForwardScheduler).runToPromise( new Promise(resolve => {
-        const devicesIdSet = new Set(deviceIds)
-        const announcedIdSet = new Set()
-        const onHandler = (device: JDDevice) => {
-            console.log(`announce ${device}`)
+    await (bus.scheduler as FastForwardScheduler).runToPromise(
+        new Promise(resolve => {
+            const devicesIdSet = new Set(deviceIds)
+            const announcedIdSet = new Set()
+            const onHandler = (device: JDDevice) => {
+                console.log(`announce ${device}`)
 
-            if (devicesIdSet.has(device.deviceId)) {
-                announcedIdSet.add(device.deviceId)
+                if (devicesIdSet.has(device.deviceId)) {
+                    announcedIdSet.add(device.deviceId)
+                }
+                if (setEquals(devicesIdSet, announcedIdSet)) {
+                    bus.off(DEVICE_ANNOUNCE, onHandler)
+                    resolve(undefined)
+                }
             }
-            if (setEquals(devicesIdSet, announcedIdSet)) {
-                bus.off(DEVICE_ANNOUNCE, onHandler)
-                resolve(undefined)
-            }
-        }
-        bus.on(DEVICE_ANNOUNCE, onHandler)
-    }) )
-    
+            bus.on(DEVICE_ANNOUNCE, onHandler)
+        })
+    )
 
     // Create the output map
     const namesToServices: [string, CreatedServerService<JDServiceServer>][] =
@@ -188,42 +189,44 @@ export function nextEventFrom(
 
     // TODO: where should runToPromise exist?
     // TODO: refactor to use async + throw errrors for rejection
-    return (bus.scheduler as FastForwardScheduler).runToPromise( new Promise((resolve, reject) => {
-        firstPromise.then(value => {
-            if (value != null) {
-                const elapsedTime = bus.timestamp - startTimestamp
-                if (elapsedTime < after) {
+    return (bus.scheduler as FastForwardScheduler).runToPromise(
+        new Promise((resolve, reject) => {
+            firstPromise.then(value => {
+                if (value != null) {
+                    const elapsedTime = bus.timestamp - startTimestamp
+                    if (elapsedTime < after) {
+                        if (eventWithin.tolerance !== undefined) {
+                            reject(
+                                new Error(
+                                    `nextEventWithin got event at ${elapsedTime} ms, before after=${after} ms (${eventWithin.after}±${eventWithin.tolerance} ms)`
+                                )
+                            )
+                        } else {
+                            reject(
+                                new Error(
+                                    `nextEventWithin got event at ${elapsedTime} ms, before after=${after} ms`
+                                )
+                            )
+                        }
+                    } else {
+                        resolve(value)
+                    }
+                } else {
                     if (eventWithin.tolerance !== undefined) {
                         reject(
                             new Error(
-                                `nextEventWithin got event at ${elapsedTime} ms, before after=${after} ms (${eventWithin.after}±${eventWithin.tolerance} ms)`
+                                `nextEventWithin timed out at within=${within} ms (${eventWithin.after}±${eventWithin.tolerance} ms)`
                             )
                         )
                     } else {
                         reject(
                             new Error(
-                                `nextEventWithin got event at ${elapsedTime} ms, before after=${after} ms`
+                                `nextEventWithin timed out at within=${within} ms`
                             )
                         )
                     }
-                } else {
-                    resolve(value)
                 }
-            } else {
-                if (eventWithin.tolerance !== undefined) {
-                    reject(
-                        new Error(
-                            `nextEventWithin timed out at within=${within} ms (${eventWithin.after}±${eventWithin.tolerance} ms)`
-                        )
-                    )
-                } else {
-                    reject(
-                        new Error(
-                            `nextEventWithin timed out at within=${within} ms`
-                        )
-                    )
-                }
-            }
+            })
         })
-    }))
+    )
 }

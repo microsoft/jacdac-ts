@@ -7,7 +7,6 @@ import { withTestBus, createServices, nextEventFrom } from "./tester"
 import { assert } from "../../src/jdom/utils"
 import ButtonServer from "../../src/servers/buttonserver"
 
-
 suite("button server", () => {
     // Note that tolerances are set at 110 ms here, because the button updates on a handleRefresh,
     // which runs every 500ms. So it's possible here for the handleRefresh to run before the stimulus
