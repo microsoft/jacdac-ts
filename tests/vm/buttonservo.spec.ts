@@ -8,6 +8,7 @@ import { withTestBus, createServices } from "../jdom/tester"
 import ButtonServer from "../../src/servers/buttonserver"
 import RoleManager from "../../src/servers/rolemanager"
 import ServoServer from "../../src/servers/servoserver"
+import { FastForwardScheduler } from "../jdom/scheduler"
 
 suite("vm", () => {
     const filePath = "vm/suites/buttonservo.json"
@@ -41,6 +42,18 @@ suite("vm", () => {
             
             const runner = new VMProgramRunner(roleMgr, program)
             await runner.startAsync()
+
+            
+            button.server.up()
+            servo.server.angle.setValues([50])
+            await (bus.scheduler as FastForwardScheduler).runForDelay(200)
+            
+            button.server.down()
+            await (bus.scheduler as FastForwardScheduler).runForDelay(200)
+            button.server.up()
+            await (bus.scheduler as FastForwardScheduler).runForDelay(200)
+            console.log(servo.server.angle.values())
+
 
             // await runner.runAsync()  // private
         })
