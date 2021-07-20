@@ -3,16 +3,16 @@ import { readdirSync, readFileSync } from "fs"
 import { join } from "path"
 import { VMProgram } from "../../src/vm/ir"
 import { VMProgramRunner } from "../../src/vm/runner"
+import { JDBus } from "../../src/jdom/bus"
 
-import { withTestBus, createServices } from "../jdom/tester"
+import { withTestBus, createServices, CreatedServerService } from "../jdom/tester"
 import ButtonServer from "../../src/servers/buttonserver"
 import RoleManager from "../../src/servers/rolemanager"
 import ServoServer from "../../src/servers/servoserver"
 import { FastForwardScheduler } from "../jdom/scheduler"
 
-suite("vm", () => {
-    const filePath = "vm/suites/buttonservo.json"
-    test(filePath, async () => {
+suite("button servo", () => {
+    async function withHarness(testBody: (bus: JDBus, button: CreatedServerService<ButtonServer>, servo: CreatedServerService<ServoServer>) => void) {
         await withTestBus(async bus => {
             const { button, servo } = await createServices(bus, {
                 button: new ButtonServer("button", false),
@@ -34,16 +34,17 @@ suite("vm", () => {
                 },
             ])
 
-            // TODO parse roles from VMProgram
-
-            // TODO: spin up bus and RoleManager
-            // Create servers for client devices requested in the VMProgram, and bind roles
-            const program: VMProgram = JSON.parse(readFileSync(filePath, "utf8"))
+            const program: VMProgram = JSON.parse(readFileSync("vm/suites/buttonservo.json", "utf8"))
             
             const runner = new VMProgramRunner(roleMgr, program)
             await runner.startAsync()
 
-            
+            await testBody(bus, button, servo)
+        })
+    }
+
+    test("inverts when pressed", async () => {
+        await withHarness(async (bus, button, servo) => {
             button.server.up()
             servo.server.angle.setValues([50])
             await (bus.scheduler as FastForwardScheduler).runForDelay(200)
@@ -53,9 +54,6 @@ suite("vm", () => {
             button.server.up()
             await (bus.scheduler as FastForwardScheduler).runForDelay(200)
             console.log(servo.server.angle.values())
-
-
-            // await runner.runAsync()  // private
         })
     })
 })
