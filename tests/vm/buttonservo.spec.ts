@@ -8,11 +8,11 @@ import {
     withTestBus,
     createServices,
     CreatedServerService,
+    runForDelay,
 } from "../jdom/tester"
 import ButtonServer from "../../src/servers/buttonserver"
 import RoleManager from "../../src/servers/rolemanager"
 import ServoServer from "../../src/servers/servoserver"
-import { FastForwardScheduler } from "../jdom/scheduler"
 import { assert } from "../../src/jdom/utils"
 
 suite("button servo", () => {
@@ -60,7 +60,7 @@ suite("button servo", () => {
             servo.server.angle.setValues([50])
 
             button.server.down()
-            await (bus.scheduler as FastForwardScheduler).runForDelay(100)
+            await runForDelay(bus, 100)
             button.server.up()
             assert(servo.server.angle.values()[0] == -50.0)
         })
@@ -70,7 +70,7 @@ suite("button servo", () => {
         await withHarness(async (bus, button, servo) => {
             servo.server.angle.setValues([50])
 
-            await (bus.scheduler as FastForwardScheduler).runForDelay(100)
+            await runForDelay(bus, 100)
             assert(servo.server.angle.values()[0] == 50)
         })
     })
@@ -80,11 +80,11 @@ suite("button servo", () => {
             servo.server.angle.setValues([50])
 
             button.server.down()
-            await (bus.scheduler as FastForwardScheduler).runForDelay(100)
+            await runForDelay(bus, 100)
             button.server.up()
-            await (bus.scheduler as FastForwardScheduler).runForDelay(100)
+            await runForDelay(bus, 100)
             button.server.down()
-            await (bus.scheduler as FastForwardScheduler).runForDelay(100)
+            await runForDelay(bus, 100)
             button.server.up()
             assert(servo.server.angle.values()[0] == 50)
         })
