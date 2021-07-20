@@ -77,6 +77,7 @@ export async function createServices<T extends Record<string, JDServiceServer>>(
     })
 
     // wait for created devices to be announced, so services become available
+    // TODO: where should runToPromise exist?
     const deviceIds = devices.map(elt => elt.device.deviceId)
     await (bus.scheduler as FastForwardScheduler).runToPromise( new Promise(resolve => {
         const devicesIdSet = new Set(deviceIds)
@@ -187,6 +188,8 @@ export function nextEventFrom(
         firstPromise = nextEventPromise
     }
 
+    // TODO: where should runToPromise exist?
+    // TODO: refactor to use async + throw errrors for rejection
     return (bus.scheduler as FastForwardScheduler).runToPromise( new Promise((resolve, reject) => {
         firstPromise.then(value => {
             if (value != null) {

@@ -77,6 +77,8 @@ function eventMinComparator(a: EventRecord, b: EventRecord) {
 }
 
 
+// Fast forward scheduler that is independent of wall time, where time advance is controlled by runToPromise
+// but runs as fast as possible within that.
 export class FastForwardScheduler implements Scheduler {
     protected currentTime = 0
 
@@ -84,6 +86,7 @@ export class FastForwardScheduler implements Scheduler {
 
     // Runs the scheduler until (at least) some condition is met, resolving the promise
     // after processing for that instant.
+    // TODO: is this the right API?
     public async runToPromise<T>(promise: Promise<T>): Promise<T> {
         // TODO do we need some mutex to prevent this from being called from multiple places?
         // TODO these would really be better as status: "wait" | "resolved" | "rejected"
@@ -101,7 +104,19 @@ export class FastForwardScheduler implements Scheduler {
         })
 
         while (!promiseResolved) {
-            const thisCycleRuns = this.tryRunCycle()
+            // Run the event scheduled for the next event in time
+            assert(!this.eventQueue.isEmpty(), "empty scheduler before promise resolved")
+            const nextEvent  = this.eventQueue.pop()
+            assert(nextEvent.nextTime >= this.currentTime)
+    
+            nextEvent.callback(nextEvent.callbackArgs)
+            this.currentTime = nextEvent.nextTime
+    
+            if (nextEvent.interval !== undefined) { // for intervals, push a new event
+                // update events in-place so handles remain valid
+                nextEvent.nextTime += nextEvent.interval
+                this.eventQueue.push(nextEvent)
+            }
 
             // Let background events run - including any promise resolutions
             await new Promise(resolve => setTimeout(resolve, 0))
@@ -109,36 +124,9 @@ export class FastForwardScheduler implements Scheduler {
             if (promiseRejected) {
                 throw rejectedValue
             }
-
-            assert(!promiseResolved || thisCycleRuns, 
-                `empty scheduler at ${this.currentTime} but done condition not met`)
         }
 
         return value
-    }
-
-    // Tries to run a scheduler cycle, returning true if anything ran, or false if there are no simulator
-    // events pending.
-    // Updates this.currentTime (if needed) and scheduler state.
-    // Synchronous, but can't guarantee that interval and timeout callbacks don't put things on the event queue.
-    public tryRunCycle(): boolean {
-        if (this.eventQueue.isEmpty()) {
-            return false
-        }
-
-        const nextEvent  = this.eventQueue.pop()
-        assert(nextEvent.nextTime >= this.currentTime)
-
-        nextEvent.callback(nextEvent.callbackArgs)
-        this.currentTime = nextEvent.nextTime
-
-        if (nextEvent.interval !== undefined) { // for intervals, push a new event
-            // update events in-place so handles remain valid
-            nextEvent.nextTime += nextEvent.interval
-            this.eventQueue.push(nextEvent)
-        }
-
-        return true
     }
 
     get timestamp(): number {

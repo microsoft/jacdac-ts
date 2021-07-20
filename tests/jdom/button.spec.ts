@@ -9,6 +9,10 @@ import ButtonServer from "../../src/servers/buttonserver"
 
 
 suite("button server", () => {
+    // Note that tolerances are set at 110 ms here, because the button updates on a handleRefresh,
+    // which runs every 500ms. So it's possible here for the handleRefresh to run before the stimulus
+    // (adding a 50ms delay), then the test timeout (were it set to 100ms) to happen right before
+    // handleRefresh fires and fail the test.
     test("fires edge events after changing state", async function () {
         await withTestBus(async bus => {
             const { button } = await createServices(bus, {
@@ -17,13 +21,13 @@ suite("button server", () => {
 
             button.server.down()
             assert(
-                (await nextEventFrom(button.service, { within: 100 })).code ==
+                (await nextEventFrom(button.service, { within: 110 })).code ==
                     ButtonEvent.Down
             )
 
             button.server.up()
             assert(
-                (await nextEventFrom(button.service, { within: 100 })).code ==
+                (await nextEventFrom(button.service, { within: 110 })).code ==
                     ButtonEvent.Up
             )
         })
@@ -37,14 +41,14 @@ suite("button server", () => {
 
             button.server.down()
             assert(
-                (await nextEventFrom(button.service, { within: 100 })).code ==
+                (await nextEventFrom(button.service, { within: 110 })).code ==
                     ButtonEvent.Down
             )
             assert(
                 (
                     await nextEventFrom(button.service, {
                         after: 500,
-                        tolerance: 100,
+                        tolerance: 110,
                     })
                 ).code == ButtonEvent.Hold
             )
@@ -59,14 +63,14 @@ suite("button server", () => {
 
             button.server.down()
             assert(
-                (await nextEventFrom(button.service, { within: 100 })).code ==
+                (await nextEventFrom(button.service, { within: 110 })).code ==
                     ButtonEvent.Down
             )
             assert(
                 (
                     await nextEventFrom(button.service, {
                         after: 500,
-                        tolerance: 100,
+                        tolerance: 110,
                     })
                 ).code == ButtonEvent.Hold
             )
@@ -74,14 +78,14 @@ suite("button server", () => {
                 (
                     await nextEventFrom(button.service, {
                         after: 500,
-                        tolerance: 100,
+                        tolerance: 110,
                     })
                 ).code == ButtonEvent.Hold
             )
 
             button.server.up()
             assert(
-                (await nextEventFrom(button.service, { within: 100 })).code ==
+                (await nextEventFrom(button.service, { within: 110 })).code ==
                     ButtonEvent.Up
             )
             await nextEventFrom(button.service, { within: 1000 }).then(
@@ -101,34 +105,34 @@ suite("button server", () => {
 
             button.server.down()
             assert(
-                (await nextEventFrom(button.service, { within: 100 })).code ==
+                (await nextEventFrom(button.service, { within: 110 })).code ==
                     ButtonEvent.Down
             )
             assert(
                 (
                     await nextEventFrom(button.service, {
                         after: 500,
-                        tolerance: 100,
+                        tolerance: 110,
                     })
                 ).code == ButtonEvent.Hold
             )
 
             button.server.up()
             assert(
-                (await nextEventFrom(button.service, { within: 100 })).code ==
+                (await nextEventFrom(button.service, { within: 110 })).code ==
                     ButtonEvent.Up
             )
 
             button.server.down()
             assert(
-                (await nextEventFrom(button.service, { within: 100 })).code ==
+                (await nextEventFrom(button.service, { within: 110 })).code ==
                     ButtonEvent.Down
             )
             assert(
                 (
                     await nextEventFrom(button.service, {
                         after: 500,
-                        tolerance: 100,
+                        tolerance: 110,
                     })
                 ).code == ButtonEvent.Hold
             )
