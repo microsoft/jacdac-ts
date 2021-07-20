@@ -59,9 +59,29 @@ export interface CreatedServerService<ServiceType extends JDServiceServer> {
     service: JDService
 }
 
+// Waits for all the devices (by deviceId) to be announced on the bus.
+async function waitForAnnounce(bus: JDBus, deviceIds: string[]) {
+    return new Promise(resolve => {
+        const devicesIdSet = new Set(deviceIds)
+        const announcedIdSet = new Set()
+        const onHandler = (device: JDDevice) => {
+            if (devicesIdSet.has(device.deviceId)) {
+                announcedIdSet.add(device.deviceId)
+            }
+            if (setEquals(devicesIdSet, announcedIdSet)) {
+                bus.off(DEVICE_ANNOUNCE, onHandler)
+                resolve(undefined)
+            }
+        }
+        bus.on(DEVICE_ANNOUNCE, onHandler)
+    })
+}
+
 // Creates devices around the given servers, specified as mapping of names to objects.
 // These devices are attached to the bus, and waited on for announcement so services are ready.
 // Returns the services, as an object mapping the input names to the corresponding services.
+//
+// If a fast-forward scheduler is on the bus, advances time until the devices announce.
 //
 // For example,
 // const { button } = await createServices(bus, {
@@ -86,27 +106,15 @@ export async function createServices<T extends Record<string, JDServiceServer>>(
         }
     })
 
-    // wait for created devices to be announced, so services become available
-    // TODO: where should runToPromise exist?
+    // Wait for created devices to be announced, so services become available
     const deviceIds = devices.map(elt => elt.device.deviceId)
-    await (bus.scheduler as FastForwardScheduler).runToPromise(
-        new Promise(resolve => {
-            const devicesIdSet = new Set(deviceIds)
-            const announcedIdSet = new Set()
-            const onHandler = (device: JDDevice) => {
-                console.log(`announce ${device}`)
-
-                if (devicesIdSet.has(device.deviceId)) {
-                    announcedIdSet.add(device.deviceId)
-                }
-                if (setEquals(devicesIdSet, announcedIdSet)) {
-                    bus.off(DEVICE_ANNOUNCE, onHandler)
-                    resolve(undefined)
-                }
-            }
-            bus.on(DEVICE_ANNOUNCE, onHandler)
-        })
-    )
+    if (bus.scheduler instanceof FastForwardScheduler) {
+        await (bus.scheduler as FastForwardScheduler).runToPromise(
+            waitForAnnounce(bus, deviceIds)
+        )
+    } else {
+        await waitForAnnounce(bus, deviceIds)
+    }
 
     // Create the output map
     const namesToServices: [string, CreatedServerService<JDServiceServer>][] =
@@ -148,10 +156,8 @@ export interface EventWithinOptions {
     // is an error if within is set, or after is not set
 }
 
-// Waits for the next event from a service, within some time.
-// If no event is triggered within the time, the promise is rejected at within time.
-// TODO should events in the past be supported (negative after / within)?
-export function nextEventFrom(
+// Core logic for nextEventFrom that is scheduler-agnostic.
+async function nextEventFromInternal(
     service: JDService,
     eventWithin: EventWithinOptions = {}
 ): Promise<JDEvent> {
@@ -184,7 +190,7 @@ export function nextEventFrom(
         })
     )
 
-    let firstPromise: Promise<JDEvent | null>
+    let result: JDEvent | null
     if (within != Number.POSITIVE_INFINITY) {
         // finite within, set a timeout
         const timeoutPromise: Promise<null> = new Promise(resolve =>
@@ -192,54 +198,56 @@ export function nextEventFrom(
                 resolve(null)
             }, within)
         )
-        firstPromise = Promise.race([nextEventPromise, timeoutPromise])
+        result = await Promise.race([nextEventPromise, timeoutPromise])
     } else {
         // infinite within, don't set a separate timeout
-        firstPromise = nextEventPromise
+        result = await nextEventPromise
     }
 
-    // TODO: where should runToPromise exist?
-    // TODO: refactor to use async + throw errrors for rejection
-    return (bus.scheduler as FastForwardScheduler).runToPromise(
-        new Promise((resolve, reject) => {
-            firstPromise.then(value => {
-                if (value != null) {
-                    const elapsedTime = bus.timestamp - startTimestamp
-                    if (elapsedTime < after) {
-                        if (eventWithin.tolerance !== undefined) {
-                            reject(
-                                new Error(
-                                    `nextEventWithin got event at ${elapsedTime} ms, before after=${after} ms (${eventWithin.after}±${eventWithin.tolerance} ms)`
-                                )
-                            )
-                        } else {
-                            reject(
-                                new Error(
-                                    `nextEventWithin got event at ${elapsedTime} ms, before after=${after} ms`
-                                )
-                            )
-                        }
-                    } else {
-                        resolve(value)
-                    }
-                } else {
-                    if (eventWithin.tolerance !== undefined) {
-                        reject(
-                            new Error(
-                                `nextEventWithin timed out at within=${within} ms (${eventWithin.after}±${eventWithin.tolerance} ms)`
-                            )
-                        )
-                    } else {
-                        reject(
-                            new Error(
-                                `nextEventWithin timed out at within=${within} ms`
-                            )
-                        )
-                    }
-                }
-            })
-        })
-    )
+    if (result != null) {
+        // got an event, know it did not time out (past specified interval)
+        const elapsedTime = bus.timestamp - startTimestamp
+        if (elapsedTime < after) {
+            if (eventWithin.tolerance !== undefined) {
+                throw new Error(
+                    `nextEventWithin got event at ${elapsedTime} ms, before after=${after} ms (${eventWithin.after}±${eventWithin.tolerance} ms)`
+                )
+            } else {
+                throw new Error(
+                    `nextEventWithin got event at ${elapsedTime} ms, before after=${after} ms`
+                )
+            }
+        } else {
+            return result
+        }
+    } else {
+        if (eventWithin.tolerance !== undefined) {
+            throw new Error(
+                `nextEventWithin timed out at within=${within} ms (${eventWithin.after}±${eventWithin.tolerance} ms)`
+            )
+        } else {
+            throw new Error(`nextEventWithin timed out at within=${within} ms`)
+        }
+    }
+}
+
+// Waits for the next event from a service, within some time.
+// If no event is triggered within the time, the promise is rejected at within time.
+//
+// If the bus is on a fast-forward scheduler, commands it to advance time until the event is triggered, or times out.
+//
+// TODO should events in the past be supported (negative after / within)?
+export async function nextEventFrom(
+    service: JDService,
+    eventWithin: EventWithinOptions = {}
+): Promise<JDEvent> {
+    if (service.device.bus.scheduler instanceof FastForwardScheduler) {
+        return service.device.bus.scheduler.runToPromise(
+            nextEventFromInternal(service, eventWithin)
+        )
+    } else {
+        return nextEventFromInternal(service, eventWithin)
+    }
 }
 
 // Waits for the next update packet from a register, and returns the new value from the packet.
