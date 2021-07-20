@@ -57,8 +57,8 @@ export class FastForwardScheduler implements Scheduler {
             const nextEvent = this.eventQueue.pop()
             assert(nextEvent.nextTime >= this.currentTime)
 
-            nextEvent.callback(nextEvent.callbackArgs)
             this.currentTime = nextEvent.nextTime
+            nextEvent.callback(nextEvent.callbackArgs)
 
             if (nextEvent.interval !== undefined) {
                 // for intervals, push a new event
