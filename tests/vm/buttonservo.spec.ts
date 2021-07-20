@@ -12,6 +12,8 @@ import ServoServer from "../../src/servers/servoserver"
 import { FastForwardScheduler } from "../jdom/scheduler"
 
 suite("button servo", () => {
+    const program: VMProgram = JSON.parse(readFileSync("vm/suites/buttonservo.json", "utf8"))
+            
     async function withHarness(testBody: (bus: JDBus, button: CreatedServerService<ButtonServer>, servo: CreatedServerService<ServoServer>) => void) {
         await withTestBus(async bus => {
             const { button, servo } = await createServices(bus, {
@@ -34,8 +36,6 @@ suite("button servo", () => {
                 },
             ])
 
-            const program: VMProgram = JSON.parse(readFileSync("vm/suites/buttonservo.json", "utf8"))
-            
             const runner = new VMProgramRunner(roleMgr, program)
             await runner.startAsync()
 
@@ -45,14 +45,13 @@ suite("button servo", () => {
 
     test("inverts when pressed", async () => {
         await withHarness(async (bus, button, servo) => {
-            button.server.up()
             servo.server.angle.setValues([50])
-            await (bus.scheduler as FastForwardScheduler).runForDelay(200)
+            await (bus.scheduler as FastForwardScheduler).runForDelay(100)
+            console.log(servo.server.angle.values())
             
             button.server.down()
-            await (bus.scheduler as FastForwardScheduler).runForDelay(200)
+            await (bus.scheduler as FastForwardScheduler).runForDelay(100)
             button.server.up()
-            await (bus.scheduler as FastForwardScheduler).runForDelay(200)
             console.log(servo.server.angle.values())
         })
     })
