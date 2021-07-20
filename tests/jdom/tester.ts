@@ -8,7 +8,7 @@ import { JDDevice } from "../../src/jdom/device"
 import JDServiceServer from "../../src/jdom/serviceserver"
 import { assert } from "../../src/jdom/utils"
 import { JDService } from "../../src/jdom/service"
-import { FastForwardScheduler } from "../../src/jdom/scheduler"
+import { FastForwardScheduler } from "./scheduler"
 
 // Set equals is not a built-in operation.
 function setEquals<T>(set1: Set<T>, set2: Set<T>): boolean {

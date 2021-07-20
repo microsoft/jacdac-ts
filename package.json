@@ -53,6 +53,7 @@
     "cross-env": "^7.0.3",
     "eslint": "^7.28.0",
     "eslint-plugin-react": "^7.24.0",
+    "heap-js": "^2.1.6",
     "jsep": "^0.4.0",
     "lodash.camelcase": "^4.3.0",
     "mocha": "^9.0.0",
@@ -81,7 +82,6 @@
     "@types/w3c-web-usb": "^1.0.4",
     "@types/web-bluetooth": "^0.0.9",
     "fs-extra": "^10.0.0",
-    "regenerator-runtime": "^0.13.7",
-    "heap-js": "^2.1.6"
+    "regenerator-runtime": "^0.13.7"
   }
 }
