@@ -5,13 +5,10 @@ import {
     nextEventFrom,
     nextUpdateFrom,
     createServices,
+    runForDelay,
 } from "./tester"
-import { FastForwardScheduler } from "./scheduler"
 import { assert } from "../../src/jdom/utils"
-import {
-    SRV_POTENTIOMETER,
-    SystemReg,
-} from "../../src/jdom/constants"
+import { SRV_POTENTIOMETER, SystemReg } from "../../src/jdom/constants"
 import SensorServer from "../../src/servers/sensorserver"
 import ButtonServer from "../../src/servers/buttonserver"
 import { SensorServerCsvSource } from "./sensorcsvsource"
@@ -39,9 +36,7 @@ suite('"CSV" trace server', () => {
             // but timing of the update seems really iffy, so the tests are instead synchronized
             // to register events.
 
-            await (bus.scheduler as FastForwardScheduler).runForDelay(
-                600 + 10 - bus.timestamp
-            )
+            await runForDelay(bus, 600 + 10 - bus.timestamp)
             assert(
                 approxEquals(
                     (
@@ -53,9 +48,7 @@ suite('"CSV" trace server', () => {
                 )
             )
 
-            await (bus.scheduler as FastForwardScheduler).runForDelay(
-                800 + 10 - bus.timestamp
-            )
+            await runForDelay(bus, 800 + 10 - bus.timestamp)
             assert(
                 approxEquals(
                     (
@@ -67,9 +60,7 @@ suite('"CSV" trace server', () => {
                 )
             )
 
-            await (bus.scheduler as FastForwardScheduler).runForDelay(
-                1000 + 10 - bus.timestamp
-            )
+            await runForDelay(bus, 1000 + 10 - bus.timestamp)
             assert(
                 approxEquals(
                     (
@@ -81,9 +72,7 @@ suite('"CSV" trace server', () => {
                 )
             )
 
-            await (bus.scheduler as FastForwardScheduler).runForDelay(
-                1200 + 10 - bus.timestamp
-            )
+            await runForDelay(bus, 1200 + 10 - bus.timestamp)
             assert(
                 approxEquals(
                     (
@@ -109,17 +98,13 @@ suite('"CSV" trace server', () => {
                 [0.9, ButtonServer.INACTIVE_VALUE],
             ])
 
-            await (bus.scheduler as FastForwardScheduler).runForDelay(
-                700 - bus.timestamp
-            )
+            await runForDelay(bus, 700 + 10 - bus.timestamp)
             assert(
                 (await nextEventFrom(button.service, { within: 110 })).code ==
                     ButtonEvent.Down
             )
 
-            await (bus.scheduler as FastForwardScheduler).runForDelay(
-                900 - bus.timestamp
-            )
+            await runForDelay(bus, 900 + 10 - bus.timestamp)
             assert(
                 (await nextEventFrom(button.service, { within: 110 })).code ==
                     ButtonEvent.Up
