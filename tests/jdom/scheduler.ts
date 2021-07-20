@@ -23,6 +23,7 @@ function eventMinComparator(a: EventRecord, b: EventRecord) {
 // but runs as fast as possible within that.
 export class FastForwardScheduler implements Scheduler {
     protected currentTime = 0
+    protected schedulerRunning = false
 
     protected eventQueue = new Heap<EventRecord>(eventMinComparator)
 
@@ -30,7 +31,9 @@ export class FastForwardScheduler implements Scheduler {
     // after processing for that instant.
     // TODO: is this the right API?
     public async runToPromise<T>(promise: Promise<T>): Promise<T> {
-        // TODO do we need some mutex to prevent this from being called from multiple places?
+        assert(!this.schedulerRunning, "multiple concurrent run invocations on fast-forward scheduler currently not supported")
+        this.schedulerRunning = true
+
         // TODO these would really be better as status: "wait" | "resolved" | "rejected"
         // but TS doesn't seem to understand the promise.then can run while in the while loop...
         let promiseResolved = false
@@ -71,10 +74,12 @@ export class FastForwardScheduler implements Scheduler {
             await new Promise(resolve => setTimeout(resolve, 0))
 
             if (promiseRejected) {
+                this.schedulerRunning = false
                 throw rejectedValue
             }
         }
 
+        this.schedulerRunning = false
         return value
     }
 
