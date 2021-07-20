@@ -92,7 +92,7 @@ export class FastForwardScheduler implements Scheduler {
         delay: number,
         ...args: any[]
     ): any {
-        const eventQueueElt = {
+        const eventQueueElt: EventRecord = {
             callback: handler,
             callbackArgs: args,
             nextTime: this.timestamp + delay,
@@ -111,7 +111,7 @@ export class FastForwardScheduler implements Scheduler {
         delay: number,
         ...args: any[]
     ): any {
-        const eventQueueElt = {
+        const eventQueueElt: EventRecord = {
             callback: handler,
             callbackArgs: args,
             nextTime: this.timestamp + delay,
