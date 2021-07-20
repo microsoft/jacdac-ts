@@ -45,7 +45,6 @@ export async function withTestBus(test: (bus: JDBus) => Promise<void>) {
 // the created device, and the service on the device corresponding to the server.
 export interface CreatedServerService<ServiceType extends JDServiceServer> {
     server: ServiceType
-    device: JDDevice
     service: JDService
 }
 
@@ -115,7 +114,6 @@ export async function createServices<T extends Record<string, JDServiceServer>>(
                 name,
                 {
                     server: server,
-                    device: device,
                     service: services[0],
                 },
             ]
