@@ -6,10 +6,10 @@ import {
     REPORT_RECEIVE,
 } from "../../src/jdom/constants"
 import { mkBus } from "../testutils"
+import { loadSpecifications } from "../testutils"
 
 import { JDEvent } from "../../src/jdom/event"
 import { JDDevice } from "../../src/jdom/device"
-import RoleManager from "../../src/servers/rolemanager"
 import JDServiceServer from "../../src/jdom/serviceserver"
 import { assert } from "../../src/jdom/utils"
 import { JDService } from "../../src/jdom/service"
@@ -19,6 +19,7 @@ import {
     PackedValues,
     Packet,
 } from "../../src/jdom/jacdac-jdom"
+import { FastForwardScheduler } from "./scheduler"
 
 // Set equals is not a built-in operation.
 function setEquals<T>(set1: Set<T>, set2: Set<T>): boolean {
@@ -33,102 +34,111 @@ function setEquals<T>(set1: Set<T>, set2: Set<T>): boolean {
     return true
 }
 
-interface ServerDevice {
-    server: JDServiceServer
-    roleName?: string
-}
-
-// Creates a bus with the specified servers (optionally bound to the specified roles),
-// then runs the test function.
-export async function withBus(
-    devices: ServerDevice[],
-    test: (
-        bus: JDBus,
-        serviceMap: Map<JDServiceServer, JDService>
-    ) => Promise<void>
-) {
-    const bus = mkBus()
-
-    // For server devices: add the service provider on the bus and return the device
-    const serverDevices = devices.map(device => {
-        const busDevice = bus.addServiceProvider(
-            new JDServiceProvider([device.server])
-        )
-        return {
-            server: device.server,
-            busDevice: busDevice,
-            roleName: device.roleName,
-        }
+// Creates a test bus, runs the test body function, and tears down the test bus.
+// Bus setup should be handled within the test body.
+export async function withTestBus(test: (bus: JDBus) => Promise<void>) {
+    // TODO this reimplements mkBus
+    loadSpecifications()
+    const scheduler = new FastForwardScheduler()
+    const bus = new JDBus([], {
+        scheduler: scheduler,
     })
 
     bus.start()
 
-    // Wait for created devices to be announced, so services become available
-    const serverDeviceIds = serverDevices.map(elt => elt.busDevice.deviceId)
-    await new Promise(resolve => {
-        const devicesIdSet = new Set(serverDeviceIds)
-        const announcedIdSet = new Set()
-        const onHandler = (device: JDDevice) => {
-            if (devicesIdSet.has(device.deviceId)) {
-                announcedIdSet.add(device.deviceId)
-            }
-            if (setEquals(devicesIdSet, announcedIdSet)) {
-                bus.off(DEVICE_ANNOUNCE, onHandler)
-                resolve(undefined)
-            }
-        }
-        bus.on(DEVICE_ANNOUNCE, onHandler)
-    })
-
-    // Bind services to roles
-    // Start by geting server service -> roleName mappings
-    const serverServiceRoles = serverDevices.map(elt => {
-        const services = elt.busDevice.services({
-            serviceClass: elt.server.serviceClass,
-        })
-        assert(
-            services.length > 0,
-            `created device ${elt.busDevice.friendlyName} has no service of ${elt.server.specification.name}`
-        )
-        assert(
-            services.length == 1,
-            `created device ${elt.busDevice.friendlyName} has multiple service of ${elt.server.specification.name}`
-        )
-        return {
-            service: services[0],
-            roleName: elt.roleName,
-        }
-    })
-
-    const roleBindings = serverServiceRoles
-        .filter(
-            elt => !!elt.roleName // filter for where role name is available
-        )
-        .map(elt => {
-            return {
-                role: elt.roleName,
-                serviceClass: elt.service.specification.classIdentifier,
-                service: elt.service,
-            }
-        })
-
-    const roleManager = new RoleManager(bus)
-    roleManager.setRoles(roleBindings)
-
-    // Return created services as a map from the source server
-    const serviceMap = new Map(
-        serverDevices.map(elt => [
-            elt.server,
-            elt.busDevice.services({
-                serviceClass: elt.server.serviceClass,
-            })[0],
-        ])
-    )
-
     // Actually run the test here
-    await test(bus, serviceMap)
+    await test(bus)
 
     bus.stop()
+}
+
+// Structure returned from createServices for each server, that contains the server passed in,
+// the created device, and the service on the device corresponding to the server.
+export interface CreatedServerService<ServiceType extends JDServiceServer> {
+    server: ServiceType
+    service: JDService
+}
+
+// Creates devices around the given servers, specified as mapping of names to objects.
+// These devices are attached to the bus, and waited on for announcement so services are ready.
+// Returns the services, as an object mapping the input names to the corresponding services.
+//
+// For example,
+// const { button } = await createServices(bus, {
+//   button: new ButtonServer(),
+// })
+//
+// button is an object containing:
+// - server, the server passed in
+// - device, the device on the bus created
+// - service, the service on the device corresponding to the server
+export async function createServices<T extends Record<string, JDServiceServer>>(
+    bus: JDBus,
+    servers: T
+): Promise<{ [key in keyof T]: CreatedServerService<T[key]> }> {
+    // attach servers to the bus as devices
+    const devices = Object.entries(servers).map(([name, server]) => {
+        const device = bus.addServiceProvider(new JDServiceProvider([server]))
+        return {
+            name: name,
+            server: server,
+            device: device,
+        }
+    })
+
+    // wait for created devices to be announced, so services become available
+    // TODO: where should runToPromise exist?
+    const deviceIds = devices.map(elt => elt.device.deviceId)
+    await (bus.scheduler as FastForwardScheduler).runToPromise(
+        new Promise(resolve => {
+            const devicesIdSet = new Set(deviceIds)
+            const announcedIdSet = new Set()
+            const onHandler = (device: JDDevice) => {
+                console.log(`announce ${device}`)
+
+                if (devicesIdSet.has(device.deviceId)) {
+                    announcedIdSet.add(device.deviceId)
+                }
+                if (setEquals(devicesIdSet, announcedIdSet)) {
+                    bus.off(DEVICE_ANNOUNCE, onHandler)
+                    resolve(undefined)
+                }
+            }
+            bus.on(DEVICE_ANNOUNCE, onHandler)
+        })
+    )
+
+    // Create the output map
+    const namesToServices: [string, CreatedServerService<JDServiceServer>][] =
+        devices.map(({ name, server, device }) => {
+            const services = device.services({
+                serviceClass: server.serviceClass,
+            })
+            assert(
+                services.length > 0,
+                `created device ${device.friendlyName} has no service of ${server.specification.name}`
+            )
+            assert(
+                services.length == 1,
+                `created device ${device.friendlyName} has multiple service of ${server.specification.name}`
+            )
+            return [
+                name,
+                {
+                    server: server,
+                    service: services[0],
+                },
+            ]
+        })
+
+    const namesToServicesObject = namesToServices.reduce(
+        (last, [name, service]) => Object.assign(last, { [name]: service }),
+        {}
+    )
+
+    return namesToServicesObject as {
+        [key in keyof T]: CreatedServerService<T[key]>
+    }
 }
 
 export interface EventWithinOptions {
@@ -188,44 +198,48 @@ export function nextEventFrom(
         firstPromise = nextEventPromise
     }
 
-    return new Promise((resolve, reject) => {
-        firstPromise.then(value => {
-            if (value != null) {
-                const elapsedTime = bus.timestamp - startTimestamp
-                if (elapsedTime < after) {
+    // TODO: where should runToPromise exist?
+    // TODO: refactor to use async + throw errrors for rejection
+    return (bus.scheduler as FastForwardScheduler).runToPromise(
+        new Promise((resolve, reject) => {
+            firstPromise.then(value => {
+                if (value != null) {
+                    const elapsedTime = bus.timestamp - startTimestamp
+                    if (elapsedTime < after) {
+                        if (eventWithin.tolerance !== undefined) {
+                            reject(
+                                new Error(
+                                    `nextEventWithin got event at ${elapsedTime} ms, before after=${after} ms (${eventWithin.after}±${eventWithin.tolerance} ms)`
+                                )
+                            )
+                        } else {
+                            reject(
+                                new Error(
+                                    `nextEventWithin got event at ${elapsedTime} ms, before after=${after} ms`
+                                )
+                            )
+                        }
+                    } else {
+                        resolve(value)
+                    }
+                } else {
                     if (eventWithin.tolerance !== undefined) {
                         reject(
                             new Error(
-                                `nextEventWithin got event at ${elapsedTime} ms, before after=${after} ms (${eventWithin.after}±${eventWithin.tolerance} ms)`
+                                `nextEventWithin timed out at within=${within} ms (${eventWithin.after}±${eventWithin.tolerance} ms)`
                             )
                         )
                     } else {
                         reject(
                             new Error(
-                                `nextEventWithin got event at ${elapsedTime} ms, before after=${after} ms`
+                                `nextEventWithin timed out at within=${within} ms`
                             )
                         )
                     }
-                } else {
-                    resolve(value)
                 }
-            } else {
-                if (eventWithin.tolerance !== undefined) {
-                    reject(
-                        new Error(
-                            `nextEventWithin timed out at within=${within} ms (${eventWithin.after}±${eventWithin.tolerance} ms)`
-                        )
-                    )
-                } else {
-                    reject(
-                        new Error(
-                            `nextEventWithin timed out at within=${within} ms`
-                        )
-                    )
-                }
-            }
+            })
         })
-    })
+    )
 }
 
 // Waits for the next update packet from a register, and returns the new value from the packet.
