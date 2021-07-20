@@ -13,7 +13,9 @@ suite("vm", () => {
                 const jsonpath = join(dir, match)
 
                 console.log(`test ${match}`)
-                const program: VMProgram = JSON.parse(readFileSync(jsonpath, "utf8"))
+                const program: VMProgram = JSON.parse(
+                    readFileSync(jsonpath, "utf8")
+                )
                 // TODO: spin up bus and RoleManager
                 // const runner = new VMProgramRunner(null, program)
                 // runner.startAsync()

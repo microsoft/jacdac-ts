@@ -19,7 +19,7 @@ import SensorServer from "../../src/servers/sensorserver"
  * Note that this only writes to registers and DOES NOT generate derived events.
  * For example, if used with the button, it will not generate up and down events.
  */
- export class SensorServerCsvSource {
+export class SensorServerCsvSource {
     protected nextDataIndex = 0 // index (in this.data) of next value
 
     constructor(

@@ -5,7 +5,6 @@ import {
     DEVICE_ANNOUNCE,
     REPORT_RECEIVE,
 } from "../../src/jdom/constants"
-import { mkBus } from "../testutils"
 import { loadSpecifications } from "../testutils"
 
 import { JDEvent } from "../../src/jdom/event"
@@ -264,5 +263,7 @@ export function nextUpdateFrom(register: JDRegister): Promise<PackedValues> {
         })
     )
 
-    return (register.service.device.bus.scheduler as FastForwardScheduler).runToPromise(nextReportPromise)
+    return (
+        register.service.device.bus.scheduler as FastForwardScheduler
+    ).runToPromise(nextReportPromise)
 }
