@@ -256,5 +256,5 @@ export function nextUpdateFrom(register: JDRegister): Promise<PackedValues> {
         })
     )
 
-    return nextReportPromise
+    return (register.service.device.bus.scheduler as FastForwardScheduler).runToPromise(nextReportPromise)
 }

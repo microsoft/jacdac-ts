@@ -47,7 +47,7 @@ suite('"CSV" trace server', () => {
             // but timing of the update seems really iffy, so the tests are instead synchronized
             // to register events.
 
-            await bus.delay(600 + 50 - bus.timestamp) // 50ms tolerance for update
+            await (bus.scheduler as FastForwardScheduler).runForDelay(600 + 10 - bus.timestamp)
             assert(
                 approxEquals(
                     (
@@ -59,7 +59,7 @@ suite('"CSV" trace server', () => {
                 )
             )
 
-            await bus.delay(800 + 50 - bus.timestamp) // 50ms tolerance for update
+            await (bus.scheduler as FastForwardScheduler).runForDelay(800 + 10 - bus.timestamp)
             assert(
                 approxEquals(
                     (
@@ -71,7 +71,7 @@ suite('"CSV" trace server', () => {
                 )
             )
 
-            await bus.delay(1000 + 50 - bus.timestamp) // 50ms tolerance for update
+            await (bus.scheduler as FastForwardScheduler).runForDelay(1000 + 10 - bus.timestamp)
             assert(
                 approxEquals(
                     (
@@ -83,7 +83,7 @@ suite('"CSV" trace server', () => {
                 )
             )
 
-            await bus.delay(1200 + 50 - bus.timestamp) // 50ms tolerance for update
+            await (bus.scheduler as FastForwardScheduler).runForDelay(1200 + 10 - bus.timestamp)
             assert(
                 approxEquals(
                     (
@@ -100,7 +100,7 @@ suite('"CSV" trace server', () => {
     test("produces derived events supported by the underlying server", async function () {
         await withTestBus(async bus => {
             const { button } = await createServices(bus, {
-                button: new SensorServer<[number]>(SRV_POTENTIOMETER)
+                button: new ButtonServer()
             })
             // TODO better control over when this starts
             const buttonStreamer = new SensorServerCsvSource(button.server, [
@@ -110,17 +110,15 @@ suite('"CSV" trace server', () => {
                 [0.9, ButtonServer.INACTIVE_VALUE],
             ])
 
-            await (bus.scheduler as FastForwardScheduler).runForDelay(690 - bus.timestamp)
-            //bus.delay(700 - bus.timestamp)
+            await (bus.scheduler as FastForwardScheduler).runForDelay(700 - bus.timestamp)
             assert(
-                (await nextEventFrom(button.service, { within: 100 })).code ==
+                (await nextEventFrom(button.service, { within: 110 })).code ==
                     ButtonEvent.Down
             )
 
-            // await bus.delay(900 - bus.timestamp)
-            await (bus.scheduler as FastForwardScheduler).runForDelay(890 - bus.timestamp)
+            await (bus.scheduler as FastForwardScheduler).runForDelay(900 - bus.timestamp)
             assert(
-                (await nextEventFrom(button.service, { within: 100 })).code ==
+                (await nextEventFrom(button.service, { within: 110 })).code ==
                     ButtonEvent.Up
             )
         })
