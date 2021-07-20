@@ -13,6 +13,7 @@ import ButtonServer from "../../src/servers/buttonserver"
 import RoleManager from "../../src/servers/rolemanager"
 import ServoServer from "../../src/servers/servoserver"
 import { FastForwardScheduler } from "../jdom/scheduler"
+import { assert } from "../../src/jdom/utils"
 
 suite("button servo", () => {
     const program: VMProgram = JSON.parse(
@@ -57,13 +58,35 @@ suite("button servo", () => {
     test("inverts when pressed", async () => {
         await withHarness(async (bus, button, servo) => {
             servo.server.angle.setValues([50])
-            await (bus.scheduler as FastForwardScheduler).runForDelay(100)
-            console.log(servo.server.angle.values())
 
             button.server.down()
             await (bus.scheduler as FastForwardScheduler).runForDelay(100)
             button.server.up()
-            console.log(servo.server.angle.values())
+            assert(servo.server.angle.values()[0] == -50.0)
+        })
+    })
+
+    test("does not invert when not pressed", async () => {
+        await withHarness(async (bus, button, servo) => {
+            servo.server.angle.setValues([50])
+
+            await (bus.scheduler as FastForwardScheduler).runForDelay(100)
+            assert(servo.server.angle.values()[0] == 50)
+        })
+    })
+
+    test("inverts twice when pressed twice", async () => {
+        await withHarness(async (bus, button, servo) => {
+            servo.server.angle.setValues([50])
+
+            button.server.down()
+            await (bus.scheduler as FastForwardScheduler).runForDelay(100)
+            button.server.up()
+            await (bus.scheduler as FastForwardScheduler).runForDelay(100)
+            button.server.down()
+            await (bus.scheduler as FastForwardScheduler).runForDelay(100)
+            button.server.up()
+            assert(servo.server.angle.values()[0] == 50)
         })
     })
 })
