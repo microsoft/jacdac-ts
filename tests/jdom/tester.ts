@@ -98,7 +98,9 @@ export async function createServices<T extends Record<string, JDServiceServer>>(
     // Wait for created devices to be announced, so services become available
     const deviceIds = devices.map(elt => elt.device.deviceId)
     if (bus.scheduler instanceof FastForwardScheduler) {
-        await (bus.scheduler as FastForwardScheduler).runToPromise(waitForAnnounce(bus, deviceIds))
+        await (bus.scheduler as FastForwardScheduler).runToPromise(
+            waitForAnnounce(bus, deviceIds)
+        )
     } else {
         await waitForAnnounce(bus, deviceIds)
     }
@@ -191,17 +193,18 @@ async function nextEventFromInternal(
         result = await nextEventPromise
     }
 
-    if (result != null) {  // got an event, know it did not time out (past specified interval)
+    if (result != null) {
+        // got an event, know it did not time out (past specified interval)
         const elapsedTime = bus.timestamp - startTimestamp
         if (elapsedTime < after) {
             if (eventWithin.tolerance !== undefined) {
                 throw new Error(
-                        `nextEventWithin got event at ${elapsedTime} ms, before after=${after} ms (${eventWithin.after}±${eventWithin.tolerance} ms)`
-                    )
+                    `nextEventWithin got event at ${elapsedTime} ms, before after=${after} ms (${eventWithin.after}±${eventWithin.tolerance} ms)`
+                )
             } else {
                 throw new Error(
-                        `nextEventWithin got event at ${elapsedTime} ms, before after=${after} ms`
-                    )
+                    `nextEventWithin got event at ${elapsedTime} ms, before after=${after} ms`
+                )
             }
         } else {
             return result
@@ -209,12 +212,10 @@ async function nextEventFromInternal(
     } else {
         if (eventWithin.tolerance !== undefined) {
             throw new Error(
-                    `nextEventWithin timed out at within=${within} ms (${eventWithin.after}±${eventWithin.tolerance} ms)`
-                )
+                `nextEventWithin timed out at within=${within} ms (${eventWithin.after}±${eventWithin.tolerance} ms)`
+            )
         } else {
-            throw  new Error(
-                    `nextEventWithin timed out at within=${within} ms`
-                )
+            throw new Error(`nextEventWithin timed out at within=${within} ms`)
         }
     }
 }
@@ -230,7 +231,9 @@ export async function nextEventFrom(
     eventWithin: EventWithinOptions = {}
 ): Promise<JDEvent> {
     if (service.device.bus.scheduler instanceof FastForwardScheduler) {
-        return service.device.bus.scheduler.runToPromise(nextEventFromInternal(service, eventWithin))
+        return service.device.bus.scheduler.runToPromise(
+            nextEventFromInternal(service, eventWithin)
+        )
     } else {
         return nextEventFromInternal(service, eventWithin)
     }

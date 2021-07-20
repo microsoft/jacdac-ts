@@ -9,7 +9,9 @@ suite("fast forward scheduler", () => {
             const ffScheduler = bus.scheduler as FastForwardScheduler
 
             let done = false
-            ffScheduler.setTimeout(() => {done = true}, 500)
+            ffScheduler.setTimeout(() => {
+                done = true
+            }, 500)
             await ffScheduler.runForDelay(501)
             assert(done)
         })
@@ -20,7 +22,9 @@ suite("fast forward scheduler", () => {
             const ffScheduler = bus.scheduler as FastForwardScheduler
 
             let count = 0
-            ffScheduler.setInterval(() => {count += 1}, 100)
+            ffScheduler.setInterval(() => {
+                count += 1
+            }, 100)
             await ffScheduler.runForDelay(501)
             assert(count == 5)
         })
@@ -31,7 +35,9 @@ suite("fast forward scheduler", () => {
             const ffScheduler = bus.scheduler as FastForwardScheduler
 
             let called = false
-            const handler = ffScheduler.setTimeout(() => {called = true}, 500)
+            const handler = ffScheduler.setTimeout(() => {
+                called = true
+            }, 500)
             await ffScheduler.runForDelay(400)
             ffScheduler.clearTimeout(handler)
             await ffScheduler.runForDelay(101)
@@ -44,7 +50,9 @@ suite("fast forward scheduler", () => {
             const ffScheduler = bus.scheduler as FastForwardScheduler
 
             let count = 0
-            const handler = ffScheduler.setInterval(() => {count += 1}, 100)
+            const handler = ffScheduler.setInterval(() => {
+                count += 1
+            }, 100)
             await ffScheduler.runForDelay(301)
             ffScheduler.clearInterval(handler)
             assert(count == 3)

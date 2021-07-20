@@ -30,7 +30,9 @@ export class FastForwardScheduler implements Scheduler {
     // Runs the scheduler for some duration of simulated time.
     public async runForDelay(delayMs: number) {
         const promise = new Promise(resolve => {
-            this.setTimeout(() => { resolve(undefined) }, delayMs)
+            this.setTimeout(() => {
+                resolve(undefined)
+            }, delayMs)
         })
         return this.runToPromise(promise)
     }
@@ -39,7 +41,10 @@ export class FastForwardScheduler implements Scheduler {
     // after processing for that instant.
     // TODO: is this the right API?
     public async runToPromise<T>(promise: Promise<T>): Promise<T> {
-        assert(!this.schedulerRunning, "multiple concurrent run invocations on fast-forward scheduler currently not supported")
+        assert(
+            !this.schedulerRunning,
+            "multiple concurrent run invocations on fast-forward scheduler currently not supported"
+        )
         this.schedulerRunning = true
 
         // TODO these would really be better as status: "wait" | "resolved" | "rejected"
