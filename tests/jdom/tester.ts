@@ -267,3 +267,11 @@ export function nextUpdateFrom(register: JDRegister): Promise<PackedValues> {
         register.service.device.bus.scheduler as FastForwardScheduler
     ).runToPromise(nextReportPromise)
 }
+
+export async function runForDelay(bus: JDBus, millis: number) {
+    if (bus.scheduler instanceof FastForwardScheduler) {
+        return (bus.scheduler as FastForwardScheduler).runForDelay(millis)
+    } else {
+        return bus.delay(millis)
+    }
+}
