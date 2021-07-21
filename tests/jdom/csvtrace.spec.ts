@@ -11,7 +11,7 @@ import { assert } from "../../src/jdom/utils"
 import { SRV_POTENTIOMETER, SystemReg } from "../../src/jdom/constants"
 import SensorServer from "../../src/servers/sensorserver"
 import ButtonServer from "../../src/servers/buttonserver"
-import { SensorServerCsvSource } from "./sensorcsvsource"
+import { ServerCsvSource } from "./sensorcsvsource"
 
 // Configured to ignore differences for a 16-bit fixed point
 function approxEquals(
@@ -33,13 +33,18 @@ suite('"CSV" trace server', () => {
             const { pot } = await createServices(bus, {
                 pot: new SensorServer<[number]>(SRV_POTENTIOMETER),
             })
-            const potStreamer = new SensorServerCsvSource(pot.server, [
+            const potStreamer = new ServerCsvSource({
+                "BP95.position": pot.server.reading
+            }, [
                 // takes about 500ms for the bus to spin up
-                [0.6, 0.5],
-                [0.8, 1.0],
-                [1.0, 0.8],
-                [1.2, 0.6],
+                {time: 0.6, "BP95.position": 0.5},
+                {time: 0.8, "BP95.position": 1.0},
+                {time: 1.0, "BP95.position": 0.8},
+                {time: 1.2, "BP95.position": 0.6},
             ])
+
+            console.log(pot.server.reading.specification.identifier)
+            console.log(pot.server.reading.specification.name)
 
             // TODO ideally this would use potService.register(SystemReg.Reading).unpackedValue
             // but timing of the update seems really iffy, so the tests are instead synchronized
@@ -100,11 +105,13 @@ suite('"CSV" trace server', () => {
             const { button } = await createServices(bus, {
                 button: new ButtonServer(),
             })
-            const buttonStreamer = new SensorServerCsvSource(button.server, [
+            const buttonStreamer = new ServerCsvSource({
+                "AB34.pressure": button.server.reading
+            }, [
                 // takes about 500ms for the bus to spin up
-                [0.0, ButtonServer.INACTIVE_VALUE],
-                [0.7, ButtonServer.ACTIVE_VALUE],
-                [0.9, ButtonServer.INACTIVE_VALUE],
+                {time: 0.0, "AB34.pressure": ButtonServer.INACTIVE_VALUE},
+                {time: 0.7, "AB34.pressure": ButtonServer.ACTIVE_VALUE},
+                {time: 0.9, "AB34.pressure": ButtonServer.INACTIVE_VALUE},
             ])
 
             await runForDelay(bus, 700 + 10 - bus.timestamp)
