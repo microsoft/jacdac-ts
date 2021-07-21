@@ -1,6 +1,10 @@
 import { JDBus } from "../../src/jdom/bus"
 import JDServiceProvider from "../../src/jdom/serviceprovider"
-import { EVENT, DEVICE_ANNOUNCE, REPORT_RECEIVE } from "../../src/jdom/constants"
+import {
+    EVENT,
+    DEVICE_ANNOUNCE,
+    REPORT_RECEIVE,
+} from "../../src/jdom/constants"
 import { loadSpecifications } from "../testutils"
 
 import { JDEvent } from "../../src/jdom/event"
