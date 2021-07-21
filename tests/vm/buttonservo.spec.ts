@@ -14,6 +14,7 @@ import ButtonServer from "../../src/servers/buttonserver"
 import RoleManager from "../../src/servers/rolemanager"
 import ServoServer from "../../src/servers/servoserver"
 import { assert } from "../../src/jdom/utils"
+import { bindRoles } from "./vmtester"
 
 suite("button servo", () => {
     const program: VMProgram = JSON.parse(
@@ -33,20 +34,10 @@ suite("button servo", () => {
                 servo: new ServoServer(),
             })
             const roleMgr = new RoleManager(bus)
-            roleMgr.setRoles([
-                {
-                    role: "button 1",
-                    serviceClass: button.service.serviceClass,
-                    preferredDeviceId: button.service.device.deviceId,
-                    service: button.service,
-                },
-                {
-                    role: "servo 1",
-                    serviceClass: servo.service.serviceClass,
-                    preferredDeviceId: servo.service.device.deviceId,
-                    service: servo.service,
-                },
-            ])
+            bindRoles(roleMgr, program, {
+                "button 1": button.service,
+                "servo 1": servo.service,
+            })
 
             const runner = new VMProgramRunner(roleMgr, program)
             await runner.startAsync()
