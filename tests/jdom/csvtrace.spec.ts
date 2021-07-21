@@ -11,7 +11,7 @@ import { assert } from "../../src/jdom/utils"
 import { SRV_POTENTIOMETER, SystemReg } from "../../src/jdom/constants"
 import SensorServer from "../../src/servers/sensorserver"
 import ButtonServer from "../../src/servers/buttonserver"
-import { ServerCsvSource } from "./sensorcsvsource"
+import { ServerCsvSource } from "./servercsvsource"
 
 // Configured to ignore differences for a 16-bit fixed point
 function approxEquals(
@@ -33,18 +33,18 @@ suite('"CSV" trace server', () => {
             const { pot } = await createServices(bus, {
                 pot: new SensorServer<[number]>(SRV_POTENTIOMETER),
             })
-            const potStreamer = new ServerCsvSource({
-                "BP95.position": pot.server.reading
-            }, [
-                // takes about 500ms for the bus to spin up
-                {time: 0.6, "BP95.position": 0.5},
-                {time: 0.8, "BP95.position": 1.0},
-                {time: 1.0, "BP95.position": 0.8},
-                {time: 1.2, "BP95.position": 0.6},
-            ])
-
-            console.log(pot.server.reading.specification.identifier)
-            console.log(pot.server.reading.specification.name)
+            const potStreamer = new ServerCsvSource(
+                {
+                    "BP95.position": pot.server.reading,
+                },
+                [
+                    // takes about 500ms for the bus to spin up
+                    { time: 0.6, "BP95.position": 0.5 },
+                    { time: 0.8, "BP95.position": 1.0 },
+                    { time: 1.0, "BP95.position": 0.8 },
+                    { time: 1.2, "BP95.position": 0.6 },
+                ]
+            )
 
             // TODO ideally this would use potService.register(SystemReg.Reading).unpackedValue
             // but timing of the update seems really iffy, so the tests are instead synchronized
@@ -100,19 +100,53 @@ suite('"CSV" trace server', () => {
         })
     })
 
+    test("ignore null cells", async function () {
+        await withTestBus(async bus => {
+            const { pot } = await createServices(bus, {
+                pot: new SensorServer<[number]>(SRV_POTENTIOMETER),
+            })
+            const potStreamer = new ServerCsvSource(
+                {
+                    "BP95.position": pot.server.reading,
+                },
+                [
+                    // takes about 500ms for the bus to spin up
+                    { time: 0.6, "BP95.position": 0.5 },
+                    { time: 0.8, "BP95.position": null }, // ignored, previous value unchanged
+                    { time: 1.0, "BP95.position": 1.0 },
+                ]
+            )
+
+            await runForDelay(bus, 800 + 10 - bus.timestamp)
+            assert(
+                approxEquals(
+                    (
+                        await nextUpdateFrom(
+                            pot.service.register(SystemReg.Reading)
+                        )
+                    )[0],
+                    0.5
+                )
+            )
+        })
+    })
+
     test("produces derived events supported by the underlying server", async function () {
         await withTestBus(async bus => {
             const { button } = await createServices(bus, {
                 button: new ButtonServer(),
             })
-            const buttonStreamer = new ServerCsvSource({
-                "AB34.pressure": button.server.reading
-            }, [
-                // takes about 500ms for the bus to spin up
-                {time: 0.0, "AB34.pressure": ButtonServer.INACTIVE_VALUE},
-                {time: 0.7, "AB34.pressure": ButtonServer.ACTIVE_VALUE},
-                {time: 0.9, "AB34.pressure": ButtonServer.INACTIVE_VALUE},
-            ])
+            const buttonStreamer = new ServerCsvSource(
+                {
+                    "AB34.pressure": button.server.reading,
+                },
+                [
+                    // takes about 500ms for the bus to spin up
+                    { time: 0.0, "AB34.pressure": ButtonServer.INACTIVE_VALUE },
+                    { time: 0.7, "AB34.pressure": ButtonServer.ACTIVE_VALUE },
+                    { time: 0.9, "AB34.pressure": ButtonServer.INACTIVE_VALUE },
+                ]
+            )
 
             await runForDelay(bus, 700 + 10 - bus.timestamp)
             assert(

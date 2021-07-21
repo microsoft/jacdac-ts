@@ -1,9 +1,7 @@
 import { REFRESH } from "../../src/jdom/constants"
-import { PackedValues } from "../../src/jdom/pack"
 import JDRegisterServer from "../../src/jdom/registerserver"
 import JDServiceServer from "../../src/jdom/serviceserver"
 import { assert } from "../../src/jdom/utils"
-import SensorServer from "../../src/servers/sensorserver"
 
 /**
  * Streams data from a "CSV" into a server, with a user-defined map from column name to register.
@@ -14,7 +12,6 @@ import SensorServer from "../../src/servers/sensorserver"
  *   {time: 0.6, "BP95.position": 0.5},
  *   {time: 0.8, "BP95.position": 1.0},
  *   {time: 1.0, "BP95.position": 0.8},
- *   {time: 1.2, "BP95.position": 0.6},
  *   ...
  * ]
  * This is consistent with Papa Parse (used by csv.proxy.ts in jacdac-docs, see
@@ -31,14 +28,20 @@ export class ServerCsvSource {
     protected server: JDServiceServer
 
     constructor(
-        protected readonly registerMap: Record<string, JDRegisterServer<[number]>>,
+        protected readonly registerMap: Record<
+            string,
+            JDRegisterServer<[number]>
+        >,
         protected readonly data: Record<string, number>[]
     ) {
-        const servers = Object.entries(registerMap).map(([colName, register]) => 
-            register.service
+        const servers = Object.entries(registerMap).map(
+            ([colName, register]) => register.service
         )
         this.server = servers[0]
-        assert(servers.every(serverElt => serverElt == this.server), "all registers must be on same server")
+        assert(
+            servers.every(serverElt => serverElt == this.server),
+            "all registers must be on same server"
+        )
 
         // TODO timings are only approximate, perhaps this should use bus.scheduler.setTimeout
         // instead, but that needs a bus handle and there isn't an event when a device has its
@@ -47,25 +50,24 @@ export class ServerCsvSource {
     }
 
     protected handleRefresh() {
-        const now = this.server.device.bus.timestamp  // in ms
-        while (
-            this.nextDataIndex < this.data.length
-        ) {
+        const now = this.server.device.bus.timestamp // in ms
+        while (this.nextDataIndex < this.data.length) {
             const thisData = this.data[this.nextDataIndex]
             assert("time" in thisData, "time field missing")
-            const time = thisData.time as number  // in s
-            assert(typeof(time) == "number", "time field not a number")
-            if (time * 1000 > now) {  // s to ms conversion
-                break  // still in the future, handle later
+            const time = thisData.time as number // in s
+            assert(typeof time == "number", "time field not a number")
+            if (time * 1000 > now) {
+                // s to ms conversion
+                break // still in the future, handle later
             }
 
             Object.entries(thisData).forEach(([key, value]) => {
-                if (key in this.registerMap) {
+                if (value !== null && key in this.registerMap) {
                     const register = this.registerMap[key]
                     register.setValues([value])
                 } // drop unused columns
             })
-            
+
             this.nextDataIndex++
         }
     }
