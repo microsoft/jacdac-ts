@@ -12,6 +12,7 @@ import { assert } from "../../src/jdom/utils"
  *   {time: 0.6, "BP95.position": 0.5},
  *   {time: 0.8, "BP95.position": 1.0},
  *   {time: 1.0, "BP95.position": 0.8},
+ *   {time: 1.2, "BP95.position": 0.6},
  *   ...
  * ]
  * This is consistent with Papa Parse (used by csv.proxy.ts in jacdac-docs, see
