@@ -14,8 +14,13 @@ import ButtonServer from "../../src/servers/buttonserver"
 import { SensorServerCsvSource } from "./sensorcsvsource"
 
 // Configured to ignore differences for a 16-bit fixed point
-function approxEquals(a: number, b: number, maxPctDiff = 1 / 32767) {
-    return Math.abs(b - a) / Math.min(b, a) < maxPctDiff
+function approxEquals(actual: number, expected: number, maxPctDiff = 1 / 32767) {
+    if (expected == 0) { // special case to avoid divide-by-zero
+        return actual == 0
+    } else {
+        return (Math.abs(actual - expected) / expected) < maxPctDiff
+    }
+    
 }
 
 suite('"CSV" trace server', () => {
