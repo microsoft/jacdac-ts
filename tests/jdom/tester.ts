@@ -1,10 +1,6 @@
 import { JDBus } from "../../src/jdom/bus"
 import JDServiceProvider from "../../src/jdom/serviceprovider"
-import {
-    EVENT,
-    DEVICE_ANNOUNCE,
-    REPORT_RECEIVE,
-} from "../../src/jdom/constants"
+import { EVENT, DEVICE_ANNOUNCE, REPORT_RECEIVE } from "../../src/jdom/constants"
 import { loadSpecifications } from "../testutils"
 
 import { JDEvent } from "../../src/jdom/event"
@@ -12,13 +8,10 @@ import { JDDevice } from "../../src/jdom/device"
 import JDServiceServer from "../../src/jdom/serviceserver"
 import { assert } from "../../src/jdom/utils"
 import { JDService } from "../../src/jdom/service"
-import {
-    JDRegister,
-    jdunpack,
-    PackedValues,
-    Packet,
-} from "../../src/jdom/jacdac-jdom"
 import { FastForwardScheduler } from "./scheduler"
+import { jdunpack, PackedValues } from "../../src/jdom/pack"
+import Packet from "../../src/jdom/packet"
+import { JDRegister } from "../../src/jdom/register"
 
 // Set equals is not a built-in operation.
 function setEquals<T>(set1: Set<T>, set2: Set<T>): boolean {
