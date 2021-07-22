@@ -1,6 +1,5 @@
 // Helper methods for unit testing VM programs
 
-import { instanceOf } from "prop-types"
 import { ROLE_BOUND } from "../../src/jdom/constants"
 import { JDService } from "../../src/jdom/service"
 import { assert } from "../../src/jdom/utils"
