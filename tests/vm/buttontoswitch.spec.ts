@@ -53,8 +53,14 @@ suite("button servo", () => {
     test("inverts when pressed", async () => {
         await withHarness(async (bus, button, sw) => {
             sw.on(EVENT, (ev: JDEvent) => {
-                console.log(`${bus.timestamp} event ${ev.code}`)
+                console.log(`${bus.timestamp} sw event ${ev.code}`)
             })
+            bus.on(EVENT, (ev: JDEvent) => {
+                console.log(`${bus.timestamp} bus event ${ev.code}`)
+            })
+            console.log(sw.specification)
+            console.log(sw.specification.name)
+
             console.log(sw.register(SwitchReg.Active).data)
             console.log(sw.register(SwitchReg.Active).unpackedValue)
 
