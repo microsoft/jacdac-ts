@@ -1,0 +1,72 @@
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: monospace;
+        }
+
+        .device {
+            margin: 0.5rem;
+        }
+
+        button:not(.active) {
+            opacity: 0.7;
+        }
+
+        button.active {
+            font-weight: bold;
+        }
+    </style>
+    <script>
+        var process = {
+            env: {}
+        }
+    </script>
+
+</head>
+
+<body>
+    <h1>Jacdac/Testing</h1>
+    <div id="topbtn">
+        <button id="connect">connect</button>
+        <button id="disconnect">disconnect</button>
+    </div>
+
+    <div id="log">
+        <div>waiting for message...</div>
+    </div>
+
+    <script type="module">
+        import * as jacdac from "/dist/jacdac.js"
+
+        const jd = jacdac.createUSBBus()
+
+        const connect = document.getElementById("connect");
+        connect.onclick = scan;
+        const disconnect = document.getElementById("disconnect");
+        disconnect.onclick = () => jd.disconnect()
+
+        async function scan() {
+            await jd.disconnect();
+            await jd.connect();
+
+            jd.on(jacdac.PACKET_PROCESS, pkt => log(jacdac.printPacket(pkt)))
+        }
+
+        // TODO dedup w/ packets.html
+        function log(msg) {
+            if (!msg)
+                return
+            const logDiv = document.getElementById("log");
+            const line = document.createElement("div");
+            line.innerText = "" + msg;
+            line.style.whiteSpace = "pre-wrap";
+            logDiv.appendChild(line);
+            while (logDiv.childElementCount > 100)
+                logDiv.firstChild.remove();
+        }
+    </script>
+</body>
+
+</html>
