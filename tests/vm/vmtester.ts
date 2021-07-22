@@ -26,7 +26,7 @@ export function bindRoles(
             `servers missing role ${vmRole.role} required by program`
         )
         const service = servers[vmRole.role]
-        assert(service.serviceClass == vmRole.serviceClass)
+        assert(service.serviceClass == vmRole.serviceClass, `serviceClass of ${vmRole.role} different than program`)
         return {
             role: vmRole.role,
             serviceClass: vmRole.serviceClass,
