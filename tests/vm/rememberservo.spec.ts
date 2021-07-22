@@ -52,20 +52,19 @@ suite("remember servo", () => {
     test("sets and recalls", async () => {
         await withHarness(async (bus, recall, set, servo) => {
             servo.server.angle.setValues([50])
+            assert(servo.server.angle.values()[0] == 50.0)
 
             set.server.down()
-            await runForDelay(bus, 60)
+            await runForDelay(bus, 100)
             set.server.up()
 
             // make sure we will see a difference on recall
             servo.server.angle.setValues([-50])
-            await runForDelay(bus, 60)
             assert(servo.server.angle.values()[0] == -50.0)
 
             recall.server.down()
-            await runForDelay(bus, 60)
+            await runForDelay(bus, 100)
             recall.server.up()
-            console.log(servo.server.angle.values()[0])
             assert(servo.server.angle.values()[0] == 50.0)
         })
     })
