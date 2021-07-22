@@ -15,9 +15,10 @@ import RoleManager from "../../src/servers/rolemanager"
 import ServoServer from "../../src/servers/servoserver"
 import { assert } from "../../src/jdom/utils"
 import { bindRoles, getRoles } from "./vmtester"
-import { RoleManagerReg } from "../../jacdac-spec/dist/specconstants"
-import { ROLE_BOUND } from "../../src/jdom/constants"
+import { RoleManagerReg, SRV_SWITCH, SwitchReg } from "../../jacdac-spec/dist/specconstants"
+import { EVENT, ROLE_BOUND } from "../../src/jdom/constants"
 import { JDService } from "../../src/jdom/service"
+import { JDEvent } from "../../src/jdom/event"
 
 suite("button servo", () => {
     const program: VMProgram = JSON.parse(
@@ -51,10 +52,25 @@ suite("button servo", () => {
 
     test("inverts when pressed", async () => {
         await withHarness(async (bus, button, sw) => {
-            button.server.down()
-            await runForDelay(bus, 1000)
-            button.server.up()
+            sw.on(EVENT, (ev: JDEvent) => {
+                console.log(`${bus.timestamp} event ${ev.code}`)
+            })
+            console.log(sw.register(SwitchReg.Active).data)
+            console.log(sw.register(SwitchReg.Active).unpackedValue)
 
+            button.server.down()
+            await runForDelay(bus, 60)
+            button.server.up()
+            await runForDelay(bus, 60)
+            console.log(sw.register(SwitchReg.Active).data)
+            console.log(sw.register(SwitchReg.Active).unpackedValue)
+
+            button.server.down()
+            await runForDelay(bus, 60)
+            button.server.up()
+            await runForDelay(bus, 60)
+            console.log(sw.register(SwitchReg.Active).data)
+            console.log(sw.register(SwitchReg.Active).unpackedValue)
         })
     })
 
