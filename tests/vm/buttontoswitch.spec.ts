@@ -9,18 +9,19 @@ import {
     createServices,
     CreatedServerService,
     runForDelay,
+    nextEventFrom,
 } from "../jdom/tester"
 import ButtonServer from "../../src/servers/buttonserver"
 import RoleManager from "../../src/servers/rolemanager"
 import ServoServer from "../../src/servers/servoserver"
 import { assert } from "../../src/jdom/utils"
 import { bindRoles, getRoles } from "./vmtester"
-import { SwitchReg } from "../../jacdac-spec/dist/specconstants"
+import { SwitchEvent, SwitchReg } from "../../jacdac-spec/dist/specconstants"
 import { EVENT } from "../../src/jdom/constants"
 import { JDService } from "../../src/jdom/service"
 import { JDEvent } from "../../src/jdom/event"
 
-suite("button servo", () => {
+suite("button to switch adapter", () => {
     const program: VMProgram = JSON.parse(
         readFileSync("vm/suites/buttontoswitch.json", "utf8")
     )
@@ -50,33 +51,38 @@ suite("button servo", () => {
         })
     }
 
-    test("inverts when pressed", async () => {
+    test("switch starts off", async () => {
+        await withHarness(async (bus, button, sw) => {
+            console.log(`starting data=${sw.register(SwitchReg.Active).data} unpacked=${sw.register(SwitchReg.Active).unpackedValue}`)
+            assert(sw.register(SwitchReg.Active).unpackedValue[0] == 0)
+        })
+    })
+
+    test("toggles when pressed", async () => {
         await withHarness(async (bus, button, sw) => {
             sw.on(EVENT, (ev: JDEvent) => {
-                console.log(`${bus.timestamp} sw event ${ev.code}`)
+                console.log(`sw service event at ${bus.timestamp}: code=${ev.code}`)
             })
             bus.on(EVENT, (ev: JDEvent) => {
-                console.log(`${bus.timestamp} bus event ${ev.code}`)
+                console.log(`bus event at ${bus.timestamp}: code=${ev.code}`)
             })
-            console.log(sw.specification)
-            console.log(sw.specification.name)
 
-            console.log(sw.register(SwitchReg.Active).data)
-            console.log(sw.register(SwitchReg.Active).unpackedValue)
 
             button.server.down()
-            await runForDelay(bus, 60)
-            button.server.up()
-            await runForDelay(bus, 60)
-            console.log(sw.register(SwitchReg.Active).data)
-            console.log(sw.register(SwitchReg.Active).unpackedValue)
+            assert(
+                (
+                    await nextEventFrom(button.service, {
+                        within: 100
+                    })
+                ).code == SwitchEvent.On
+            )
+
+            console.log(`post-press data=${sw.register(SwitchReg.Active).data} unpacked=${sw.register(SwitchReg.Active).unpackedValue}`)
+            assert(sw.register(SwitchReg.Active).unpackedValue[0] == 1)
 
             button.server.down()
-            await runForDelay(bus, 60)
-            button.server.up()
-            await runForDelay(bus, 60)
-            console.log(sw.register(SwitchReg.Active).data)
-            console.log(sw.register(SwitchReg.Active).unpackedValue)
+            // TODO: can we check for absence of an event?
+            assert(sw.register(SwitchReg.Active).unpackedValue[0] == 1)
         })
     })
 })
