@@ -52,20 +52,40 @@ suite("remember servo", () => {
     test("sets and recalls", async () => {
         await withHarness(async (bus, recall, set, servo) => {
             servo.server.angle.setValues([50])
-            assert(servo.server.angle.values()[0] == 50.0)
-
             set.server.down()
             await runForDelay(bus, 100)
             set.server.up()
 
-            // make sure we will see a difference on recall
-            servo.server.angle.setValues([-50])
-            assert(servo.server.angle.values()[0] == -50.0)
+            servo.server.angle.setValues([0]) // make sure the difference on recall is visible
+            assert(servo.server.angle.values()[0] == 0.0)
 
             recall.server.down()
             await runForDelay(bus, 100)
             recall.server.up()
             assert(servo.server.angle.values()[0] == 50.0)
+        })
+    })
+
+    test("sets, re-sets, and recalls", async () => {
+        await withHarness(async (bus, recall, set, servo) => {
+            servo.server.angle.setValues([50])
+            set.server.down()
+            await runForDelay(bus, 100)
+            set.server.up()
+
+            await runForDelay(bus, 100)
+            servo.server.angle.setValues([-50])
+            set.server.down()
+            await runForDelay(bus, 100)
+            set.server.up()
+
+            servo.server.angle.setValues([0])  // make sure the difference on recall is visible
+            assert(servo.server.angle.values()[0] == 0.0)
+
+            recall.server.down()
+            await runForDelay(bus, 100)
+            recall.server.up()
+            assert(servo.server.angle.values()[0] == -50.0)
         })
     })
 })
