@@ -15,8 +15,8 @@ import RoleManager from "../../src/servers/rolemanager"
 import ServoServer from "../../src/servers/servoserver"
 import { assert } from "../../src/jdom/utils"
 import { bindRoles, getRoles } from "./vmtester"
-import { RoleManagerReg, SRV_SWITCH, SwitchReg } from "../../jacdac-spec/dist/specconstants"
-import { EVENT, ROLE_BOUND } from "../../src/jdom/constants"
+import { SwitchReg } from "../../jacdac-spec/dist/specconstants"
+import { EVENT } from "../../src/jdom/constants"
 import { JDService } from "../../src/jdom/service"
 import { JDEvent } from "../../src/jdom/event"
 
@@ -79,5 +79,4 @@ suite("button servo", () => {
             console.log(sw.register(SwitchReg.Active).unpackedValue)
         })
     })
-
 })

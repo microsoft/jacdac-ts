@@ -26,7 +26,10 @@ export function bindRoles(
             `servers missing role ${vmRole.role} required by program`
         )
         const service = servers[vmRole.role]
-        assert(service.serviceClass == vmRole.serviceClass, `serviceClass of ${vmRole.role} different than program`)
+        assert(
+            service.serviceClass == vmRole.serviceClass,
+            `serviceClass of ${vmRole.role} different than program`
+        )
         return {
             role: vmRole.role,
             serviceClass: vmRole.serviceClass,
@@ -46,7 +49,7 @@ export async function getRoles(
     program: VMProgram
 ): Promise<Record<string, JDService>> {
     const outputMap: Record<string, JDService> = {}
-    assert(Object.keys(outputMap).length == 0)  // we rely on length to be accurate later
+    assert(Object.keys(outputMap).length == 0) // we rely on length to be accurate later
 
     const serverRoles = program.serverRoles.map(role => role.role)
     const promise = new Promise(resolve => {

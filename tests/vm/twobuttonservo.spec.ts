@@ -38,7 +38,7 @@ suite("button servo", () => {
             const roleMgr = new RoleManager(bus)
             bindRoles(roleMgr, program, {
                 "button 1": button1.service,
-                "b2": button2.service,
+                b2: button2.service,
                 "servo 1": servo.service,
             })
 

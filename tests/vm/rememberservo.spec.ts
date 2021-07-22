@@ -37,8 +37,8 @@ suite("remember servo", () => {
             })
             const roleMgr = new RoleManager(bus)
             bindRoles(roleMgr, program, {
-                "recall": recall.service,
-                "set": set.service,
+                recall: recall.service,
+                set: set.service,
                 "servo 1": servo.service,
             })
 
@@ -79,7 +79,7 @@ suite("remember servo", () => {
             await runForDelay(bus, 100)
             set.server.up()
 
-            servo.server.angle.setValues([0])  // make sure the difference on recall is visible
+            servo.server.angle.setValues([0]) // make sure the difference on recall is visible
             assert(servo.server.angle.values()[0] == 0.0)
 
             recall.server.down()
