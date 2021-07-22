@@ -71,7 +71,7 @@ suite("button to switch adapter", () => {
             button.server.down()
             assert(
                 (
-                    await nextEventFrom(button.service, {
+                    await nextEventFrom(sw, {
                         within: 100
                     })
                 ).code == SwitchEvent.On
