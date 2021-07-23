@@ -39,6 +39,7 @@
 
     <script type="module">
         import * as jacdac from "/dist/jacdac.js"
+        import * as tstester from "/dist/jacdac-tstester.js"
 
         const jd = jacdac.createUSBBus()
 
@@ -46,6 +47,8 @@
         connect.onclick = scan;
         const disconnect = document.getElementById("disconnect");
         disconnect.onclick = () => jd.disconnect()
+
+        tstester.main(log)
 
         async function scan() {
             await jd.disconnect();
