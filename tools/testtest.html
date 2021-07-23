@@ -34,41 +34,13 @@
     </div>
 
     <div id="log">
-        <div>waiting for message...</div>
     </div>
 
     <script type="module">
         import * as jacdac from "/dist/jacdac.js"
         import * as tstester from "/dist/jacdac-tstester.js"
 
-        const jd = jacdac.createUSBBus()
-
-        const connect = document.getElementById("connect");
-        connect.onclick = scan;
-        const disconnect = document.getElementById("disconnect");
-        disconnect.onclick = () => jd.disconnect()
-
-        tstester.main(log)
-
-        async function scan() {
-            await jd.disconnect();
-            await jd.connect();
-
-            jd.on(jacdac.PACKET_PROCESS, pkt => log(jacdac.printPacket(pkt)))
-        }
-
-        // TODO dedup w/ packets.html
-        function log(msg) {
-            if (!msg)
-                return
-            const logDiv = document.getElementById("log");
-            const line = document.createElement("div");
-            line.innerText = "" + msg;
-            line.style.whiteSpace = "pre-wrap";
-            logDiv.appendChild(line);
-            while (logDiv.childElementCount > 100)
-                logDiv.firstChild.remove();
-        }
+        tstester.main(document)
     </script>
 </body>
 
