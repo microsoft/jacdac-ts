@@ -93,3 +93,87 @@ class ServiceTester {
         return this.service.specification.name
     }
 }
+
+// TODO separate out some kind of human (tester) interface class? which can have different implementations,
+// eg web button or physical Jacdac module button?
+
+class ButtonTestRoutine {
+    public testClick() {
+        // press and release button, within 500ms
+
+        // check down event
+        // checks registers until up event
+        // check register at end
+    }
+
+    public testHold() {
+        // press and hold the button
+
+        // checks down event
+        // checks registers until up event
+        // checks hold event generated, regularly
+        // check up event
+        // check register at end
+    }
+}
+
+class PotTestRoutine {
+    public testLow() {
+        // set the pot to its lowest state, providing a live readout
+
+        // check jitter for a second or so
+        // perhaps report on jitter?
+    }
+
+    public testHigh() {
+        // set the pot to its highest state, providing a live readout
+
+        // check jitter for a second or so
+        // perhaps report on jitter?
+    }
+
+    public testMid() {
+        // set the pot to its mid state, providing a live readout
+
+        // wait for it to stabilize at some point
+        // check jitter for a second or so
+        // perhaps report on jitter?
+    }
+}
+
+class PixelRingTestRoutine {
+    public testAllRed() {
+        // dynamically determine pixel length
+        // sets the entire ring red
+
+        // ask user if ring is red
+    }
+
+    public testAllGreen() {
+        // dynamically determine pixel length
+        // sets the entire ring green
+
+        // ask user if ring is green
+    }
+
+    public testAllBlue() {
+        // dynamically determine pixel length
+        // sets the entire ring blue
+
+        // ask user if ring is blue
+    }
+
+    public testAllWhite() {
+        // sets everything full blast
+
+        // ask user if it's correct
+    }
+
+    public testFade() {
+        // runs through a fade R-Y-G-C-B-P sequence
+    }
+
+    public testRotate() {
+        // rotates LEDs with a R-Y-G-C-B-P sequence
+    }
+}
