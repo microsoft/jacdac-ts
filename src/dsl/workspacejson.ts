@@ -37,3 +37,9 @@ export interface WorkspaceJSON {
     variables: VariableJSON[]
     blocks: BlockJSON[]
 }
+
+export interface WorkspaceFile {
+    editor: string
+    xml: string
+    json: WorkspaceJSON
+}
