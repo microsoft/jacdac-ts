@@ -97,6 +97,28 @@ class ServiceTester {
 // TODO separate out some kind of human (tester) interface class? which can have different implementations,
 // eg web button or physical Jacdac module button?
 
+// Overall concepts
+// waits - until event (instant in time)
+// - wait until (single event, with optional timeout)
+//    -> retuns time, can fail suite
+// - wait until (assert synchronous events, with tolerance, with optional timeout)
+//    -> retuns time, can fail suite
+// 
+// events
+// - register update
+// - register condition (timed with update)
+// - register edge
+// - service event
+//
+// duration conditions - implemented as event hooks throughout some time - requireWhile({...}, conds...)
+// - particular event does not fire
+// - no event fires
+// - register condition (all register updates must satisfy)
+//
+// write registers
+//
+// ask user for input
+
 class ButtonTestRoutine {
     public testClick() {
         // User instruction: press and release button, within 500ms
@@ -108,7 +130,10 @@ class ButtonTestRoutine {
 
         // concepts
         // assert synchronous events
+            // what happens on a non-synchronous event? concept of RequiredSynchronousEvent that fails the suite?
+            // possible solutions: events that can fail, or assertWaitSynchronous(events...)
         // wait until event, with timing bounds and duration assertions (no events fire, register within / equal)
+            // retuns time elapsed
     }
 
     public testHold() {
