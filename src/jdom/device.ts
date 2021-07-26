@@ -34,6 +34,7 @@ import {
     ERROR,
     SRV_CONTROL,
     SRV_LOGGER,
+    REPORT_UPDATE,
 } from "./constants"
 import { read32, SMap, bufferEq, setAckError, read16 } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
@@ -309,6 +310,13 @@ export class JDDevice extends JDNode {
             for (let i = 0; i < n; ++i) s.push(new JDService(this, i))
             this._services = s
             this.lastServiceUpdate = this.bus.timestamp
+
+            // listen for specific registers
+            const ctrl = this._services?.[0]
+            const codes = [ControlReg.FirmwareIdentifier]
+            codes.forEach(code =>
+                ctrl.register(code).once(REPORT_UPDATE, () => this.emit(CHANGE))
+            )
         }
     }
 
