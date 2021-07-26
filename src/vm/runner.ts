@@ -761,9 +761,9 @@ export class VMProgramRunner extends JDClient {
                     }
                 }*/
             })
-            this.clearBreakpointsAsync()
+            await this.clearBreakpointsAsync()
             this.setStatus(VMStatus.Running)
-            this.waitingToRunning()
+            await this.waitingToRunning()
         } catch (e) {
             console.debug(e)
             this.emit(VM_INTERNAL_ERROR, e)

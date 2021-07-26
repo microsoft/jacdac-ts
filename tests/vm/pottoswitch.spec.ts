@@ -65,6 +65,7 @@ suite("pot to switch adapter", () => {
                     })
                 ).code == SwitchEvent.On
             )
+            await sw.register(SwitchReg.Active).sendGetAsync()
             assert(sw.register(SwitchReg.Active).unpackedValue[0] == 1)
         })
     })
@@ -82,6 +83,7 @@ suite("pot to switch adapter", () => {
                     })
                 ).code == SwitchEvent.On
             )
+            await sw.register(SwitchReg.Active).sendGetAsync()
             assert(sw.register(SwitchReg.Active).unpackedValue[0] == 1)
         })
     })
@@ -93,6 +95,7 @@ suite("pot to switch adapter", () => {
 
             pot.server.reading.setValues([0.45])
             // TODO check for absence of event?
+            await sw.register(SwitchReg.Active).sendGetAsync()
             assert(sw.register(SwitchReg.Active).unpackedValue[0] == 1)
         })
     })
@@ -104,6 +107,7 @@ suite("pot to switch adapter", () => {
 
             pot.server.reading.setValues([0.55])
             // TODO check for absence of event?
+            await sw.register(SwitchReg.Active).sendGetAsync()
             assert(sw.register(SwitchReg.Active).unpackedValue[0] == 0)
         })
     })
