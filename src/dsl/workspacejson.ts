@@ -1,4 +1,4 @@
-import { SMap } from "../jdom/utils";
+import { SMap } from "../jdom/utils"
 
 export interface VariableJSON {
     // Boolean, Number, String, or service short id
