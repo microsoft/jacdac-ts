@@ -99,68 +99,91 @@ class ServiceTester {
 
 class ButtonTestRoutine {
     public testClick() {
-        // press and release button, within 500ms
+        // User instruction: press and release button, within 500ms
 
-        // check down event
-        // checks registers until up event
-        // check register at end
+        // check synchronous event: down event, register up-to-down, within some tolerance (100ms?)
+            // test case errors if these are out of sync - with a special message
+        // wait at most 500ms - until next - assert register remains down, assert no events
+        // check synchronous event: up event, register down-to-up, within some tolerance (100ms?)
+
+        // concepts
+        // assert synchronous events
+        // wait until event, with timing bounds and duration assertions (no events fire, register within / equal)
     }
 
     public testHold() {
-        // press and hold the button
+        // User instruction: press and hold the button
 
-        // checks down event
-        // checks registers until up event
-        // checks hold event generated, regularly
-        // check up event
-        // check register at end
+        // check synchronous event: down event, register up-to-down, within some tolerance (100ms?)
+        // wait 500ms +/- 100 ms - until next - assert register remains down, assert no events
+        // check event: hold generated - initial hold test
+        // repeat 2-3 times - subsequent hold tests
+    
+        // User instruction: release button (to reset state for next test)
+
+        // check synchronous event: up event, register down-to-up, within some tolerance (100ms?)
     }
 }
 
 class PotTestRoutine {
     public testLow() {
-        // set the pot to its lowest state, providing a live readout
+        // User instruction: set the pot to its lowest state, providing a live readout
 
-        // check jitter for a second or so
-        // perhaps report on jitter?
+        // wait for register to be about zero (some tolerance), stable for about a second
+        // (optional) record for 1s, report on jitter and average
+
+        // concepts
+        // ask user a question - y/n might be fine
+        // wait for some stability condition - with feedback to the user
+        // assert some stability condition (duration assertions)
+        // wait, while collecting some data (jitter, in this case)
     }
 
     public testHigh() {
-        // set the pot to its highest state, providing a live readout
-
-        // check jitter for a second or so
-        // perhaps report on jitter?
+        // same as low case, but high
     }
 
     public testMid() {
-        // set the pot to its mid state, providing a live readout
+        // same as low case, but mid, perhaps with some mechanism so the user 
+    }
+}
 
-        // wait for it to stabilize at some point
-        // check jitter for a second or so
-        // perhaps report on jitter?
+class EncoderTestRoutine {
+    // ideally with a nanoservices approach the button would re-use the button tests
+
+    public testIncrement() {
+        // duration assertion: register does not decrement
+
+        // User instruction: turn clockwise one click
+
+        // wait for register to increment
+
+        // User instruction: turn clockwise for one full turn
+
+        // wait for register to equal one full turn
+        // make sure it doesn't overshoot
+        // TODO how to make this recoverable if the user turns it too quickly?
+        // ideas: release duration assertion after hitting a full turn
+        //   but wait for value to stabilize
+
+        // concepts
+        // duration assertions
+        // wait for some stability conditions
+    }
+
+    public testDecrement() {
+        // inverted of decrement test
     }
 }
 
 class PixelRingTestRoutine {
-    public testAllRed() {
+    public testRgb() {
         // dynamically determine pixel length
+
         // sets the entire ring red
-
         // ask user if ring is red
-    }
 
-    public testAllGreen() {
-        // dynamically determine pixel length
-        // sets the entire ring green
-
-        // ask user if ring is green
-    }
-
-    public testAllBlue() {
-        // dynamically determine pixel length
-        // sets the entire ring blue
-
-        // ask user if ring is blue
+        // repeat for green, blue
     }
 
     public testAllWhite() {
