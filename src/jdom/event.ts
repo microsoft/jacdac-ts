@@ -60,7 +60,7 @@ export class JDEvent extends JDServiceMemberNode {
     }
 
     processEvent(pkt: Packet) {
-        console.log("HERE 1")
+        console.log("processEvent-start")
         const { device } = this.service
         const ec = (device.eventCounter || 0) + 1
         // how many packets ahead and behind current are we?
@@ -72,14 +72,14 @@ export class JDEvent extends JDServiceMemberNode {
         const missed5 = ahead < 5
         const isahead = ahead > 0
 
-        console.log("HERE 2")
+        console.log(`isahead ${isahead} old ${old} missed5 ${missed5}`)
 
         // ahead < 5 means we missed at most 5 events,
         // so we ignore this one and rely on retransmission
         // of the missed events, and then eventually the current event
         if (isahead && (old || missed5)) return
 
-        console.log("HERE 3")
+
 
         this._lastReportPkt = pkt
         this._count++
@@ -88,5 +88,6 @@ export class JDEvent extends JDServiceMemberNode {
 
         // update device counter
         device.eventCounter = pkt.eventCounter
+        console.log("processEvent-end")
     }
 }
