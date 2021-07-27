@@ -1,6 +1,6 @@
 import { JDBus } from "../../src/jdom/bus"
 import JDServiceProvider from "../../src/jdom/serviceprovider"
-import { EVENT, DEVICE_ANNOUNCE } from "../../src/jdom/constants"
+import { EVENT, DEVICE_ANNOUNCE, PACKET_EVENT } from "../../src/jdom/constants"
 import { loadSpecifications } from "../testutils"
 
 import { JDEvent } from "../../src/jdom/event"
@@ -174,12 +174,14 @@ async function nextEventFromInternal(
 
     const startTimestamp = bus.timestamp
     const nextEventPromise: Promise<JDEvent> = new Promise(resolve =>
-        service.once(EVENT, (event: JDEvent) => {
+        service.once(PACKET_EVENT, (event: JDEvent) => {
+            console.log("nextEventPromise", event.name)
             resolve(event)
         })
     )
 
     let result: JDEvent | null
+
     if (within != Number.POSITIVE_INFINITY) {
         // finite within, set a timeout
         const timeoutPromise: Promise<null> = new Promise(resolve =>

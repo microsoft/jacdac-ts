@@ -344,6 +344,7 @@ export class JDService extends JDNode {
                 const reg = this.register(id)
                 if (reg) reg.processPacket(pkt)
             } else if (pkt.isEvent) {
+                console.log("got event", this.device.shortId, this.specification.shortName, pkt.eventCode)
                 const ev = this.event(pkt.eventCode)
                 if (ev) ev.processEvent(pkt)
             } else if (pkt.isCommand) {

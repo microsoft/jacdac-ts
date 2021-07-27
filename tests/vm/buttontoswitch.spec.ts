@@ -26,6 +26,24 @@ suite("button to switch adapter", () => {
         readFileSync("vm/suites/buttontoswitch.json", "utf8")
     )
 
+    /*
+    start host
+new device CP30 (a93f5f5a30a60ea2)
+new device KZ18 (644260d120c19416)
+start host
+new device SY15 (aaecd1ebeadc2043)
+starting data=0 unpacked=0
+
+
+start host
+new device WI21 (30349c5382b255af)
+new device LC06 (d6ad9352d4e0f561)
+start host
+new device XJ73 (458c19689f26b244)
+sw device = XJ73
+bus event at 1000: code=1 device=WI21
+
+    */
     async function withHarness(
         testBody: (
             bus: JDBus,
@@ -51,13 +69,14 @@ suite("button to switch adapter", () => {
         })
     }
 
+    /*
     test("switch starts off", async () => {
         await withHarness(async (bus, button, sw) => {
             await sw.register(SwitchReg.Active).sendGetAsync()
             console.log(`starting data=${sw.register(SwitchReg.Active).data} unpacked=${sw.register(SwitchReg.Active).unpackedValue}`)
             assert(sw.register(SwitchReg.Active).unpackedValue[0] == 0)
         })
-    })
+    })*/
 
     test("toggles when pressed", async () => {
         await withHarness(async (bus, button, sw) => {
@@ -70,6 +89,7 @@ suite("button to switch adapter", () => {
             console.log(`sw device = ${sw.device.shortId}`)
 
             button.server.down()
+
             assert(
                 (
                     await nextEventFrom(sw, {
@@ -80,12 +100,15 @@ suite("button to switch adapter", () => {
 
             await sw.register(SwitchReg.Active).sendGetAsync()
             console.log(`post-press data=${sw.register(SwitchReg.Active).data} unpacked=${sw.register(SwitchReg.Active).unpackedValue}`)
-            assert(sw.register(SwitchReg.Active).unpackedValue[0] == 1)
+            assert(sw.register(SwitchReg.Active).unpackedValue[0] === 1)
 
+            button.server.up()
+            await runForDelay(bus, 100)
             button.server.down()
+            await runForDelay(bus, 100)
             // TODO: can we check for absence of an event?
             await sw.register(SwitchReg.Active).sendGetAsync()
-            assert(sw.register(SwitchReg.Active).unpackedValue[0] == 1)
+            assert(sw.register(SwitchReg.Active).unpackedValue[0] === 0)
         })
     })
 })

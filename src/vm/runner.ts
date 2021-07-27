@@ -614,6 +614,7 @@ export class VMProgramRunner extends JDClient {
                         case "set":
                         case "cmd":
                         case "event":
+                            console.log("EXTERNAL_REQUEST", request.role, request.tgt)
                             break
                     }
                     this.waitingToRunning()
