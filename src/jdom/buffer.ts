@@ -196,6 +196,24 @@ export function setNumber(
     }
 }
 
+export function uintOfBuffer(data: Uint8Array) {
+    let fmt: NumberFormat
+    switch (data.length) {
+        case 0:
+        case 1:
+            fmt = NumberFormat.UInt8LE
+            break
+        case 2:
+        case 3:
+            fmt = NumberFormat.UInt16LE
+            break
+        default:
+            fmt = NumberFormat.UInt32LE
+            break
+    }
+    return getNumber(data, fmt, 0)
+}
+
 export function intOfBuffer(data: Uint8Array) {
     let fmt: NumberFormat
     switch (data.length) {

@@ -474,14 +474,14 @@ export class JDDevice extends JDNode {
             ControlReg.FirmwareIdentifier
         )
         await fwIdRegister?.refresh(true)
-        return fwIdRegister?.intValue
+        return fwIdRegister?.uintValue
     }
 
     get firmwareIdentifier(): number {
         const fwIdRegister = this.service(0)?.register(
             ControlReg.FirmwareIdentifier
         )
-        const v = fwIdRegister?.intValue
+        const v = fwIdRegister?.uintValue
         if (fwIdRegister && v === undefined) fwIdRegister?.refresh(true)
         return v
     }
