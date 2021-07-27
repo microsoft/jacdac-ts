@@ -38,6 +38,7 @@ export function main(document: Document) {
                 await buttonTest.testClick()
             } catch (e: unknown) {
                 ui.log(`exception: ${e}`)
+                throw e
             }
         }
     }

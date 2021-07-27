@@ -42,9 +42,9 @@ export class TestDriver {
     // Promise wrapper that adds timing conditions.
     // If the input promise resolves in the timing window, its results are returned.
     // Otherwise, a WaitTimeoutError is thrown.
-    protected async makePromiseTimed<T>(promise: Promise<T>, options?: WaitTimingOptions): Promise<T> {
+    protected async makePromiseTimed<T>(promise: Promise<T>, options: WaitTimingOptions): Promise<T> {
         let after: number, within: number  // resolve the more expressive options to a simpler representation
-        if (options !== undefined && options.tolerance !== undefined) {
+        if (options.tolerance !== undefined) {
             assert(
                 options.after !== undefined,
                 "tolerance must be used with after"
@@ -56,8 +56,8 @@ export class TestDriver {
             after = options.after - options.tolerance
             within = options.after + options.tolerance
         } else {
-            after = (options === undefined || options.after === undefined) ? 0 : options.after
-            within = (options === undefined || options.within === undefined)
+            after = (options.after === undefined) ? 0 : options.after
+            within = (options.within === undefined)
                     ? Number.POSITIVE_INFINITY
                     : options.within
         }
@@ -108,7 +108,7 @@ export class TestDriver {
 
     // Waits for an event, with optional timing parameters.
     // Returns the amount of time spent waiting, or throws an error if not within timing bounds.
-    async waitFor(event: TesterEvent, options?: WaitTimingOptions): Promise<number> {
+    async waitFor(event: TesterEvent, options: WaitTimingOptions = {}): Promise<number> {
         // TODO the returned timing may be a bit inconsistent with options for realtime systems
         const start = this.bus.scheduler.timestamp
         await this.makePromiseTimed(event.makePromise(), options)
@@ -121,7 +121,7 @@ export class TestDriver {
     // Returns the amount of time spent waiting to the last event, or throws an error if not within timing bounds.
     //
     // TODO should there be a separate, tighter synchronization timing window?
-    async waitForSynchronized(events: TesterEvent[], options?: WaitTimingOptions): Promise<number> {
+    async waitForSynchronized(events: TesterEvent[], options: WaitTimingOptions = {}): Promise<number> {
         // TODO the returned timing may be a bit inconsistent with options for realtime systems
         const start = this.bus.scheduler.timestamp
         // This just wraps all the events into a promise and waits for all of them

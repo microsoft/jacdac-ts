@@ -1,4 +1,4 @@
-import { ButtonEvent } from "../jdom/constants";
+import { ButtonEvent, ButtonReg } from "../jdom/constants";
 import { TestDriver } from "./base";
 import { ServiceTester } from "./testwrappers";
 
@@ -33,9 +33,23 @@ export class ButtonTestRoutine {
         // User instruction: press and release button, within 500ms
 
         this.driver.log("wait for down")
-        await this.driver.waitFor(this.service.onEvent(ButtonEvent.Down))
+        await this.driver.waitForSynchronized([
+            this.service.onEvent(ButtonEvent.Down),
+            this.service.register(ButtonReg.Pressure).onUpdate({
+                fromValue: 0,
+                toValue: 1,
+                toTolerance: 0.01  // fixed point accuracy issues
+            })
+        ])
         this.driver.log("saw down")
-        await this.driver.waitFor(this.service.onEvent(ButtonEvent.Up), {within: 500})
+        await this.driver.waitForSynchronized([
+            this.service.onEvent(ButtonEvent.Up),
+            this.service.register(ButtonReg.Pressure).onUpdate({
+                fromValue: 1,
+                toValue: 0,
+                fromTolerance: 0.01  // fixed point accuracy issues
+            })
+        ], {within: 500})
         this.driver.log("saw up")
 
         // check synchronous event: down event, register up-to-down, within some tolerance (100ms?)
