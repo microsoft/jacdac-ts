@@ -1,5 +1,6 @@
-import { DeviceFilter, DEVICE_ANNOUNCE, JDBus, JDDevice, JDRegister, JDService, ServiceFilter } from "../jdom/jacdac-jdom"
-import { TesterEvent } from "./base"
+import { DeviceFilter, DEVICE_ANNOUNCE, EVENT, JDBus, JDDevice, JDEvent, JDRegister, JDService, ServiceFilter } from "../jdom/jacdac-jdom"
+import { TesterCondition, TesterEvent } from "./base"
+
 
 export class BusTester {
     constructor(readonly bus: JDBus) {
@@ -40,8 +41,17 @@ class ServiceEventEvent extends TesterEvent {
         super()
     }
     
-    public makePromise: Promise<void> {
-
+    public makePromise() {
+        return new Promise((resolve) => {
+            const bus = this.service.device.bus
+            const handler = (event: JDEvent) => {
+                if (event.code == this.eventCode) {
+                    bus.off(EVENT, handler)
+                    resolve(undefined)
+                }
+            }
+            bus.on(EVENT, handler)
+        })
     }
 }
 
@@ -60,13 +70,13 @@ export class ServiceTester {
 
     // Event that fires on a service event
     public onEvent(eventCode: number): TesterEvent {
-
+        return new ServiceEventEvent(this.service, eventCode)
     }
 
     // Condition that no event fires
     // TODO how to define this mutually exclusive with trigger events?
     public noEvent(): TesterCondition {
-
+        throw new Error("not implemented")
     }
 }
 
@@ -77,10 +87,10 @@ export class RegisterTester {
 
     // Event that fires when the register changes, optionally with a from and to filter
     public onChange(): TesterEvent {
-
+        throw new Error("not implemented")
     }
 
     public condition(): TesterCondition {
-
+        throw new Error("not implemented")
     }
 }

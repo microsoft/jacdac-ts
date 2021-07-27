@@ -2,6 +2,7 @@
 
 import { JDBus } from "../jdom/bus"
 import { assert } from "../jdom/utils"
+import { ConsoleUi } from "./jacdac-tstester"
 
 // TODO separate out some kind of human (tester) interface class? which can have different implementations,
 // eg web button or physical Jacdac module button?
@@ -9,8 +10,7 @@ import { assert } from "../jdom/utils"
 // Something that can be listened on and represents an instant in time.
 // This describes an event, but does not immediately start listening for events.
 export abstract class TesterEvent {
-    public makePromise: Promise<unknown>
-
+    public abstract makePromise(): Promise<unknown>
 }
 
 // A condition that can be asserted for a duration, implemented as listeners
@@ -30,8 +30,13 @@ export interface WaitTimingOptions {
 }
 
 export class TestDriver {
-    constructor(protected readonly bus: JDBus) {
+    constructor(protected readonly bus: JDBus, protected readonly ui: ConsoleUi) {
 
+    }
+
+    // TODO should this even exist?
+    public log(str: string) {
+        this.ui.log(str)
     }
 
     // Promise wrapper that adds timing conditions.
@@ -39,7 +44,7 @@ export class TestDriver {
     // Otherwise, a WaitTimeoutError is thrown.
     protected async makePromiseTimed<T>(promise: Promise<T>, options?: WaitTimingOptions): Promise<T> {
         let after: number, within: number  // resolve the more expressive options to a simpler representation
-        if (options.tolerance !== undefined) {
+        if (options !== undefined && options.tolerance !== undefined) {
             assert(
                 options.after !== undefined,
                 "tolerance must be used with after"
@@ -51,8 +56,8 @@ export class TestDriver {
             after = options.after - options.tolerance
             within = options.after + options.tolerance
         } else {
-            after = options.after === undefined ? 0 : options.after
-            within = options.within === undefined
+            after = (options === undefined || options.after === undefined) ? 0 : options.after
+            within = (options === undefined || options.within === undefined)
                     ? Number.POSITIVE_INFINITY
                     : options.within
         }
@@ -106,7 +111,7 @@ export class TestDriver {
     async waitFor(event: TesterEvent, options?: WaitTimingOptions): Promise<number> {
         // TODO the returned timing may be a bit inconsistent with options for realtime systems
         const start = this.bus.scheduler.timestamp
-        await this.makePromiseTimed(event.makePromise, options)
+        await this.makePromiseTimed(event.makePromise(), options)
         const end = this.bus.scheduler.timestamp
         return end - start
     }
@@ -121,7 +126,7 @@ export class TestDriver {
         const start = this.bus.scheduler.timestamp
         // This just wraps all the events into a promise and waits for all of them
         // Per Promise.all documentation, this rejects when any rejects.
-        const promises = events.map(event => this.makePromiseTimed(event.makePromise, options))
+        const promises = events.map(event => this.makePromiseTimed(event.makePromise(), options))
         await Promise.all(promises)
         const end = this.bus.scheduler.timestamp
         return end - start

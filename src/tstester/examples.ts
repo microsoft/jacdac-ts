@@ -1,3 +1,4 @@
+import { ButtonEvent } from "../jdom/constants";
 import { TestDriver } from "./base";
 import { ServiceTester } from "./testwrappers";
 
@@ -23,15 +24,19 @@ import { ServiceTester } from "./testwrappers";
 //
 // ask user for input
 
-class ButtonTestRoutine {
+export class ButtonTestRoutine {
     constructor(readonly service: ServiceTester, readonly driver: TestDriver) {
 
     }
 
-    public testClick() {
+    public async testClick() {
         // User instruction: press and release button, within 500ms
 
-
+        this.driver.log("wait for down")
+        await this.driver.waitFor(this.service.onEvent(ButtonEvent.Down))
+        this.driver.log("saw down")
+        await this.driver.waitFor(this.service.onEvent(ButtonEvent.Up), {within: 500})
+        this.driver.log("saw up")
 
         // check synchronous event: down event, register up-to-down, within some tolerance (100ms?)
             // test case errors if these are out of sync - with a special message
@@ -46,7 +51,7 @@ class ButtonTestRoutine {
             // retuns time elapsed
     }
 
-    public testHold() {
+    public async testHold() {
         // User instruction: press and hold the button
 
         // check synchronous event: down event, register up-to-down, within some tolerance (100ms?)
@@ -60,8 +65,8 @@ class ButtonTestRoutine {
     }
 }
 
-class PotTestRoutine {
-    public testLow() {
+export class PotTestRoutine {
+    public async testLow() {
         // User instruction: set the pot to its lowest state, providing a live readout
 
         // wait for register to be about zero (some tolerance), stable for about a second
@@ -74,19 +79,19 @@ class PotTestRoutine {
         // wait, while collecting some data (jitter, in this case)
     }
 
-    public testHigh() {
+    public async testHigh() {
         // same as low case, but high
     }
 
-    public testMid() {
+    public async testMid() {
         // same as low case, but mid, perhaps with some mechanism so the user 
     }
 }
 
-class EncoderTestRoutine {
+export class EncoderTestRoutine {
     // ideally with a nanoservices approach the button would re-use the button tests
 
-    public testIncrement() {
+    public async testIncrement() {
         // duration assertion: register does not decrement
 
         // User instruction: turn clockwise one click
@@ -106,13 +111,13 @@ class EncoderTestRoutine {
         // wait for some stability conditions
     }
 
-    public testDecrement() {
+    public async testDecrement() {
         // inverted of decrement test
     }
 }
 
-class PixelRingTestRoutine {
-    public testRgb() {
+export class PixelRingTestRoutine {
+    public async testRgb() {
         // dynamically determine pixel length
 
         // sets the entire ring red
@@ -121,17 +126,17 @@ class PixelRingTestRoutine {
         // repeat for green, blue
     }
 
-    public testAllWhite() {
+    public async testAllWhite() {
         // sets everything full blast
 
         // ask user if it's correct
     }
 
-    public testFade() {
+    public async testFade() {
         // runs through a fade R-Y-G-C-B-P sequence
     }
 
-    public testRotate() {
+    public async testRotate() {
         // rotates LEDs with a R-Y-G-C-B-P sequence
     }
 }
