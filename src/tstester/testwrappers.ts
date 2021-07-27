@@ -1,4 +1,5 @@
 import { DeviceFilter, DEVICE_ANNOUNCE, JDBus, JDDevice, JDRegister, JDService, ServiceFilter } from "../jdom/jacdac-jdom"
+import { TesterEvent } from "./base"
 
 export class BusTester {
     constructor(readonly bus: JDBus) {
@@ -30,6 +31,17 @@ export class DeviceTester {
 
     public services(options?: ServiceFilter) {
         return this.device.services(options).map(service => new ServiceTester(service))
+    }
+}
+
+// Event that fires on a matching event code from the specified service
+class ServiceEventEvent extends TesterEvent {
+    constructor(protected readonly service: JDService, protected eventCode: number) {
+        super()
+    }
+    
+    public makePromise: Promise<void> {
+
     }
 }
 

@@ -8,14 +8,14 @@ import { assert } from "../jdom/utils"
 
 // Something that can be listened on and represents an instant in time.
 // This describes an event, but does not immediately start listening for events.
-abstract class TesterEvent {
+export abstract class TesterEvent {
     public makePromise: Promise<unknown>
 
 }
 
 // A condition that can be asserted for a duration, implemented as listeners
 // This describes a condition, but does not immediately start listening for the condition.
-abstract class TesterCondition {
+export abstract class TesterCondition {
 
 }
 // An error that fires when the after/within/tolerance in WaitTimingOptions is not met.
