@@ -65,9 +65,9 @@ suite("button to switch adapter", () => {
                 console.log(`sw service event at ${bus.timestamp}: code=${ev.code}`)
             })
             bus.on(EVENT, (ev: JDEvent) => {
-                console.log(`bus event at ${bus.timestamp}: code=${ev.code}`)
+                console.log(`bus event at ${bus.timestamp}: code=${ev.code} device=${ev.service.device.shortId}`)
             })
-
+            console.log(`sw device = ${sw.device.shortId}`)
 
             button.server.down()
             assert(
