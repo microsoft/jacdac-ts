@@ -28,24 +28,6 @@ suite("button to switch adapter", () => {
         readFileSync("vm/suites/buttontoswitch.json", "utf8")
     )
 
-    /*
-    start host
-new device CP30 (a93f5f5a30a60ea2)
-new device KZ18 (644260d120c19416)
-start host
-new device SY15 (aaecd1ebeadc2043)
-starting data=0 unpacked=0
-
-
-start host
-new device WI21 (30349c5382b255af)
-new device LC06 (d6ad9352d4e0f561)
-start host
-new device XJ73 (458c19689f26b244)
-sw device = XJ73
-bus event at 1000: code=1 device=WI21
-
-    */
     async function withHarness(
         testBody: (
             bus: JDBus,
