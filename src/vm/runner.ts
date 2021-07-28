@@ -509,6 +509,16 @@ function isEveryHandler(h: VMHandler) {
     return false
 }
 
+function isRegisterChangeHandler(h: VMHandler) {
+    assert(!!h)
+    if (h.commands.length) {
+        const cmd = (h.commands[0] as VMCommand).command
+            .callee as jsep.Identifier
+        return cmd.name === "awaitChange" || cmd.name === "awaitRegister"
+    }
+    return false
+}
+
 export enum VMStatus {
     Stopped = "stopped",
     Running = "running",
@@ -882,7 +892,7 @@ export class VMProgramRunner extends JDClient {
             if (
                 done &&
                 h.status === VMInternalStatus.Ready &&
-                isEveryHandler(h.handler)
+                isEveryHandler(h.handler) || isRegisterChangeHandler(h.handler)
             ) {
                 if (this.status === VMStatus.Running)
                     await this.runHandlerAsync(h)
