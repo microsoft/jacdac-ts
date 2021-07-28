@@ -78,21 +78,24 @@ export class ButtonTestRoutine {
         this.driver.log("saw down, hold")
         await this.driver.waitForSynchronized([
             this.service.nextEvent(ButtonEvent.Hold)
-        ], {within: 500 + 100})
+        ], {after: 500,
+            tolerance: 100})
 
         this.driver.log("saw hold (1), continue holding")
         await this.driver.waitForSynchronized([
             this.service.nextEvent(ButtonEvent.Hold)
-        ], {within: 500 + 100})
+        ], {after: 500,
+            tolerance: 100})
 
         this.driver.log("saw hold (2), continue holding")
         await this.driver.waitForSynchronized([
             this.service.nextEvent(ButtonEvent.Hold)
-        ], {within: 500 + 100})
+        ], {after: 500,
+            tolerance: 100})
 
         this.driver.log("done, release")
         await this.driver.waitForSynchronized([
-            this.service.onEvent(ButtonEvent.Up),
+            this.service.onEvent(ButtonEvent.Up),  // ignore any continued hold events
             this.service.register(ButtonReg.Pressure).onUpdate({
                 triggerRange: [0, 0.5]
             })
