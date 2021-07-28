@@ -34,7 +34,7 @@ export class ButtonTestRoutine {
 
         this.driver.log("wait for down")
         await this.driver.waitForSynchronized([
-            this.service.onEvent(ButtonEvent.Down),
+            this.service.nextEvent(ButtonEvent.Down),
             this.service.register(ButtonReg.Pressure).onUpdate({
                 preRequiredRange: [0, 0.5],
                 triggerRange: [0.5, 1]
@@ -42,7 +42,7 @@ export class ButtonTestRoutine {
         ])
         this.driver.log("saw down")
         await this.driver.waitForSynchronized([
-            this.service.onEvent(ButtonEvent.Up),
+            this.service.nextEvent(ButtonEvent.Up),
             this.service.register(ButtonReg.Pressure).onUpdate({
                 preRequiredRange: [0.5, 1],
                 triggerRange: [0, 0.5]

@@ -55,6 +55,31 @@ class ServiceEventEvent extends TesterEvent {
     }
 }
 
+// An error that fires if the next does not match
+class ServiceNextEventError extends Error {
+}
+
+// Event that fires on the next event, which must match the eventCode
+class ServiceNextEventEvent extends TesterEvent {
+    constructor(protected readonly service: JDService, protected eventCode?: number) {
+        super()
+    }
+    
+    public makePromise() {
+        return new Promise((resolve, reject) => {
+            const bus = this.service.device.bus
+            const handler = (event: JDEvent) => {
+                if (this.eventCode === undefined || event.code == this.eventCode) {
+                    resolve(undefined)
+                } else {
+                    reject(new ServiceNextEventError(`service got next event ${event.code} (${event.name}) not expected ${this.eventCode}`))
+                }
+            }
+            bus.once(EVENT, handler)
+        })
+    }
+}
+
 export class ServiceTester {
     constructor(readonly service: JDService) {
 
@@ -71,6 +96,11 @@ export class ServiceTester {
     // Event that fires on a service event
     public onEvent(eventCode: number): TesterEvent {
         return new ServiceEventEvent(this.service, eventCode)
+    }
+
+    // Event that fires on the next service event, which optionally must be of the eventCode
+    public nextEvent(eventCode?: number): TesterEvent {
+        return new ServiceNextEventEvent(this.service, eventCode)
     }
 
     // Condition that no event fires
