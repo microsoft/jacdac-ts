@@ -32,6 +32,7 @@ import { Mutex, atomic } from "./utils"
 import { assert, SMap } from "../jdom/utils"
 import { JDClient } from "../jdom/client"
 import JDServiceProvider from "../jdom/serviceprovider"
+import { JDDevice } from "../jdom/device"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type VMTraceContext = any
@@ -543,7 +544,8 @@ export class VMProgramRunner extends JDClient {
     private _breaks: SMap<boolean> = {}
     private _breaksMutex: Mutex
     // providing new services
-    private _provider: JDServiceProvider = undefined
+    private _provider: JDServiceProvider
+    private _device: JDDevice
     private _onCompletionOfExternalRequest: {
         handler: VMHandlerRunner
         request: ExternalRequest
@@ -737,7 +739,7 @@ export class VMProgramRunner extends JDClient {
         try {
             await this._waitRunMutex.acquire(async () => {
                 if (!this._provider) {
-                    this._provider = await this.startProvider()
+                    await this.startProvider()
                 }
                 this._waitQueue = this._handlerRunners.slice(0)
                 this._waitQueue.forEach(h => h.reset())
@@ -769,6 +771,10 @@ export class VMProgramRunner extends JDClient {
             console.debug(e)
             this.emit(VM_INTERNAL_ERROR, e)
         }
+    }
+
+    get device() {
+        return this._device
     }
 
     cancel() {
@@ -1042,7 +1048,7 @@ export class VMProgramRunner extends JDClient {
     private async startProvider() {
         const servers = this._env.servers()
         if (servers.length) {
-            const provider = new JDServiceProvider(
+            this._provider = new JDServiceProvider(
                 servers.map(s => s.server)
                 // if we create a deviceId, then trouble ensues
                 // as a second device gets spun up later
@@ -1050,21 +1056,19 @@ export class VMProgramRunner extends JDClient {
                 //    deviceId: "VMServiceProvider",
                 //}
             )
-            const device = this.roleManager.bus.addServiceProvider(provider)
+            this._device = this.roleManager.bus.addServiceProvider(this._provider)
             servers.forEach((s, index) => {
                 this.roleManager.addRoleService(
                     this._serverRoles[index].role,
                     s.serviceClass,
-                    device.deviceId
+                    this._device.deviceId
                 )
             })
             // make sure it gets known (HACK)
             for (const s of servers) {
                 await s.server.statusCode.sendGetAsync()
             }
-            return provider
         }
-        return undefined
     }
 
     public unmount() {

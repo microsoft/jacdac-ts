@@ -49,7 +49,7 @@ export interface CreatedServerService<ServiceType extends JDServiceServer> {
 }
 
 // Waits for all the devices (by deviceId) to be announced on the bus.
-async function waitForAnnounce(bus: JDBus, deviceIds: string[]) {
+export async function waitForAnnounce(bus: JDBus, deviceIds: string[]) {
     return new Promise(resolve => {
         const devicesIdSet = new Set(deviceIds)
         const announcedIdSet = new Set()

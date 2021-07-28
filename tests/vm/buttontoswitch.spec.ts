@@ -10,6 +10,7 @@ import {
     CreatedServerService,
     runForDelay,
     nextEventFrom,
+    waitForAnnounce,
 } from "../jdom/tester"
 import ButtonServer from "../../src/servers/buttonserver"
 import RoleManager from "../../src/servers/rolemanager"
@@ -62,6 +63,7 @@ bus event at 1000: code=1 device=WI21
 
             const runner = new VMProgramRunner(roleMgr, program)
             await runner.startAsync()
+            await waitForAnnounce(bus, [runner.device.deviceId])
 
             const { "switch server 1": sw } = await getRoles(roleMgr, program)
 
