@@ -63,29 +63,23 @@ bus event at 1000: code=1 device=WI21
             })
 
             const runner = new VMProgramRunner(roleMgr, program)
-            const device = await runner.device()
-            if (bus.scheduler instanceof FastForwardScheduler) {
-                await (bus.scheduler as FastForwardScheduler).runToPromise(
-                    waitForAnnounce(bus, [device.deviceId])
-                )
-            } else {
-                await waitForAnnounce(bus, [device.deviceId])
-            }
+            // start up the device
+            await runner.device()
             const { "switch server 1": sw } = await getRoles(roleMgr, program)
 
+            // start up the VM
             await runner.startAsync()
             await testBody(bus, button, sw)
         })
     }
 
-    /*
     test("switch starts off", async () => {
         await withHarness(async (bus, button, sw) => {
             await sw.register(SwitchReg.Active).sendGetAsync()
             console.log(`starting data=${sw.register(SwitchReg.Active).data} unpacked=${sw.register(SwitchReg.Active).unpackedValue}`)
             assert(sw.register(SwitchReg.Active).unpackedValue[0] == 0)
         })
-    })*/
+    })
 
     test("toggles when pressed", async () => {
         await withHarness(async (bus, button, sw) => {

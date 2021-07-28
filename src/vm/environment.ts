@@ -166,7 +166,6 @@ export class VMEnvironment
             )
         } else {
             const server = this.getServer(e)
-            console.log("SendEvent", server.device.shortId, (e.property as jsep.Identifier).name)
             await server?.sendEventNameAsync(
                 (e.property as jsep.Identifier).name,
                 values
