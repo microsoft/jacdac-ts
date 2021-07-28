@@ -99,13 +99,9 @@ suite("pot to switch adapter", () => {
             pot.server.streamingSamples.setValues([1])
             await runForDelay(bus, 100)
 
-            await sw.register(SwitchReg.Active).refresh()
-            assert(sw.register(SwitchReg.Active).unpackedValue[0])
-
             pot.server.reading.setValues([0.55])
             pot.server.streamingSamples.setValues([1])
             // TODO check for absence of event?
-            await runForDelay(bus, 100)
 
             await sw.register(SwitchReg.Active).refresh()
             assert(sw.register(SwitchReg.Active).unpackedValue[0])
