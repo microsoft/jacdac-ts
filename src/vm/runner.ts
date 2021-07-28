@@ -738,9 +738,7 @@ export class VMProgramRunner extends JDClient {
         this.trace("start")
         try {
             await this._waitRunMutex.acquire(async () => {
-                if (!this._provider) {
-                    await this.startProvider()
-                }
+                await this.device()
                 this._waitQueue = this._handlerRunners.slice(0)
                 this._waitQueue.forEach(h => h.reset())
                 this._runQueue = []
@@ -773,7 +771,12 @@ export class VMProgramRunner extends JDClient {
         }
     }
 
-    get device() {
+    async device() {
+        if (!this._provider) {
+            if (!this._provider) {
+                await this.startProvider()
+            }
+        }
         return this._device
     }
 

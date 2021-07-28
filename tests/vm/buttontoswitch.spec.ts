@@ -21,6 +21,7 @@ import { SwitchEvent, SwitchReg } from "../../jacdac-spec/dist/specconstants"
 import { EVENT } from "../../src/jdom/constants"
 import { JDService } from "../../src/jdom/service"
 import { JDEvent } from "../../src/jdom/event"
+import { FastForwardScheduler } from "../jdom/scheduler"
 
 suite("button to switch adapter", () => {
     const program: VMProgram = JSON.parse(
@@ -62,11 +63,17 @@ bus event at 1000: code=1 device=WI21
             })
 
             const runner = new VMProgramRunner(roleMgr, program)
-            await runner.startAsync()
-            await waitForAnnounce(bus, [runner.device.deviceId])
-
+            const device = await runner.device()
+            if (bus.scheduler instanceof FastForwardScheduler) {
+                await (bus.scheduler as FastForwardScheduler).runToPromise(
+                    waitForAnnounce(bus, [device.deviceId])
+                )
+            } else {
+                await waitForAnnounce(bus, [device.deviceId])
+            }
             const { "switch server 1": sw } = await getRoles(roleMgr, program)
 
+            await runner.startAsync()
             await testBody(bus, button, sw)
         })
     }
