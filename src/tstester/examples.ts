@@ -36,18 +36,16 @@ export class ButtonTestRoutine {
         await this.driver.waitForSynchronized([
             this.service.onEvent(ButtonEvent.Down),
             this.service.register(ButtonReg.Pressure).onUpdate({
-                fromValue: 0,
-                toValue: 1,
-                toTolerance: 0.01  // fixed point accuracy issues
+                preRequiredRange: [0, 0.5],
+                triggerRange: [0.5, 1]
             })
         ])
         this.driver.log("saw down")
         await this.driver.waitForSynchronized([
             this.service.onEvent(ButtonEvent.Up),
             this.service.register(ButtonReg.Pressure).onUpdate({
-                fromValue: 1,
-                toValue: 0,
-                fromTolerance: 0.01  // fixed point accuracy issues
+                preRequiredRange: [0.5, 1],
+                triggerRange: [0, 0.5]
             })
         ], {within: 500})
         this.driver.log("saw up")

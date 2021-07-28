@@ -80,12 +80,14 @@ export class ServiceTester {
     }
 }
 
+// An error that fires if the register is not within bounds before the trigger
+class RegisterPreConditionError extends Error {
+}
+
 // TODO support non-[number] registers?
 export interface RegisterUpdateOptions {
-    fromValue?: number
-    fromTolerance?: number  // from tolerates a value up to this different (positive magnitude), defaults to 0
-    toValue?: number
-    toTolerance?: number  // to tolerates a value up to this different (positive magnitude), default to 0
+    preRequiredRange?: [number, number]  // if defineds, requires all values before the trigger are within this range and not undefined
+    triggerRange?: [number, number]  // acceptable range of trigger conditions, otherwise triggers on any sample
 }
 
 // Event that fires on a matching register change from the specified service
@@ -94,6 +96,7 @@ class RegisterUpdateEvent extends TesterEvent {
         super()
     }
     
+    // Hacky wrapper around a PackedValues [number] that extracts the single value
     protected maybeGetValue(raw: PackedValues): number | undefined {
         if (raw === undefined) {
             return undefined
@@ -104,21 +107,26 @@ class RegisterUpdateEvent extends TesterEvent {
 
     public makePromise() {
         const packFormat = this.register.specification.packFormat
-        let lastValue = this.maybeGetValue(this.register.unpackedValue)  // needed for change detection
-        // TODO what if this is undefined?
 
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             const handler = (packet: Packet) => {
-                const unpackedValue = this.maybeGetValue(jdunpack(packet.data, packFormat))
+                const thisValue = this.maybeGetValue(jdunpack(packet.data, packFormat))
 
-                const fromTolerance = this.options.fromTolerance || 0
-                const toTolerance = this.options.toTolerance || 0
-                if ((this.options.fromValue === undefined || Math.abs(lastValue - this.options.fromValue) <= fromTolerance) &&
-                    (this.options.toValue === undefined || Math.abs(unpackedValue - this.options.toValue)) <= toTolerance) {
+                // check if the sample is valid for preRequiredRange
+                const precondition = this.options.preRequiredRange === undefined || (
+                    thisValue !== undefined &&
+                    thisValue >= this.options.preRequiredRange[0] && thisValue <= this.options.preRequiredRange[1]
+                )
+                // whether or not toRange is defined, the current sample must be valid
+                const triggered = thisValue !== undefined && (
+                    (this.options.triggerRange === undefined ||
+                        (thisValue >= this.options.triggerRange[0] && thisValue <= this.options.triggerRange[1])))
+
+                if (triggered) {  // ignore precondition on trigger
                     this.register.off(REPORT_RECEIVE, handler)
                     resolve(undefined)
-                } else {
-                    lastValue = unpackedValue
+                } else if (!precondition) {  // otherwise assert precondition
+                    reject(new RegisterPreConditionError(`register value ${thisValue} not in precondition ${this.options.preRequiredRange}`))
                 }
             }
             this.register.on(REPORT_RECEIVE, handler)
@@ -135,7 +143,7 @@ export class RegisterTester {
         return `${this.register.service.device.shortId}.${this.register.service.specification.name}.${this.register.name}`
     }
 
-    // Event that fires when the register changes, optionally with a from and to filter
+    // Event that fires on a register update (even with unchagned value), optionally with a starting (arming) and to (trigger) filter
     public onUpdate(options: RegisterUpdateOptions = {}): TesterEvent {
         return new RegisterUpdateEvent(this.register, options)
     }
