@@ -773,9 +773,7 @@ export class VMProgramRunner extends JDClient {
 
     async device() {
         if (!this._provider) {
-            if (!this._provider) {
-                await this.startProvider()
-            }
+            await this.startProvider()
         }
         return this._device
     }
