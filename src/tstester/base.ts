@@ -29,6 +29,14 @@ export interface WaitTimingOptions {
     // is an error if within is set, or after is not set
 }
 
+// An error that fires if events are not synchronized within the timing window
+class WaitSynchronizationError extends Error {
+}
+
+export interface SynchronizationTimingOptions extends WaitTimingOptions {
+    synchronization?: number  // all events must trigger within this time range
+}
+
 export class TestDriver {
     constructor(protected readonly bus: JDBus, protected readonly ui: ConsoleUi) {
 
@@ -119,14 +127,27 @@ export class TestDriver {
     // Waits for multiple events, with optional timing parameters.
     // All events must fire within the timing window, but with no constarints on order.
     // Returns the amount of time spent waiting to the last event, or throws an error if not within timing bounds.
-    //
-    // TODO should there be a separate, tighter synchronization timing window?
-    async waitForSynchronized(events: TesterEvent[], options: WaitTimingOptions = {}): Promise<number> {
+    async waitForAll(events: TesterEvent[], options: SynchronizationTimingOptions = {}): Promise<number> {
         // TODO the returned timing may be a bit inconsistent with options for realtime systems
         const start = this.bus.scheduler.timestamp
-        // This just wraps all the events into a promise and waits for all of them
+        let firstTriggerTime: number | undefined = undefined  // for synchronization
+
+        // This wraps all the promises with the timing bounds, then wraps them again with synchronization bounds
+        const promises = events.map(async (event) => {
+            await this.makePromiseTimed(event.makePromise(), options)
+            if (options.synchronization !== undefined) {
+                if (firstTriggerTime === undefined) {
+                    firstTriggerTime = this.bus.scheduler.timestamp
+                } else {
+                    const triggerDelta = this.bus.scheduler.timestamp - firstTriggerTime
+                    if (triggerDelta > options.synchronization) {
+                        throw new WaitSynchronizationError(`event triggered ${triggerDelta} ms from first, greater than maximum ${options.synchronization}`)
+                    }
+                }
+            }
+        })
+
         // Per Promise.all documentation, this rejects when any rejects.
-        const promises = events.map(event => this.makePromiseTimed(event.makePromise(), options))
         await Promise.all(promises)
         const end = this.bus.scheduler.timestamp
         return end - start

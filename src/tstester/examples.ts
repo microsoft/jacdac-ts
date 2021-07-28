@@ -33,21 +33,23 @@ export class ButtonTestRoutine {
         // User instruction: press and release button, within 500ms
 
         this.driver.log("wait for down")
-        await this.driver.waitForSynchronized([
+        await this.driver.waitForAll([
             this.service.nextEvent(ButtonEvent.Down),
             this.service.register(ButtonReg.Pressure).onUpdate({
                 preRequiredRange: [0, 0.5],
                 triggerRange: [0.5, 1]
             })
-        ])
+        ], {synchronization: 50})
         this.driver.log("saw down")
-        await this.driver.waitForSynchronized([
+        
+        await this.driver.waitForAll([
             this.service.nextEvent(ButtonEvent.Up),
             this.service.register(ButtonReg.Pressure).onUpdate({
                 preRequiredRange: [0.5, 1],
                 triggerRange: [0, 0.5]
             })
-        ], {within: 500})
+        ], {within: 500,
+            synchronization: 50})
         this.driver.log("saw up")
 
         // check synchronous event: down event, register up-to-down, within some tolerance (100ms?)
@@ -67,39 +69,39 @@ export class ButtonTestRoutine {
         // User instruction: press and hold the button
 
         this.driver.log("wait for down")
-        await this.driver.waitForSynchronized([
+        await this.driver.waitForAll([
             this.service.nextEvent(ButtonEvent.Down),
             this.service.register(ButtonReg.Pressure).onUpdate({
                 preRequiredRange: [0, 0.5],
                 triggerRange: [0.5, 1]
             })
-        ])
+        ], {synchronization: 50})
 
         this.driver.log("saw down, hold")
-        await this.driver.waitForSynchronized([
+        await this.driver.waitForAll([
             this.service.nextEvent(ButtonEvent.Hold)
         ], {after: 500,
             tolerance: 100})
 
         this.driver.log("saw hold (1), continue holding")
-        await this.driver.waitForSynchronized([
+        await this.driver.waitForAll([
             this.service.nextEvent(ButtonEvent.Hold)
         ], {after: 500,
             tolerance: 100})
 
         this.driver.log("saw hold (2), continue holding")
-        await this.driver.waitForSynchronized([
+        await this.driver.waitForAll([
             this.service.nextEvent(ButtonEvent.Hold)
         ], {after: 500,
             tolerance: 100})
 
         this.driver.log("done, release")
-        await this.driver.waitForSynchronized([
+        await this.driver.waitForAll([
             this.service.onEvent(ButtonEvent.Up),  // ignore any continued hold events
             this.service.register(ButtonReg.Pressure).onUpdate({
                 triggerRange: [0, 0.5]
             })
-        ])
+        ], {synchronization: 50})
 
         this.driver.log("saw up")
 
