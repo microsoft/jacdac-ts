@@ -11,15 +11,11 @@ import {
     runForDelay,
     nextEventFrom,
 } from "../jdom/tester"
-import ButtonServer from "../../src/servers/buttonserver"
 import RoleManager from "../../src/servers/rolemanager"
-import ServoServer from "../../src/servers/servoserver"
 import { assert } from "../../src/jdom/utils"
 import { bindRoles, getRoles } from "./vmtester"
 import { SRV_POTENTIOMETER, SwitchEvent, SwitchReg } from "../../jacdac-spec/dist/specconstants"
-import { EVENT } from "../../src/jdom/constants"
 import { JDService } from "../../src/jdom/service"
-import { JDEvent } from "../../src/jdom/event"
 import SensorServer from "../../src/servers/sensorserver"
 
 suite("pot to switch adapter", () => {
@@ -44,7 +40,7 @@ suite("pot to switch adapter", () => {
             })
 
             const runner = new VMProgramRunner(roleMgr, program)
-            runner.device()
+            await runner.device()
 
             const { "switch server 1": sw } = await getRoles(roleMgr, program)
 
@@ -66,7 +62,7 @@ suite("pot to switch adapter", () => {
                     })
                 ).code == SwitchEvent.On
             )
-            await sw.register(SwitchReg.Active).sendGetAsync()
+            await sw.register(SwitchReg.Active).refresh()
             assert(sw.register(SwitchReg.Active).unpackedValue[0] == 1)
         })
     })
@@ -84,7 +80,7 @@ suite("pot to switch adapter", () => {
                     })
                 ).code == SwitchEvent.On
             )
-            await sw.register(SwitchReg.Active).sendGetAsync()
+            await sw.register(SwitchReg.Active).refresh()
             assert(sw.register(SwitchReg.Active).unpackedValue[0] == 1)
         })
     })
@@ -96,7 +92,7 @@ suite("pot to switch adapter", () => {
 
             pot.server.reading.setValues([0.45])
             // TODO check for absence of event?
-            await sw.register(SwitchReg.Active).sendGetAsync()
+            await sw.register(SwitchReg.Active).refresh()
             assert(sw.register(SwitchReg.Active).unpackedValue[0] == 1)
         })
     })
@@ -108,7 +104,7 @@ suite("pot to switch adapter", () => {
 
             pot.server.reading.setValues([0.55])
             // TODO check for absence of event?
-            await sw.register(SwitchReg.Active).sendGetAsync()
+            await sw.register(SwitchReg.Active).refresh()
             assert(sw.register(SwitchReg.Active).unpackedValue[0] == 0)
         })
     })

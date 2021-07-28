@@ -57,7 +57,7 @@ suite("button to switch adapter", () => {
 
     test("switch starts off", async () => {
         await withHarness(async (bus, button, sw) => {
-            await sw.register(SwitchReg.Active).sendGetAsync()
+            await sw.register(SwitchReg.Active).refresh()
             console.log(`starting data=${sw.register(SwitchReg.Active).data} unpacked=${sw.register(SwitchReg.Active).unpackedValue}`)
             assert(sw.register(SwitchReg.Active).unpackedValue[0] == 0)
         })
@@ -83,7 +83,7 @@ suite("button to switch adapter", () => {
                 ).code == SwitchEvent.On
             )
 
-            await sw.register(SwitchReg.Active).sendGetAsync()
+            await sw.register(SwitchReg.Active).refresh()
             console.log(`post-press data=${sw.register(SwitchReg.Active).data} unpacked=${sw.register(SwitchReg.Active).unpackedValue}`)
             assert(sw.register(SwitchReg.Active).unpackedValue[0] === 1)
 
@@ -92,7 +92,7 @@ suite("button to switch adapter", () => {
             button.server.down()
             await runForDelay(bus, 100)
             // TODO: can we check for absence of an event?
-            await sw.register(SwitchReg.Active).sendGetAsync()
+            await sw.register(SwitchReg.Active).refresh()
             assert(sw.register(SwitchReg.Active).unpackedValue[0] === 0)
         })
     })

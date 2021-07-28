@@ -220,14 +220,7 @@ class VMCommandEvaluator {
                     (this.inst === "awaitRegister" &&
                         regValue !== this._regSaved) ||
                     (this.inst === "awaitChange" &&
-                        ((this._changeSaved === 0 &&
-                            regValue !== this._regSaved) ||
-                            (this._changeSaved < 0 &&
-                                regValue <=
-                                    this._regSaved + this._changeSaved) ||
-                            (this._changeSaved > 0 &&
-                                regValue >=
-                                    this._regSaved + this._changeSaved)))
+                        Math.abs(regValue - this._regSaved) >= Math.abs(this._changeSaved))
                 ) {
                     return VMInternalStatus.Completed
                 }
