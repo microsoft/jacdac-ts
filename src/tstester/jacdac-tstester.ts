@@ -35,7 +35,7 @@ export function main(document: Document) {
             ui.log(`connected (device w/ single button): ${device.shortId}`)
             const buttonTest = new ButtonTestRoutine(new ServiceTester(buttonServices[0]), testdriver)
             try {
-                await buttonTest.testClick()
+                await buttonTest.testHold()
             } catch (e: unknown) {
                 ui.log(`exception: ${e}`)
                 throw e
