@@ -1,0 +1,168 @@
+{
+  "roles": [
+    {
+      "role": "recall",
+      "serviceClass": 343122531,
+      "client": true
+    },
+    {
+      "role": "servo 1",
+      "serviceClass": 318542083,
+      "client": true
+    },
+    {
+      "role": "set",
+      "serviceClass": 343122531,
+      "client": true
+    }
+  ],
+  "serverRoles": [],
+  "handlers": [
+    {
+      "commands": [
+        {
+          "sourceId": "xAt:J.K.G4v^m/,~[F6@",
+          "type": "cmd",
+          "command": {
+            "type": "CallExpression",
+            "arguments": [
+              {
+                "type": "MemberExpression",
+                "object": {
+                  "type": "Identifier",
+                  "name": "set"
+                },
+                "property": {
+                  "type": "Identifier",
+                  "name": "down"
+                },
+                "computed": false
+              },
+              {
+                "type": "Literal",
+                "value": true,
+                "raw": "true"
+              }
+            ],
+            "callee": {
+              "type": "Identifier",
+              "name": "awaitEvent"
+            }
+          }
+        },
+        {
+          "sourceId": "xC_fE;s$GK4j.udu@s+(",
+          "type": "cmd",
+          "command": {
+            "type": "CallExpression",
+            "arguments": [
+              {
+                "type": "MemberExpression",
+                "object": {
+                  "type": "Identifier",
+                  "name": "$var"
+                },
+                "property": {
+                  "type": "Identifier",
+                  "name": "remember"
+                },
+                "computed": false
+              },
+              {
+                "type": "MemberExpression",
+                "object": {
+                  "type": "Identifier",
+                  "name": "servo 1"
+                },
+                "property": {
+                  "type": "Identifier",
+                  "name": "angle"
+                },
+                "computed": false
+              }
+            ],
+            "callee": {
+              "type": "Identifier",
+              "name": "writeLocal"
+            }
+          }
+        }
+      ],
+      "errors": [],
+      "meta": false
+    },
+    {
+      "commands": [
+        {
+          "sourceId": "|VAm#1!d|D93F5?@^CI}",
+          "type": "cmd",
+          "command": {
+            "type": "CallExpression",
+            "arguments": [
+              {
+                "type": "MemberExpression",
+                "object": {
+                  "type": "Identifier",
+                  "name": "recall"
+                },
+                "property": {
+                  "type": "Identifier",
+                  "name": "down"
+                },
+                "computed": false
+              },
+              {
+                "type": "Literal",
+                "value": true,
+                "raw": "true"
+              }
+            ],
+            "callee": {
+              "type": "Identifier",
+              "name": "awaitEvent"
+            }
+          }
+        },
+        {
+          "sourceId": ",3iXsBZ$5V-)__]Q1%`;",
+          "type": "cmd",
+          "command": {
+            "type": "CallExpression",
+            "arguments": [
+              {
+                "type": "MemberExpression",
+                "object": {
+                  "type": "Identifier",
+                  "name": "servo 1"
+                },
+                "property": {
+                  "type": "Identifier",
+                  "name": "angle"
+                },
+                "computed": false
+              },
+              {
+                "type": "MemberExpression",
+                "object": {
+                  "type": "Identifier",
+                  "name": "$var"
+                },
+                "property": {
+                  "type": "Identifier",
+                  "name": "remember"
+                },
+                "computed": false
+              }
+            ],
+            "callee": {
+              "type": "Identifier",
+              "name": "writeRegister"
+            }
+          }
+        }
+      ],
+      "errors": [],
+      "meta": false
+    }
+  ]
+}

@@ -55,24 +55,6 @@ export interface CreatedServerService<ServiceType extends JDServiceServer> {
     service: JDService
 }
 
-// Waits for all the devices (by deviceId) to be announced on the bus.
-async function waitForAnnounce(bus: JDBus, deviceIds: string[]) {
-    return new Promise(resolve => {
-        const devicesIdSet = new Set(deviceIds)
-        const announcedIdSet = new Set()
-        const onHandler = (device: JDDevice) => {
-            if (devicesIdSet.has(device.deviceId)) {
-                announcedIdSet.add(device.deviceId)
-            }
-            if (setEquals(devicesIdSet, announcedIdSet)) {
-                bus.off(DEVICE_ANNOUNCE, onHandler)
-                resolve(undefined)
-            }
-        }
-        bus.on(DEVICE_ANNOUNCE, onHandler)
-    })
-}
-
 // Creates devices around the given servers, specified as mapping of names to objects.
 // These devices are attached to the bus, and waited on for announcement so services are ready.
 // Returns the services, as an object mapping the input names to the corresponding services.
@@ -104,13 +86,7 @@ export async function createServices<T extends Record<string, JDServiceServer>>(
 
     // Wait for created devices to be announced, so services become available
     const deviceIds = devices.map(elt => elt.device.deviceId)
-    if (bus.scheduler instanceof FastForwardScheduler) {
-        await (bus.scheduler as FastForwardScheduler).runToPromise(
-            waitForAnnounce(bus, deviceIds)
-        )
-    } else {
-        await waitForAnnounce(bus, deviceIds)
-    }
+    await waitForAnnounce(bus, deviceIds)
 
     // Create the output map
     const namesToServices: [string, CreatedServerService<JDServiceServer>][] =
@@ -143,6 +119,34 @@ export async function createServices<T extends Record<string, JDServiceServer>>(
     return namesToServicesObject as {
         [key in keyof T]: CreatedServerService<T[key]>
     }
+}
+
+// Waits for all the devices (by deviceId) to be announced on the bus.
+export async function waitForAnnounce(bus: JDBus, deviceIds: string[]) {
+    if (bus.scheduler instanceof FastForwardScheduler) {
+        await (bus.scheduler as FastForwardScheduler).runToPromise(
+            waitForAnnounceInternal(bus, deviceIds)
+        )
+    } else {
+        await waitForAnnounceInternal(bus, deviceIds)
+    }
+}
+
+async function waitForAnnounceInternal(bus: JDBus, deviceIds: string[]) {
+    return new Promise(resolve => {
+        const devicesIdSet = new Set(deviceIds)
+        const announcedIdSet = new Set()
+        const onHandler = (device: JDDevice) => {
+            if (devicesIdSet.has(device.deviceId)) {
+                announcedIdSet.add(device.deviceId)
+            }
+            if (setEquals(devicesIdSet, announcedIdSet)) {
+                bus.off(DEVICE_ANNOUNCE, onHandler)
+                resolve(undefined)
+            }
+        }
+        bus.on(DEVICE_ANNOUNCE, onHandler)
+    })
 }
 
 export interface EventWithinOptions {
@@ -187,6 +191,7 @@ async function nextEventFromInternal(
     )
 
     let result: JDEvent | null
+
     if (within != Number.POSITIVE_INFINITY) {
         // finite within, set a timeout
         const timeoutPromise: Promise<null> = new Promise(resolve =>
