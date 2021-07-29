@@ -1,5 +1,5 @@
-import { DeviceFilter, DEVICE_ANNOUNCE, EVENT, JDBus, JDDevice, JDEvent, JDRegister, JDService, jdunpack, PackedValues, Packet, REPORT_RECEIVE, ServiceFilter } from "../jdom/jacdac-jdom"
-import { HeldTesterEvent, TesterCondition, TesterEvent } from "./base"
+import { DeviceFilter, DEVICE_ANNOUNCE, JDBus, JDDevice, ServiceFilter } from "../jdom/jacdac-jdom"
+import { TestingNamer } from "./naming"
 import { ServiceTester } from "./servicewrapper"
 
 
@@ -23,17 +23,12 @@ export class BusTester {
 }
 
 export class DeviceTester {
-    // Utility method to provide a standaradized debug name
-    public static nameOf(device: JDDevice) {
-        return device.shortId
-    }
-
     constructor(readonly device: JDDevice) {
 
     }
 
     public get name() {
-        return DeviceTester.nameOf(this.device)
+        return TestingNamer.nameOfDevice(this.device)
     }
 
     public services(options?: ServiceFilter) {

@@ -1,6 +1,6 @@
-import { DeviceFilter, DEVICE_ANNOUNCE, EVENT, JDBus, JDDevice, JDEvent, JDRegister, JDService, jdunpack, PackedValues, Packet, REPORT_RECEIVE, ServiceFilter } from "../jdom/jacdac-jdom"
-import { HeldTesterEvent, TesterCondition, TesterEvent } from "./base"
-import { ServiceTester } from "./servicewrapper"
+import { JDRegister, jdunpack, PackedValues, Packet, REPORT_RECEIVE } from "../jdom/jacdac-jdom"
+import { TesterEvent } from "./base"
+import { TestingNamer } from "./naming"
 
 
 // An error that fires if the register is not within bounds before the trigger
@@ -31,7 +31,7 @@ class RegisterUpdateEvent extends TesterEvent {
     public makePromise() {
         const packFormat = this.register.register.specification.packFormat
 
-        return new Promise((resolve, reject) => {
+        const triggerPromise = new Promise((resolve, reject) => {
             const handler = (packet: Packet) => {
                 const thisValue = this.maybeGetValue(jdunpack(packet.data, packFormat))
 
@@ -54,20 +54,18 @@ class RegisterUpdateEvent extends TesterEvent {
             }
             this.register.register.on(REPORT_RECEIVE, handler)
         })
+
+        return {triggerPromise}
     }
 }
 
 export class RegisterTester {
-    public static nameOf(register: JDRegister) {
-        return `${ServiceTester.nameOf(register.service)}.${register.name}`
-    }
-
     constructor(readonly register: JDRegister) {
 
     }
 
     public get name() {
-        return RegisterTester.nameOf(this.register)
+        return TestingNamer.nameOfRegister(this.register)
     }
 
     // Event that fires on a register update (even with unchagned value), optionally with a starting (arming) and to (trigger) filter

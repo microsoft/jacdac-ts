@@ -1,6 +1,4 @@
 // Contains foundational abstractions for the testing system
-
-import { HostedFileStorage } from "../embed/filestorage"
 import { JDBus } from "../jdom/bus"
 import { assert } from "../jdom/utils"
 import { ConsoleUi } from "./jacdac-tstester"
@@ -8,29 +6,26 @@ import { ConsoleUi } from "./jacdac-tstester"
 // TODO separate out some kind of human (tester) interface class? which can have different implementations,
 // eg web button or physical Jacdac module button?
 
-// Something that can be listened on and represents an instant in time.
-// This describes an event, but does not immediately start listening for events.
-export abstract class TesterEvent {
-    public abstract makePromise(): Promise<unknown>
-}
 
-export interface EventWithHold {
-    triggerPromise: Promise<unknown>  // resolves when the event triggers
+export interface HoldingListener {
     holdingPromise: Promise<unknown>  // rejects if the holding condition is violated, can only do so after the trigger above
     terminateHolding: () => void  // called to clean up the holding promise (as a side effect, may also break the trigger)
 }
-// Similar to TesterEvent, but returns a promise once it has been triggered (main promise fulfilled).
-// The returned promise listens for negative conditions and rejects on seeing any.
-// The returned promise should never fulfill and can be ignored after the held is no longer applicable.
-export abstract class HeldTesterEvent {
-    public abstract makePromiseWithHold(): EventWithHold
+
+export interface EventWithHold {
+    triggerPromise?: Promise<unknown>  // resolves when the event triggers
+    holdingListener?: HoldingListener  // promise that rejects when the condition is violated
+    // If both are specified, then holdPromise can only reject after triggerPromise fires.
+    // If only holdPromise is specified, it can reject anytime through its termination
 }
 
-// A condition that can be asserted for a duration, implemented as listeners
-// This describes a condition, but does not immediately start listening for the condition.
-export abstract class TesterCondition {
-
+// Something that can be listened on and represents an instant in time.
+// This describes an event, but does not immediately start listening for events.
+// Can also include a holding promise, that rejects if conditions are violated
+export abstract class TesterEvent {
+    public abstract makePromise(): EventWithHold
 }
+
 // An error that fires when the after/within/tolerance in WaitTimingOptions is not met.
 class WaitTimeoutError extends Error {
 }
@@ -130,57 +125,51 @@ export class TestDriver {
     // Waits for an event, with optional timing parameters.
     // Returns the amount of time spent waiting, or throws an error if not within timing bounds.
     async waitFor(event: TesterEvent, options: WaitTimingOptions = {}): Promise<number> {
-        // TODO the returned timing may be a bit inconsistent with options for realtime systems
-        const start = this.bus.scheduler.timestamp
-        await this.makePromiseTimed(event.makePromise(), options)
-        const end = this.bus.scheduler.timestamp
-        return end - start
+        return this.waitForAll([event], options) // simple delegation wrapper
     }
 
     // Waits for multiple events, with optional timing parameters.
     // All events must fire within the timing window, but with no constarints on order.
     // Returns the amount of time spent waiting to the last event, or throws an error if not within timing bounds.
-    async waitForAll(events: (TesterEvent | HeldTesterEvent)[], options: SynchronizationTimingOptions = {}): Promise<number> {
+    async waitForAll(events: TesterEvent[], options: SynchronizationTimingOptions = {}): Promise<number> {
         // TODO the returned timing may be a bit inconsistent with options for realtime systems
         const start = this.bus.scheduler.timestamp
         let firstTriggerTime: number | undefined = undefined  // for synchronization
 
         // This wraps all the promises with the timing bounds, then wraps them again with synchronization bounds
         const triggerPromises: Promise<unknown>[] = []
-        const holdingPromises: Promise<unknown>[] = []
+        const holdingListeners: HoldingListener[] = []
         const terminateHoldings: (() => void)[] = []
         events.forEach(event => {
-            let triggerPromise
-            if (event instanceof TesterEvent) {
-                triggerPromise = event.makePromise()
-            } else if (event instanceof HeldTesterEvent) {
-                let holdingPromise, terminateHolding
-                ({triggerPromise, holdingPromise, terminateHolding} = event.makePromiseWithHold())
-                holdingPromises.push(holdingPromise)
-                terminateHoldings.push(terminateHolding)
-            } else {
-                throw new Error(`unknown event in test wait ${event}`)
-            } 
+            const {triggerPromise, holdingListener: holdingPromise} = event.makePromise()
 
-            // wrap trigger promise with synchronization code
-            if (options.synchronization !== undefined) {                
-                const wrappedPromise = triggerPromise.then(() => {
-                    if (firstTriggerTime === undefined) {
-                        firstTriggerTime = this.bus.scheduler.timestamp
-                    } else {
-                        const triggerDelta = this.bus.scheduler.timestamp - firstTriggerTime
-                        if (triggerDelta > options.synchronization) {
-                            throw new WaitSynchronizationError(`event triggered ${triggerDelta} ms from first, greater than maximum ${options.synchronization}`)
+            if (triggerPromise !== undefined) {
+                // wrap trigger promise with synchronization code
+                if (options.synchronization !== undefined) {                
+                    const wrappedPromise = triggerPromise.then(() => {
+                        if (firstTriggerTime === undefined) {
+                            firstTriggerTime = this.bus.scheduler.timestamp
+                        } else {
+                            const triggerDelta = this.bus.scheduler.timestamp - firstTriggerTime
+                            if (triggerDelta > options.synchronization) {
+                                throw new WaitSynchronizationError(`event triggered ${triggerDelta} ms from first, greater than maximum ${options.synchronization}`)
+                            }
                         }
-                    }
-                    return undefined
-                })
-                triggerPromise = wrappedPromise
+                        return undefined
+                    })
+                    triggerPromises.push(wrappedPromise)
+                } else {
+                    triggerPromises.push(triggerPromise)
+                }
             }
-            triggerPromises.push(triggerPromise)
+            if (holdingPromise !== undefined) {
+                holdingListeners.push(holdingPromise)
+    
+            }
         })
 
         // Per Promise.all documentation, this rejects when any rejects.
+        const holdingPromises = holdingListeners.map(holdingListener => holdingListener.holdingPromise)
         await Promise.race(holdingPromises.concat(Promise.all(triggerPromises)))
         const end = this.bus.scheduler.timestamp
 
@@ -188,12 +177,5 @@ export class TestDriver {
         terminateHoldings.forEach(terminateHolding => terminateHolding())
 
         return end - start
-    }
-
-    // Requires the listed conditions hold while the inner function is running.
-    // TODO how to make this ignore waitFor conditions that might overlap?
-    // Or must the user disambiguate explicitly?
-    async requireWhile(conds: TesterCondition[], fn: () => Promise<void>) {
-        throw new Error("not implemented =(")
     }
 }

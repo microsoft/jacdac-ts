@@ -1,7 +1,7 @@
-import { DeviceFilter, DEVICE_ANNOUNCE, EVENT, JDBus, JDDevice, JDEvent, JDRegister, JDService, jdunpack, PackedValues, Packet, REPORT_RECEIVE, ServiceFilter } from "../jdom/jacdac-jdom"
-import { HeldTesterEvent, TesterCondition, TesterEvent } from "./base"
+import { EVENT, JDEvent, JDService } from "../jdom/jacdac-jdom"
+import { TesterEvent } from "./base"
+import { TestingNamer } from "./naming"
 import { RegisterTester } from "./registerwrapper"
-import { DeviceTester } from "./testwrappers"
 
 
 // Event that fires on a matching event code from the specified service
@@ -11,7 +11,7 @@ class ServiceEventEvent extends TesterEvent {
     }
     
     public makePromise() {
-        return new Promise((resolve) => {
+        const triggerPromise = new Promise((resolve) => {
             const bus = this.service.service.device.bus
             const handler = (event: JDEvent) => {
                 if (event.code == this.eventCode) {
@@ -21,6 +21,7 @@ class ServiceEventEvent extends TesterEvent {
             }
             bus.on(EVENT, handler)
         })
+        return {triggerPromise}
     }
 }
 
@@ -35,7 +36,7 @@ class ServiceNextEventEvent extends TesterEvent {
     }
     
     public makePromise() {
-        return new Promise((resolve, reject) => {
+        const triggerPromise = new Promise((resolve, reject) => {
             const bus = this.service.service.device.bus
             const handler = (event: JDEvent) => {
                 if (this.eventCode === undefined || event.code == this.eventCode) {
@@ -46,6 +47,7 @@ class ServiceNextEventEvent extends TesterEvent {
             }
             bus.once(EVENT, handler)
         })
+        return {triggerPromise}
     }
 
     public hold() {
@@ -54,12 +56,12 @@ class ServiceNextEventEvent extends TesterEvent {
 }
 
 // Event that additionally checks for absence of further events by rejecting the promise
-class ServiceNextEventHeldEvent extends HeldTesterEvent {
+class ServiceNextEventHeldEvent extends TesterEvent {
     constructor(protected readonly service: ServiceTester, protected eventCode?: number) {
         super()
     }
 
-    public makePromiseWithHold() {
+    public makePromise() {
         const bus = this.service.service.device.bus
 
         // TODO this code is really ugly, idk how to fix this while only having one bus.on that is consistent
@@ -94,23 +96,17 @@ class ServiceNextEventHeldEvent extends HeldTesterEvent {
             bus.on(EVENT, handler)
         })
 
-        return {triggerPromise, holdingPromise, terminateHolding}
+        return {triggerPromise, holdingListener: {holdingPromise, terminateHolding}}
     }
 }
 
 export class ServiceTester {
-    // Utility method to provide a standaradized debug name
-    public static nameOf(service: JDService) {
-        return `${DeviceTester.nameOf(service.device)}.${service.specification.name}`
-    }
-
-
     constructor(readonly service: JDService) {
 
     }
 
     public get name() {
-        return ServiceTester.nameOf(this.service)
+        return TestingNamer.nameOfService(this.service)
     }
 
     public register(registerCode: number) {
