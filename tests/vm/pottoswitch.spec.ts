@@ -17,8 +17,6 @@ import { bindRoles, getRoles } from "./vmtester"
 import { SRV_POTENTIOMETER, SwitchEvent, SwitchReg } from "../../jacdac-spec/dist/specconstants"
 import { JDService } from "../../src/jdom/service"
 import SensorServer from "../../src/servers/sensorserver"
-import { EVENT } from "../../src/jdom/constants"
-import { JDEvent } from "../../src/jdom/event"
 
 suite("pot to switch adapter", () => {
     const program: VMProgram = JSON.parse(
