@@ -173,7 +173,10 @@ export class VMEnvironment
         }
     }
 
-    public async lookupAsync(e: jsep.MemberExpression | string) {
+    public async lookupAsync(
+        e: jsep.MemberExpression | string,
+        reportUpdate = false
+    ) {
         const roleName = this.getRootName(e)
         if (roleName.startsWith("$var")) {
             const me = e as jsep.MemberExpression
@@ -199,8 +202,9 @@ export class VMEnvironment
                 ? undefined
                 : (ep.property as jsep.Identifier).name
         const serviceEnv = this.getService(e)
-        if (serviceEnv) return await serviceEnv.lookupRegisterAsync(root, fld)
-        else {
+        if (serviceEnv) {
+            return await serviceEnv.lookupRegisterAsync(root, fld, reportUpdate)
+        } else {
             const server = this.getServer(e)
             return server.lookupRegister(root, fld)
         }
