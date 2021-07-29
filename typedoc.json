@@ -1,0 +1,8 @@
+{
+    "entryPoints": ["src/jdom/jacdac-jdom.ts"],
+    "out": "docs",
+    "exclude": "src/worker/*.ts",
+    "excludePrivate": true,
+    "excludeInternal": true,
+    "name": "Jacdac TypeScript Documentation"
+}

@@ -35,7 +35,7 @@ export class USBTransportProxy implements TransportProxy {
             })
         }
         const onJDMessage = (buf: Uint8Array) => {
-            postMessage({
+            self.postMessage({
                 jacdac: true,
                 type: "frame",
                 payload: buf,

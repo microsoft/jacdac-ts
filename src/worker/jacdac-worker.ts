@@ -9,7 +9,7 @@ let proxy: TransportProxy
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function handleError(resp: any, e: Error) {
-    postMessage({
+    self.postMessage({
         ...resp,
         error: {
             message: e.message,
@@ -25,7 +25,7 @@ function handleError(resp: any, e: Error) {
 async function handleCommand(resp: any, handler: () => Promise<void>) {
     try {
         await handler()
-        postMessage(resp)
+        self.postMessage(resp)
     } catch (e) {
         handleError(resp, e)
     }
