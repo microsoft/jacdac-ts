@@ -220,7 +220,8 @@ class VMCommandEvaluator {
                     (this.inst === "awaitRegister" &&
                         regValue !== this._regSaved) ||
                     (this.inst === "awaitChange" &&
-                        Math.abs(regValue - this._regSaved) >= Math.abs(this._changeSaved))
+                        Math.abs(regValue - this._regSaved) >=
+                            Math.abs(this._changeSaved))
                 ) {
                     return VMInternalStatus.Completed
                 }
@@ -890,9 +891,10 @@ export class VMProgramRunner extends JDClient {
                 }
             })
             if (
-                done &&
-                h.status === VMInternalStatus.Ready &&
-                isEveryHandler(h.handler) || isRegisterChangeHandler(h.handler)
+                (done &&
+                    h.status === VMInternalStatus.Ready &&
+                    isEveryHandler(h.handler)) ||
+                isRegisterChangeHandler(h.handler)
             ) {
                 if (this.status === VMStatus.Running)
                     await this.runHandlerAsync(h)
@@ -1059,7 +1061,9 @@ export class VMProgramRunner extends JDClient {
                 //    deviceId: "VMServiceProvider",
                 //}
             )
-            this._device = this.roleManager.bus.addServiceProvider(this._provider)
+            this._device = this.roleManager.bus.addServiceProvider(
+                this._provider
+            )
             servers.forEach((s, index) => {
                 this.roleManager.addRoleService(
                     this._serverRoles[index].role,
