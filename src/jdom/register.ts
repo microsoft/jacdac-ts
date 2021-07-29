@@ -12,8 +12,8 @@ import {
     GET_ATTEMPT,
 } from "./constants"
 import { JDService } from "./service"
-import { intOfBuffer } from "./buffer"
-import { bufferEq, toHex, fromUTF8, uint8ArrayToString, delay } from "./utils"
+import { intOfBuffer, uintOfBuffer } from "./buffer"
+import { bufferEq, toHex, fromUTF8, uint8ArrayToString } from "./utils"
 import { DecodedPacket } from "./pretty"
 import { isRegister, isReading } from "./spec"
 import { JDField } from "./field"
@@ -142,6 +142,11 @@ export class JDRegister extends JDServiceMemberNode {
     get intValue(): number {
         const d = this.data
         return d && intOfBuffer(d)
+    }
+
+    get uintValue(): number {
+        const d = this.data
+        return d && uintOfBuffer(d)
     }
 
     get boolValue(): boolean {

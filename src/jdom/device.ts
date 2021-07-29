@@ -34,6 +34,7 @@ import {
     ERROR,
     SRV_CONTROL,
     SRV_LOGGER,
+    REPORT_UPDATE,
 } from "./constants"
 import { read32, SMap, bufferEq, setAckError, read16 } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
@@ -309,6 +310,13 @@ export class JDDevice extends JDNode {
             for (let i = 0; i < n; ++i) s.push(new JDService(this, i))
             this._services = s
             this.lastServiceUpdate = this.bus.timestamp
+
+            // listen for specific registers
+            const ctrl = this._services?.[0]
+            const codes = [ControlReg.FirmwareIdentifier]
+            codes.forEach(code =>
+                ctrl.register(code).once(REPORT_UPDATE, () => this.emit(CHANGE))
+            )
         }
     }
 
@@ -461,19 +469,22 @@ export class JDDevice extends JDNode {
         return this.service(0)?.sendCmdAsync(ControlCmd.Reset)
     }
 
-    async resolveFirmwareIdentifier(): Promise<number> {
+    async resolveFirmwareIdentifier(retry = 0): Promise<number> {
         const fwIdRegister = this.service(0)?.register(
             ControlReg.FirmwareIdentifier
         )
-        await fwIdRegister?.refresh(true)
-        return fwIdRegister?.intValue
+        if (!fwIdRegister) return undefined
+
+        while (retry-- > 0 && fwIdRegister.data === undefined)
+            await fwIdRegister.refresh(true)
+        return fwIdRegister.uintValue
     }
 
     get firmwareIdentifier(): number {
         const fwIdRegister = this.service(0)?.register(
             ControlReg.FirmwareIdentifier
         )
-        const v = fwIdRegister?.intValue
+        const v = fwIdRegister?.uintValue
         if (fwIdRegister && v === undefined) fwIdRegister?.refresh(true)
         return v
     }

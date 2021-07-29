@@ -19,6 +19,7 @@ function normalizeEventNames(eventNames: string | string[]): string[] {
 }
 
 export interface IEventSource {
+    readonly nodeId: number
     changeId: number
 
     /**
@@ -32,7 +33,21 @@ export interface IEventSource {
     ): () => void
 }
 
+export function dependencyChangeId(nodes: IEventSource[]) {
+    return (
+        nodes
+            ?.map(node => (node ? `${node.nodeId}:${node.changeId}` : "?"))
+            .join(",") || ""
+    )
+}
+
+export function dependencyId(nodes: IEventSource[]) {
+    return nodes?.map(node => node?.nodeId || "?").join(",") || ""
+}
+
+let nextNodeId = 0
 export class JDEventSource implements IEventSource {
+    public readonly nodeId = nextNodeId++ // debugging
     private readonly listeners: SMap<Listener[]> = {}
     readonly eventStats: SMap<number> = {}
     newListenerStats: SMap<number> = undefined

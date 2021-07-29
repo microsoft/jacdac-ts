@@ -1,6 +1,10 @@
 import { JDBus } from "../../src/jdom/bus"
 import JDServiceProvider from "../../src/jdom/serviceprovider"
-import { EVENT, DEVICE_ANNOUNCE, PACKET_EVENT } from "../../src/jdom/constants"
+import {
+    EVENT,
+    DEVICE_ANNOUNCE,
+    REPORT_RECEIVE,
+} from "../../src/jdom/constants"
 import { loadSpecifications } from "../testutils"
 
 import { JDEvent } from "../../src/jdom/event"
@@ -9,6 +13,9 @@ import JDServiceServer from "../../src/jdom/serviceserver"
 import { assert } from "../../src/jdom/utils"
 import { JDService } from "../../src/jdom/service"
 import { FastForwardScheduler } from "./scheduler"
+import { jdunpack, PackedValues } from "../../src/jdom/pack"
+import Packet from "../../src/jdom/packet"
+import { JDRegister } from "../../src/jdom/register"
 
 // Set equals is not a built-in operation.
 function setEquals<T>(set1: Set<T>, set2: Set<T>): boolean {
@@ -243,6 +250,25 @@ export async function nextEventFrom(
     } else {
         return nextEventFromInternal(service, eventWithin)
     }
+}
+
+// Waits for the next update packet from a register, and returns the new value from the packet.
+// TODO: should there be a timing API? These packets are repeating, so timining may not mean much,
+// though a different API (expect-value-through-some-time, which operates on packets instead of polling)
+// might be useful.
+export function nextUpdateFrom(register: JDRegister): Promise<PackedValues> {
+    const packFormat = register.specification.packFormat
+
+    const nextReportPromise: Promise<PackedValues> = new Promise(resolve =>
+        register.once(REPORT_RECEIVE, (packet: Packet) => {
+            const unpackedData = jdunpack(packet.data, packFormat)
+            resolve(unpackedData)
+        })
+    )
+
+    return (
+        register.service.device.bus.scheduler as FastForwardScheduler
+    ).runToPromise(nextReportPromise)
 }
 
 export async function runForDelay(bus: JDBus, millis: number) {
