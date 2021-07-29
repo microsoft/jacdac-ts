@@ -1,8 +1,0 @@
-{
-    "compilerOptions": {
-        "target": "es2020",
-        "lib": ["webworker", "es2020", "scripthost"],
-        "types": ["@types/w3c-web-usb"]
-    },
-    "exclude": ["node_modules"]
-}
