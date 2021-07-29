@@ -2,7 +2,8 @@
 import { createUSBBus, DEVICE_ANNOUNCE, JDDevice, JDService, SRV_BUTTON } from "../jdom/jacdac-jdom"
 import { TestDriver } from "./base"
 import { ButtonTestRoutine } from "./examples"
-import { BusTester, ServiceTester } from "./testwrappers"
+import { ServiceTester } from "./servicewrapper"
+import { BusTester } from "./testwrappers"
 
 export class ConsoleUi {
     readonly logDiv: HTMLElement
@@ -30,10 +31,12 @@ export function main(document: Document) {
     const testdriver = new TestDriver(bus, ui)
 
     const handler = async (device: JDDevice) => {
+        tester.devices({})
         const buttonServices = device.services({serviceClass: SRV_BUTTON})
         if (buttonServices.length == 1) {
-            ui.log(`connected (device w/ single button): ${device.shortId}`)
-            const buttonTest = new ButtonTestRoutine(new ServiceTester(buttonServices[0]), testdriver)
+            const serviceTester = new ServiceTester(buttonServices[0])
+            ui.log(`connected (device w/ single button): ${serviceTester.name}`)
+            const buttonTest = new ButtonTestRoutine(serviceTester, testdriver)
             try {
                 await buttonTest.testHold()
             } catch (e: unknown) {
@@ -55,13 +58,13 @@ export function main(document: Document) {
         ui.log("devices:")
         tester.devices().forEach(deviceTester => {
             const deviceServiceNames = deviceTester.services().map(service =>
-                service.service.specification?.name
+                service.name
             )
             ui.log(`- ${deviceTester.device.shortId}: ${deviceServiceNames.join(",")}`)
         })
 
         const device = await tester.nextConnected()
-        ui.log(`connected: ${device.name()}`)        
+        ui.log(`connected: ${device.name}`)        
     }
 
     document.getElementById("disconnect").onclick = async () => {

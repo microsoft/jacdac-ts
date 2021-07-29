@@ -1,6 +1,6 @@
 import { ButtonEvent, ButtonReg } from "../jdom/constants";
 import { TestDriver } from "./base";
-import { ServiceTester } from "./testwrappers";
+import { ServiceTester } from "./servicewrapper";
 
 // Overall concepts
 // waits - until event (instant in time)
@@ -75,7 +75,7 @@ export class ButtonTestRoutine {
                 preRequiredRange: [0, 0.5],
                 triggerRange: [0.5, 1]
             })
-        ]) //, {synchronization: 50})
+        ], {synchronization: 50})
 
         this.driver.log("saw down, hold")
         await this.driver.waitForAll([
