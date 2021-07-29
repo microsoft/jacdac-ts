@@ -1,5 +1,6 @@
 // Contains foundational abstractions for the testing system
 
+import { HostedFileStorage } from "../embed/filestorage"
 import { JDBus } from "../jdom/bus"
 import { assert } from "../jdom/utils"
 import { ConsoleUi } from "./jacdac-tstester"
@@ -138,28 +139,43 @@ export class TestDriver {
     // Waits for multiple events, with optional timing parameters.
     // All events must fire within the timing window, but with no constarints on order.
     // Returns the amount of time spent waiting to the last event, or throws an error if not within timing bounds.
-    async waitForAll(events: TesterEvent[], options: SynchronizationTimingOptions = {}): Promise<number> {
+    async waitForAll(events: (TesterEvent | HeldTesterEvent)[], options: SynchronizationTimingOptions = {}): Promise<number> {
         // TODO the returned timing may be a bit inconsistent with options for realtime systems
         const start = this.bus.scheduler.timestamp
         let firstTriggerTime: number | undefined = undefined  // for synchronization
 
         // This wraps all the promises with the timing bounds, then wraps them again with synchronization bounds
-        const promises = events.map(async (event) => {
-            await this.makePromiseTimed(event.makePromise(), options)
+        const triggerPromises: Promise<unknown>[] = []
+        const holdingPromises: Promise<unknown>[] = []
+        const promises = events.forEach(event => {
+            let triggerPromise
+            if (event instanceof TesterEvent) {
+                triggerPromise = event.makePromise()
+            } else if (event instanceof HeldTesterEvent) {
+                let holdingPromise
+                ({triggerPromise, holdingPromise} = event.makePromiseWithHold())
+                holdingPromises.push(holdingPromise)
+            }   
+
+            // wrap trigger promise with synchronization code
             if (options.synchronization !== undefined) {
-                if (firstTriggerTime === undefined) {
-                    firstTriggerTime = this.bus.scheduler.timestamp
-                } else {
-                    const triggerDelta = this.bus.scheduler.timestamp - firstTriggerTime
-                    if (triggerDelta > options.synchronization) {
-                        throw new WaitSynchronizationError(`event triggered ${triggerDelta} ms from first, greater than maximum ${options.synchronization}`)
+                const wrappedPromise = triggerPromise.then(() => {
+                    if (firstTriggerTime === undefined) {
+                        firstTriggerTime = this.bus.scheduler.timestamp
+                    } else {
+                        const triggerDelta = this.bus.scheduler.timestamp - firstTriggerTime
+                        if (triggerDelta > options.synchronization) {
+                            throw new WaitSynchronizationError(`event triggered ${triggerDelta} ms from first, greater than maximum ${options.synchronization}`)
+                        }
                     }
-                }
+                })
+                triggerPromise = wrappedPromise
             }
+            triggerPromises.push(triggerPromise)
         })
 
         // Per Promise.all documentation, this rejects when any rejects.
-        await Promise.all(promises)
+        await Promise.race([Promise.all(triggerPromises), holdingPromises])
         const end = this.bus.scheduler.timestamp
         return end - start
     }

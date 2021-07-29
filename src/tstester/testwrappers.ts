@@ -90,10 +90,11 @@ class ServiceNextEventHeldEvent extends HeldTesterEvent {
         super()
     }
 
-    public makePromiseWithHold(){
+    public makePromiseWithHold() {
         const bus = this.service.device.bus
 
         // TODO this code is really ugly, idk how to fix this while only having one bus.on that is consistent
+        // TODO can this be deduplicated with NextEvent (without the hold), and with OnEvent (ignores nonmatching events)?
         // This promise will not reject until after the main promise resolves
         let holdingReject: (reason: Error) => void
         const holdingPromise = new Promise((resolve, reject) => {
