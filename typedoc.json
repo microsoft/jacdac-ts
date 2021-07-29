@@ -7,6 +7,8 @@
         "src/jdom/transport/*.ts",
         "src/jdom/pretty.ts",
         "src/jdom/utils.ts",
+        "src/jdom/buffer.ts",
+        "src/jdom/makecode.ts",
         "jacdac-spec/dist/*.ts"
     ],
     "excludePrivate": true,

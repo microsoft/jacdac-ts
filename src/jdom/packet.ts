@@ -51,6 +51,10 @@ import { serviceSpecificationFromClassIdentifier } from "./spec"
 
 const { warn } = console
 
+/**
+ * A Jacdac packet
+ * @category JDOM
+ */
 export class Packet {
     private _header: Uint8Array
     private _data: Uint8Array
