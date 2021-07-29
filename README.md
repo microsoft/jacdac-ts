@@ -7,6 +7,7 @@ with applications to rapid prototyping, making, and physical computing.
 This repository contains a **TypeScript/JavaScript** client library for the [Jacdac](https://aka.ms/jacdac) protocol.
 
 * **[Jacdac Documentation](https://aka.ms/jacdac/)**
+* **[Jacdac TypeScript Developer Documentation](https://microsoft.github.io/jacdac-ts/)
 * Discussions at https://github.com/microsoft/jacdac/discussions
 * Issues are tracked on https://github.com/microsoft/jacdac/issues
 
