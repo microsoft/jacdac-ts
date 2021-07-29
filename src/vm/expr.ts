@@ -69,7 +69,7 @@ export class VMExprEvaluator {
         return this.exprStack.pop()
     }
 
-    private async visitExpressionAsync(e: jsep.Expression) {
+    public async visitExpressionAsync(e: jsep.Expression) {
         switch (e.type) {
             case "ArrayExpression": {
                 // nothing to do here yet (only used for event function)
