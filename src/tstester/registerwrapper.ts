@@ -111,7 +111,7 @@ export class RegisterTester {
         return new RegisterUpdateEvent(this, options)
     }
 
-    public condition() {
-        throw new Error("not implemented")
+    public hold(range: [number, number]) {
+        return new RegisterHold(this, range)
     }
 }

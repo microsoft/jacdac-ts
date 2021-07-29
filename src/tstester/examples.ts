@@ -68,10 +68,14 @@ export class ButtonTestRoutine {
     public async testHold() {
         // User instruction: press and hold the button
 
+        // Avoid over-use of "this" everywhere
+        const service = this.service
+        const register = this.service.register(ButtonReg.Pressure)
+
         this.driver.log("wait for down")
         await this.driver.waitForAll([
-            this.service.nextEvent(ButtonEvent.Down).hold(),
-            this.service.register(ButtonReg.Pressure).onUpdate({
+            service.nextEvent(ButtonEvent.Down).hold(),
+            register.onUpdate({
                 preRequiredRange: [0, 0.5],
                 triggerRange: [0.5, 1]
             })
@@ -79,26 +83,29 @@ export class ButtonTestRoutine {
 
         this.driver.log("saw down, hold")
         await this.driver.waitForAll([
-            this.service.nextEvent(ButtonEvent.Hold).hold()
+            service.nextEvent(ButtonEvent.Hold).hold(),
+            register.hold([0.5, 1.0])
         ], {after: 500,
             tolerance: 100})
 
         this.driver.log("saw hold (1), continue holding")
         await this.driver.waitForAll([
-            this.service.nextEvent(ButtonEvent.Hold).hold()
+            service.nextEvent(ButtonEvent.Hold).hold(),
+            register.hold([0.5, 1.0])
         ], {after: 500,
             tolerance: 100})
 
         this.driver.log("saw hold (2), continue holding")
         await this.driver.waitForAll([
-            this.service.nextEvent(ButtonEvent.Hold).hold()
+            service.nextEvent(ButtonEvent.Hold).hold(),
+            register.hold([0.5, 1.0])
         ], {after: 500,
             tolerance: 100})
 
         this.driver.log("done, release")
         await this.driver.waitForAll([
-            this.service.onEvent(ButtonEvent.Up),  // ignore any continued hold events
-            this.service.register(ButtonReg.Pressure).onUpdate({
+            service.onEvent(ButtonEvent.Up),  // ignore any continued hold events
+            register.onUpdate({
                 triggerRange: [0, 0.5]
             })
         ], {synchronization: 50})
