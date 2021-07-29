@@ -97,6 +97,7 @@ class ServiceNextEventHeldEvent extends HeldTesterEvent {
         // TODO can this be deduplicated with NextEvent (without the hold), and with OnEvent (ignores nonmatching events)?
         // This promise will not reject until after the main promise resolves
         let holdingReject: (reason: Error) => void
+        let terminateHolding: () => void
         const holdingPromise = new Promise((resolve, reject) => {
             holdingReject = reject
         })
@@ -117,10 +118,14 @@ class ServiceNextEventHeldEvent extends HeldTesterEvent {
                 }
             }
 
+            terminateHolding = () => {
+                bus.off(EVENT, handler)
+            }
+
             bus.on(EVENT, handler)
         })
 
-        return {triggerPromise, holdingPromise}
+        return {triggerPromise, holdingPromise, terminateHolding}
     }
 }
 

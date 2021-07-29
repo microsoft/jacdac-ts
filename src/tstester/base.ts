@@ -17,6 +17,7 @@ export abstract class TesterEvent {
 export interface EventWithHold {
     triggerPromise: Promise<unknown>  // resolves when the event triggers
     holdingPromise: Promise<unknown>  // rejects if the holding condition is violated, can only do so after the trigger above
+    terminateHolding: () => void  // called to clean up the holding promise (as a side effect, may also break the trigger)
 }
 // Similar to TesterEvent, but returns a promise once it has been triggered (main promise fulfilled).
 // The returned promise listens for negative conditions and rejects on seeing any.
@@ -147,14 +148,16 @@ export class TestDriver {
         // This wraps all the promises with the timing bounds, then wraps them again with synchronization bounds
         const triggerPromises: Promise<unknown>[] = []
         const holdingPromises: Promise<unknown>[] = []
+        const terminateHoldings: (() => void)[] = []
         events.forEach(event => {
             let triggerPromise
             if (event instanceof TesterEvent) {
                 triggerPromise = event.makePromise()
             } else if (event instanceof HeldTesterEvent) {
-                let holdingPromise
-                ({triggerPromise, holdingPromise} = event.makePromiseWithHold())
+                let holdingPromise, terminateHolding
+                ({triggerPromise, holdingPromise, terminateHolding} = event.makePromiseWithHold())
                 holdingPromises.push(holdingPromise)
+                terminateHoldings.push(terminateHolding)
             } else {
                 throw new Error(`unknown event in test wait ${event}`)
             } 
@@ -180,6 +183,10 @@ export class TestDriver {
         // Per Promise.all documentation, this rejects when any rejects.
         await Promise.race(holdingPromises.concat(Promise.all(triggerPromises)))
         const end = this.bus.scheduler.timestamp
+
+        // Clean up any holding promises
+        terminateHoldings.forEach(terminateHolding => terminateHolding())
+
         return end - start
     }
 
