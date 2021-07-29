@@ -53,11 +53,8 @@ suite("pot to switch adapter", () => {
     test("turns on", async () => {
         await withHarness(async (bus, pot, sw) => {
             pot.server.reading.setValues([0.2])
-            pot.server.streamingSamples.setValues([1])
             await runForDelay(bus, 100)
-
             pot.server.reading.setValues([0.7])
-            pot.server.streamingSamples.setValues([1])
 
             assert(
                 (
@@ -74,11 +71,9 @@ suite("pot to switch adapter", () => {
     test("turns off", async () => {
         await withHarness(async (bus, pot, sw) => {
             pot.server.reading.setValues([1])
-            pot.server.streamingSamples.setValues([1])
             await runForDelay(bus, 100)
 
             pot.server.reading.setValues([0.3])
-            pot.server.streamingSamples.setValues([1])
             assert(
                 (
                     await nextEventFrom(sw, {
@@ -94,11 +89,9 @@ suite("pot to switch adapter", () => {
     test("does not turn off within hysteresis region", async () => {
         await withHarness(async (bus, pot, sw) => {
             pot.server.reading.setValues([0.9])
-            pot.server.streamingSamples.setValues([1])
             await runForDelay(bus, 100)
 
             pot.server.reading.setValues([0.55])
-            pot.server.streamingSamples.setValues([1])
             // TODO check for absence of event?
 
             await sw.register(SwitchReg.Active).refresh()
@@ -109,11 +102,9 @@ suite("pot to switch adapter", () => {
     test("does not turn on within hysteresis region", async () => {
         await withHarness(async (bus, pot, sw) => {
             pot.server.reading.setValues([0])
-            pot.server.streamingSamples.setValues([1])
             await runForDelay(bus, 100)
 
             pot.server.reading.setValues([0.55])
-            pot.server.streamingSamples.setValues([1])
             // TODO check for absence of event?
             await sw.register(SwitchReg.Active).refresh()
             assert(sw.register(SwitchReg.Active).unpackedValue[0] === 0)

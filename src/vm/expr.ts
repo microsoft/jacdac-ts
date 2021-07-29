@@ -1,4 +1,4 @@
-export type GetValue = (e: jsep.MemberExpression | string) => any
+export type GetValue = (e: jsep.MemberExpression | string, reportUpdate: boolean) => any
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type StartMap = { e: jsep.Expression; v: any }[]
@@ -49,6 +49,7 @@ export function unparse(e: jsep.Expression): string {
 export class VMExprEvaluator {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private exprStack: any[] = []
+    private reportUpdate = false
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(private env: GetValue, private callEval: CallEvaluator) {}
@@ -61,8 +62,9 @@ export class VMExprEvaluator {
         return this.exprStack.pop()
     }
 
-    public async evalAsync(e: jsep.Expression) {
+    public async evalAsync(e: jsep.Expression, reportUpdate = false) {
         this.exprStack = []
+        this.reportUpdate = reportUpdate
         await this.visitExpressionAsync(e)
         return this.exprStack.pop()
     }
@@ -194,7 +196,7 @@ export class VMExprEvaluator {
             case "MemberExpression": {
                 // for now, we don't support evaluation of obj or prop
                 // of obj.prop
-                const val = await this.env(e as jsep.MemberExpression)
+                const val = await this.env(e as jsep.MemberExpression, this.reportUpdate)
                 //if (val === undefined) {
                 //    throw new VMError(VMCode.InternalError, `lookup of ${unparse(e)} failed`)
                 //}
@@ -203,7 +205,7 @@ export class VMExprEvaluator {
             }
             case "Identifier": {
                 const id = <jsep.Identifier>e
-                const val = await this.env(id.name)
+                const val = await this.env(id.name, this.reportUpdate)
                 // if (val === undefined)
                 //    throw new VMError(VMCode.InternalError, `lookup of ${id.name} failed`)
                 this.exprStack.push(val)

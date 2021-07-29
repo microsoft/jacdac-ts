@@ -3,13 +3,14 @@ import { JDServiceClient } from "../jdom/serviceclient"
 import { JDService } from "../jdom/service"
 import { JDRegister } from "../jdom/register"
 import { JDEvent } from "../jdom/event"
-import { CHANGE, EVENT, SystemReg } from "../jdom/constants"
+import { CHANGE, EVENT, REPORT_UPDATE, SystemReg } from "../jdom/constants"
 import { SMap } from "../jdom/utils"
 import { jdpack, PackedValues } from "../jdom/pack"
 import { atomic } from "./utils"
 
 export class VMServiceClient extends JDServiceClient {
     private _registers: SMap<JDRegister> = {}
+    private _reportUpdate: SMap<boolean> = {}
     private _events: SMap<JDEvent> = {}
 
     constructor(service: JDService) {
@@ -77,9 +78,13 @@ export class VMServiceClient extends JDServiceClient {
         }
     }
 
-    public async lookupRegisterAsync(root: string, fld: string) {
+    public async lookupRegisterAsync(root: string, fld: string, reportUpdate = false) {
         if (root in this._registers) {
             const register = this._registers[root]
+            if (reportUpdate && !this._reportUpdate[root]) {
+                this._reportUpdate[root] = true
+                this.mount(register.subscribe(REPORT_UPDATE, () => {} ))
+            }
             await register.refresh()
             if (!fld) return register.unpackedValue?.[0]
             else {

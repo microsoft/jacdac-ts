@@ -57,7 +57,7 @@ export interface VMEnvironmentInterface {
         command: jsep.MemberExpression,
         values: atomic[]
     ) => Promise<void>
-    lookupAsync: (e: jsep.MemberExpression | string) => Promise<atomic>
+    lookupAsync: (e: jsep.MemberExpression | string, reportUpdate: boolean) => Promise<atomic>
     writeGlobal: (e: jsep.MemberExpression | string, v: atomic) => boolean
     hasRequest: (e: jsep.MemberExpression | string) => ExternalRequest
     roleTransition: (role: string, direction: string) => boolean
@@ -128,18 +128,18 @@ class VMCommandEvaluator {
 
     private newEval() {
         return new VMExprEvaluator(
-            async e => await this.env.lookupAsync(e),
+            async (e, reportUpdate) => await this.env.lookupAsync(e, reportUpdate),
             this.callEval()
         )
     }
 
-    private async evalExpressionAsync(e: jsep.Expression) {
+    private async evalExpressionAsync(e: jsep.Expression, reportUpdate = false) {
         const expr = this.newEval()
-        return await expr.evalAsync(e)
+        return await expr.evalAsync(e, reportUpdate)
     }
 
-    private async checkExpressionAsync(e: jsep.Expression) {
-        return (await this.evalExpressionAsync(e)) ? true : false
+    private async checkExpressionAsync(e: jsep.Expression, reportUpdate = false) {
+        return (await this.evalExpressionAsync(e, reportUpdate)) ? true : false
     }
 
     private async startAsync() {
@@ -149,7 +149,7 @@ class VMCommandEvaluator {
         ) {
             // need to capture register value for awaitChange/awaitRegister
             const args = this.cmd.command.arguments
-            this._regSaved = await this.evalExpressionAsync(args[0])
+            this._regSaved = await this.evalExpressionAsync(args[0], true)
             if (this.inst === "awaitChange")
                 this._changeSaved = await this.evalExpressionAsync(args[1])
             return true
