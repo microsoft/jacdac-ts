@@ -13,6 +13,17 @@ export abstract class TesterEvent {
     public abstract makePromise(): Promise<unknown>
 }
 
+export interface EventWithHold {
+    triggerPromise: Promise<unknown>  // resolves when the event triggers
+    holdingPromise: Promise<unknown>  // rejects if the holding condition is violated, can only do so after the trigger above
+}
+// Similar to TesterEvent, but returns a promise once it has been triggered (main promise fulfilled).
+// The returned promise listens for negative conditions and rejects on seeing any.
+// The returned promise should never fulfill and can be ignored after the held is no longer applicable.
+export abstract class HeldTesterEvent {
+    public abstract makePromiseWithHold(): EventWithHold
+}
+
 // A condition that can be asserted for a duration, implemented as listeners
 // This describes a condition, but does not immediately start listening for the condition.
 export abstract class TesterCondition {

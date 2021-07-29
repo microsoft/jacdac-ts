@@ -1,5 +1,5 @@
 import { DeviceFilter, DEVICE_ANNOUNCE, EVENT, JDBus, JDDevice, JDEvent, JDRegister, JDService, jdunpack, PackedValues, Packet, REPORT_RECEIVE, ServiceFilter } from "../jdom/jacdac-jdom"
-import { TesterCondition, TesterEvent } from "./base"
+import { HeldTesterEvent, TesterCondition, TesterEvent } from "./base"
 
 
 export class BusTester {
@@ -78,6 +78,49 @@ class ServiceNextEventEvent extends TesterEvent {
             bus.once(EVENT, handler)
         })
     }
+
+    public hold() {
+        return new ServiceNextEventHeldEvent(this.service, this.eventCode)
+    }
+}
+
+// Event that additionally checks for absence of further events by rejecting the promise
+class ServiceNextEventHeldEvent extends HeldTesterEvent {
+    constructor(protected readonly service: JDService, protected eventCode?: number) {
+        super()
+    }
+
+    public makePromiseWithHold(){
+        const bus = this.service.device.bus
+
+        // TODO this code is really ugly, idk how to fix this while only having one bus.on that is consistent
+        // This promise will not reject until after the main promise resolves
+        let holdingReject: (reason: Error) => void
+        const holdingPromise = new Promise((resolve, reject) => {
+            holdingReject = reject
+        })
+
+        // This is the trigger condition only
+        let resolved = false
+        const triggerPromise = new Promise((resolve, reject) => {
+            const handler = (event: JDEvent) => {
+                if (resolved) {
+                    holdingReject(new Error(`service got event ${event.code} when hold asserted`))
+                    bus.off(EVENT, handler)
+                } else if (this.eventCode === undefined || event.code == this.eventCode) {
+                    resolved = true
+                    resolve(undefined)
+                } else {
+                    bus.off(EVENT, handler)
+                    reject(new ServiceNextEventError(`service got next event ${event.code} (${event.name}) not expected ${this.eventCode}`))
+                }
+            }
+
+            bus.on(EVENT, handler)
+        })
+
+        return {triggerPromise, holdingPromise}
+    }
 }
 
 export class ServiceTester {
@@ -94,18 +137,18 @@ export class ServiceTester {
     }
 
     // Event that fires on a service event
-    public onEvent(eventCode: number): TesterEvent {
+    public onEvent(eventCode: number) {
         return new ServiceEventEvent(this.service, eventCode)
     }
 
     // Event that fires on the next service event, which optionally must be of the eventCode
-    public nextEvent(eventCode?: number): TesterEvent {
+    public nextEvent(eventCode?: number) {
         return new ServiceNextEventEvent(this.service, eventCode)
     }
 
     // Condition that no event fires
     // TODO how to define this mutually exclusive with trigger events?
-    public noEvent(): TesterCondition {
+    public noEvent() {
         throw new Error("not implemented")
     }
 }
@@ -174,11 +217,11 @@ export class RegisterTester {
     }
 
     // Event that fires on a register update (even with unchagned value), optionally with a starting (arming) and to (trigger) filter
-    public onUpdate(options: RegisterUpdateOptions = {}): TesterEvent {
+    public onUpdate(options: RegisterUpdateOptions = {}) {
         return new RegisterUpdateEvent(this.register, options)
     }
 
-    public condition(): TesterCondition {
+    public condition() {
         throw new Error("not implemented")
     }
 }
