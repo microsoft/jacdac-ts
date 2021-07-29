@@ -70,28 +70,28 @@ export class ButtonTestRoutine {
 
         this.driver.log("wait for down")
         await this.driver.waitForAll([
-            this.service.nextEvent(ButtonEvent.Down),
+            this.service.nextEvent(ButtonEvent.Down).hold(),
             this.service.register(ButtonReg.Pressure).onUpdate({
                 preRequiredRange: [0, 0.5],
                 triggerRange: [0.5, 1]
             })
-        ], {synchronization: 50})
+        ]) //, {synchronization: 50})
 
         this.driver.log("saw down, hold")
         await this.driver.waitForAll([
-            this.service.nextEvent(ButtonEvent.Hold)
+            this.service.nextEvent(ButtonEvent.Hold).hold()
         ], {after: 500,
             tolerance: 100})
 
         this.driver.log("saw hold (1), continue holding")
         await this.driver.waitForAll([
-            this.service.nextEvent(ButtonEvent.Hold)
+            this.service.nextEvent(ButtonEvent.Hold).hold()
         ], {after: 500,
             tolerance: 100})
 
         this.driver.log("saw hold (2), continue holding")
         await this.driver.waitForAll([
-            this.service.nextEvent(ButtonEvent.Hold)
+            this.service.nextEvent(ButtonEvent.Hold).hold()
         ], {after: 500,
             tolerance: 100})
 

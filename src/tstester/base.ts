@@ -147,7 +147,7 @@ export class TestDriver {
         // This wraps all the promises with the timing bounds, then wraps them again with synchronization bounds
         const triggerPromises: Promise<unknown>[] = []
         const holdingPromises: Promise<unknown>[] = []
-        const promises = events.forEach(event => {
+        events.forEach(event => {
             let triggerPromise
             if (event instanceof TesterEvent) {
                 triggerPromise = event.makePromise()
@@ -155,10 +155,12 @@ export class TestDriver {
                 let holdingPromise
                 ({triggerPromise, holdingPromise} = event.makePromiseWithHold())
                 holdingPromises.push(holdingPromise)
-            }   
+            } else {
+                throw new Error(`unknown event in test wait ${event}`)
+            } 
 
             // wrap trigger promise with synchronization code
-            if (options.synchronization !== undefined) {
+            if (options.synchronization !== undefined) {                
                 const wrappedPromise = triggerPromise.then(() => {
                     if (firstTriggerTime === undefined) {
                         firstTriggerTime = this.bus.scheduler.timestamp
@@ -168,6 +170,7 @@ export class TestDriver {
                             throw new WaitSynchronizationError(`event triggered ${triggerDelta} ms from first, greater than maximum ${options.synchronization}`)
                         }
                     }
+                    return undefined
                 })
                 triggerPromise = wrappedPromise
             }
@@ -175,7 +178,7 @@ export class TestDriver {
         })
 
         // Per Promise.all documentation, this rejects when any rejects.
-        await Promise.race([Promise.all(triggerPromises), holdingPromises])
+        await Promise.race(holdingPromises.concat(Promise.all(triggerPromises)))
         const end = this.bus.scheduler.timestamp
         return end - start
     }

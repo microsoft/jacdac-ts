@@ -106,7 +106,7 @@ class ServiceNextEventHeldEvent extends HeldTesterEvent {
         const triggerPromise = new Promise((resolve, reject) => {
             const handler = (event: JDEvent) => {
                 if (resolved) {
-                    holdingReject(new Error(`service got event ${event.code} when hold asserted`))
+                    holdingReject(new Error(`service got event ${event.code} (${event.name}) when hold asserted`))
                     bus.off(EVENT, handler)
                 } else if (this.eventCode === undefined || event.code == this.eventCode) {
                     resolved = true
