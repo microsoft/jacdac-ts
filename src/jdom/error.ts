@@ -1,4 +1,4 @@
-export const JACDAC_ERROR = "JacdacError"
+import { JACDAC_ERROR } from "./constants"
 
 export class JDError extends Error {
     constructor(message: string, readonly jacdacName?: string) {
