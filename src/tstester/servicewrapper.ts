@@ -1,5 +1,6 @@
-import { EVENT, JDEvent, JDService } from "../jdom/jacdac-jdom"
+import { EVENT, EventHandler, JDEvent, JDService } from "../jdom/jacdac-jdom"
 import { TesterEvent } from "./base"
+import { EventWithHoldAdapter } from "./eventhold"
 import { TestingNamer } from "./naming"
 import { RegisterTester } from "./registerwrapper"
 
@@ -56,47 +57,26 @@ class ServiceNextEventEvent extends TesterEvent {
 }
 
 // Event that additionally checks for absence of further events by rejecting the promise
-class ServiceNextEventHeldEvent extends TesterEvent {
+class ServiceNextEventHeldEvent extends EventWithHoldAdapter<JDEvent> {
     constructor(protected readonly service: ServiceTester, protected eventCode?: number) {
-        super()
-    }
-
-    public makePromise() {
-        const bus = this.service.service.device.bus
-
-        // TODO this code is really ugly, idk how to fix this while only having one bus.on that is consistent
-        // TODO can this be deduplicated with NextEvent (without the hold), and with OnEvent (ignores nonmatching events)?
-        // This promise will not reject until after the main promise resolves
-        let holdingReject: (reason: Error) => void
-        let terminateHold: () => void
-        const holdingPromise = new Promise((resolve, reject) => {
-            holdingReject = reject
-        })
-
-        // This is the trigger condition only
-        let resolved = false
-        const triggerPromise = new Promise((resolve, reject) => {
-            const handler = (event: JDEvent) => {
-                if (resolved) {
-                    holdingReject(new Error(`service ${this.service.name} got event ${event.code} (${event.name}) when hold asserted`))
-                    bus.off(EVENT, handler)
-                } else if (this.eventCode === undefined || event.code == this.eventCode) {
-                    resolved = true
-                    resolve(undefined)
+        super({
+            register: (handler: (event: JDEvent) => void) => {
+                return service.service.device.bus.on(EVENT, handler)
+            },
+            deregister: (handle: unknown) => {
+                service.service.device.bus.off(EVENT, handle as EventHandler)
+            },
+            processTrigger: (event: JDEvent) => {
+                if (this.eventCode === undefined || event.code == this.eventCode) {
+                    return true
                 } else {
-                    bus.off(EVENT, handler)
-                    reject(new ServiceNextEventError(`service ${this.service.name} got next event ${event.code} (${event.name}) not expected ${this.eventCode}`))
+                    throw new ServiceNextEventError(`service ${this.service.name} got next event ${event.code} (${event.name}) not expected ${this.eventCode}`)
                 }
+            },
+            processHold: (event: JDEvent) => {
+                throw new Error(`service ${this.service.name} got event ${event.code} (${event.name}) when hold asserted`)
             }
-
-            terminateHold = () => {
-                bus.off(EVENT, handler)
-            }
-
-            bus.on(EVENT, handler)
         })
-
-        return {triggerPromise, holdingListener: {holdingPromise, terminateHold}}
     }
 }
 
