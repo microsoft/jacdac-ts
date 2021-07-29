@@ -2,6 +2,10 @@ import { JDNode } from "./node"
 import { JDService } from "./service"
 import { DecodedPacket } from "./pretty"
 
+/**
+ * Base class for JDOM service member classes.
+ * @category JDOM
+ */
 export abstract class JDServiceMemberNode extends JDNode {
     private _specification: jdspec.PacketInfo
 

@@ -159,6 +159,7 @@ export interface SMap<T> {
     [index: string]: T
 }
 
+/** @internal */
 export class PromiseBuffer<T> {
     private waiting: ((v: T | Error) => void)[] = []
     private available: (T | Error)[] = []
@@ -207,6 +208,7 @@ export class PromiseBuffer<T> {
     }
 }
 
+/** @internal */
 export class PromiseQueue {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private readonly promises: SMap<(() => Promise<any>)[]> = {}

@@ -53,6 +53,10 @@ export function getMLModelFormatName(model: Uint8Array) {
     return "0x" + U.toHex(model.slice(0, 8))
 }
 
+/**
+ * A client for the model runner service
+ * @category Clients
+ */
 export class ModelRunnerClient extends JDServiceClient {
     constructor(service: JDService) {
         super(service)

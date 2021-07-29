@@ -29,6 +29,10 @@ export interface SensorAggregatorStats {
     sampleSize: number
 }
 
+/**
+ * A client for the sensor aggregator service
+ * @category Clients
+ */
 export class SensorAggregatorClient extends JDServiceClient {
     constructor(service: JDService) {
         super(service)

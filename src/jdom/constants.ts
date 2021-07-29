@@ -204,4 +204,6 @@ export const ROLE_HAS_NO_SERVICE = "roleHasNoService"
 export const BOUND = "bound"
 export const UNBOUND = "unbound"
 
+export const JACDAC_ERROR = "JacdacError"
+
 export * from "../../jacdac-spec/dist/specconstants"

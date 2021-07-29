@@ -1,5 +1,6 @@
 import { read16, read32 } from "./utils"
 
+/** @internal */
 export enum NumberFormat {
     Int8LE = 1,
     UInt8LE = 2,

@@ -32,5 +32,8 @@
   "include": [
     "src",
     "jacdac-spec/dist/specconstants.ts"
+  ],
+  "exclude": [
+    "src/worker/*"
   ]
 }

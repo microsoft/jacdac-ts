@@ -1,5 +1,9 @@
 import { JDEventSource } from "./eventsource"
 
+/**
+ * Base class for JDOM Node classes.
+ * @category JDOM
+ */
 export abstract class JDNode extends JDEventSource {
     constructor() {
         super()

@@ -22,6 +22,10 @@ import { JDNode } from "./node"
 import { jdpack, jdunpack, PackedValues } from "./pack"
 import { PackedObject, unpackedToObject } from "./packobject"
 
+/**
+ * A Jacdac register client.
+ * @category JDOM
+ */
 export class JDRegister extends JDServiceMemberNode {
     private _lastReportPkt: Packet
     private _fields: JDField[]

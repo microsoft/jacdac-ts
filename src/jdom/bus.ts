@@ -112,6 +112,7 @@ export interface ServiceFilter {
 
 /**
  * A Jacdac bus manager. This instance maintains the list of devices on the bus.
+ * @category JDOM
  */
 export class JDBus extends JDNode {
     readonly selfDeviceId: string
