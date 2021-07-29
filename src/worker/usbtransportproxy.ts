@@ -1,4 +1,5 @@
-import { JACDAC_ERROR, JDError } from "../jdom/error"
+import { JACDAC_ERROR } from "../jdom/constants"
+import { JDError } from "../jdom/error"
 import Proto from "../jdom/transport/proto"
 import USBIO from "../jdom/transport/usbio"
 import TransportProxy from "./transportproxy"
