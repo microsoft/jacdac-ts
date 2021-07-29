@@ -3,6 +3,10 @@ import { JDNode } from "./node"
 import { DecodedMember } from "./pretty"
 import { JDServiceMemberNode } from "./servicemembernode"
 
+/**
+ * A Jacdac field.
+ * @category JDOM
+ */
 export class JDField extends JDNode {
     constructor(
         public readonly member: JDServiceMemberNode,

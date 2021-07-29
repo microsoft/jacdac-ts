@@ -65,6 +65,10 @@ export interface JDServiceGroup {
     mixins: JDService[]
 }
 
+/**
+ * A Jacdac device hosting services.
+ * @category JDOM
+ */
 export class JDDevice extends JDNode {
     connected: boolean
     private _source: string

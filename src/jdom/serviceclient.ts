@@ -3,6 +3,10 @@ import { JDDevice } from "./device"
 import { JDBus } from "./bus"
 import { JDClient } from "./client"
 
+/**
+ * Base class for service clients
+ * @category Clients
+ */
 export class JDServiceClient extends JDClient {
     constructor(public readonly service: JDService) {
         super()

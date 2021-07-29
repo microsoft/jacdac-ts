@@ -20,7 +20,10 @@ export interface RoleBinding {
     service?: JDService
 }
 
-// TODO: replicate MakeCode role manager logic
+/**
+ * A client for the role manager service.
+ * @category Clients
+ */
 export default class RoleManager extends JDClient {
     private readonly _roles: RoleBinding[] = []
 

@@ -13,6 +13,10 @@ import { JDServiceMemberNode } from "./servicemembernode"
 import { DecodedPacket } from "./pretty"
 import { JDField } from "./field"
 
+/**
+ * A Jacdac event client.
+ * @category JDOM
+ */
 export class JDEvent extends JDServiceMemberNode {
     private _lastReportPkt: Packet
     private _fields: JDField[]
