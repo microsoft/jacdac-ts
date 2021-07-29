@@ -38,6 +38,10 @@ import Flags from "./flags"
 import { isMixinService } from "../../jacdac-spec/spectool/jdutils"
 import JDServiceServer from "./serviceserver"
 
+/**
+ * A Jacdac service client hosting registers, events.
+ * @category JDOM
+ */
 export class JDService extends JDNode {
     private _role: string
     private _registers: JDRegister[]

@@ -10,5 +10,6 @@
     "excludePrivate": true,
     "excludeInternal": true,
     "excludeExternals": true,
-    "name": "Jacdac TypeScript Documentation"
+    "name": "Jacdac TypeScript",
+    "categoryOrder": ["JDOM", "Clients", "*"]
 }
