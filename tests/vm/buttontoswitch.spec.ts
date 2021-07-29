@@ -10,18 +10,15 @@ import {
     CreatedServerService,
     runForDelay,
     nextEventFrom,
-    waitForAnnounce,
 } from "../jdom/tester"
 import ButtonServer from "../../src/servers/buttonserver"
 import RoleManager from "../../src/servers/rolemanager"
-import ServoServer from "../../src/servers/servoserver"
 import { assert } from "../../src/jdom/utils"
 import { bindRoles, getRoles } from "./vmtester"
 import { SwitchEvent, SwitchReg } from "../../jacdac-spec/dist/specconstants"
 import { EVENT } from "../../src/jdom/constants"
 import { JDService } from "../../src/jdom/service"
 import { JDEvent } from "../../src/jdom/event"
-import { FastForwardScheduler } from "../jdom/scheduler"
 
 suite("button to switch adapter", () => {
     const program: VMProgram = JSON.parse(
