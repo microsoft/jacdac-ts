@@ -9,7 +9,7 @@ import { ConsoleUi } from "./jacdac-tstester"
 
 export interface HoldingListener {
     holdingPromise: Promise<unknown>  // rejects if the holding condition is violated, can only do so after the trigger above
-    terminateHolding: () => void  // called to clean up the holding promise (as a side effect, may also break the trigger)
+    terminateHold: () => void  // called to clean up the holding promise (as a side effect, may also break the trigger)
 }
 
 export interface EventWithHold {
@@ -139,7 +139,6 @@ export class TestDriver {
         // This wraps all the promises with the timing bounds, then wraps them again with synchronization bounds
         const triggerPromises: Promise<unknown>[] = []
         const holdingListeners: HoldingListener[] = []
-        const terminateHoldings: (() => void)[] = []
         events.forEach(event => {
             const {triggerPromise, holdingListener: holdingPromise} = event.makePromise()
 
@@ -174,7 +173,7 @@ export class TestDriver {
         const end = this.bus.scheduler.timestamp
 
         // Clean up any holding promises
-        terminateHoldings.forEach(terminateHolding => terminateHolding())
+        holdingListeners.forEach(holdingListener => holdingListener.terminateHold())
 
         return end - start
     }

@@ -42,7 +42,7 @@ class ServiceNextEventEvent extends TesterEvent {
                 if (this.eventCode === undefined || event.code == this.eventCode) {
                     resolve(undefined)
                 } else {
-                    reject(new ServiceNextEventError(`service got next event ${event.code} (${event.name}) not expected ${this.eventCode}`))
+                    reject(new ServiceNextEventError(`service ${this.service.name} got next event ${event.code} (${event.name}) not expected ${this.eventCode}`))
                 }
             }
             bus.once(EVENT, handler)
@@ -68,7 +68,7 @@ class ServiceNextEventHeldEvent extends TesterEvent {
         // TODO can this be deduplicated with NextEvent (without the hold), and with OnEvent (ignores nonmatching events)?
         // This promise will not reject until after the main promise resolves
         let holdingReject: (reason: Error) => void
-        let terminateHolding: () => void
+        let terminateHold: () => void
         const holdingPromise = new Promise((resolve, reject) => {
             holdingReject = reject
         })
@@ -78,25 +78,25 @@ class ServiceNextEventHeldEvent extends TesterEvent {
         const triggerPromise = new Promise((resolve, reject) => {
             const handler = (event: JDEvent) => {
                 if (resolved) {
-                    holdingReject(new Error(`service got event ${event.code} (${event.name}) when hold asserted`))
+                    holdingReject(new Error(`service ${this.service.name} got event ${event.code} (${event.name}) when hold asserted`))
                     bus.off(EVENT, handler)
                 } else if (this.eventCode === undefined || event.code == this.eventCode) {
                     resolved = true
                     resolve(undefined)
                 } else {
                     bus.off(EVENT, handler)
-                    reject(new ServiceNextEventError(`service got next event ${event.code} (${event.name}) not expected ${this.eventCode}`))
+                    reject(new ServiceNextEventError(`service ${this.service.name} got next event ${event.code} (${event.name}) not expected ${this.eventCode}`))
                 }
             }
 
-            terminateHolding = () => {
+            terminateHold = () => {
                 bus.off(EVENT, handler)
             }
 
             bus.on(EVENT, handler)
         })
 
-        return {triggerPromise, holdingListener: {holdingPromise, terminateHolding}}
+        return {triggerPromise, holdingListener: {holdingPromise, terminateHold}}
     }
 }
 
