@@ -27,7 +27,7 @@ import {
     LIGHT_PROG_ROTATE_FWD,
     LIGHT_PROG_SET_ALL,
     LIGHT_PROG_SHOW,
-} from "../jdom/light"
+} from "../jdom/lightconstants"
 import Packet from "../jdom/packet"
 import JDRegisterServer from "../jdom/registerserver"
 import JDServiceServer, { ServerOptions } from "../jdom/serviceserver"
