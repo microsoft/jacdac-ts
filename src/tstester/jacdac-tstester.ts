@@ -39,6 +39,7 @@ export function main(document: Document) {
             const buttonTest = new ButtonTestRoutine(serviceTester, testdriver)
             try {
                 await buttonTest.testHold()
+                await buttonTest.testClick()
             } catch (e: unknown) {
                 ui.log(`exception: ${e}`)
                 throw e

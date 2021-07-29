@@ -32,10 +32,14 @@ export class ButtonTestRoutine {
     public async testClick() {
         // User instruction: press and release button, within 500ms
 
+        // Avoid over-use of "this" everywhere
+        const service = this.service
+        const register = this.service.register(ButtonReg.Pressure)
+
         this.driver.log("wait for down")
         await this.driver.waitForAll([
-            this.service.nextEvent(ButtonEvent.Down).hold(),
-            this.service.register(ButtonReg.Pressure).onUpdate({
+            service.nextEvent(ButtonEvent.Down).hold(),
+            register.onUpdate({
                 preRequiredRange: [0, 0.5],
                 triggerRange: [0.5, 1]
             })
@@ -43,8 +47,8 @@ export class ButtonTestRoutine {
         this.driver.log("saw down")
 
         await this.driver.waitForAll([
-            this.service.nextEvent(ButtonEvent.Up).hold(),
-            this.service.register(ButtonReg.Pressure).onUpdate({
+            service.nextEvent(ButtonEvent.Up).hold(),
+            register.onUpdate({
                 preRequiredRange: [0.5, 1],
                 triggerRange: [0, 0.5]
             })
