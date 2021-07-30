@@ -1,7 +1,10 @@
 // Contains foundational abstractions for the testing system
 import { JDBus } from "../jdom/bus"
 import { assert } from "../jdom/utils"
-import { ConsoleUi } from "./jacdac-tstester"
+
+export interface ConsoleUi {
+    log: (msg: string) => void
+}
 
 // TODO separate out some kind of human (tester) interface class? which can have different implementations,
 // eg web button or physical Jacdac module button?
