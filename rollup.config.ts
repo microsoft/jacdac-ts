@@ -16,6 +16,7 @@ export default [
         cjs: true,
     },
     { libraryName: "jacdac-test", dir: "test", external: ["jacdac"] },
+    { libraryName: "jacdac-tstester", dir: "tstester", external: ["jacdac"] },
     {
         libraryName: "jacdac-embed",
         dir: "embed",
