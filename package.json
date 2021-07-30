@@ -75,13 +75,14 @@
     "semantic-release": "^17.4.3",
     "shelljs": "^0.8.4",
     "ts-node": "^10.0.0",
+    "typedoc": "^0.21.4",
     "typescript": "^4.3.2",
     "webusb": "^2.2.0",
-    "yargs-parser": "^20.2.7",
-    "typedoc": "^0.21.4"
+    "yargs-parser": "^20.2.7"
   },
   "dependencies": {
     "@types/node": "^15.12.2",
+    "@types/w3c-web-serial": "^1.0.2",
     "@types/w3c-web-usb": "^1.0.4",
     "@types/web-bluetooth": "^0.0.9",
     "fs-extra": "^10.0.0",
