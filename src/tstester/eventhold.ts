@@ -12,12 +12,12 @@ export abstract class EventWithHoldAdapter<T> extends TesterEvent {
     // Function that given a handle (return from the above), de-registers the callback
     protected abstract deregister(handle: unknown): void
 
-    protected processTrigger(data: T) {
-        return true  // empty by default
+    protected processTrigger(data: T): boolean {
+        throw new Error("this function should never be called when not overridden")
     }
 
-    protected processHold(data: T) {
-        // empty by default
+    protected processHold(data: T): void {
+        throw new Error("this function should never be called when not overridden")
     }
 
     protected hasTrigger() {
@@ -32,6 +32,8 @@ export abstract class EventWithHoldAdapter<T> extends TesterEvent {
 
     public makePromise() {
         assert(this.hasTrigger() || this.hasHold(), "EventWithHoldAdapter must define processTrigger or processHold")
+
+        console.log(`${this.constructor.name}  Trig ${this.hasTrigger()}  Hold ${this.hasHold()}`)
 
         let triggerResolve: (value: unknown) => void  // value not used, but needs an argument there
         let triggerReject: (reason: Error) => void
@@ -59,6 +61,7 @@ export abstract class EventWithHoldAdapter<T> extends TesterEvent {
                     this.deregister(handlerHandle)
                 }
                 if (triggered) {
+                    console.log(`${this.constructor.name}  Resolve`)
                     triggerResolve(undefined)
                     resolved = true
                     if (this.processHold !== undefined) {

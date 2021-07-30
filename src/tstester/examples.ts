@@ -108,7 +108,7 @@ export class ButtonTestRoutine {
 
         this.driver.log("done, release")
         await this.driver.waitForAll([
-            service.onEvent(ButtonEvent.Up),  // ignore any continued hold events
+            service.onEvent(ButtonEvent.Up).hold(),  // ignore any continued hold events
             register.onUpdate({
                 triggerRange: [0, 0.5]
             })

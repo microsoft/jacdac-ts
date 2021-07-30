@@ -1,11 +1,10 @@
 import { EVENT, EventHandler, JDEvent, JDService } from "../jdom/jacdac-jdom"
-import { TesterEvent } from "./base"
 import { EventWithHoldAdapter } from "./eventhold"
 import { TestingNamer } from "./naming"
 import { RegisterTester } from "./registerwrapper"
 
-
-class BaseServiceEventEvent extends EventWithHoldAdapter<JDEvent> {
+// Base service events trigger that handles bus on/off
+class BaseServiceEventTrigger extends EventWithHoldAdapter<JDEvent> {
     constructor(protected readonly service: ServiceTester, protected eventCode?: number) {
         super()
     }
@@ -20,7 +19,7 @@ class BaseServiceEventEvent extends EventWithHoldAdapter<JDEvent> {
 }
 
 // Event that fires on a matching event code from the specified service
-class ServiceEventEvent extends BaseServiceEventEvent {
+class BaseServiceAnyEventTrigger extends BaseServiceEventTrigger {
     constructor(protected readonly service: ServiceTester, protected eventCode: number) {
         super(service, eventCode)
     }
@@ -32,12 +31,26 @@ class ServiceEventEvent extends BaseServiceEventEvent {
     }
 }
 
+// Provides an additional .hold() interface to convert this into a ServiceNextEventHeldTrigger
+class ServiceAnyEventTrigger extends BaseServiceAnyEventTrigger {
+    public hold() {
+        return new ServiceAnyEventHeldTrigger(this.service, this.eventCode)
+    }
+}
+
+// Event that additionally checks for absence of further events by rejecting the promise
+class ServiceAnyEventHeldTrigger extends BaseServiceAnyEventTrigger {
+    protected processHold(data: JDEvent) {
+        throw new Error(`service ${this.service.name} got event ${data.code} (${data.name}) when hold asserted`)
+    }
+}
+
 // An error that fires if the next does not match
 class ServiceNextEventError extends Error {
 }
 
 // Event that fires on the next event, which must match the eventCode
-class ServiceNextEventEvent extends BaseServiceEventEvent {
+class BaseServiceNextEventTrigger extends BaseServiceEventTrigger {
     protected processTrigger(data: JDEvent) {
         if (this.eventCode === undefined || data.code == this.eventCode) {
             return true
@@ -45,22 +58,17 @@ class ServiceNextEventEvent extends BaseServiceEventEvent {
             throw new ServiceNextEventError(`service ${this.service.name} got next event ${data.code} (${data.name}) not expected ${this.eventCode}`)
         }
     }
+}
 
+// Provides an additional .hold() interface to convert this into a ServiceNextEventHeldTrigger
+class ServiceNextEventTrigger extends BaseServiceNextEventTrigger {
     public hold() {
-        return new ServiceNextEventHeldEvent(this.service, this.eventCode)
+        return new ServiceNextEventHeldTrigger(this.service, this.eventCode)
     }
 }
 
 // Event that additionally checks for absence of further events by rejecting the promise
-class ServiceNextEventHeldEvent extends BaseServiceEventEvent {
-    protected processTrigger(data: JDEvent) {
-        if (this.eventCode === undefined || data.code == this.eventCode) {
-            return true
-        } else {
-            throw new ServiceNextEventError(`service ${this.service.name} got next event ${data.code} (${data.name}) not expected ${this.eventCode}`)
-        }
-    }
-
+class ServiceNextEventHeldTrigger extends BaseServiceNextEventTrigger {
     protected processHold(data: JDEvent) {
         throw new Error(`service ${this.service.name} got event ${data.code} (${data.name}) when hold asserted`)
     }
@@ -68,7 +76,6 @@ class ServiceNextEventHeldEvent extends BaseServiceEventEvent {
 
 export class ServiceTester {
     constructor(readonly service: JDService) {
-
     }
 
     public get name() {
@@ -81,12 +88,12 @@ export class ServiceTester {
 
     // Event that fires on a service event
     public onEvent(eventCode: number) {
-        return new ServiceEventEvent(this, eventCode)
+        return new ServiceAnyEventTrigger(this, eventCode)
     }
 
     // Event that fires on the next service event, which optionally must be of the eventCode
     public nextEvent(eventCode?: number) {
-        return new ServiceNextEventEvent(this, eventCode)
+        return new ServiceNextEventTrigger(this, eventCode)
     }
 
     // Condition that no event fires
