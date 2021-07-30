@@ -5,7 +5,10 @@ import { RegisterTester } from "./registerwrapper"
 
 // Base service events trigger that handles bus on/off
 class BaseServiceEventTrigger extends EventWithHoldAdapter<JDEvent> {
-    constructor(protected readonly service: ServiceTester, protected eventCode?: number) {
+    constructor(
+        protected readonly service: ServiceTester,
+        protected eventCode?: number
+    ) {
         super()
     }
 
@@ -20,10 +23,13 @@ class BaseServiceEventTrigger extends EventWithHoldAdapter<JDEvent> {
 
 // Event that fires on a matching event code from the specified service
 class BaseServiceAnyEventTrigger extends BaseServiceEventTrigger {
-    constructor(protected readonly service: ServiceTester, protected eventCode: number) {
+    constructor(
+        protected readonly service: ServiceTester,
+        protected eventCode: number
+    ) {
         super(service, eventCode)
     }
-    
+
     protected processTrigger(data: JDEvent) {
         if (data.code == this.eventCode) {
             return true
@@ -41,13 +47,14 @@ class ServiceAnyEventTrigger extends BaseServiceAnyEventTrigger {
 // Event that additionally checks for absence of further events by rejecting the promise
 class ServiceAnyEventHeldTrigger extends BaseServiceAnyEventTrigger {
     protected processHold(data: JDEvent) {
-        throw new Error(`service ${this.service.name} got event ${data.code} (${data.name}) when hold asserted`)
+        throw new Error(
+            `service ${this.service.name} got event ${data.code} (${data.name}) when hold asserted`
+        )
     }
 }
 
 // An error that fires if the next does not match
-class ServiceNextEventError extends Error {
-}
+class ServiceNextEventError extends Error {}
 
 // Event that fires on the next event, which must match the eventCode
 class BaseServiceNextEventTrigger extends BaseServiceEventTrigger {
@@ -55,7 +62,9 @@ class BaseServiceNextEventTrigger extends BaseServiceEventTrigger {
         if (this.eventCode === undefined || data.code == this.eventCode) {
             return true
         } else {
-            throw new ServiceNextEventError(`service ${this.service.name} got next event ${data.code} (${data.name}) not expected ${this.eventCode}`)
+            throw new ServiceNextEventError(
+                `service ${this.service.name} got next event ${data.code} (${data.name}) not expected ${this.eventCode}`
+            )
         }
     }
 }
@@ -70,13 +79,14 @@ class ServiceNextEventTrigger extends BaseServiceNextEventTrigger {
 // Event that additionally checks for absence of further events by rejecting the promise
 class ServiceNextEventHeldTrigger extends BaseServiceNextEventTrigger {
     protected processHold(data: JDEvent) {
-        throw new Error(`service ${this.service.name} got event ${data.code} (${data.name}) when hold asserted`)
+        throw new Error(
+            `service ${this.service.name} got event ${data.code} (${data.name}) when hold asserted`
+        )
     }
 }
 
 export class ServiceTester {
-    constructor(readonly service: JDService) {
-    }
+    constructor(readonly service: JDService) {}
 
     public get name() {
         return TestingNamer.nameOfService(this.service)

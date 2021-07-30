@@ -1,5 +1,10 @@
 // Top-level code / web interface code
-import { createUSBBus, DEVICE_ANNOUNCE, JDDevice, SRV_BUTTON } from "../jdom/jacdac-jdom"
+import {
+    createUSBBus,
+    DEVICE_ANNOUNCE,
+    JDDevice,
+    SRV_BUTTON,
+} from "../jdom/jacdac-jdom"
 import { TestDriver } from "./base"
 import { ButtonTestRoutine } from "./button.spec"
 import { ServiceTester } from "./servicewrapper"
@@ -9,10 +14,10 @@ export class ConsoleUi {
     readonly logDiv: HTMLElement
     constructor(protected readonly document: Document) {
         this.logDiv = document.getElementById("log")
-
     }
 
-    public log(msg: string) {  // TS reimplementation of console from packets.html
+    public log(msg: string) {
+        // TS reimplementation of console from packets.html
         const line = this.document.createElement("div")
         line.innerText = "" + msg
         line.style.whiteSpace = "pre-wrap"
@@ -32,7 +37,7 @@ export function main(document: Document) {
 
     const handler = async (device: JDDevice) => {
         tester.devices({})
-        const buttonServices = device.services({serviceClass: SRV_BUTTON})
+        const buttonServices = device.services({ serviceClass: SRV_BUTTON })
         if (buttonServices.length == 1) {
             const serviceTester = new ServiceTester(buttonServices[0])
             ui.log(`connected (device w/ single button): ${serviceTester.name}`)
@@ -46,26 +51,30 @@ export function main(document: Document) {
             }
         }
     }
-    bus.on(DEVICE_ANNOUNCE, handler)        
+    bus.on(DEVICE_ANNOUNCE, handler)
 
     document.getElementById("connect").onclick = async () => {
         ui.log("")
         ui.log("disconnecting ...")
-        await bus.disconnect();
+        await bus.disconnect()
         ui.log("connecting ...")
-        await bus.connect();
+        await bus.connect()
         ui.log("connected")
 
         ui.log("devices:")
         tester.devices().forEach(deviceTester => {
-            const deviceServiceNames = deviceTester.services().map(service =>
-                service.name
+            const deviceServiceNames = deviceTester
+                .services()
+                .map(service => service.name)
+            ui.log(
+                `- ${deviceTester.device.shortId}: ${deviceServiceNames.join(
+                    ","
+                )}`
             )
-            ui.log(`- ${deviceTester.device.shortId}: ${deviceServiceNames.join(",")}`)
         })
 
         const device = await tester.nextConnected()
-        ui.log(`connected: ${device.name}`)        
+        ui.log(`connected: ${device.name}`)
     }
 
     document.getElementById("disconnect").onclick = async () => {

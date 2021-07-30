@@ -6,11 +6,15 @@ import { JDDevice, JDRegister, JDService } from "../jdom/jacdac-jdom"
 // but RegisterTester depends on ServiceTester for its name prefix
 export class TestingNamer {
     public static nameOfRegister(register: JDRegister) {
-        return `${TestingNamer.nameOfService(register.service)}.${register.name}`
+        return `${TestingNamer.nameOfService(register.service)}.${
+            register.name
+        }`
     }
 
     public static nameOfService(service: JDService) {
-        return `${TestingNamer.nameOfDevice(service.device)}.${service.specification.name}`
+        return `${TestingNamer.nameOfDevice(service.device)}.${
+            service.specification.name
+        }`
     }
 
     public static nameOfDevice(device: JDDevice) {
