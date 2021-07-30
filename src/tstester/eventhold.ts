@@ -20,20 +20,18 @@ export abstract class EventWithHoldAdapter<T> extends TesterEvent {
         throw new Error("this function should never be called when not overridden")
     }
 
-    protected hasTrigger() {
+    protected get hasTrigger() {
         // TODO this detection ... it works but it feels weird
         return this.processTrigger !== EventWithHoldAdapter.prototype.processTrigger
     }
 
-    protected hasHold() {
+    protected get hasHold() {
         // TODO this detection ... it works but it feels weird
         return this.processHold !== EventWithHoldAdapter.prototype.processHold
     }
 
     public makePromise() {
-        assert(this.hasTrigger() || this.hasHold(), "EventWithHoldAdapter must define processTrigger or processHold")
-
-        console.log(`${this.constructor.name}  Trig ${this.hasTrigger()}  Hold ${this.hasHold()}`)
+        assert(this.hasTrigger || this.hasHold, "EventWithHoldAdapter must define processTrigger or processHold")
 
         let triggerResolve: (value: unknown) => void  // value not used, but needs an argument there
         let triggerReject: (reason: Error) => void
@@ -50,9 +48,10 @@ export abstract class EventWithHoldAdapter<T> extends TesterEvent {
                 holdingReject = reject
             })
 
-        let resolved = triggerPromise === undefined ? true : false  // no trigger condition effectively means resolved
+        let resolved = this.hasTrigger ? false : true  // no trigger condition effectively means resolved
         const handler = (data: T) => {
-            if (!resolved && this.hasTrigger) {
+            if (!resolved) {
+                assert(this.hasTrigger, "non-resolved without trigger defined")
                 let triggered = false
                 try {
                     triggered = this.processTrigger(data)
@@ -61,7 +60,6 @@ export abstract class EventWithHoldAdapter<T> extends TesterEvent {
                     this.deregister(handlerHandle)
                 }
                 if (triggered) {
-                    console.log(`${this.constructor.name}  Resolve`)
                     triggerResolve(undefined)
                     resolved = true
                     if (this.processHold !== undefined) {
@@ -83,6 +81,9 @@ export abstract class EventWithHoldAdapter<T> extends TesterEvent {
             this.deregister(handlerHandle)
         }
 
-        return {triggerPromise, holdingListener: {holdingPromise, terminateHold}}
+        return {
+            triggerPromise, 
+            holdingListener: this.hasHold ? {holdingPromise, terminateHold} : undefined
+        }
     }
 }

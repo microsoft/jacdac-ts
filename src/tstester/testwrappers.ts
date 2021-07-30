@@ -24,7 +24,6 @@ export class BusTester {
 
 export class DeviceTester {
     constructor(readonly device: JDDevice) {
-
     }
 
     public get name() {

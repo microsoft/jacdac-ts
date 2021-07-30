@@ -1,5 +1,5 @@
-import { JDRegister, jdunpack, PackedValues, Packet, REPORT_RECEIVE } from "../jdom/jacdac-jdom"
-import { TesterEvent } from "./base"
+import { assert, EventHandler, JDRegister, jdunpack, PackedValues, Packet, REPORT_RECEIVE } from "../jdom/jacdac-jdom"
+import { EventWithHoldAdapter } from "./eventhold"
 import { TestingNamer } from "./naming"
 
 
@@ -13,13 +13,21 @@ export interface RegisterUpdateOptions {
     triggerRange?: [number, number]  // acceptable range of trigger conditions, otherwise triggers on any sample
 }
 
-// Helper methods forr register evnets
-abstract class RegisterEvent extends TesterEvent {
+// Base service for register events that provides utilities as well as handles bus on/off
+abstract class BaseRegisterEvent extends EventWithHoldAdapter<Packet> {
     readonly packFormat: string
 
-    constructor(protected readonly register: RegisterTester) {
+    constructor(protected readonly busRegister: RegisterTester) {  // TODO dedup name w/ EventHoldAdapter.register()
         super()
-        this.packFormat = register.register.specification.packFormat
+        this.packFormat = busRegister.register.specification.packFormat
+    }
+
+    protected register(handler: (data: Packet) => void) {
+        return this.busRegister.register.on(REPORT_RECEIVE, handler)
+    }
+
+    protected deregister(handle: unknown) {
+        this.busRegister.register.off(REPORT_RECEIVE, handle as EventHandler)
     }
 
     // Hacky wrapper around a PackedValues [number] that extracts the single value
@@ -33,67 +41,67 @@ abstract class RegisterEvent extends TesterEvent {
 }
 
 // Event that fires on a matching register change from the specified service
-class RegisterUpdateEvent extends RegisterEvent {
-    constructor(protected readonly register: RegisterTester, protected options: RegisterUpdateOptions) {
-        super(register)
+class BaseRegisterUpdateEvent extends BaseRegisterEvent {
+    constructor(protected readonly busRegister: RegisterTester, protected options: RegisterUpdateOptions) {
+        super(busRegister)
     }
     
-    public makePromise() {
-        const triggerPromise = new Promise((resolve, reject) => {
-            const handler = (packet: Packet) => {
-                const thisValue = this.maybeGetValue(jdunpack(packet.data, this.packFormat))
+    protected processTrigger(packet: Packet) {
+        const thisValue = this.maybeGetValue(jdunpack(packet.data, this.packFormat))
 
-                // check if the sample is valid for preRequiredRange
-                const precondition = this.options.preRequiredRange === undefined || (
-                    thisValue !== undefined &&
-                    thisValue >= this.options.preRequiredRange[0] && thisValue <= this.options.preRequiredRange[1]
-                )
-                // whether or not toRange is defined, the current sample must be valid
-                const triggered = thisValue !== undefined && (
-                    (this.options.triggerRange === undefined ||
-                        (thisValue >= this.options.triggerRange[0] && thisValue <= this.options.triggerRange[1])))
+        // check if the sample is valid for preRequiredRange
+        const precondition = this.options.preRequiredRange === undefined || (
+            thisValue !== undefined &&
+            thisValue >= this.options.preRequiredRange[0] && thisValue <= this.options.preRequiredRange[1]
+        )
 
-                if (triggered) {  // ignore precondition on trigger
-                    this.register.register.off(REPORT_RECEIVE, handler)
-                    resolve(undefined)
-                } else if (!precondition) {  // otherwise assert precondition
-                    this.register.register.off(REPORT_RECEIVE, handler)
-                    reject(new RegisterPreConditionError(`register value ${this.register.name} = ${thisValue} not in precondition ${this.options.preRequiredRange}`))
-                }
-            }
-            this.register.register.on(REPORT_RECEIVE, handler)
-        })
+        // whether or not toRange is defined, the current sample must be valid
+        const triggered = thisValue !== undefined && (
+            (this.options.triggerRange === undefined ||
+                (thisValue >= this.options.triggerRange[0] && thisValue <= this.options.triggerRange[1])))
 
-        return {triggerPromise}
+        if (triggered) {  // ignore precondition on trigger
+            return true
+        } else if (!precondition) {  // otherwise assert precondition
+            throw new RegisterPreConditionError(`register value ${this.register.name} = ${thisValue} not in precondition ${this.options.preRequiredRange}`)
+        } else {
+            return false
+        }
     }
 }
 
-class RegisterHold extends RegisterEvent {
-    constructor(protected readonly register: RegisterTester, protected range: [number, number]) {
-        super(register)
+class RegisterUpdateEvent extends BaseRegisterUpdateEvent {
+    public hold() {
+        return new RegisterUpdateEventHold(this.busRegister, this.options)
+    }
+}
+
+class RegisterUpdateEventHold extends BaseRegisterUpdateEvent {
+    constructor(protected readonly busRegister: RegisterTester, protected options: RegisterUpdateOptions) {
+        super(busRegister, options)
+        assert(options.triggerRange !== undefined, "may not have undefined trigger range with .hold()")
+    }
+    
+    protected processHold(packet: Packet) {
+        const thisValue = this.maybeGetValue(jdunpack(packet.data, this.packFormat))
+
+        if (thisValue === undefined || thisValue <= this.options.triggerRange[0] || thisValue >= this.options.triggerRange[1]) {
+            throw new RegisterPreConditionError(`register value ${this.register.name} = ${thisValue} not in hold condition ${this.options.triggerRange}`)
+        }
+    }
+}
+
+class RegisterHold extends BaseRegisterEvent {
+    constructor(protected readonly busRegister: RegisterTester, protected range: [number, number]) {
+        super(busRegister)
     }   
 
-    public makePromise() {
-        let terminateHold: () => void
+    protected processHold(packet: Packet) {
+        const thisValue = this.maybeGetValue(jdunpack(packet.data, this.packFormat))
 
-        const holdingPromise = new Promise((resolve, reject) => {
-            const handler = (packet: Packet) => {
-                const thisValue = this.maybeGetValue(jdunpack(packet.data, this.packFormat))
-
-                if (thisValue === undefined || thisValue <= this.range[0] || thisValue >= this.range[1]) {
-                    this.register.register.off(REPORT_RECEIVE, handler)
-                    reject(new RegisterPreConditionError(`register value ${this.register.name} = ${thisValue} not in precondition ${this.range}`))
-                }
-            }
-
-            terminateHold = () => {
-                this.register.register.off(REPORT_RECEIVE, handler)
-            }
-
-            this.register.register.on(REPORT_RECEIVE, handler)
-        })
-
-        return {holdingListener: {holdingPromise, terminateHold}}
+        if (thisValue === undefined || thisValue <= this.range[0] || thisValue >= this.range[1]) {
+            throw new RegisterPreConditionError(`register value ${this.register.name} = ${thisValue} not in precondition ${this.range}`)
+        }
     }
 }
 

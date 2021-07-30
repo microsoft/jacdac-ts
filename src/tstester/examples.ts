@@ -38,11 +38,11 @@ export class ButtonTestRoutine {
 
         this.driver.log("wait for down")
         await this.driver.waitForAll([
-            service.nextEvent(ButtonEvent.Down).hold(),
+            service.onEvent(ButtonEvent.Down).hold(),
             register.onUpdate({
                 preRequiredRange: [0, 0.5],
                 triggerRange: [0.5, 1]
-            })
+            }).hold()
         ], {synchronization: 50})
         this.driver.log("saw down")
 
@@ -51,7 +51,7 @@ export class ButtonTestRoutine {
             register.onUpdate({
                 preRequiredRange: [0.5, 1],
                 triggerRange: [0, 0.5]
-            })
+            }).hold()
         ], {within: 500,
             synchronization: 50})
         this.driver.log("saw up")
@@ -78,11 +78,11 @@ export class ButtonTestRoutine {
 
         this.driver.log("wait for down")
         await this.driver.waitForAll([
-            service.nextEvent(ButtonEvent.Down).hold(),
+            service.onEvent(ButtonEvent.Down).hold(),
             register.onUpdate({
                 preRequiredRange: [0, 0.5],
                 triggerRange: [0.5, 1]
-            })
+            }).hold()
         ], {synchronization: 50})
 
         this.driver.log("saw down, hold")
@@ -111,7 +111,7 @@ export class ButtonTestRoutine {
             service.onEvent(ButtonEvent.Up).hold(),  // ignore any continued hold events
             register.onUpdate({
                 triggerRange: [0, 0.5]
-            })
+            }).hold()
         ], {synchronization: 50})
 
         this.driver.log("saw up")
