@@ -1,7 +1,7 @@
 // Top-level code / web interface code
-import { createUSBBus, DEVICE_ANNOUNCE, JDDevice, JDService, SRV_BUTTON } from "../jdom/jacdac-jdom"
+import { createUSBBus, DEVICE_ANNOUNCE, JDDevice, SRV_BUTTON } from "../jdom/jacdac-jdom"
 import { TestDriver } from "./base"
-import { ButtonTestRoutine } from "./examples"
+import { ButtonTestRoutine } from "./button.spec"
 import { ServiceTester } from "./servicewrapper"
 import { BusTester } from "./testwrappers"
 
