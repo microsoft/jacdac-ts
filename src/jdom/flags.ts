@@ -10,7 +10,7 @@ export default class Flags {
     /**
      * Enables/disabled WebSerial
      */
-     static webSerial = true
+    static webSerial = true
 
     /**
      * Enables/disables WebBLE

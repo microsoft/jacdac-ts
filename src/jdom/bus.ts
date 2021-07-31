@@ -194,7 +194,7 @@ export class JDBus extends JDNode {
 
     /**
      * Add a bridge to the bus and returns a callback to remove it.
-     * @param bridge 
+     * @param bridge
      * @returns callback to remove bridge
      */
     addBridge(bridge: JDBridge): () => void {
@@ -330,13 +330,13 @@ export class JDBus extends JDNode {
      * Indicates if any of the transports is disconnected.
      * Some transports might be in the process of connecting or disconnecting.
      */
-     get disconnected() {
+    get disconnected() {
         return this._transports.every(t => t.disconnected)
     }
 
     /**
      * Clears known devices and service providers (simulators). Optionally reset bus timestamp.
-     * @param timestamp 
+     * @param timestamp
      */
     clear(timestamp = 0) {
         // clear hosts

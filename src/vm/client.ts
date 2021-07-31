@@ -78,12 +78,16 @@ export class VMServiceClient extends JDServiceClient {
         }
     }
 
-    public async lookupRegisterAsync(root: string, fld: string, reportUpdate = false) {
+    public async lookupRegisterAsync(
+        root: string,
+        fld: string,
+        reportUpdate = false
+    ) {
         if (root in this._registers) {
             const register = this._registers[root]
             if (reportUpdate && !this._reportUpdate[root]) {
                 this._reportUpdate[root] = true
-                this.mount(register.subscribe(REPORT_UPDATE, () => {} ))
+                this.mount(register.subscribe(REPORT_UPDATE, () => {}))
             }
             await register.refresh()
             if (!fld) return register.unpackedValue?.[0]

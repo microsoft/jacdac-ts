@@ -57,7 +57,10 @@ export interface VMEnvironmentInterface {
         command: jsep.MemberExpression,
         values: atomic[]
     ) => Promise<void>
-    lookupAsync: (e: jsep.MemberExpression | string, reportUpdate: boolean) => Promise<atomic>
+    lookupAsync: (
+        e: jsep.MemberExpression | string,
+        reportUpdate: boolean
+    ) => Promise<atomic>
     writeGlobal: (e: jsep.MemberExpression | string, v: atomic) => boolean
     hasRequest: (e: jsep.MemberExpression | string) => ExternalRequest
     roleTransition: (role: string, direction: string) => boolean
@@ -128,17 +131,24 @@ class VMCommandEvaluator {
 
     private newEval() {
         return new VMExprEvaluator(
-            async (e, reportUpdate) => await this.env.lookupAsync(e, reportUpdate),
+            async (e, reportUpdate) =>
+                await this.env.lookupAsync(e, reportUpdate),
             this.callEval()
         )
     }
 
-    private async evalExpressionAsync(e: jsep.Expression, reportUpdate = false) {
+    private async evalExpressionAsync(
+        e: jsep.Expression,
+        reportUpdate = false
+    ) {
         const expr = this.newEval()
         return await expr.evalAsync(e, reportUpdate)
     }
 
-    private async checkExpressionAsync(e: jsep.Expression, reportUpdate = false) {
+    private async checkExpressionAsync(
+        e: jsep.Expression,
+        reportUpdate = false
+    ) {
         return (await this.evalExpressionAsync(e, reportUpdate)) ? true : false
     }
 

@@ -1,4 +1,7 @@
-export type GetValue = (e: jsep.MemberExpression | string, reportUpdate: boolean) => any
+export type GetValue = (
+    e: jsep.MemberExpression | string,
+    reportUpdate: boolean
+) => any
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type StartMap = { e: jsep.Expression; v: any }[]
@@ -196,7 +199,10 @@ export class VMExprEvaluator {
             case "MemberExpression": {
                 // for now, we don't support evaluation of obj or prop
                 // of obj.prop
-                const val = await this.env(e as jsep.MemberExpression, this.reportUpdate)
+                const val = await this.env(
+                    e as jsep.MemberExpression,
+                    this.reportUpdate
+                )
                 //if (val === undefined) {
                 //    throw new VMError(VMCode.InternalError, `lookup of ${unparse(e)} failed`)
                 //}
