@@ -1,6 +1,6 @@
 import Packet from "../packet"
 import Flags from "../flags"
-import { USB_TRANSPORT } from "../constants"
+import { SERIAL_TRANSPORT, USB_TRANSPORT } from "../constants"
 import { JDTransport } from "./transport"
 import { JDBus } from "../bus"
 import Proto from "./proto"
@@ -26,7 +26,7 @@ export function isWebSerialSupported(): boolean {
 class WebSerialTransport extends JDTransport {
     private hf2: Proto
     constructor() {
-        super(USB_TRANSPORT)
+        super(SERIAL_TRANSPORT)
     }
 
     protected async transportConnectAsync(background: boolean) {
