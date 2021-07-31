@@ -11,7 +11,7 @@ import { EventWithHoldAdapter } from "./eventhold"
 import { TestingNamer } from "./naming"
 
 // An error that fires if the register is not within bounds before the trigger
-class RegisterPreConditionError extends Error {}
+export class RegisterPreConditionError extends Error {}
 
 // TODO support non-[number] registers?
 export interface RegisterUpdateOptions {
