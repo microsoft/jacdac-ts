@@ -232,7 +232,7 @@ export class HF2Proto implements Proto {
                     serial == 1 ? HF2_FLAG_SERIAL_OUT : HF2_FLAG_SERIAL_ERR
             frame[0] |= len
             for (let i = 0; i < len; ++i) frame[i + 1] = buf[pos + i]
-            if (!this.io) return
+            if (!this.io) return Promise.resolve()
             return this.io.sendPacketAsync(frame).then(() => loop(pos + len))
         }
         return loop(0)
