@@ -82,6 +82,7 @@
   },
   "dependencies": {
     "@types/node": "^16.4.7",
+    "@types/w3c-web-serial": "^1.0.2",
     "@types/w3c-web-usb": "^1.0.5",
     "@types/web-bluetooth": "^0.0.10",
     "fs-extra": "^10.0.0",

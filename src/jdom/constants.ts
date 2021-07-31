@@ -170,6 +170,7 @@ export const REFRESH_REGISTER_POLL = 50
 
 export const USB_TRANSPORT = "USB"
 export const BLUETOOTH_TRANSPORT = "Bluetooth"
+export const SERIAL_TRANSPORT = "Serial"
 export const PACKETIO_TRANSPORT = "packetio"
 
 export const META_ACK = "ACK"
