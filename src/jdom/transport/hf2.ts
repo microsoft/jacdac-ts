@@ -103,7 +103,6 @@ export const HF2_CMD_JDS_CONFIG = 0x0020
 export const HF2_CMD_JDS_SEND = 0x0021
 export const HF2_EV_JDS_PACKET = 0x800020
 
-
 export interface HF2_IO {
     onData: (v: Uint8Array) => void
     log(msg: string, v?: any): void
@@ -206,6 +205,7 @@ export class HF2Proto implements Proto {
                     return null
                 })
                 .catch(e => {
+                    console.debug(`HF2: ${e.message}; cmd=${cmd}`)
                     this.error(e)
                     return null
                 })
@@ -232,6 +232,7 @@ export class HF2Proto implements Proto {
                     serial == 1 ? HF2_FLAG_SERIAL_OUT : HF2_FLAG_SERIAL_ERR
             frame[0] |= len
             for (let i = 0; i < len; ++i) frame[i + 1] = buf[pos + i]
+            if (!this.io) return
             return this.io.sendPacketAsync(frame).then(() => loop(pos + len))
         }
         return loop(0)

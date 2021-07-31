@@ -17,6 +17,7 @@ export default class WebSerialIO implements HF2_IO {
     private readLoopStarted = false
     ready = false
     private writer: WritableStreamDefaultWriter<Uint8Array>
+    private reader: ReadableStreamDefaultReader<Uint8Array>
 
     constructor() {
         navigator.serial
@@ -51,8 +52,7 @@ export default class WebSerialIO implements HF2_IO {
         this.ready = false
         if (!this.dev) return Promise.resolve()
         console.debug("close device")
-        return this.dev
-            .close()
+        return this.cancelStreams()
             .catch(e => {
                 // just ignore errors closing, most likely device just disconnected
                 console.debug(e)
@@ -75,6 +75,18 @@ export default class WebSerialIO implements HF2_IO {
         this.onError(e)
     }
 
+    private async cancelStreams() {
+        if (this.reader)
+            try {
+                await this.reader.cancel()
+                this.reader.releaseLock()
+            } catch {}
+        try {
+            this.writer.releaseLock()
+        } catch {}
+        await this.dev.close()
+    }
+
     private async readLoop() {
         if (this.readLoopStarted) return
 
@@ -87,22 +99,31 @@ export default class WebSerialIO implements HF2_IO {
                 await delay(100)
                 continue
             }
+            this.reader = reader
+            console.debug("start new read loop round")
             try {
                 // eslint-disable-next-line no-constant-condition
                 for (;;) {
                     const { value, done } = await reader.read()
-                    if (done) {
+                    if (done || !this.dev) {
                         // |reader| has been canceled.
                         break
                     }
                     // console.log("Recv", toHex(value))
-                    this.onData(value)
+                    if (value.length > 64)
+                        for (let i = 0; i < value.length; i += 64) {
+                            this.onData(value.slice(i, i + 64))
+                        }
+                    else this.onData(value)
                 }
             } catch (e) {
                 if (this.dev) this.onError(e)
-                await delay(300)
+                await delay(100)
             } finally {
-                reader.releaseLock()
+                try {
+                    reader.releaseLock()
+                } catch {}
+                await delay(100)
             }
         }
     }
