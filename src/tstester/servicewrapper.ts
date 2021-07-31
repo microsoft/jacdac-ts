@@ -54,7 +54,7 @@ class ServiceAnyEventHeldTrigger extends BaseServiceAnyEventTrigger {
 }
 
 // An error that fires if the next does not match
-class ServiceNextEventError extends Error {}
+export class ServiceNextEventError extends Error {}
 
 // Event that fires on the next event, which must match the eventCode
 class BaseServiceNextEventTrigger extends BaseServiceEventTrigger {
