@@ -1,7 +1,18 @@
 // Contains foundational abstractions for the testing system
 import { JDBus } from "../jdom/bus"
 import { assert } from "../jdom/utils"
-import { ConsoleUi } from "./jacdac-tstester"
+
+// A base class that abstracts away user-facing logging events, eg to pipe it to a web page
+export interface ConsoleUi {
+    log: (msg: string) => void
+}
+
+// ConsoleUi that dumps to the debugging console
+export class DebugConsoleUi {
+    public log(msg: string) {
+        console.log(msg)
+    }
+}
 
 // TODO separate out some kind of human (tester) interface class? which can have different implementations,
 // eg web button or physical Jacdac module button?
