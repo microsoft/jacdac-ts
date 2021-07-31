@@ -1,10 +1,5 @@
-// Test the ButtonServer, intended as a test for the unit test framework.
-// Yes, we're meta-testing!
-
 import { suite, test } from "mocha"
 import { ButtonEvent, ButtonReg } from "../../src/jdom/constants"
-import { withTestBus, createServices, nextEventFrom } from "./tester"
-import { assert } from "../../src/jdom/utils"
 import ButtonServer from "../../src/servers/buttonserver"
 import { ServiceTester } from "../../src/tstester/servicewrapper"
 import { FastForwardBusTester, FastForwardTestDriver } from "./newtester"
@@ -33,7 +28,6 @@ suite("button server", () => {
                 ],
                 { within: 50, synchronization: 50 }
             )
-            driver.log("saw down")
 
             button.server.up()
             await driver.waitForAll(
@@ -48,7 +42,68 @@ suite("button server", () => {
                 ],
                 { within: 50, synchronization: 50 }
             )
-            driver.log("saw up")
+        })
+    })
+
+    test("fires hold events regularly", async function () {
+        await FastForwardBusTester.withTestBus(async bus => {
+            const { button } = await bus.createServices({
+                button: new ButtonServer("button", false),
+            })
+            const driver = new FastForwardTestDriver(bus.bus)
+            const service = new ServiceTester(button.service)
+            const register = service.register(ButtonReg.Pressure)
+
+            button.server.down() // TODO does this run the risk of firing the event immediately?
+            await driver.waitForAll(
+                [
+                    service.onEvent(ButtonEvent.Down).hold(),
+                    register
+                        .onUpdate({
+                            preRequiredRange: [0, 0.5],
+                            triggerRange: [0.5, 1],
+                        })
+                        .hold(),
+                ],
+                { synchronization: 50 }
+            )
+
+            await driver.waitForAll(
+                [
+                    service.nextEvent(ButtonEvent.Hold).hold(),
+                    register.hold([0.5, 1.0]),
+                ],
+                { after: 500, tolerance: 100 }
+            )
+    
+            await driver.waitForAll(
+                [
+                    service.nextEvent(ButtonEvent.Hold).hold(),
+                    register.hold([0.5, 1.0]),
+                ],
+                { after: 500, tolerance: 100 }
+            )
+
+            await driver.waitForAll(
+                [
+                    service.nextEvent(ButtonEvent.Hold).hold(),
+                    register.hold([0.5, 1.0]),
+                ],
+                { after: 500, tolerance: 100 }
+            )
+    
+            button.server.up()
+            await driver.waitForAll(
+                [
+                    service.onEvent(ButtonEvent.Up).hold(), // ignore any continued hold events
+                    register
+                        .onUpdate({
+                            triggerRange: [0, 0.5],
+                        })
+                        .hold(),
+                ],
+                { synchronization: 50 }
+            )
         })
     })
 })
