@@ -35,6 +35,7 @@ import {
     SRV_CONTROL,
     SRV_LOGGER,
     REPORT_UPDATE,
+    SERIAL_TRANSPORT,
 } from "./constants"
 import { read32, SMap, bufferEq, setAckError, read16 } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
@@ -86,7 +87,6 @@ export class JDDevice extends JDNode {
     private _flashing = false
     private _identifying: boolean
     private _eventCounter: number
-    readonly qos = new QualityOfService()
 
     constructor(
         public readonly bus: JDBus,
@@ -101,6 +101,11 @@ export class JDDevice extends JDNode {
         this._source = pkt?.sender
         this._replay = !!pkt?.replay
     }
+
+    /**
+     * Quality of service statistics for this device
+     */
+    readonly qualityOfService = new QualityOfService()
 
     describe() {
         const ignoredServices = [SRV_CONTROL, SRV_LOGGER]
@@ -120,14 +125,23 @@ export class JDDevice extends JDNode {
         )
     }
 
+    /**
+     * Gets a unique identifier for this device in the bus
+     */
     get id() {
         return `${this.nodeKind}:${this.deviceId}`
     }
 
+    /**
+     * Gets the short id of the device
+     */
     get name() {
         return this.shortId
     }
 
+    /**
+     * Identifies node as a device
+     */
     get nodeKind() {
         return DEVICE_NODE_NAME
     }
@@ -139,6 +153,7 @@ export class JDDevice extends JDNode {
         return (
             this._source === USB_TRANSPORT ||
             this._source === BLUETOOTH_TRANSPORT ||
+            this._source === SERIAL_TRANSPORT ||
             this._source === PACKETIO_TRANSPORT
         )
     }
@@ -165,6 +180,10 @@ export class JDDevice extends JDNode {
         return this.shortId
     }
 
+    /**
+     * Indicates if service information is available. 
+     * This happens after a announce packet has been received.
+     */
     get announced(): boolean {
         return !!this._servicesData?.length
     }
@@ -263,14 +282,19 @@ export class JDDevice extends JDNode {
         this._eventCounter = v
     }
 
-    hasService(service_class: number): boolean {
+    /**
+     * Indicates if the device contains at least one service matching the service class
+     * @param serviceClass service class to match
+     * @returns true if at least one service present
+     */
+    hasService(serviceClass: number): boolean {
         if (!this.announced) return false
-        if (service_class === 0) return true
+        if (serviceClass === 0) return true
 
         // skip first 4 bytes
         for (let i = 4; i < this._servicesData.length; i += 4) {
             const sc = getNumber(this._servicesData, NumberFormat.UInt32LE, i)
-            if (isInstanceOf(sc, service_class)) return true
+            if (isInstanceOf(sc, serviceClass)) return true
         }
         return false
     }
@@ -283,18 +307,26 @@ export class JDDevice extends JDNode {
         return ex
     }
 
+    /**
+     * Gets the number of services hosted by the device
+     */
     get serviceLength() {
         if (!this.announced) return 0
         return this._servicesData.length >> 2
     }
 
-    serviceClassAt(idx: number): number {
-        if (idx == 0) return 0
+    /**
+     * Gets the service class at a given index
+     * @param index index of the service
+     * @returns service class
+     */
+    serviceClassAt(index: number): number {
+        if (index == 0) return 0
 
-        idx <<= 2
-        if (!this.announced || idx + 4 > this._servicesData.length)
+        index <<= 2
+        if (!this.announced || index + 4 > this._servicesData.length)
             return undefined
-        return read32(this._servicesData, idx)
+        return read32(this._servicesData, index)
     }
 
     get serviceClasses(): number[] {
@@ -324,13 +356,23 @@ export class JDDevice extends JDNode {
         }
     }
 
-    service(service_number: number): JDService {
+    /**
+     * Gets the service client at the given service index
+     * @param serviceIndex index of the service client
+     * @returns service client
+     */
+    service(serviceIndex: number): JDService {
         if (!this.announced) return undefined
         this.initServices()
-        service_number = service_number | 0
-        return this._services && this._services[service_number]
+        serviceIndex = serviceIndex | 0
+        return this._services && this._services[serviceIndex]
     }
 
+    /**
+     * Gets a filtered list of service clients.
+     * @param options filters for services
+     * @returns services matching the filter
+     */
     services(options?: ServiceFilter): JDService[] {
         if (!this.announced) return []
 
@@ -368,7 +410,7 @@ export class JDDevice extends JDNode {
     }
 
     processAnnouncement(pkt: Packet) {
-        this.qos.processAnnouncement(pkt)
+        this.qualityOfService.processAnnouncement(pkt)
 
         let changed = false
         const w0 = this._servicesData
@@ -416,7 +458,7 @@ export class JDDevice extends JDNode {
     }
 
     processPacket(pkt: Packet) {
-        this.qos.processPacket(pkt)
+        this.qualityOfService.processPacket(pkt)
         this.lost = false
         this.emit(PACKET_RECEIVE, pkt)
         if (pkt.isReport) this.emit(PACKET_REPORT, pkt)
