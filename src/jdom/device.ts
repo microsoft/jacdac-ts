@@ -181,7 +181,7 @@ export class JDDevice extends JDNode {
     }
 
     /**
-     * Indicates if service information is available. 
+     * Indicates if service information is available.
      * This happens after a announce packet has been received.
      */
     get announced(): boolean {
