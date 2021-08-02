@@ -1,5 +1,4 @@
 import Proto from "./proto"
-import USBIO from "./usbio"
 import {
     throwError,
     assert,
@@ -104,13 +103,21 @@ export const HF2_CMD_JDS_CONFIG = 0x0020
 export const HF2_CMD_JDS_SEND = 0x0021
 export const HF2_EV_JDS_PACKET = 0x800020
 
+export interface HF2_IO {
+    onData: (v: Uint8Array) => void
+    log(msg: string, v?: any): void
+    disconnectAsync(): Promise<void>
+    error(msg: string, code?: string): void
+    sendPacketAsync(pkt: Uint8Array): Promise<void>
+}
+
 export class HF2Proto implements Proto {
     eventHandlers: SMap<(buf: Uint8Array) => void> = {}
     msgs = new PromiseBuffer<Uint8Array>()
     cmdSeq = (Math.random() * 0xffff) | 0
     private lock = new PromiseQueue()
 
-    constructor(private io: USBIO) {
+    constructor(private io: HF2_IO) {
         let frames: Uint8Array[] = []
 
         io.onData = buf => {
@@ -198,6 +205,7 @@ export class HF2Proto implements Proto {
                     return null
                 })
                 .catch(e => {
+                    console.debug(`HF2: ${e.message}; cmd=${cmd}`)
                     this.error(e)
                     return null
                 })
@@ -224,6 +232,7 @@ export class HF2Proto implements Proto {
                     serial == 1 ? HF2_FLAG_SERIAL_OUT : HF2_FLAG_SERIAL_ERR
             frame[0] |= len
             for (let i = 0; i < len; ++i) frame[i + 1] = buf[pos + i]
+            if (!this.io) return Promise.resolve()
             return this.io.sendPacketAsync(frame).then(() => loop(pos + len))
         }
         return loop(0)

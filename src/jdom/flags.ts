@@ -7,6 +7,10 @@ export default class Flags {
      * Enables/disabled WebUSB
      */
     static webUSB = true
+    /**
+     * Enables/disabled WebSerial
+     */
+    static webSerial = true
 
     /**
      * Enables/disables WebBLE

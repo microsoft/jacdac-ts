@@ -34,6 +34,8 @@ import {
     ERROR,
     SRV_CONTROL,
     SRV_LOGGER,
+    REPORT_UPDATE,
+    SERIAL_TRANSPORT,
 } from "./constants"
 import { read32, SMap, bufferEq, setAckError, read16 } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
@@ -64,6 +66,10 @@ export interface JDServiceGroup {
     mixins: JDService[]
 }
 
+/**
+ * A Jacdac device hosting services.
+ * @category JDOM
+ */
 export class JDDevice extends JDNode {
     connected: boolean
     private _source: string
@@ -81,7 +87,6 @@ export class JDDevice extends JDNode {
     private _flashing = false
     private _identifying: boolean
     private _eventCounter: number
-    readonly qos = new QualityOfService()
 
     constructor(
         public readonly bus: JDBus,
@@ -97,6 +102,15 @@ export class JDDevice extends JDNode {
         this._replay = !!pkt?.replay
     }
 
+    /**
+     * Quality of service statistics for this device
+     */
+    readonly qualityOfService = new QualityOfService()
+
+    /**
+     * Gets a description of the device.
+     * @returns a descriptive string for this device
+     */
     describe() {
         const ignoredServices = [SRV_CONTROL, SRV_LOGGER]
         return (
@@ -115,14 +129,23 @@ export class JDDevice extends JDNode {
         )
     }
 
+    /**
+     * Gets a unique identifier for this device in the bus
+     */
     get id() {
         return `${this.nodeKind}:${this.deviceId}`
     }
 
+    /**
+     * Gets the short id of the device
+     */
     get name() {
         return this.shortId
     }
 
+    /**
+     * Identifies node as a device
+     */
     get nodeKind() {
         return DEVICE_NODE_NAME
     }
@@ -134,6 +157,7 @@ export class JDDevice extends JDNode {
         return (
             this._source === USB_TRANSPORT ||
             this._source === BLUETOOTH_TRANSPORT ||
+            this._source === SERIAL_TRANSPORT ||
             this._source === PACKETIO_TRANSPORT
         )
     }
@@ -160,26 +184,46 @@ export class JDDevice extends JDNode {
         return this.shortId
     }
 
+    /**
+     * Indicates if service information is available.
+     * This happens after a announce packet has been received.
+     */
     get announced(): boolean {
         return !!this._servicesData?.length
     }
 
+    /**
+     * Gets the control announce flag from the annouce packet.
+     */
     get announceFlags(): ControlAnnounceFlags {
         return this._servicesData ? read16(this._servicesData, 0) : 0
     }
 
+    /**
+     * Gets the restart counter from the announce packet.
+     */
     get restartCounter(): number {
         return this.announceFlags & ControlAnnounceFlags.RestartCounterSteady
     }
 
+    /**
+     * Gets the status light announce flags from the announce packet.
+     */
     get statusLightFlags(): ControlAnnounceFlags {
         return this.announceFlags & ControlAnnounceFlags.StatusLightRgbFade
     }
 
+    /**
+     * Indicates if the device is announced as a client
+     */
     get isClient() {
         return !!(this.announceFlags & ControlAnnounceFlags.IsClient)
     }
 
+    /**
+     * Gets the number of packets sent since the last announce packet,
+     * as read from the announce packet.
+     */
     get packetCount(): number {
         return this._servicesData?.[2] || 0
     }
@@ -190,14 +234,23 @@ export class JDDevice extends JDNode {
         return this._shortId
     }
 
+    /**
+     * Gets the bus instance hosting this device.
+     */
     get parent(): JDNode {
         return this.bus
     }
 
+    /**
+     * Gets the firmware information if any.
+     */
     get firmwareInfo() {
         return this._firmwareInfo
     }
 
+    /**
+     * Sets the firmware information.
+     */
     set firmwareInfo(info: FirmwareInfo) {
         const changed =
             JSON.stringify(this._firmwareInfo) !== JSON.stringify(info)
@@ -210,12 +263,18 @@ export class JDDevice extends JDNode {
         }
     }
 
+    /**
+     * Indicates if no packet from this device has been observed in a while.
+     */
     get lost() {
         return this._lost
     }
 
+    /**
+     * Sets the lost status
+     */
     set lost(v: boolean) {
-        if (!!v === this.lost) return
+        if (!!v === this._lost) return
 
         // something changed
         this._lost = !!v
@@ -258,18 +317,28 @@ export class JDDevice extends JDNode {
         this._eventCounter = v
     }
 
-    hasService(service_class: number): boolean {
+    /**
+     * Indicates if the device contains at least one service matching the service class
+     * @param serviceClass service class to match
+     * @returns true if at least one service present
+     */
+    hasService(serviceClass: number): boolean {
         if (!this.announced) return false
-        if (service_class === 0) return true
+        if (serviceClass === 0) return true
 
         // skip first 4 bytes
         for (let i = 4; i < this._servicesData.length; i += 4) {
             const sc = getNumber(this._servicesData, NumberFormat.UInt32LE, i)
-            if (isInstanceOf(sc, service_class)) return true
+            if (isInstanceOf(sc, serviceClass)) return true
         }
         return false
     }
 
+    /**
+     * Gets or allocates a pipe port
+     * @param id identifier of the port
+     * @returns a pipe port
+     */
     port(id: number) {
         if (!this._ports) this._ports = {}
         const key = id + ""
@@ -278,18 +347,26 @@ export class JDDevice extends JDNode {
         return ex
     }
 
+    /**
+     * Gets the number of services hosted by the device
+     */
     get serviceLength() {
         if (!this.announced) return 0
         return this._servicesData.length >> 2
     }
 
-    serviceClassAt(idx: number): number {
-        if (idx == 0) return 0
+    /**
+     * Gets the service class at a given index
+     * @param index index of the service
+     * @returns service class
+     */
+    serviceClassAt(index: number): number {
+        if (index == 0) return 0
 
-        idx <<= 2
-        if (!this.announced || idx + 4 > this._servicesData.length)
+        index <<= 2
+        if (!this.announced || index + 4 > this._servicesData.length)
             return undefined
-        return read32(this._servicesData, idx)
+        return read32(this._servicesData, index)
     }
 
     get serviceClasses(): number[] {
@@ -309,16 +386,33 @@ export class JDDevice extends JDNode {
             for (let i = 0; i < n; ++i) s.push(new JDService(this, i))
             this._services = s
             this.lastServiceUpdate = this.bus.timestamp
+
+            // listen for specific registers
+            const ctrl = this._services?.[0]
+            const codes = [ControlReg.FirmwareIdentifier]
+            codes.forEach(code =>
+                ctrl.register(code).once(REPORT_UPDATE, () => this.emit(CHANGE))
+            )
         }
     }
 
-    service(service_number: number): JDService {
+    /**
+     * Gets the service client at the given service index
+     * @param serviceIndex index of the service client
+     * @returns service client
+     */
+    service(serviceIndex: number): JDService {
         if (!this.announced) return undefined
         this.initServices()
-        service_number = service_number | 0
-        return this._services && this._services[service_number]
+        serviceIndex = serviceIndex | 0
+        return this._services && this._services[serviceIndex]
     }
 
+    /**
+     * Gets a filtered list of service clients.
+     * @param options filters for services
+     * @returns services matching the filter
+     */
     services(options?: ServiceFilter): JDService[] {
         if (!this.announced) return []
 
@@ -343,6 +437,9 @@ export class JDDevice extends JDNode {
         return r
     }
 
+    /**
+     * Gets the list of child services.
+     */
     get children(): JDNode[] {
         return this.services()
     }
@@ -356,7 +453,7 @@ export class JDDevice extends JDNode {
     }
 
     processAnnouncement(pkt: Packet) {
-        this.qos.processAnnouncement(pkt)
+        this.qualityOfService.processAnnouncement(pkt)
 
         let changed = false
         const w0 = this._servicesData
@@ -404,7 +501,7 @@ export class JDDevice extends JDNode {
     }
 
     processPacket(pkt: Packet) {
-        this.qos.processPacket(pkt)
+        this.qualityOfService.processPacket(pkt)
         this.lost = false
         this.emit(PACKET_RECEIVE, pkt)
         if (pkt.isReport) this.emit(PACKET_REPORT, pkt)
@@ -461,19 +558,22 @@ export class JDDevice extends JDNode {
         return this.service(0)?.sendCmdAsync(ControlCmd.Reset)
     }
 
-    async resolveFirmwareIdentifier(): Promise<number> {
+    async resolveFirmwareIdentifier(retry = 0): Promise<number> {
         const fwIdRegister = this.service(0)?.register(
             ControlReg.FirmwareIdentifier
         )
-        await fwIdRegister?.refresh(true)
-        return fwIdRegister?.intValue
+        if (!fwIdRegister) return undefined
+
+        while (retry-- > 0 && fwIdRegister.data === undefined)
+            await fwIdRegister.refresh(true)
+        return fwIdRegister.uintValue
     }
 
     get firmwareIdentifier(): number {
         const fwIdRegister = this.service(0)?.register(
             ControlReg.FirmwareIdentifier
         )
-        const v = fwIdRegister?.intValue
+        const v = fwIdRegister?.uintValue
         if (fwIdRegister && v === undefined) fwIdRegister?.refresh(true)
         return v
     }

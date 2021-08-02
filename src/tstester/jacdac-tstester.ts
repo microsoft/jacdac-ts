@@ -5,12 +5,12 @@ import {
     JDDevice,
     SRV_BUTTON,
 } from "../jdom/jacdac-jdom"
-import { TestDriver } from "./base"
+import { TestDriver, ConsoleUi } from "./base"
 import { ButtonTestRoutine } from "./button.spec"
 import { ServiceTester } from "./servicewrapper"
 import { BusTester } from "./testwrappers"
 
-export class ConsoleUi {
+export class TestDocUi implements ConsoleUi {
     readonly logDiv: HTMLElement
     constructor(protected readonly document: Document) {
         this.logDiv = document.getElementById("log")
@@ -29,7 +29,7 @@ export class ConsoleUi {
 }
 
 export function main(document: Document) {
-    const ui = new ConsoleUi(document)
+    const ui = new TestDocUi(document)
 
     const bus = createUSBBus()
     const tester = new BusTester(bus)

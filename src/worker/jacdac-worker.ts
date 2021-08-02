@@ -1,4 +1,5 @@
-import { JACDAC_ERROR, JDError } from "../jdom/error"
+import { JACDAC_ERROR } from "../jdom/constants"
+import { JDError } from "../jdom/error"
 import TransportProxy from "./transportproxy"
 import { USBTransportProxy } from "./usbtransportproxy"
 
@@ -9,7 +10,7 @@ let proxy: TransportProxy
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function handleError(resp: any, e: Error) {
-    postMessage({
+    self.postMessage({
         ...resp,
         error: {
             message: e.message,
@@ -25,7 +26,7 @@ function handleError(resp: any, e: Error) {
 async function handleCommand(resp: any, handler: () => Promise<void>) {
     try {
         await handler()
-        postMessage(resp)
+        self.postMessage(resp)
     } catch (e) {
         handleError(resp, e)
     }

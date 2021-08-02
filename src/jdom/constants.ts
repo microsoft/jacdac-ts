@@ -77,6 +77,7 @@ export const CHANGE = "change"
 export const EVENT = "event"
 export const RENDER = "render"
 export const REFRESH = "refresh"
+export const MESSAGE = "message"
 export const FIRMWARE_INFO = "firmwareInfo"
 export const FIRMWARE_BLOBS_CHANGE = "firmwareBlobsChange"
 export const LATE = "late"
@@ -169,6 +170,7 @@ export const REFRESH_REGISTER_POLL = 50
 
 export const USB_TRANSPORT = "USB"
 export const BLUETOOTH_TRANSPORT = "Bluetooth"
+export const SERIAL_TRANSPORT = "Serial"
 export const PACKETIO_TRANSPORT = "packetio"
 
 export const META_ACK = "ACK"
@@ -202,5 +204,7 @@ export const ROLE_UNBOUND = "roleUnbound"
 export const ROLE_HAS_NO_SERVICE = "roleHasNoService"
 export const BOUND = "bound"
 export const UNBOUND = "unbound"
+
+export const JACDAC_ERROR = "JacdacError"
 
 export * from "../../jacdac-spec/dist/specconstants"

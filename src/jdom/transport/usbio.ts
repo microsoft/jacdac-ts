@@ -1,4 +1,4 @@
-import { HF2Proto, HF2_DEVICE_MAJOR } from "./hf2"
+import { HF2Proto, HF2_DEVICE_MAJOR, HF2_IO } from "./hf2"
 import {
     CMSISProto,
     MICROBIT_V2_PRODUCT_ID,
@@ -37,7 +37,7 @@ export interface USBOptions {
     disconnectObservable?: Observable<void>
 }
 
-export default class USBIO {
+export default class USBIO implements HF2_IO {
     private dev: USBDevice
     private iface: USBInterface
     private altIface: USBAlternateInterface
@@ -284,6 +284,6 @@ export default class USBIO {
         await this.dev.claimInterface(this.iface.interfaceNumber)
         console.debug("all connected")
         this.ready = true
-        this.readLoop()
+        /* no await */ this.readLoop()
     }
 }

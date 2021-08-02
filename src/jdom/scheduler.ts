@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+/** @internal */
 export interface Scheduler {
     get timestamp(): number
     resetTime(delta: number): void
@@ -16,6 +18,7 @@ export interface Scheduler {
     clearInterval(handle: any): void
 }
 
+/** @internal */
 export class WallClockScheduler implements Scheduler {
     private _now: () => number
     private _startTime: number

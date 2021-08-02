@@ -1,6 +1,10 @@
 import { JDBus } from "../../src/jdom/bus"
 import JDServiceProvider from "../../src/jdom/serviceprovider"
-import { EVENT, DEVICE_ANNOUNCE } from "../../src/jdom/constants"
+import {
+    EVENT,
+    DEVICE_ANNOUNCE,
+    REPORT_RECEIVE,
+} from "../../src/jdom/constants"
 import { loadSpecifications } from "../testutils"
 
 import { JDEvent } from "../../src/jdom/event"
@@ -9,6 +13,9 @@ import JDServiceServer from "../../src/jdom/serviceserver"
 import { assert } from "../../src/jdom/utils"
 import { JDService } from "../../src/jdom/service"
 import { FastForwardScheduler } from "./scheduler"
+import { jdunpack, PackedValues } from "../../src/jdom/pack"
+import Packet from "../../src/jdom/packet"
+import { JDRegister } from "../../src/jdom/register"
 
 // Set equals is not a built-in operation.
 function setEquals<T>(set1: Set<T>, set2: Set<T>): boolean {
@@ -48,23 +55,6 @@ export interface CreatedServerService<ServiceType extends JDServiceServer> {
     service: JDService
 }
 
-// Waits for all the devices (by deviceId) to be announced on the bus.
-async function waitForAnnounce(bus: JDBus, deviceIds: string[]) {
-    return new Promise(resolve => {
-        const devicesIdSet = new Set(deviceIds)
-        const announcedIdSet = new Set()
-        const onHandler = (device: JDDevice) => {
-            if (devicesIdSet.has(device.deviceId)) {
-                announcedIdSet.add(device.deviceId)
-            }
-            if (setEquals(devicesIdSet, announcedIdSet)) {
-                bus.off(DEVICE_ANNOUNCE, onHandler)
-                resolve(undefined)
-            }
-        }
-        bus.on(DEVICE_ANNOUNCE, onHandler)
-    })
-}
 
 // Creates devices around the given servers, specified as mapping of names to objects.
 // These devices are attached to the bus, and waited on for announcement so services are ready.
@@ -97,13 +87,7 @@ export async function createServices<T extends Record<string, JDServiceServer>>(
 
     // Wait for created devices to be announced, so services become available
     const deviceIds = devices.map(elt => elt.device.deviceId)
-    if (bus.scheduler instanceof FastForwardScheduler) {
-        await (bus.scheduler as FastForwardScheduler).runToPromise(
-            waitForAnnounce(bus, deviceIds)
-        )
-    } else {
-        await waitForAnnounce(bus, deviceIds)
-    }
+    await waitForAnnounce(bus, deviceIds)
 
     // Create the output map
     const namesToServices: [string, CreatedServerService<JDServiceServer>][] =
@@ -136,6 +120,34 @@ export async function createServices<T extends Record<string, JDServiceServer>>(
     return namesToServicesObject as {
         [key in keyof T]: CreatedServerService<T[key]>
     }
+}
+
+// Waits for all the devices (by deviceId) to be announced on the bus.
+export async function waitForAnnounce(bus: JDBus, deviceIds: string[]) {
+    if (bus.scheduler instanceof FastForwardScheduler) {
+        await (bus.scheduler as FastForwardScheduler).runToPromise(
+            waitForAnnounceInternal(bus, deviceIds)
+        )
+    } else {
+        await waitForAnnounceInternal(bus, deviceIds)
+    }
+}
+
+async function waitForAnnounceInternal(bus: JDBus, deviceIds: string[]) {
+    return new Promise(resolve => {
+        const devicesIdSet = new Set(deviceIds)
+        const announcedIdSet = new Set()
+        const onHandler = (device: JDDevice) => {
+            if (devicesIdSet.has(device.deviceId)) {
+                announcedIdSet.add(device.deviceId)
+            }
+            if (setEquals(devicesIdSet, announcedIdSet)) {
+                bus.off(DEVICE_ANNOUNCE, onHandler)
+                resolve(undefined)
+            }
+        }
+        bus.on(DEVICE_ANNOUNCE, onHandler)
+    })
 }
 
 export interface EventWithinOptions {
@@ -180,6 +192,7 @@ async function nextEventFromInternal(
     )
 
     let result: JDEvent | null
+
     if (within != Number.POSITIVE_INFINITY) {
         // finite within, set a timeout
         const timeoutPromise: Promise<null> = new Promise(resolve =>
@@ -237,6 +250,25 @@ export async function nextEventFrom(
     } else {
         return nextEventFromInternal(service, eventWithin)
     }
+}
+
+// Waits for the next update packet from a register, and returns the new value from the packet.
+// TODO: should there be a timing API? These packets are repeating, so timining may not mean much,
+// though a different API (expect-value-through-some-time, which operates on packets instead of polling)
+// might be useful.
+export function nextUpdateFrom(register: JDRegister): Promise<PackedValues> {
+    const packFormat = register.specification.packFormat
+
+    const nextReportPromise: Promise<PackedValues> = new Promise(resolve =>
+        register.once(REPORT_RECEIVE, (packet: Packet) => {
+            const unpackedData = jdunpack(packet.data, packFormat)
+            resolve(unpackedData)
+        })
+    )
+
+    return (
+        register.service.device.bus.scheduler as FastForwardScheduler
+    ).runToPromise(nextReportPromise)
 }
 
 export async function runForDelay(bus: JDBus, millis: number) {

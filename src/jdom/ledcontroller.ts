@@ -1,7 +1,6 @@
 import { JDEventSource } from "./eventsource"
 import { jdpack } from "./pack"
 import { JDService } from "./service"
-import { delay } from "./utils"
 
 function trgbToValues(trgb: number) {
     return [

@@ -112,6 +112,7 @@ export interface ServiceFilter {
 
 /**
  * A Jacdac bus manager. This instance maintains the list of devices on the bus.
+ * @category JDOM
  */
 export class JDBus extends JDNode {
     readonly selfDeviceId: string
@@ -166,10 +167,16 @@ export class JDBus extends JDNode {
         this.start()
     }
 
+    /**
+     * Gets the list of transports registers with the bus
+     */
     get transports() {
         return this._transports.slice(0)
     }
 
+    /**
+     * Adds a transport to the bus
+     */
     addTransport(transport: JDTransport) {
         if (this._transports.indexOf(transport) > -1) return // already added
 
@@ -178,10 +185,18 @@ export class JDBus extends JDNode {
         transport.bus.on(CONNECTING, () => this.preConnect(transport))
     }
 
+    /**
+     * Gets the list of bridges registered with the bus
+     */
     get bridges() {
         return this._bridges.slice(0)
     }
 
+    /**
+     * Add a bridge to the bus and returns a callback to remove it.
+     * @param bridge
+     * @returns callback to remove bridge
+     */
     addBridge(bridge: JDBridge): () => void {
         if (this._bridges.indexOf(bridge) < 0) {
             console.debug(`add bridge`, { bridge })
@@ -209,6 +224,10 @@ export class JDBus extends JDNode {
         )
     }
 
+    /**
+     * Connects the bus going through the transports chronologically. Does nothing if already connected.
+     * @param background connection was triggered automatically
+     */
     async connect(background?: boolean) {
         if (this.connected) return
 
@@ -220,12 +239,18 @@ export class JDBus extends JDNode {
         }
     }
 
+    /**
+     * Disconnects the bus and any connected transport.
+     */
     async disconnect() {
         for (const transport of this._transports) {
             await transport.disconnect()
         }
     }
 
+    /**
+     * Starts process packet and updates the JDOM nodes
+     */
     start() {
         if (!this._announceInterval)
             this._announceInterval = this.scheduler.setInterval(
@@ -240,6 +265,9 @@ export class JDBus extends JDNode {
             )
     }
 
+    /**
+     * Stops processing packets
+     */
     async stop() {
         await this.disconnect()
         if (this._announceInterval) {
@@ -254,16 +282,27 @@ export class JDBus extends JDNode {
         }
     }
 
+    /**
+     * Stops the bus and all transport connections.
+     */
     async dispose() {
         console.debug(`${this.id}: disposing.`)
         await this.stop()
         this._transports.forEach(transport => transport.dispose())
     }
 
+    /**
+     * Indicates that the bus is sending commands keep devices in bootloader mode.
+     * This property is signaled by CHANGE.
+     */
     get safeBoot() {
         return !!this._safeBootInterval
     }
 
+    /**
+     * Turn on or off the safe boot mode where the bus keeps devices in bootloader mode.
+     * Triggers a CHANGE event.
+     */
     set safeBoot(enabled: boolean) {
         if (enabled && !this._safeBootInterval) {
             this._safeBootInterval = this.scheduler.setInterval(() => {
@@ -279,14 +318,26 @@ export class JDBus extends JDNode {
         }
     }
 
+    /**
+     * Indicates if any of the transports is connected.
+     * Some transports might be in the process of connecting or disconnecting.
+     */
     get connected() {
         return this._transports.some(t => t.connected)
     }
 
+    /**
+     * Indicates if any of the transports is disconnected.
+     * Some transports might be in the process of connecting or disconnecting.
+     */
     get disconnected() {
         return this._transports.every(t => t.disconnected)
     }
 
+    /**
+     * Clears known devices and service providers (simulators). Optionally reset bus timestamp.
+     * @param timestamp
+     */
     clear(timestamp = 0) {
         // clear hosts
         if (this._serviceProviders?.length) {

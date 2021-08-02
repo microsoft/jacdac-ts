@@ -36,6 +36,10 @@ export interface Role {
     name: string
 }
 
+/**
+ * A client for the role manager service
+ * @category Clients
+ */
 export class RoleManagerClient extends JDServiceClient {
     private _roles: Role[] = []
     private _needRefresh = true

@@ -1,9 +1,10 @@
 import { JDEventSource } from "./eventsource"
 
-let nextNodeId = 0
+/**
+ * Base class for JDOM Node classes.
+ * @category JDOM
+ */
 export abstract class JDNode extends JDEventSource {
-    public readonly nodeId = nextNodeId++ // debugging
-
     constructor() {
         super()
     }
@@ -55,10 +56,6 @@ export abstract class JDNode extends JDEventSource {
     toString() {
         return this.friendlyName
     }
-}
-
-export function dependencyId(nodes: JDNode[]) {
-    return nodes?.map(node => node?.nodeId || "?").join(",") || ""
 }
 
 export function visitNodes(node: JDNode, vis: (node: JDNode) => void) {

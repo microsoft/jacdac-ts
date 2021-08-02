@@ -198,22 +198,29 @@ export function isReading(pkt: jdspec.PacketInfo) {
     return pkt && pkt.kind == "ro" && pkt.identifier == SystemReg.Reading
 }
 
-const includedRegisters = [
-    SystemReg.Reading,
-    SystemReg.Value,
-    SystemReg.Intensity,
+const ignoredRegister = [
+    SystemReg.StatusCode,
+    SystemReg.InstanceName,
+    SystemReg.StreamingInterval,
+    SystemReg.StreamingPreferredInterval,
+    SystemReg.StreamingSamples,
+    SystemReg.ReadingError,
+    SystemReg.ReadingResolution,
+    SystemReg.MinReading,
+    SystemReg.MaxReading,
+    SystemReg.MinValue,
+    SystemReg.MaxValue,
+    SystemReg.MaxPower,
 ]
-
 export function isHighLevelRegister(pkt: jdspec.PacketInfo) {
     return (
         isRegister(pkt) &&
         !pkt.lowLevel &&
-        includedRegisters.indexOf(pkt.identifier) > -1
+        ignoredRegister.indexOf(pkt.identifier) < 0
     )
 }
 
 const ignoredEvents = [SystemEvent.StatusCodeChanged]
-
 export function isHighLevelEvent(pkt: jdspec.PacketInfo) {
     return (
         isEvent(pkt) &&

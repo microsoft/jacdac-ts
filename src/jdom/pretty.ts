@@ -36,6 +36,7 @@ import {
 } from "./constants"
 import { SystemCmd, SystemReg } from "../../jacdac-spec/dist/specconstants"
 
+/** @internal */
 export enum RegisterType {
     UInt, // default
     UIntHex,

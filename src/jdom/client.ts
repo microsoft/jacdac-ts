@@ -1,5 +1,9 @@
 import { JDEventSource } from "./eventsource"
 
+/**
+ * Base class for clients
+ * @category Clients
+ */
 export class JDClient extends JDEventSource {
     private unsubscribers: (() => void)[] = []
     protected unmounted = false

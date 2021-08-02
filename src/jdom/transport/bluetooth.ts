@@ -31,7 +31,7 @@ function bleRequestDevice(
     options?: RequestDeviceOptions
 ): Promise<BluetoothDevice> {
     // disabled
-    if (!Flags.webUSB) return Promise.resolve(undefined)
+    if (!Flags.webBluetooth) return Promise.resolve(undefined)
 
     try {
         console.debug(`bluetooth request`, { options })

@@ -9,11 +9,11 @@ import SensorServer from "./sensorserver"
 import RegisterServer from "../jdom/registerserver"
 import { jdpack } from "../jdom/pack"
 
-const HOLD_TIME = 500
-const INACTIVE_VALUE = 0
-const ACTIVE_VALUE = 1
-
 export default class ButtonServer extends SensorServer<[number]> {
+    public static readonly HOLD_TIME = 500
+    public static readonly INACTIVE_VALUE = 0
+    public static readonly ACTIVE_VALUE = 1
+
     private _downTime: number
     private _nextHold: number
 
@@ -23,7 +23,7 @@ export default class ButtonServer extends SensorServer<[number]> {
     constructor(instanceName?: string, analog?: boolean) {
         super(SRV_BUTTON, {
             instanceName,
-            readingValues: [INACTIVE_VALUE],
+            readingValues: [ButtonServer.INACTIVE_VALUE],
             streamingInterval: 50,
         })
         this.analog = this.addRegister(ButtonReg.Analog, [!!analog])
@@ -56,12 +56,13 @@ export default class ButtonServer extends SensorServer<[number]> {
             // down event
             if (this._downTime === undefined) {
                 this._downTime = now
-                this._nextHold = this._downTime + HOLD_TIME
+                this._nextHold = this._downTime + ButtonServer.HOLD_TIME
                 await this.sendEvent(ButtonEvent.Down)
                 // hold
             } else if (now > this._nextHold) {
                 const time = now - this._downTime
-                this._nextHold = this.device.bus.timestamp + HOLD_TIME
+                this._nextHold =
+                    this.device.bus.timestamp + ButtonServer.HOLD_TIME
                 await this.sendEvent(
                     ButtonEvent.Hold,
                     jdpack<[number]>("u32", [time])
@@ -82,10 +83,10 @@ export default class ButtonServer extends SensorServer<[number]> {
     }
 
     async down() {
-        this.reading.setValues([ACTIVE_VALUE])
+        this.reading.setValues([ButtonServer.ACTIVE_VALUE])
     }
 
     async up() {
-        this.reading.setValues([INACTIVE_VALUE])
+        this.reading.setValues([ButtonServer.INACTIVE_VALUE])
     }
 }

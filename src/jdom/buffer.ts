@@ -1,5 +1,6 @@
 import { read16, read32 } from "./utils"
 
+/** @internal */
 export enum NumberFormat {
     Int8LE = 1,
     UInt8LE = 2,
@@ -194,6 +195,24 @@ export function setNumber(
         buf[off] = r & 0xff
         r >>= 8
     }
+}
+
+export function uintOfBuffer(data: Uint8Array) {
+    let fmt: NumberFormat
+    switch (data.length) {
+        case 0:
+        case 1:
+            fmt = NumberFormat.UInt8LE
+            break
+        case 2:
+        case 3:
+            fmt = NumberFormat.UInt16LE
+            break
+        default:
+            fmt = NumberFormat.UInt32LE
+            break
+    }
+    return getNumber(data, fmt, 0)
 }
 
 export function intOfBuffer(data: Uint8Array) {
