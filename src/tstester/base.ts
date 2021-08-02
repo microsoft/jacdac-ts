@@ -37,7 +37,7 @@ export abstract class TesterEvent {
 }
 
 // An error that fires when the after/within/tolerance in WaitTimingOptions is not met.
-class WaitTimeoutError extends Error {}
+export class WaitTimeoutError extends Error {}
 
 export interface WaitTimingOptions {
     after?: number // event must happen at least this many ms after the current time (by default, 0)
@@ -47,7 +47,7 @@ export interface WaitTimingOptions {
 }
 
 // An error that fires if events are not synchronized within the timing window
-class WaitSynchronizationError extends Error {}
+export class WaitSynchronizationError extends Error {}
 
 export interface SynchronizationTimingOptions extends WaitTimingOptions {
     synchronization?: number // all events must trigger within this time range
@@ -163,9 +163,11 @@ export class TestDriver {
                 event.makePromise()
 
             if (triggerPromise !== undefined) {
-                // wrap trigger promise with synchronization code
+                // wrap with timing code
+                const timedPromise = this.makePromiseTimed(triggerPromise, options)
+                // wrap trigger promise with synchronization code - TODO: unify?
                 if (options.synchronization !== undefined) {
-                    const wrappedPromise = triggerPromise.then(() => {
+                    const wrappedPromise = timedPromise.then(() => {
                         if (firstTriggerTime === undefined) {
                             firstTriggerTime = this.bus.scheduler.timestamp
                         } else {
@@ -181,7 +183,7 @@ export class TestDriver {
                     })
                     triggerPromises.push(wrappedPromise)
                 } else {
-                    triggerPromises.push(triggerPromise)
+                    triggerPromises.push(timedPromise)
                 }
             }
             if (holdingPromise !== undefined) {
