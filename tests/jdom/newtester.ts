@@ -56,7 +56,7 @@ export class FastForwardBusTester extends BusTester {
         this.scheduler = this.bus.scheduler as FastForwardScheduler
     }
 
-    // TODO can this be a block / scoped API?
+    // start() and stop() are made available, but recommend using withTestBus() instead
     public start() {
         this.bus.start()
     }
