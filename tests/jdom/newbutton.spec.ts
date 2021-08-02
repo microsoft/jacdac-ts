@@ -5,7 +5,7 @@ import { ServiceTester } from "../../src/tstester/servicewrapper"
 import { FastForwardBusTester, FastForwardTestDriver } from "./newtester"
 
 suite("button server", () => {
-    // Tolerances are set to 50ms as a typical register update interval
+    // Tolerances are set to 50ms as a typical register update interval, plus another 50ms for event alignment
     test("fires edge events after changing state", async function () {
         await FastForwardBusTester.withTestBus(async bus => {
             const { button } = await bus.createServices({
@@ -26,7 +26,7 @@ suite("button server", () => {
                         })
                         .hold(),
                 ],
-                { within: 50, synchronization: 50 }
+                { within: 100, synchronization: 50 }
             )
 
             button.server.up()
@@ -40,7 +40,7 @@ suite("button server", () => {
                         })
                         .hold(),
                 ],
-                { within: 50, synchronization: 50 }
+                { within: 100, synchronization: 50 }
             )
         })
     })
