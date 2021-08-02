@@ -107,6 +107,10 @@ export class JDDevice extends JDNode {
      */
     readonly qualityOfService = new QualityOfService()
 
+    /**
+     * Gets a description of the device.
+     * @returns a descriptive string for this device
+     */
     describe() {
         const ignoredServices = [SRV_CONTROL, SRV_LOGGER]
         return (
@@ -188,22 +192,38 @@ export class JDDevice extends JDNode {
         return !!this._servicesData?.length
     }
 
+    /**
+     * Gets the control announce flag from the annouce packet.
+     */
     get announceFlags(): ControlAnnounceFlags {
         return this._servicesData ? read16(this._servicesData, 0) : 0
     }
 
+    /**
+     * Gets the restart counter from the announce packet.
+     */
     get restartCounter(): number {
         return this.announceFlags & ControlAnnounceFlags.RestartCounterSteady
     }
 
+    /**
+     * Gets the status light announce flags from the announce packet.
+     */
     get statusLightFlags(): ControlAnnounceFlags {
         return this.announceFlags & ControlAnnounceFlags.StatusLightRgbFade
     }
 
+    /**
+     * Indicates if the device is announced as a client
+     */
     get isClient() {
         return !!(this.announceFlags & ControlAnnounceFlags.IsClient)
     }
 
+    /**
+     * Gets the number of packets sent since the last announce packet,
+     * as read from the announce packet.
+     */
     get packetCount(): number {
         return this._servicesData?.[2] || 0
     }
@@ -214,14 +234,23 @@ export class JDDevice extends JDNode {
         return this._shortId
     }
 
+    /**
+     * Gets the bus instance hosting this device.
+     */
     get parent(): JDNode {
         return this.bus
     }
 
+    /**
+     * Gets the firmware information if any.
+     */
     get firmwareInfo() {
         return this._firmwareInfo
     }
 
+    /**
+     * Sets the firmware information.
+     */
     set firmwareInfo(info: FirmwareInfo) {
         const changed =
             JSON.stringify(this._firmwareInfo) !== JSON.stringify(info)
@@ -234,12 +263,18 @@ export class JDDevice extends JDNode {
         }
     }
 
+    /**
+     * Indicates if no packet from this device has been observed in a while.
+     */
     get lost() {
         return this._lost
     }
 
+    /**
+     * Sets the lost status
+     */
     set lost(v: boolean) {
-        if (!!v === this.lost) return
+        if (!!v === this._lost) return
 
         // something changed
         this._lost = !!v
@@ -299,6 +334,11 @@ export class JDDevice extends JDNode {
         return false
     }
 
+    /**
+     * Gets or allocates a pipe port
+     * @param id identifier of the port
+     * @returns a pipe port
+     */
     port(id: number) {
         if (!this._ports) this._ports = {}
         const key = id + ""
@@ -397,6 +437,9 @@ export class JDDevice extends JDNode {
         return r
     }
 
+    /**
+     * Gets the list of child services.
+     */
     get children(): JDNode[] {
         return this.services()
     }
