@@ -1,3 +1,5 @@
+import { SMap } from "../jdom/utils"
+
 /***
  *  DTDL specification: https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md.
  */
@@ -29,7 +31,7 @@ export interface DTDLNode {
     // ^[a-zA-Z](?:[a-zA-Z0-9_]*[a-zA-Z0-9])?$
     name?: string
     displayName?: string
-    description?: string
+    description?: SMap<string>
 }
 
 export interface DTDLSchema extends DTDLNode {

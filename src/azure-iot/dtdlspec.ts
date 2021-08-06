@@ -303,7 +303,7 @@ export function serviceSpecificationToDTDL(
         "@type": "Interface",
         "@id": serviceSpecificationDTMI(srv),
         displayName: escapeDisplayName(srv.name),
-        description: srv.notes["short"],
+        description: srv.notes["short"] && { "en-US": srv.notes["short"] },
         contents: srv.packets
             .filter(pkt => !pkt.derived && !pkt.internal)
             .map(pkt => {
@@ -406,7 +406,7 @@ export function deviceSpecificationToDTDL(
         "@type": "Interface",
         "@id": deviceSpecificationDTMI(dev),
         displayName: escapeDisplayName(dev.name),
-        description: dev.description,
+        description: dev.description && { "en-US": dev.description },
         contents: services.map((srv, i) =>
             serviceSpecificationToComponent(srv, names[i])
         ),
