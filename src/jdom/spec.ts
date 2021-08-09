@@ -216,6 +216,7 @@ export function isHighLevelRegister(pkt: jdspec.PacketInfo) {
     return (
         isRegister(pkt) &&
         !pkt.lowLevel &&
+        !pkt.internal &&
         ignoredRegister.indexOf(pkt.identifier) < 0
     )
 }
@@ -225,6 +226,7 @@ export function isHighLevelEvent(pkt: jdspec.PacketInfo) {
     return (
         isEvent(pkt) &&
         !pkt.lowLevel &&
+        !pkt.internal &&
         ignoredEvents.indexOf(pkt.identifier) < 0
     )
 }
