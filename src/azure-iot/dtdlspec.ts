@@ -5,6 +5,7 @@
  *  DTDL specification: https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md.
  */
 
+import { SystemReg } from "../jdom/constants"
 import {
     isHighLevelEvent,
     isHighLevelRegister,
@@ -304,7 +305,10 @@ export function serviceSpecificationToDTDL(
     srv: jdspec.ServiceSpec
 ): DTDLInterface {
     const registers = srv.packets.filter(
-        pkt => isHighLevelRegister(pkt) && !pkt.client
+        pkt =>
+            isHighLevelRegister(pkt) &&
+            !pkt.client &&
+            pkt.identifier !== SystemReg.Variant
     )
     const events = srv.packets.filter(
         pkt => isHighLevelEvent(pkt) && !pkt.client
