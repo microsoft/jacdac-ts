@@ -202,6 +202,12 @@ export class JDService extends JDNode {
         return r?.stringValue
     }
 
+    async resolveInstanceName() {
+        const r = this.register(SystemReg.InstanceName)
+        await r?.refresh()
+        return r?.stringValue
+    }
+
     /**
      * Gets the specification of the service. Undefined if unknown
      */
