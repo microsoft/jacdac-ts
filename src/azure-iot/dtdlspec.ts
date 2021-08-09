@@ -6,6 +6,7 @@
  */
 
 import {
+    isHighLevelEvent,
     isHighLevelRegister,
     serviceSpecificationFromClassIdentifier,
 } from "../jdom/spec"
@@ -279,10 +280,10 @@ function packetToDTDL(
             }
             dtdl.schema = toSchema(srv, pkt, false)
             if (pkt.kind === "rw") dtdl.writable = true
-            if (!dtdl.schema && pkt.kind === "event") {
-                // keep a count of the events
+            if (pkt.kind === "event") {
                 dtdl["@type"] = [dtdl["@type"], "Event"]
-                dtdl.schema = toDTMI([srv.classIdentifier, "event"])
+                if (!dtdl.schema)
+                    dtdl.schema = "integer"
             } else if (unit && unit.semantic)
                 dtdl["@type"] = [dtdl["@type"], unit.semantic]
             break
@@ -303,13 +304,18 @@ function packetToDTDL(
 export function serviceSpecificationToDTDL(
     srv: jdspec.ServiceSpec
 ): DTDLInterface {
+    const registers = srv.packets.filter(
+        pkt => isHighLevelRegister(pkt) && !pkt.client
+    )
+    const events = srv.packets.filter(
+        pkt => isHighLevelEvent(pkt) && !pkt.client
+    )
     const dtdl: DTDLInterface = {
         "@type": "Interface",
         "@id": serviceSpecificationDTMI(srv),
         displayName: escapeDisplayName(srv.name),
         description: toLocalizedString(srv.notes["short"]),
-        contents: srv.packets
-            .filter(pkt => !pkt.internal && isHighLevelRegister(pkt))
+        contents: [...registers, ...events]
             .map(pkt => {
                 try {
                     return packetToDTDL(srv, pkt)
@@ -322,22 +328,9 @@ export function serviceSpecificationToDTDL(
     }
 
     // TODO extends support
-    // TODO events
-    const hasEvents = false // srv.packets.find(pkt => pkt.kind === "event")
     const hasEnums = Object.keys(srv.enums).length
-    if (hasEvents || hasEnums) {
+    if (hasEnums) {
         dtdl.schemas = []
-        if (hasEvents)
-            dtdl.schemas.push({
-                "@id": toDTMI([srv.classIdentifier, "event"]),
-                "@type": "Object",
-                fields: [
-                    {
-                        name: "count",
-                        schema: "integer",
-                    },
-                ],
-            })
         if (hasEnums)
             dtdl.schemas = dtdl.schemas.concat(
                 Object.keys(srv.enums).map(en => enumSchema(srv, srv.enums[en]))
