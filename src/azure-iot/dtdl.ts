@@ -6,8 +6,8 @@ import { SMap } from "../jdom/utils"
 export const DTDL_REFERENCE_URL =
     "https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md"
 export const DTDL_NAME = "Digital Twins Definition Language"
-// "dtmi:iotcentral:context;2",  needed?
-export const DTDL_CONTEXT = ["dtmi:dtdl:context;2"]
+//   needed?
+export const DTDL_CONTEXT = ["dtmi:iotcentral:context;2", "dtmi:dtdl:context;2"]
 
 // warps fields into an object
 export function objectSchema(schemas: DTDLSchema[]): DTDLSchema {

@@ -282,8 +282,7 @@ function packetToDTDL(
             if (pkt.kind === "rw") dtdl.writable = true
             if (pkt.kind === "event") {
                 dtdl["@type"] = [dtdl["@type"], "Event"]
-                if (!dtdl.schema)
-                    dtdl.schema = "integer"
+                if (!dtdl.schema) dtdl.schema = "integer"
             } else if (unit && unit.semantic)
                 dtdl["@type"] = [dtdl["@type"], unit.semantic]
             break
@@ -362,8 +361,11 @@ export interface DTDLGenerationOptions {
     inlineServices?: boolean // generate all services
 }
 
-export function serviceSpecificationDTMI(srv: jdspec.ServiceSpec) {
-    return toDTMI(["services", srv.classIdentifier])
+export function serviceSpecificationDTMI(
+    srv: jdspec.ServiceSpec,
+    customPath?: string
+) {
+    return toDTMI([customPath || "services", srv.classIdentifier])
 }
 
 export function deviceSpecificationDTMI(dev: jdspec.DeviceSpec) {
