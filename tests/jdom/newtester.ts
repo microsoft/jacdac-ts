@@ -43,10 +43,13 @@ export class FastForwardBusTester extends BusTester {
     static async withTestBus(
         test: (bus: FastForwardBusTester) => Promise<void>
     ) {
-        const bus = new FastForwardBusTester()
-        bus.start()
-        await test(bus)
-        bus.stop()
+        const tester = new FastForwardBusTester()
+        tester.start()
+        try {
+            await test(tester)
+        } finally {
+            tester.stop()
+        }
     }
 
     readonly scheduler: FastForwardScheduler
