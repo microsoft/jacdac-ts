@@ -33,6 +33,12 @@ function setEquals<T>(set1: Set<T>, set2: Set<T>): boolean {
 // TODO: should this / can this be merged w/ FastForwardTestDriver?
 //   both use the FF scheduler, and it might make sense to combine the classes
 export class FastForwardBusTester extends BusTester {
+    static makeTest(test: (bus: FastForwardBusTester) => Promise<void>) {
+        return async () => {
+            await this.withTestBus(test)
+        }
+    }
+
     // Wrapper that provides bus construction, initializaiton, and teardown
     static async withTestBus(
         test: (bus: FastForwardBusTester) => Promise<void>
