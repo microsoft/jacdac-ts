@@ -36,8 +36,17 @@ export abstract class TesterEvent {
     public abstract makePromise(): EventWithHold
 }
 
+// Base error class that sets its named based on its class,
+// see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/name
+export class TestErrorBase extends Error {
+    constructor(message: string) {
+        super(message)
+        this.name = this.constructor.name
+    }
+}
+
 // An error that fires when the after/within/tolerance in WaitTimingOptions is not met.
-export class WaitTimeoutError extends Error {}
+export class WaitTimeoutError extends TestErrorBase {}
 
 export interface WaitTimingOptions {
     after?: number // event must happen at least this many ms after the current time (by default, 0)
@@ -47,7 +56,7 @@ export interface WaitTimingOptions {
 }
 
 // An error that fires if events are not synchronized within the timing window
-export class WaitSynchronizationError extends Error {}
+export class WaitSynchronizationError extends TestErrorBase {}
 
 export interface SynchronizationTimingOptions extends WaitTimingOptions {
     synchronization?: number // all events must trigger within this time range

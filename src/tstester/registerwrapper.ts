@@ -7,11 +7,12 @@ import {
     Packet,
     REPORT_RECEIVE,
 } from "../jdom/jacdac-jdom"
+import { TestErrorBase } from "./base"
 import { EventWithHoldAdapter } from "./eventhold"
 import { TestingNamer } from "./naming"
 
 // An error that fires if the register is not within bounds before the trigger
-export class RegisterPreConditionError extends Error {}
+export class RegisterPreConditionError extends TestErrorBase {}
 
 // TODO support non-[number] registers?
 export interface RegisterUpdateOptions {
