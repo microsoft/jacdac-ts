@@ -17,7 +17,7 @@ import { FastForwardTester } from "./fastforwardtester"
 class DummyError extends Error {}
 
 suite("testdriver with button server", () => {
-    async function runButtonTest(
+    function makeButtonTest(
         expectedError: typeof DummyError,
         testFn: (
             tester: FastForwardTester,
@@ -25,7 +25,7 @@ suite("testdriver with button server", () => {
             buttonService: ServiceTester
         ) => void
     ) {
-        return await FastForwardTester.withTestBus(async tester => {
+        return FastForwardTester.makeTest(async tester => {
             const { button } = await tester.createServices({
                 button: new ButtonServer("button", false),
             })
@@ -52,8 +52,9 @@ suite("testdriver with button server", () => {
         })
     }
 
-    test("should fail on incorrect next event", async function () {
-        await runButtonTest(
+    test(
+        "should fail on incorrect next event",
+        makeButtonTest(
             ServiceNextEventError,
             async (tester, button, service) => {
                 button.down()
@@ -62,10 +63,11 @@ suite("testdriver with button server", () => {
                 })
             }
         )
-    })
+    )
 
-    test("should fail on incorrect register precondition", async function () {
-        await runButtonTest(
+    test(
+        "should fail on incorrect register precondition",
+        makeButtonTest(
             RegisterPreConditionError,
             async (tester, button, service) => {
                 const register = service.register(ButtonReg.Pressure)
@@ -78,28 +80,24 @@ suite("testdriver with button server", () => {
                 )
             }
         )
-    })
+    )
 
-    test("should fail on an early event", async function () {
-        await runButtonTest(
-            WaitTimeoutError,
-            async (tester, button, service) => {
-                button.down()
-                await tester.waitFor(service.nextEvent(ButtonEvent.Down), {
-                    after: 250,
-                })
-            }
-        )
-    })
+    test(
+        "should fail on an early event",
+        makeButtonTest(WaitTimeoutError, async (tester, button, service) => {
+            button.down()
+            await tester.waitFor(service.nextEvent(ButtonEvent.Down), {
+                after: 250,
+            })
+        })
+    )
 
-    test("should timeout on an event that doesn't happen", async function () {
-        await runButtonTest(
-            WaitTimeoutError,
-            async (tester, button, service) => {
-                await tester.waitFor(service.nextEvent(ButtonEvent.Down), {
-                    within: 250,
-                })
-            }
-        )
-    })
+    test(
+        "should timeout on an event that doesn't happen",
+        makeButtonTest(WaitTimeoutError, async (tester, button, service) => {
+            await tester.waitFor(service.nextEvent(ButtonEvent.Down), {
+                within: 250,
+            })
+        })
+    )
 })
