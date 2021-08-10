@@ -65,14 +65,14 @@ export interface SynchronizationTimingOptions extends WaitTimingOptions {
 export interface TestDriverInterface {
     // Waits for an event, with optional timing parameters.
     // Returns the amount of time spent waiting, or throws an error if not within timing bounds.
-    waitFor(event: TesterEvent, options: WaitTimingOptions): Promise<number>
+    waitFor(event: TesterEvent, options?: WaitTimingOptions): Promise<number>
 
     // Waits for multiple events, with optional timing parameters.
     // All events must fire within the timing window, but with no constarints on order.
     // Returns the amount of time spent waiting to the last event, or throws an error if not within timing bounds.
     waitForAll(
         events: TesterEvent[],
-        options: SynchronizationTimingOptions
+        options?: SynchronizationTimingOptions
     ): Promise<number>
 }
 
