@@ -76,6 +76,10 @@ export class FastForwardBusTester extends BusTester {
 
     // Waits for all the devices (by deviceId) to be announced on the bus.
     protected async waitForAnnounce(deviceIds: string[]) {
+        if (deviceIds.length === 0) {
+            return Promise.resolve()
+        }
+
         return new Promise(resolve => {
             const devicesIdSet = new Set(deviceIds)
             const announcedIdSet = new Set()
