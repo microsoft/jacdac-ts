@@ -14,7 +14,11 @@ import {
 import RoleManager from "../../src/servers/rolemanager"
 import { assert } from "../../src/jdom/utils"
 import { bindRoles, getRoles } from "./vmtester"
-import { SRV_POTENTIOMETER, SwitchEvent, SwitchReg } from "../../jacdac-spec/dist/specconstants"
+import {
+    SRV_POTENTIOMETER,
+    SwitchEvent,
+    SwitchReg,
+} from "../../jacdac-spec/dist/specconstants"
 import { JDService } from "../../src/jdom/service"
 import SensorServer from "../../src/servers/sensorserver"
 
@@ -32,7 +36,9 @@ suite("pot to switch adapter", () => {
     ) {
         await withTestBus(async bus => {
             const { pot } = await createServices(bus, {
-                pot: new SensorServer<[number]>(SRV_POTENTIOMETER, { readingValues: [0] }),
+                pot: new SensorServer<[number]>(SRV_POTENTIOMETER, {
+                    readingValues: [0],
+                }),
             })
             const roleMgr = new RoleManager(bus)
             bindRoles(roleMgr, program, {
@@ -44,7 +50,7 @@ suite("pot to switch adapter", () => {
 
             const { "switch server 1": sw } = await getRoles(roleMgr, program)
 
-            await runner.startAsync() 
+            await runner.startAsync()
 
             await testBody(bus, pot, sw)
         })
@@ -59,7 +65,7 @@ suite("pot to switch adapter", () => {
             assert(
                 (
                     await nextEventFrom(sw, {
-                        within: 100
+                        within: 100,
                     })
                 ).code == SwitchEvent.On
             )
@@ -77,7 +83,7 @@ suite("pot to switch adapter", () => {
             assert(
                 (
                     await nextEventFrom(sw, {
-                        within: 100
+                        within: 100,
                     })
                 ).code == SwitchEvent.Off
             )
@@ -110,5 +116,4 @@ suite("pot to switch adapter", () => {
             assert(sw.register(SwitchReg.Active).unpackedValue[0] === 0)
         })
     })
-    
 })
