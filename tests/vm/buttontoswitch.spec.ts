@@ -3,10 +3,7 @@ import { readFileSync } from "fs"
 import { VMProgram } from "../../src/vm/ir"
 import { VMProgramRunner } from "../../src/vm/runner"
 
-import {
-    CreatedServerService,
-    nextEventFrom,
-} from "../jdom/tester"
+import { CreatedServerService, nextEventFrom } from "../jdom/tester"
 import ButtonServer from "../../src/servers/buttonserver"
 import RoleManager from "../../src/servers/rolemanager"
 import { assert } from "../../src/jdom/utils"
@@ -49,17 +46,22 @@ suite("button to switch adapter", () => {
         })
     }
 
-    test("switch starts off", makeVmTest(async (tester, button, sw) => {
-        await sw.register(SwitchReg.Active).refresh()
-        console.log(
-            `starting data=${sw.register(SwitchReg.Active).data} unpacked=${
-                sw.register(SwitchReg.Active).unpackedValue
-            }`
-        )
-        assert(sw.register(SwitchReg.Active).unpackedValue[0] == 0)
-    }))
+    test(
+        "switch starts off",
+        makeVmTest(async (tester, button, sw) => {
+            await sw.register(SwitchReg.Active).refresh()
+            console.log(
+                `starting data=${sw.register(SwitchReg.Active).data} unpacked=${
+                    sw.register(SwitchReg.Active).unpackedValue
+                }`
+            )
+            assert(sw.register(SwitchReg.Active).unpackedValue[0] == 0)
+        })
+    )
 
-    test("toggles when pressed", makeVmTest(async (tester, button, sw) => {
+    test(
+        "toggles when pressed",
+        makeVmTest(async (tester, button, sw) => {
             sw.on(EVENT, (ev: JDEvent) => {
                 console.log(
                     `sw service event at ${tester.bus.timestamp}: code=${ev.code}`

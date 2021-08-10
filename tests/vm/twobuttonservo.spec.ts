@@ -3,9 +3,7 @@ import { readFileSync } from "fs"
 import { VMProgram } from "../../src/vm/ir"
 import { VMProgramRunner } from "../../src/vm/runner"
 
-import {
-    CreatedServerService,
-} from "../jdom/tester"
+import { CreatedServerService } from "../jdom/tester"
 import ButtonServer from "../../src/servers/buttonserver"
 import RoleManager from "../../src/servers/rolemanager"
 import ServoServer from "../../src/servers/servoserver"
@@ -46,7 +44,9 @@ suite("button servo", () => {
         })
     }
 
-    test("sets to 10 when button1 pressed", makeVmTest(async (tester, button1, button2, servo) => {
+    test(
+        "sets to 10 when button1 pressed",
+        makeVmTest(async (tester, button1, button2, servo) => {
             servo.server.angle.setValues([0])
 
             button1.server.down()
@@ -56,7 +56,9 @@ suite("button servo", () => {
         })
     )
 
-    test("sets to 45 when button2 pressed", makeVmTest(async (tester, button1, button2, servo) => {
+    test(
+        "sets to 45 when button2 pressed",
+        makeVmTest(async (tester, button1, button2, servo) => {
             servo.server.angle.setValues([0])
 
             button2.server.down()
@@ -66,7 +68,9 @@ suite("button servo", () => {
         })
     )
 
-    test("works when button 1, then button2 pressed", makeVmTest(async (tester, button1, button2, servo) => {
+    test(
+        "works when button 1, then button2 pressed",
+        makeVmTest(async (tester, button1, button2, servo) => {
             servo.server.angle.setValues([0])
 
             button1.server.down()
@@ -81,7 +85,9 @@ suite("button servo", () => {
         })
     )
 
-    test("works when button2, then button1 pressed", makeVmTest(async (tester, button1, button2, servo) => {
+    test(
+        "works when button2, then button1 pressed",
+        makeVmTest(async (tester, button1, button2, servo) => {
             servo.server.angle.setValues([0])
 
             button2.server.down()

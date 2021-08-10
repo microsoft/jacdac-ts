@@ -3,9 +3,7 @@ import { readFileSync } from "fs"
 import { VMProgram } from "../../src/vm/ir"
 import { VMProgramRunner } from "../../src/vm/runner"
 
-import {
-    CreatedServerService,
-} from "../jdom/tester"
+import { CreatedServerService } from "../jdom/tester"
 import ButtonServer from "../../src/servers/buttonserver"
 import RoleManager from "../../src/servers/rolemanager"
 import ServoServer from "../../src/servers/servoserver"
@@ -43,32 +41,41 @@ suite("button servo", () => {
         })
     }
 
-    test("inverts when pressed", makeVmTest(async (tester, button, servo) => {
-        servo.server.angle.setValues([50])
+    test(
+        "inverts when pressed",
+        makeVmTest(async (tester, button, servo) => {
+            servo.server.angle.setValues([50])
 
-        button.server.down()
-        await tester.waitForDelay(100)
-        button.server.up()
-        assert(servo.server.angle.values()[0] == -50.0)
-    }))
+            button.server.down()
+            await tester.waitForDelay(100)
+            button.server.up()
+            assert(servo.server.angle.values()[0] == -50.0)
+        })
+    )
 
-    test("does not invert when not pressed", makeVmTest(async (tester, button, servo) => {
-        servo.server.angle.setValues([50])
+    test(
+        "does not invert when not pressed",
+        makeVmTest(async (tester, button, servo) => {
+            servo.server.angle.setValues([50])
 
-        await tester.waitForDelay(100)
-        assert(servo.server.angle.values()[0] == 50)
-    }))
+            await tester.waitForDelay(100)
+            assert(servo.server.angle.values()[0] == 50)
+        })
+    )
 
-    test("inverts twice when pressed twice", makeVmTest(async (tester, button, servo) => {
-        servo.server.angle.setValues([50])
+    test(
+        "inverts twice when pressed twice",
+        makeVmTest(async (tester, button, servo) => {
+            servo.server.angle.setValues([50])
 
-        button.server.down()
-        await tester.waitForDelay(100)
-        button.server.up()
-        await tester.waitForDelay(100)
-        button.server.down()
-        await tester.waitForDelay(100)
-        button.server.up()
-        assert(servo.server.angle.values()[0] == 50)
-    }))
+            button.server.down()
+            await tester.waitForDelay(100)
+            button.server.up()
+            await tester.waitForDelay(100)
+            button.server.down()
+            await tester.waitForDelay(100)
+            button.server.up()
+            assert(servo.server.angle.values()[0] == 50)
+        })
+    )
 })
