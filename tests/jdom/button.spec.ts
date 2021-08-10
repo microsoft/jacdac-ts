@@ -101,30 +101,29 @@ suite("button server", () => {
             // registers are ignored here, since they are tested elsewhere
 
             button.server.down()
-            await tester.waitFor(
-                service.nextEvent(ButtonEvent.Down),
-                { within: 100 }
-            )
+            await tester.waitFor(service.nextEvent(ButtonEvent.Down), {
+                within: 100,
+            })
 
-            await tester.waitFor(
-                service.nextEvent(ButtonEvent.Hold),
-                { after:500, tolerance: 100 }
-            )
+            await tester.waitFor(service.nextEvent(ButtonEvent.Hold), {
+                after: 500,
+                tolerance: 100,
+            })
 
-            await tester.waitFor(
-                service.nextEvent(ButtonEvent.Hold),
-                { after: 500, tolerance: 100 }
-            )
+            await tester.waitFor(service.nextEvent(ButtonEvent.Hold), {
+                after: 500,
+                tolerance: 100,
+            })
 
-            await tester.waitFor(
-                service.nextEvent(ButtonEvent.Hold),
-                { after: 500, tolerance: 100 }
-            )
-            
-            await tester.waitFor(
-                service.nextEvent(ButtonEvent.Hold),
-                { after: 500, tolerance: 100 }
-            )
+            await tester.waitFor(service.nextEvent(ButtonEvent.Hold), {
+                after: 500,
+                tolerance: 100,
+            })
+
+            await tester.waitFor(service.nextEvent(ButtonEvent.Hold), {
+                after: 500,
+                tolerance: 100,
+            })
         })
     )
 
@@ -138,44 +137,41 @@ suite("button server", () => {
             // down events and registers are ignored here, since they are tested elsewhere
 
             button.server.down()
-            await tester.waitFor(
-                service.nextEvent(ButtonEvent.Down),
-                { within: 100 }
-            )
+            await tester.waitFor(service.nextEvent(ButtonEvent.Down), {
+                within: 100,
+            })
 
-            await tester.waitFor(
-                service.nextEvent(ButtonEvent.Hold),
-                { after: 500, tolerance: 100 }
-            )
+            await tester.waitFor(service.nextEvent(ButtonEvent.Hold), {
+                after: 500,
+                tolerance: 100,
+            })
 
-            await tester.waitFor(
-                service.nextEvent(ButtonEvent.Hold),
-                { after: 500, tolerance: 100 }
-            )
+            await tester.waitFor(service.nextEvent(ButtonEvent.Hold), {
+                after: 500,
+                tolerance: 100,
+            })
 
             button.server.up()
-            await tester.waitFor(
-                service.nextEvent(ButtonEvent.Up),
-                { within: 100 }
-            )
+            await tester.waitFor(service.nextEvent(ButtonEvent.Up), {
+                within: 100,
+            })
 
             await tester.waitForDelay(100)
 
             button.server.down()
-            await tester.waitFor(
-                service.nextEvent(ButtonEvent.Down),
-                { within: 100 }
-            )
+            await tester.waitFor(service.nextEvent(ButtonEvent.Down), {
+                within: 100,
+            })
 
-            await tester.waitFor(
-                service.nextEvent(ButtonEvent.Hold),
-                { after: 500, tolerance: 100 }
-            )
-            
-            await tester.waitFor(
-                service.nextEvent(ButtonEvent.Hold),
-                { after: 500, tolerance: 100 }
-            )
+            await tester.waitFor(service.nextEvent(ButtonEvent.Hold), {
+                after: 500,
+                tolerance: 100,
+            })
+
+            await tester.waitFor(service.nextEvent(ButtonEvent.Hold), {
+                after: 500,
+                tolerance: 100,
+            })
         })
     )
 })
