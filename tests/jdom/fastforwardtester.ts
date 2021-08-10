@@ -8,7 +8,9 @@ import {
     DebugConsoleUi,
     SynchronizationTimingOptions,
     TestDriver,
+    TestDriverInterface,
     TesterEvent,
+    WaitTimingOptions,
 } from "../../src/tstester/base"
 import { BusTester } from "../../src/tstester/testwrappers"
 import { loadSpecifications } from "../testutils"
@@ -34,7 +36,7 @@ function setEquals<T>(set1: Set<T>, set2: Set<T>): boolean {
 // This additionally wraps the TestDriver interfaces with logic needed to advance simulator time.
 // Test code should not create a new TestDriver interface, and instead use the functions exposed
 // by this class.
-export class FastForwardTester extends BusTester {
+export class FastForwardTester extends BusTester implements TestDriverInterface {
     static makeTest(test: (bus: FastForwardTester) => Promise<void>) {
         return async () => {
             await this.withTestBus(test)
@@ -156,6 +158,13 @@ export class FastForwardTester extends BusTester {
         return namesToServicesObject as {
             [key in keyof T]: CreatedServerService<T[key]>
         }
+    }
+
+    async waitFor(
+        event: TesterEvent,
+        options: WaitTimingOptions = {}
+    ): Promise<number> {
+        return this.waitForAll([event], options) // simple delegation wrapper
     }
 
     // Wrapper arround TestDriver.waitForAll that advances scheduler time

@@ -9,7 +9,7 @@ import {
     ServiceNextEventError,
     ServiceTester,
 } from "../../src/tstester/servicewrapper"
-import { FastForwardBusTester, FastForwardTestDriver } from "./newtester"
+import { FastForwardTester } from "./fastforwardtester"
 
 // TODO how can this be less hacky
 // If we use typeof Error as an argument type, Error is actually an interface and everything barfs
@@ -20,21 +20,20 @@ suite("testdriver with button server", () => {
     async function runButtonTest(
         expectedError: typeof DummyError,
         testFn: (
-            driver: FastForwardTestDriver,
+            tester: FastForwardTester,
             button: ButtonServer,
             buttonService: ServiceTester
         ) => void
     ) {
-        return await FastForwardBusTester.withTestBus(async bus => {
-            const { button } = await bus.createServices({
+        return await FastForwardTester.withTestBus(async tester => {
+            const { button } = await tester.createServices({
                 button: new ButtonServer("button", false),
             })
-            const driver = new FastForwardTestDriver(bus.bus)
             const service = new ServiceTester(button.service)
 
             let testPassed = false
             try {
-                await testFn(driver, button.server, service)
+                await testFn(tester, button.server, service)
                 testPassed = false
             } catch (e) {
                 if (!(e instanceof expectedError)) {
@@ -56,9 +55,9 @@ suite("testdriver with button server", () => {
     test("should fail on incorrect next event", async function () {
         await runButtonTest(
             ServiceNextEventError,
-            async (driver, button, service) => {
+            async (tester, button, service) => {
                 button.down()
-                await driver.waitFor(service.nextEvent(ButtonEvent.Up), {
+                await tester.waitFor(service.nextEvent(ButtonEvent.Up), {
                     within: 1000,
                 })
             }
@@ -68,9 +67,9 @@ suite("testdriver with button server", () => {
     test("should fail on incorrect register precondition", async function () {
         await runButtonTest(
             RegisterPreConditionError,
-            async (driver, button, service) => {
+            async (tester, button, service) => {
                 const register = service.register(ButtonReg.Pressure)
-                await driver.waitFor(
+                await tester.waitFor(
                     register.onUpdate({
                         preRequiredRange: [0.5, 1],
                         triggerRange: [10, 10], // impossible
@@ -84,9 +83,9 @@ suite("testdriver with button server", () => {
     test("should fail on an early event", async function () {
         await runButtonTest(
             WaitTimeoutError,
-            async (driver, button, service) => {
+            async (tester, button, service) => {
                 button.down()
-                await driver.waitFor(service.nextEvent(ButtonEvent.Down), {
+                await tester.waitFor(service.nextEvent(ButtonEvent.Down), {
                     after: 250,
                 })
             }
@@ -96,8 +95,8 @@ suite("testdriver with button server", () => {
     test("should timeout on an event that doesn't happen", async function () {
         await runButtonTest(
             WaitTimeoutError,
-            async (driver, button, service) => {
-                await driver.waitFor(service.nextEvent(ButtonEvent.Down), {
+            async (tester, button, service) => {
+                await tester.waitFor(service.nextEvent(ButtonEvent.Down), {
                     within: 250,
                 })
             }

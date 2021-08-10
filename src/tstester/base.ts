@@ -62,7 +62,24 @@ export interface SynchronizationTimingOptions extends WaitTimingOptions {
     synchronization?: number // all events must trigger within this time range
 }
 
-export class TestDriver {
+export interface TestDriverInterface {
+    // Waits for an event, with optional timing parameters.
+    // Returns the amount of time spent waiting, or throws an error if not within timing bounds.
+    waitFor(
+        event: TesterEvent,
+        options: WaitTimingOptions
+    ): Promise<number>
+
+    // Waits for multiple events, with optional timing parameters.
+    // All events must fire within the timing window, but with no constarints on order.
+    // Returns the amount of time spent waiting to the last event, or throws an error if not within timing bounds.
+    waitForAll(
+        events: TesterEvent[],
+        options: SynchronizationTimingOptions
+    ): Promise<number>
+}
+
+export class TestDriver implements TestDriverInterface {
     constructor(
         protected readonly bus: JDBus,
         protected readonly ui: ConsoleUi
@@ -144,8 +161,6 @@ export class TestDriver {
         }
     }
 
-    // Waits for an event, with optional timing parameters.
-    // Returns the amount of time spent waiting, or throws an error if not within timing bounds.
     async waitFor(
         event: TesterEvent,
         options: WaitTimingOptions = {}
@@ -153,9 +168,6 @@ export class TestDriver {
         return this.waitForAll([event], options) // simple delegation wrapper
     }
 
-    // Waits for multiple events, with optional timing parameters.
-    // All events must fire within the timing window, but with no constarints on order.
-    // Returns the amount of time spent waiting to the last event, or throws an error if not within timing bounds.
     async waitForAll(
         events: TesterEvent[],
         options: SynchronizationTimingOptions = {}
