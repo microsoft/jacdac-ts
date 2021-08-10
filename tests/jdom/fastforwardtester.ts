@@ -42,9 +42,7 @@ export class FastForwardTester extends BusTester {
     }
 
     // Wrapper that provides bus construction, initializaiton, and teardown
-    static async withTestBus(
-        test: (bus: FastForwardTester) => Promise<void>
-    ) {
+    static async withTestBus(test: (bus: FastForwardTester) => Promise<void>) {
         const tester = new FastForwardTester()
         tester.start()
         try {
@@ -66,7 +64,7 @@ export class FastForwardTester extends BusTester {
         loadSpecifications() // TODO this reimplements mkBus
         assert(this.bus.scheduler instanceof FastForwardScheduler)
         this.scheduler = this.bus.scheduler as FastForwardScheduler
-        this.driver = new TestDriver(this.bus, new DebugConsoleUi)
+        this.driver = new TestDriver(this.bus, new DebugConsoleUi())
     }
 
     // start() and stop() are made available, but recommend using withTestBus() instead

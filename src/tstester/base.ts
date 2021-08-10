@@ -173,7 +173,10 @@ export class TestDriver {
 
             if (triggerPromise !== undefined) {
                 // wrap with timing code
-                const timedPromise = this.makePromiseTimed(triggerPromise, options)
+                const timedPromise = this.makePromiseTimed(
+                    triggerPromise,
+                    options
+                )
                 // wrap trigger promise with synchronization code - TODO: unify?
                 if (options.synchronization !== undefined) {
                     const wrappedPromise = timedPromise.then(() => {
