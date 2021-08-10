@@ -30,10 +30,12 @@ function setEquals<T>(set1: Set<T>, set2: Set<T>): boolean {
 
 // A bus test wrapper that uses the fast-forward bus and provides test helper functions
 // to spin up virtual devices.
-// TODO: should this / can this be merged w/ FastForwardTestDriver?
-//   both use the FF scheduler, and it might make sense to combine the classes
-export class FastForwardBusTester extends BusTester {
-    static makeTest(test: (bus: FastForwardBusTester) => Promise<void>) {
+//
+// This additionally wraps the TestDriver interfaces with logic needed to advance simulator time.
+// Test code should not create a new TestDriver interface, and instead use the functions exposed
+// by this class.
+export class FastForwardTester extends BusTester {
+    static makeTest(test: (bus: FastForwardTester) => Promise<void>) {
         return async () => {
             await this.withTestBus(test)
         }
@@ -41,9 +43,9 @@ export class FastForwardBusTester extends BusTester {
 
     // Wrapper that provides bus construction, initializaiton, and teardown
     static async withTestBus(
-        test: (bus: FastForwardBusTester) => Promise<void>
+        test: (bus: FastForwardTester) => Promise<void>
     ) {
-        const tester = new FastForwardBusTester()
+        const tester = new FastForwardTester()
         tester.start()
         try {
             await test(tester)
@@ -53,6 +55,7 @@ export class FastForwardBusTester extends BusTester {
     }
 
     readonly scheduler: FastForwardScheduler
+    readonly driver: TestDriver
     // Unlike BusTester, we initialize a bus here so it uses the FF scheduler
     constructor() {
         super(
@@ -63,6 +66,7 @@ export class FastForwardBusTester extends BusTester {
         loadSpecifications() // TODO this reimplements mkBus
         assert(this.bus.scheduler instanceof FastForwardScheduler)
         this.scheduler = this.bus.scheduler as FastForwardScheduler
+        this.driver = new TestDriver(this.bus, new DebugConsoleUi)
     }
 
     // start() and stop() are made available, but recommend using withTestBus() instead
@@ -155,22 +159,14 @@ export class FastForwardBusTester extends BusTester {
             [key in keyof T]: CreatedServerService<T[key]>
         }
     }
-}
 
-export class FastForwardTestDriver extends TestDriver {
-    readonly scheduler: FastForwardScheduler
-    constructor(readonly bus: JDBus) {
-        super(bus, new DebugConsoleUi())
-        assert(bus.scheduler instanceof FastForwardScheduler)
-        this.scheduler = bus.scheduler as FastForwardScheduler
-    }
-
+    // Wrapper arround TestDriver.waitForAll that advances scheduler time
     async waitForAll(
         events: TesterEvent[],
         options: SynchronizationTimingOptions = {}
     ): Promise<number> {
         return await this.scheduler.runToPromise(
-            super.waitForAll(events, options)
+            this.driver.waitForAll(events, options)
         )
     }
 

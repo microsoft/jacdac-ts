@@ -2,20 +2,19 @@ import { suite, test } from "mocha"
 import { ButtonEvent, ButtonReg } from "../../src/jdom/constants"
 import ButtonServer from "../../src/servers/buttonserver"
 import { ServiceTester } from "../../src/tstester/servicewrapper"
-import { FastForwardBusTester, FastForwardTestDriver } from "./newtester"
+import { FastForwardTester } from "./fastforwardtester"
 
 suite("button server", () => {
     // Tolerances are set to 50ms as a typical register update interval, plus another 50ms for event alignment
-    test("fires edge events after changing state", FastForwardBusTester.makeTest(async bus => {
-        const { button } = await bus.createServices({
+    test("fires edge events after changing state", FastForwardTester.makeTest(async tester => {
+        const { button } = await tester.createServices({
             button: new ButtonServer("button", false),
         })
-        const driver = new FastForwardTestDriver(bus.bus)
         const service = new ServiceTester(button.service)
         const register = service.register(ButtonReg.Pressure)
 
         button.server.down() // TODO does this run the risk of firing the event immediately?
-        await driver.waitForAll(
+        await tester.waitForAll(
             [
                 service.onEvent(ButtonEvent.Down).hold(),
                 register
@@ -29,7 +28,7 @@ suite("button server", () => {
         )
 
         button.server.up()
-        await driver.waitForAll(
+        await tester.waitForAll(
             [
                 service.nextEvent(ButtonEvent.Up).hold(),
                 register
@@ -43,16 +42,15 @@ suite("button server", () => {
         )
     }))
 
-    test("fires hold events regularly", FastForwardBusTester.makeTest(async bus => {
-        const { button } = await bus.createServices({
+    test("fires hold events regularly", FastForwardTester.makeTest(async tester => {
+        const { button } = await tester.createServices({
             button: new ButtonServer("button", false),
         })
-        const driver = new FastForwardTestDriver(bus.bus)
         const service = new ServiceTester(button.service)
         const register = service.register(ButtonReg.Pressure)
 
         button.server.down() // TODO does this run the risk of firing the event immediately?
-        await driver.waitForAll(
+        await tester.waitForAll(
             [
                 service.onEvent(ButtonEvent.Down).hold(),
                 register
@@ -65,7 +63,7 @@ suite("button server", () => {
             { synchronization: 50 }
         )
 
-        await driver.waitForAll(
+        await tester.waitForAll(
             [
                 service.nextEvent(ButtonEvent.Hold).hold(),
                 register.hold([0.5, 1.0]),
@@ -73,7 +71,7 @@ suite("button server", () => {
             { after: 500, tolerance: 100 }
         )
 
-        await driver.waitForAll(
+        await tester.waitForAll(
             [
                 service.nextEvent(ButtonEvent.Hold).hold(),
                 register.hold([0.5, 1.0]),
@@ -81,7 +79,7 @@ suite("button server", () => {
             { after: 500, tolerance: 100 }
         )
 
-        await driver.waitForAll(
+        await tester.waitForAll(
             [
                 service.nextEvent(ButtonEvent.Hold).hold(),
                 register.hold([0.5, 1.0]),
@@ -90,7 +88,7 @@ suite("button server", () => {
         )
 
         button.server.up()
-        await driver.waitForAll(
+        await tester.waitForAll(
             [
                 service.onEvent(ButtonEvent.Up).hold(), // ignore any continued hold events
                 register
