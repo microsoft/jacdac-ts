@@ -10,7 +10,6 @@ import { assert } from "../../src/jdom/utils"
 import { bindRoles, getRoles } from "./vmtester"
 import { SwitchEvent, SwitchReg } from "../../jacdac-spec/dist/specconstants"
 import { EVENT } from "../../src/jdom/constants"
-import { JDService } from "../../src/jdom/service"
 import { JDEvent } from "../../src/jdom/event"
 import { FastForwardTester } from "../jdom/fastforwardtester"
 import { ServiceTester } from "../../src/tstester/servicewrapper"
@@ -39,7 +38,7 @@ suite("button to switch adapter", () => {
             const runner = new VMProgramRunner(roleMgr, program)
             // start up the device
             await runner.device()
-            const { "switch server 1": sw } = await getRoles(roleMgr, program)
+            const { "switch server 1": sw } = await getRoles(tester, roleMgr, program)
 
             // start up the VM
             await runner.startAsync()
