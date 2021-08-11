@@ -9,7 +9,7 @@ import { RegisterTester } from "../../src/tstester/registerwrapper"
 import { ServiceTester } from "../../src/tstester/servicewrapper"
 
 // Configured to ignore differences for a 16-bit fixed point
-function makeTolerancedRange(
+function withTolerance(
     center: number,
     tolerance = 1 / 32767
 ): [number, number] {
@@ -40,19 +40,19 @@ suite('"CSV" trace server', () => {
             )
 
             await tester.waitFor(
-                register.onUpdate({ triggerRange: makeTolerancedRange(0.5) })
+                register.onUpdate({ triggerRange: withTolerance(0.5) })
                 // absolute time not tested, just wait for first sample
             )
             await tester.waitFor(
-                register.onUpdate({ triggerRange: makeTolerancedRange(1.0) }),
+                register.onUpdate({ triggerRange: withTolerance(1.0) }),
                 { after: 200, tolerance: 50 }
             )
             await tester.waitFor(
-                register.onUpdate({ triggerRange: makeTolerancedRange(0.8) }),
+                register.onUpdate({ triggerRange: withTolerance(0.8) }),
                 { after: 200, tolerance: 50 }
             )
             await tester.waitFor(
-                register.onUpdate({ triggerRange: makeTolerancedRange(0.6) }),
+                register.onUpdate({ triggerRange: withTolerance(0.6) }),
                 { after: 200, tolerance: 50 }
             )
         })
@@ -80,11 +80,11 @@ suite('"CSV" trace server', () => {
             )
 
             await tester.waitFor(
-                register.onUpdate({ triggerRange: makeTolerancedRange(0.5) })
+                register.onUpdate({ triggerRange: withTolerance(0.5) })
                 // absolute time not tested, just wait for first sample
             )
             await tester.waitFor(
-                register.onUpdate({ triggerRange: makeTolerancedRange(1.0) }),
+                register.onUpdate({ triggerRange: withTolerance(1.0) }),
                 { after: 400, tolerance: 50 }
             )
         })
@@ -115,10 +115,10 @@ suite('"CSV" trace server', () => {
                     service.nextEvent(ButtonEvent.Down).hold(),
                     register
                         .onUpdate({
-                            preRequiredRange: makeTolerancedRange(
+                            preRequiredRange: withTolerance(
                                 ButtonServer.INACTIVE_VALUE
                             ),
-                            triggerRange: makeTolerancedRange(
+                            triggerRange: withTolerance(
                                 ButtonServer.ACTIVE_VALUE
                             ),
                         })
@@ -131,10 +131,10 @@ suite('"CSV" trace server', () => {
                     service.nextEvent(ButtonEvent.Up).hold(),
                     register
                         .onUpdate({
-                            preRequiredRange: makeTolerancedRange(
+                            preRequiredRange: withTolerance(
                                 ButtonServer.ACTIVE_VALUE
                             ),
-                            triggerRange: makeTolerancedRange(
+                            triggerRange: withTolerance(
                                 ButtonServer.INACTIVE_VALUE
                             ),
                         })

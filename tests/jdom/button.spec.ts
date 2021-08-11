@@ -46,7 +46,7 @@ suite("button server", () => {
     )
 
     test(
-        "fires down then hole events when held",
+        "fires down then hold events when held",
         FastForwardTester.makeTest(async tester => {
             const { button } = await tester.createServices({
                 button: new ButtonServer("button", false),
