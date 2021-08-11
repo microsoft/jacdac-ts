@@ -82,6 +82,7 @@ suite("button to switch adapter", () => {
             await tester.waitForAll(
                 [
                     sw.nextEvent(SwitchEvent.On),
+                    // TODO needs register to start streaming
                     // sw.register(SwitchReg.Active).onUpdate({triggerRange: [0.5, 1]})
                 ],
                 { within: 100, synchronization: 50 }
