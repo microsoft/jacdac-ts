@@ -4,9 +4,11 @@ import {
     DEVICE_ANNOUNCE,
     JDDevice,
     SRV_BUTTON,
+    SRV_POTENTIOMETER,
 } from "../jdom/jacdac-jdom"
 import { TestDriver, ConsoleUi } from "./base"
 import { ButtonTestRoutine } from "./button.spec"
+import { PotentiometerTestRoutine } from "./potentiometer.spec"
 import { ServiceTester } from "./servicewrapper"
 import { BusTester } from "./testwrappers"
 
@@ -36,17 +38,36 @@ export function main(document: Document) {
     const testdriver = new TestDriver(bus, ui)
 
     const handler = async (device: JDDevice) => {
-        tester.devices({})
+        ui.log(`connected: ${device.name}`)
+
         const buttonServices = device.services({ serviceClass: SRV_BUTTON })
         if (buttonServices.length == 1) {
             const serviceTester = new ServiceTester(buttonServices[0])
-            ui.log(`connected (device w/ single button): ${serviceTester.name}`)
+            ui.log(`starting button test: ${serviceTester.name}`)
             const buttonTest = new ButtonTestRoutine(serviceTester, testdriver)
             try {
                 await buttonTest.testHold()
                 await buttonTest.testClick()
             } catch (e: unknown) {
-                ui.log(`exception: ${e}`)
+                ui.log(`button test: exception: ${e}`)
+                throw e
+            }
+        }
+        const potServices = device.services({ serviceClass: SRV_POTENTIOMETER })
+        if (potServices.length == 1) {
+            const serviceTester = new ServiceTester(potServices[0])
+            ui.log(`starting pot test: ${serviceTester.name}`)
+            const potTest = new PotentiometerTestRoutine(
+                serviceTester,
+                testdriver
+            )
+            try {
+                await potTest.testMax()
+                await potTest.testMin()
+                await potTest.testSlideUp()
+                await potTest.testSlideDown()
+            } catch (e: unknown) {
+                ui.log(`pot test: exception: ${e}`)
                 throw e
             }
         }
@@ -72,9 +93,6 @@ export function main(document: Document) {
                 )}`
             )
         })
-
-        const device = await tester.nextConnected()
-        ui.log(`connected: ${device.name}`)
     }
 
     document.getElementById("disconnect").onclick = async () => {
