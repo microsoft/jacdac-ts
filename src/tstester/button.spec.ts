@@ -12,7 +12,7 @@ export class ButtonTestRoutine {
 
         this.driver.log("wait for down - press button")
 
-        await this.driver.waitForAll(
+        await this.driver.waitFor(
             [
                 service.onEvent(ButtonEvent.Down).hold(),
                 register
@@ -26,7 +26,7 @@ export class ButtonTestRoutine {
         )
         this.driver.log("saw down")
 
-        await this.driver.waitForAll(
+        await this.driver.waitFor(
             [
                 service.nextEvent(ButtonEvent.Up).hold(),
                 register
@@ -48,7 +48,7 @@ export class ButtonTestRoutine {
 
         this.driver.log("wait for down - press and hold button")
 
-        await this.driver.waitForAll(
+        await this.driver.waitFor(
             [
                 service.onEvent(ButtonEvent.Down).hold(),
                 register
@@ -62,7 +62,7 @@ export class ButtonTestRoutine {
         )
 
         this.driver.log("saw down, continue holding")
-        await this.driver.waitForAll(
+        await this.driver.waitFor(
             [
                 service.nextEvent(ButtonEvent.Hold).hold(),
                 register.hold([0.5, 1.0]),
@@ -71,7 +71,7 @@ export class ButtonTestRoutine {
         )
 
         this.driver.log("saw hold (1), continue holding")
-        await this.driver.waitForAll(
+        await this.driver.waitFor(
             [
                 service.nextEvent(ButtonEvent.Hold).hold(),
                 register.hold([0.5, 1.0]),
@@ -80,7 +80,7 @@ export class ButtonTestRoutine {
         )
 
         this.driver.log("saw hold (2), continue holding")
-        await this.driver.waitForAll(
+        await this.driver.waitFor(
             [
                 service.nextEvent(ButtonEvent.Hold).hold(),
                 register.hold([0.5, 1.0]),
@@ -89,7 +89,7 @@ export class ButtonTestRoutine {
         )
 
         this.driver.log("done, release")
-        await this.driver.waitForAll(
+        await this.driver.waitFor(
             [
                 service.onEvent(ButtonEvent.Up).hold(), // ignore any continued hold events
                 register
