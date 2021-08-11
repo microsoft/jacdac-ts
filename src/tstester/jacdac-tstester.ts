@@ -86,7 +86,7 @@ export function main(document: Document) {
                 await pixelTest.testShift()
                 await pixelTest.testSetOne()
             } catch (e: unknown) {
-                ui.log(`pot test: exception: ${e}`)
+                ui.log(`pixel test: exception: ${e}`)
                 throw e
             }
         }
