@@ -52,7 +52,9 @@ suite("button to switch adapter", () => {
         makeVmTest(async (tester, button, sw) => {
             await sw.register(SwitchReg.Active).register.refresh()
             console.log(
-                `starting data=${sw.register(SwitchReg.Active).register.data} unpacked=${
+                `starting data=${
+                    sw.register(SwitchReg.Active).register.data
+                } unpacked=${
                     sw.register(SwitchReg.Active).register.unpackedValue
                 }`
             )
@@ -77,22 +79,25 @@ suite("button to switch adapter", () => {
 
             button.server.down()
 
-
-            
-            await tester.waitForAll([
-                sw.nextEvent(SwitchEvent.On),
-                // sw.register(SwitchReg.Active).onUpdate({triggerRange: [0.5, 1]})
-            ],
-                {within: 100, synchronization: 50}
+            await tester.waitForAll(
+                [
+                    sw.nextEvent(SwitchEvent.On),
+                    // sw.register(SwitchReg.Active).onUpdate({triggerRange: [0.5, 1]})
+                ],
+                { within: 100, synchronization: 50 }
             )
 
             await sw.register(SwitchReg.Active).register.refresh()
             console.log(
                 `post-press data=${
                     sw.register(SwitchReg.Active).register.data
-                } unpacked=${sw.register(SwitchReg.Active).register.unpackedValue}`
+                } unpacked=${
+                    sw.register(SwitchReg.Active).register.unpackedValue
+                }`
             )
-            assert(sw.register(SwitchReg.Active).register.unpackedValue[0] === 1)
+            assert(
+                sw.register(SwitchReg.Active).register.unpackedValue[0] === 1
+            )
 
             button.server.up()
             await tester.waitForDelay(100)
@@ -100,7 +105,9 @@ suite("button to switch adapter", () => {
             await tester.waitForDelay(100)
             // TODO: can we check for absence of an event?
             await sw.register(SwitchReg.Active).register.refresh()
-            assert(sw.register(SwitchReg.Active).register.unpackedValue[0] === 0)
+            assert(
+                sw.register(SwitchReg.Active).register.unpackedValue[0] === 0
+            )
         })
     )
 })

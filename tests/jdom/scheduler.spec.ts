@@ -4,7 +4,9 @@ import { FastForwardScheduler } from "./scheduler"
 import { FastForwardTester } from "./fastforwardtester"
 
 suite("fast forward scheduler", () => {
-    test("fires setTimeout", FastForwardTester.makeTest(async tester => {
+    test(
+        "fires setTimeout",
+        FastForwardTester.makeTest(async tester => {
             let done = false
             tester.bus.scheduler.setTimeout(() => {
                 done = true
@@ -14,7 +16,9 @@ suite("fast forward scheduler", () => {
         })
     )
 
-    test("fires setInterval, repeatedly", FastForwardTester.makeTest(async tester => {
+    test(
+        "fires setInterval, repeatedly",
+        FastForwardTester.makeTest(async tester => {
             let count = 0
             tester.bus.scheduler.setInterval(() => {
                 count += 1
@@ -24,7 +28,9 @@ suite("fast forward scheduler", () => {
         })
     )
 
-    test("clear setTimeout", FastForwardTester.makeTest(async tester => {
+    test(
+        "clear setTimeout",
+        FastForwardTester.makeTest(async tester => {
             let called = false
             const handler = tester.bus.scheduler.setTimeout(() => {
                 called = true
@@ -36,7 +42,9 @@ suite("fast forward scheduler", () => {
         })
     )
 
-    test("clear setInterval", FastForwardTester.makeTest(async tester => {
+    test(
+        "clear setInterval",
+        FastForwardTester.makeTest(async tester => {
             assert(tester.bus.scheduler instanceof FastForwardScheduler)
 
             let count = 0
