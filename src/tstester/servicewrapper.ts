@@ -14,11 +14,11 @@ class BaseServiceEventTrigger extends EventWithHoldAdapter<JDEvent> {
     }
 
     protected register(handler: (data: JDEvent) => void) {
-        return this.service.service.device.bus.on(EVENT, handler)
+        return this.service.service.on(EVENT, handler)
     }
 
     protected deregister(handle: unknown) {
-        this.service.service.device.bus.off(EVENT, handle as EventHandler)
+        this.service.service.off(EVENT, handle as EventHandler)
     }
 }
 
