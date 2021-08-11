@@ -8,7 +8,7 @@ export interface ConsoleUi {
 }
 
 // ConsoleUi that dumps to the debugging console
-export class DebugConsoleUi {
+export class DebugConsoleUi implements ConsoleUi {
     public log(msg: string) {
         console.log(msg)
     }
@@ -36,7 +36,7 @@ export abstract class TesterEvent {
     public abstract makePromise(): EventWithHold
 }
 
-// Base error class that sets its named based on its class,
+// Base error class that sets its name based on its class,
 // see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/name
 export class TestErrorBase extends Error {
     constructor(message: string) {
@@ -70,8 +70,8 @@ export interface TestDriverInterface {
     // Waits for multiple events, with optional timing parameters.
     // All events must fire within the timing window, but with no constarints on order.
     // Returns the amount of time spent waiting to the last event, or throws an error if not within timing bounds.
-    waitForAll(
-        events: TesterEvent[],
+    waitFor(
+        event: TesterEvent[],
         options?: SynchronizationTimingOptions
     ): Promise<number>
 }
@@ -159,16 +159,18 @@ export class TestDriver implements TestDriverInterface {
     }
 
     async waitFor(
-        event: TesterEvent,
-        options: WaitTimingOptions = {}
-    ): Promise<number> {
-        return this.waitForAll([event], options) // simple delegation wrapper
-    }
-
-    async waitForAll(
-        events: TesterEvent[],
+        events: TesterEvent | TesterEvent[],
         options: SynchronizationTimingOptions = {}
     ): Promise<number> {
+        let eventsList: TesterEvent[]
+        if (Array.isArray(events)) {
+            eventsList = events
+        } else if (events instanceof TesterEvent) {
+            eventsList = [events]
+        } else {
+            throw Error("events not a TesterEvent[] or TeseterEvent")
+        }
+
         // TODO the returned timing may be a bit inconsistent with options for realtime systems
         const start = this.bus.scheduler.timestamp
         let firstTriggerTime: number | undefined = undefined // for synchronization
@@ -176,7 +178,7 @@ export class TestDriver implements TestDriverInterface {
         // This wraps all the promises with the timing bounds, then wraps them again with synchronization bounds
         const triggerPromises: Promise<unknown>[] = []
         const holdingListeners: HoldingListener[] = []
-        events.forEach(event => {
+        eventsList.forEach(event => {
             const { triggerPromise, holdingListener: holdingPromise } =
                 event.makePromise()
 

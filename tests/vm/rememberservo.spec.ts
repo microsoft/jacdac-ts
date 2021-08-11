@@ -3,7 +3,7 @@ import { readFileSync } from "fs"
 import { VMProgram } from "../../src/vm/ir"
 import { VMProgramRunner } from "../../src/vm/runner"
 
-import { CreatedServerService } from "../jdom/fastforwardtester"
+import { CreatedServerService, makeTest } from "../jdom/fastforwardtester"
 import ButtonServer from "../../src/servers/buttonserver"
 import RoleManager from "../../src/servers/rolemanager"
 import ServoServer from "../../src/servers/servoserver"
@@ -24,7 +24,7 @@ suite("remember servo", () => {
             servo: CreatedServerService<ServoServer>
         ) => void
     ) {
-        return FastForwardTester.makeTest(async tester => {
+        return makeTest(async tester => {
             const { recall, set, servo } = await tester.createServices({
                 recall: new ButtonServer("button", false),
                 set: new ButtonServer("button", false),

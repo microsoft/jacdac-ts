@@ -74,7 +74,7 @@ export async function getRoles(
     roleMgr: RoleManager,
     program: VMProgram
 ): Promise<Record<string, JDService>> {
-    await tester.waitForAll(
+    await tester.waitFor(
         program.serverRoles.map(
             role => new RoleBoundTrigger(roleMgr, role.role)
         )

@@ -3,7 +3,7 @@ import { readFileSync } from "fs"
 import { VMProgram } from "../../src/vm/ir"
 import { VMProgramRunner } from "../../src/vm/runner"
 
-import { CreatedServerService } from "../jdom/fastforwardtester"
+import { CreatedServerService, makeTest } from "../jdom/fastforwardtester"
 import ButtonServer from "../../src/servers/buttonserver"
 import RoleManager from "../../src/servers/rolemanager"
 import { assert } from "../../src/jdom/utils"
@@ -26,7 +26,7 @@ suite("button to switch adapter", () => {
             sw: ServiceTester
         ) => void
     ) {
-        return FastForwardTester.makeTest(async tester => {
+        return makeTest(async tester => {
             const { button } = await tester.createServices({
                 button: new ButtonServer("button", false),
             })
@@ -82,7 +82,7 @@ suite("button to switch adapter", () => {
 
             button.server.down()
 
-            await tester.waitForAll(
+            await tester.waitFor(
                 [
                     sw.nextEvent(SwitchEvent.On),
                     // TODO needs register to start streaming

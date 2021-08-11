@@ -3,7 +3,7 @@ import { readFileSync } from "fs"
 import { VMProgram } from "../../src/vm/ir"
 import { VMProgramRunner } from "../../src/vm/runner"
 
-import { CreatedServerService } from "../jdom/fastforwardtester"
+import { CreatedServerService, makeTest } from "../jdom/fastforwardtester"
 import RoleManager from "../../src/servers/rolemanager"
 import { assert } from "../../src/jdom/utils"
 import { bindRoles, getRoles } from "./vmtester"
@@ -28,7 +28,7 @@ suite("pot to switch adapter", () => {
             sw: ServiceTester
         ) => void
     ) {
-        return FastForwardTester.makeTest(async tester => {
+        return makeTest(async tester => {
             const { pot } = await tester.createServices({
                 pot: new SensorServer<[number]>(SRV_POTENTIOMETER, {
                     readingValues: [0],
@@ -61,7 +61,7 @@ suite("pot to switch adapter", () => {
             await tester.waitForDelay(100)
             pot.server.reading.setValues([0.7])
 
-            await tester.waitForAll(
+            await tester.waitFor(
                 [
                     sw.nextEvent(SwitchEvent.On),
                     // sw.register(SwitchReg.Active).onUpdate({triggerRange: [0.5, 1]})
@@ -79,7 +79,7 @@ suite("pot to switch adapter", () => {
 
             pot.server.reading.setValues([0.3])
 
-            await tester.waitForAll(
+            await tester.waitFor(
                 [
                     sw.nextEvent(SwitchEvent.Off),
                     // sw.register(SwitchReg.Active).onUpdate({triggerRange: [0, 0.5]})

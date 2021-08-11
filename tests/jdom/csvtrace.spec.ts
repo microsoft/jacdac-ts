@@ -4,7 +4,7 @@ import { SRV_POTENTIOMETER, SystemReg } from "../../src/jdom/constants"
 import SensorServer from "../../src/servers/sensorserver"
 import ButtonServer from "../../src/servers/buttonserver"
 import { ServerCsvSource } from "./servercsvsource"
-import { FastForwardTester } from "./fastforwardtester"
+import { makeTest } from "./fastforwardtester"
 import { RegisterTester } from "../../src/tstester/registerwrapper"
 import { ServiceTester } from "../../src/tstester/servicewrapper"
 
@@ -19,7 +19,7 @@ function withTolerance(
 suite('"CSV" trace server', () => {
     test(
         "produces register data as expected",
-        FastForwardTester.makeTest(async tester => {
+        makeTest(async tester => {
             const { pot } = await tester.createServices({
                 pot: new SensorServer<[number]>(SRV_POTENTIOMETER),
             })
@@ -60,7 +60,7 @@ suite('"CSV" trace server', () => {
 
     test(
         "should ignore null cells",
-        FastForwardTester.makeTest(async tester => {
+        makeTest(async tester => {
             const { pot } = await tester.createServices({
                 pot: new SensorServer<[number]>(SRV_POTENTIOMETER),
             })
@@ -92,7 +92,7 @@ suite('"CSV" trace server', () => {
 
     test(
         "produces derived events supported by the underlying server",
-        FastForwardTester.makeTest(async tester => {
+        makeTest(async tester => {
             const { button } = await tester.createServices({
                 button: new ButtonServer(),
             })
@@ -110,7 +110,7 @@ suite('"CSV" trace server', () => {
             const service = new ServiceTester(button.service)
             const register = service.register(ButtonReg.Pressure)
 
-            await tester.waitForAll(
+            await tester.waitFor(
                 [
                     service.nextEvent(ButtonEvent.Down).hold(),
                     register
@@ -126,7 +126,7 @@ suite('"CSV" trace server', () => {
                 ]
                 // absolute time not tested, just wait for first sample
             )
-            await tester.waitForAll(
+            await tester.waitFor(
                 [
                     service.nextEvent(ButtonEvent.Up).hold(),
                     register
