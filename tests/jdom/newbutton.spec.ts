@@ -2,13 +2,13 @@ import { suite, test } from "mocha"
 import { ButtonEvent, ButtonReg } from "../../src/jdom/constants"
 import ButtonServer from "../../src/servers/buttonserver"
 import { ServiceTester } from "../../src/tstester/servicewrapper"
-import { FastForwardTester } from "./fastforwardtester"
+import { makeTest } from "./fastforwardtester"
 
 suite("button server", () => {
     // Tolerances are set to 50ms as a typical register update interval, plus another 50ms for event alignment
     test(
         "fires edge events after changing state",
-        FastForwardTester.makeTest(async tester => {
+        makeTest(async tester => {
             const { button } = await tester.createServices({
                 button: new ButtonServer("button", false),
             })
@@ -47,7 +47,7 @@ suite("button server", () => {
 
     test(
         "fires hold events regularly",
-        FastForwardTester.makeTest(async tester => {
+        makeTest(async tester => {
             const { button } = await tester.createServices({
                 button: new ButtonServer("button", false),
             })

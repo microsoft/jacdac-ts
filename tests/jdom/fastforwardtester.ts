@@ -30,6 +30,23 @@ function setEquals<T>(set1: Set<T>, set2: Set<T>): boolean {
     return true
 }
 
+export function makeTest(test: (bus: FastForwardTester) => Promise<void>) {
+    return async () => {
+        await withTestBus(test)
+    }
+}
+
+// Wrapper that provides bus construction, initializaiton, and teardown
+export async function withTestBus(test: (bus: FastForwardTester) => Promise<void>) {
+    const tester = new FastForwardTester()
+    tester.start()
+    try {
+        await test(tester)
+    } finally {
+        tester.stop()
+    }
+}
+
 // A bus test wrapper that uses the fast-forward bus and provides test helper functions
 // to spin up virtual devices.
 //
@@ -40,23 +57,6 @@ export class FastForwardTester
     extends BusTester
     implements TestDriverInterface
 {
-    static makeTest(test: (bus: FastForwardTester) => Promise<void>) {
-        return async () => {
-            await this.withTestBus(test)
-        }
-    }
-
-    // Wrapper that provides bus construction, initializaiton, and teardown
-    static async withTestBus(test: (bus: FastForwardTester) => Promise<void>) {
-        const tester = new FastForwardTester()
-        tester.start()
-        try {
-            await test(tester)
-        } finally {
-            tester.stop()
-        }
-    }
-
     readonly scheduler: FastForwardScheduler
     readonly driver: TestDriver
     // Unlike BusTester, we initialize a bus here so it uses the FF scheduler
@@ -175,7 +175,7 @@ export class FastForwardTester
         events: TesterEvent[],
         options: SynchronizationTimingOptions = {}
     ): Promise<number> {
-        return await this.scheduler.runToPromise(
+        return this.scheduler.runToPromise(
             this.driver.waitForAll(events, options)
         )
     }

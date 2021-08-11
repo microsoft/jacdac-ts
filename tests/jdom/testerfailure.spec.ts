@@ -9,7 +9,7 @@ import {
     ServiceNextEventError,
     ServiceTester,
 } from "../../src/tstester/servicewrapper"
-import { FastForwardTester } from "./fastforwardtester"
+import { FastForwardTester, makeTest } from "./fastforwardtester"
 
 // TODO how can this be less hacky
 // If we use typeof Error as an argument type, Error is actually an interface and everything barfs
@@ -25,7 +25,7 @@ suite("testdriver with button server", () => {
             buttonService: ServiceTester
         ) => void
     ) {
-        return FastForwardTester.makeTest(async tester => {
+        return makeTest(async tester => {
             const { button } = await tester.createServices({
                 button: new ButtonServer("button", false),
             })

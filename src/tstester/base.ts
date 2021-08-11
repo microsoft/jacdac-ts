@@ -8,7 +8,7 @@ export interface ConsoleUi {
 }
 
 // ConsoleUi that dumps to the debugging console
-export class DebugConsoleUi {
+export class DebugConsoleUi implements ConsoleUi {
     public log(msg: string) {
         console.log(msg)
     }
@@ -36,7 +36,7 @@ export abstract class TesterEvent {
     public abstract makePromise(): EventWithHold
 }
 
-// Base error class that sets its named based on its class,
+// Base error class that sets its name based on its class,
 // see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/name
 export class TestErrorBase extends Error {
     constructor(message: string) {
