@@ -59,14 +59,16 @@ suite("pot to switch adapter", () => {
         makeVmTest(async (tester, pot, sw) => {
             pot.server.reading.setValues([0.2])
             await tester.waitForDelay(100)
-            pot.server.reading.setValues([0.7])
 
+            pot.server.reading.setValues([0.7])
             await tester.waitFor(
                 [
                     sw.nextEvent(SwitchEvent.On),
-                    // sw.register(SwitchReg.Active).onUpdate({triggerRange: [0.5, 1]})
+                    sw
+                        .register(SwitchReg.Active)
+                        .onUpdate({ triggerRange: [0.5, 1] }),
                 ],
-                { within: 100, synchronization: 50 }
+                { within: 110, synchronization: 110 }
             )
         })
     )
@@ -78,13 +80,14 @@ suite("pot to switch adapter", () => {
             await tester.waitForDelay(100)
 
             pot.server.reading.setValues([0.3])
-
             await tester.waitFor(
                 [
                     sw.nextEvent(SwitchEvent.Off),
-                    // sw.register(SwitchReg.Active).onUpdate({triggerRange: [0, 0.5]})
+                    sw
+                        .register(SwitchReg.Active)
+                        .onUpdate({ triggerRange: [0, 0.5] }),
                 ],
-                { within: 100, synchronization: 50 }
+                { within: 110, synchronization: 110 }
             )
         })
     )

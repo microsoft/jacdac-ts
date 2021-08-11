@@ -6,11 +6,8 @@ import { VMProgramRunner } from "../../src/vm/runner"
 import { CreatedServerService, makeTest } from "../jdom/fastforwardtester"
 import ButtonServer from "../../src/servers/buttonserver"
 import RoleManager from "../../src/servers/rolemanager"
-import { assert } from "../../src/jdom/utils"
 import { bindRoles, getRoles } from "./vmtester"
 import { SwitchEvent, SwitchReg } from "../../jacdac-spec/dist/specconstants"
-import { EVENT } from "../../src/jdom/constants"
-import { JDEvent } from "../../src/jdom/event"
 import { FastForwardTester } from "../jdom/fastforwardtester"
 import { ServiceTester } from "../../src/tstester/servicewrapper"
 
@@ -53,64 +50,41 @@ suite("button to switch adapter", () => {
     test(
         "switch starts off",
         makeVmTest(async (tester, button, sw) => {
-            await sw.register(SwitchReg.Active).register.refresh()
-            console.log(
-                `starting data=${
-                    sw.register(SwitchReg.Active).register.data
-                } unpacked=${
-                    sw.register(SwitchReg.Active).register.unpackedValue
-                }`
+            await tester.waitFor(
+                sw
+                    .register(SwitchReg.Active)
+                    .onUpdate({ triggerRange: [0, 0.5] }),
+                { within: 100 }
             )
-            assert(sw.register(SwitchReg.Active).register.unpackedValue[0] == 0)
         })
     )
 
     test(
         "toggles when pressed",
         makeVmTest(async (tester, button, sw) => {
-            sw.service.on(EVENT, (ev: JDEvent) => {
-                console.log(
-                    `sw service event at ${tester.bus.timestamp}: code=${ev.code}`
-                )
-            })
-            tester.bus.on(EVENT, (ev: JDEvent) => {
-                console.log(
-                    `bus event at ${tester.bus.timestamp}: code=${ev.code} device=${ev.service.device.shortId}`
-                )
-            })
-            console.log(`sw device = ${sw.service.device.shortId}`)
-
             button.server.down()
-
             await tester.waitFor(
                 [
                     sw.nextEvent(SwitchEvent.On),
-                    // TODO needs register to start streaming
-                    // sw.register(SwitchReg.Active).onUpdate({triggerRange: [0.5, 1]})
+                    sw
+                        .register(SwitchReg.Active)
+                        .onUpdate({ triggerRange: [0.5, 1] }),
                 ],
-                { within: 100, synchronization: 50 }
-            )
-
-            await sw.register(SwitchReg.Active).register.refresh()
-            console.log(
-                `post-press data=${
-                    sw.register(SwitchReg.Active).register.data
-                } unpacked=${
-                    sw.register(SwitchReg.Active).register.unpackedValue
-                }`
-            )
-            assert(
-                sw.register(SwitchReg.Active).register.unpackedValue[0] === 1
+                { within: 110, synchronization: 110 }
             )
 
             button.server.up()
-            await tester.waitForDelay(100)
+            await tester.waitForDelay(200)
+
             button.server.down()
-            await tester.waitForDelay(100)
-            // TODO: can we check for absence of an event?
-            await sw.register(SwitchReg.Active).register.refresh()
-            assert(
-                sw.register(SwitchReg.Active).register.unpackedValue[0] === 0
+            await tester.waitFor(
+                [
+                    sw.nextEvent(SwitchEvent.Off),
+                    sw
+                        .register(SwitchReg.Active)
+                        .onUpdate({ triggerRange: [0, 0.5] }),
+                ],
+                { within: 110, synchronization: 110 }
             )
         })
     )
