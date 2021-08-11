@@ -16,7 +16,7 @@ suite("button server", () => {
             const register = service.register(ButtonReg.Pressure)
 
             button.server.down() // TODO does this run the risk of firing the event immediately?
-            await tester.waitForAll(
+            await tester.waitFor(
                 [
                     service.onEvent(ButtonEvent.Down).hold(),
                     register
@@ -30,7 +30,7 @@ suite("button server", () => {
             )
 
             button.server.up()
-            await tester.waitForAll(
+            await tester.waitFor(
                 [
                     service.nextEvent(ButtonEvent.Up).hold(),
                     register
@@ -55,7 +55,7 @@ suite("button server", () => {
             const register = service.register(ButtonReg.Pressure)
 
             button.server.down() // TODO does this run the risk of firing the event immediately?
-            await tester.waitForAll(
+            await tester.waitFor(
                 [
                     service.onEvent(ButtonEvent.Down).hold(),
                     register
@@ -68,7 +68,7 @@ suite("button server", () => {
                 { synchronization: 50 }
             )
 
-            await tester.waitForAll(
+            await tester.waitFor(
                 [
                     service.nextEvent(ButtonEvent.Hold).hold(),
                     register.hold([0.5, 1.0]),
@@ -76,7 +76,7 @@ suite("button server", () => {
                 { after: 500, tolerance: 100 }
             )
 
-            await tester.waitForAll(
+            await tester.waitFor(
                 [
                     service.nextEvent(ButtonEvent.Hold).hold(),
                     register.hold([0.5, 1.0]),
@@ -84,7 +84,7 @@ suite("button server", () => {
                 { after: 500, tolerance: 100 }
             )
 
-            await tester.waitForAll(
+            await tester.waitFor(
                 [
                     service.nextEvent(ButtonEvent.Hold).hold(),
                     register.hold([0.5, 1.0]),
@@ -93,7 +93,7 @@ suite("button server", () => {
             )
 
             button.server.up()
-            await tester.waitForAll(
+            await tester.waitFor(
                 [
                     service.onEvent(ButtonEvent.Up).hold(), // ignore any continued hold events
                     register

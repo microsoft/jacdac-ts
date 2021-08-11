@@ -165,21 +165,12 @@ export class FastForwardTester
         }
     }
 
-    async waitFor(
-        event: TesterEvent,
-        options: WaitTimingOptions = {}
-    ): Promise<number> {
-        return this.waitForAll([event], options) // simple delegation wrapper
-    }
-
     // Wrapper arround TestDriver.waitForAll that advances scheduler time
-    async waitForAll(
-        events: TesterEvent[],
+    async waitFor(
+        events: TesterEvent | TesterEvent[],
         options: SynchronizationTimingOptions = {}
     ): Promise<number> {
-        return this.scheduler.runToPromise(
-            this.driver.waitForAll(events, options)
-        )
+        return this.scheduler.runToPromise(this.driver.waitFor(events, options))
     }
 
     // Runs the fast-forward scheduler for some amount of time
