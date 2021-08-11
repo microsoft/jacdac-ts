@@ -84,10 +84,12 @@ export class FastForwardTester
     // start() and stop() are made available, but recommend using withTestBus() instead
     public start() {
         this.bus.start()
+        this.scheduler.start()  // run in background
     }
 
     public stop() {
         this.bus.stop()
+        this.scheduler.stop()
     }
 
     // Waits for all the devices (by deviceId) to be announced on the bus.
