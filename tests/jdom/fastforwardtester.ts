@@ -37,7 +37,9 @@ export function makeTest(test: (bus: FastForwardTester) => Promise<void>) {
 }
 
 // Wrapper that provides bus construction, initializaiton, and teardown
-export async function withTestBus(test: (bus: FastForwardTester) => Promise<void>) {
+export async function withTestBus(
+    test: (bus: FastForwardTester) => Promise<void>
+) {
     const tester = new FastForwardTester()
     tester.start()
     try {
