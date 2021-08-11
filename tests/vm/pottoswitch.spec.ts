@@ -42,7 +42,11 @@ suite("pot to switch adapter", () => {
             const runner = new VMProgramRunner(roleMgr, program)
             await runner.device()
 
-            const { "switch server 1": sw } = await getRoles(tester, roleMgr, program)
+            const { "switch server 1": sw } = await getRoles(
+                tester,
+                roleMgr,
+                program
+            )
 
             await runner.startAsync()
 

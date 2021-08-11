@@ -32,7 +32,6 @@ class RoleBoundTrigger extends EventWithHoldAdapter<string> {
     }
 }
 
-
 // Binds roles (using a provided role manager), checking that the roles provided
 // are exhaustive and correct for a given VMProgram
 export function bindRoles(
@@ -75,7 +74,11 @@ export async function getRoles(
     roleMgr: RoleManager,
     program: VMProgram
 ): Promise<Record<string, JDService>> {
-    await tester.waitForAll(program.serverRoles.map(role => new RoleBoundTrigger(roleMgr, role.role)))
+    await tester.waitForAll(
+        program.serverRoles.map(
+            role => new RoleBoundTrigger(roleMgr, role.role)
+        )
+    )
 
     const outputMap: Record<string, JDService> = {}
     program.serverRoles.forEach(role => {

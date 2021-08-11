@@ -38,7 +38,11 @@ suite("button to switch adapter", () => {
             const runner = new VMProgramRunner(roleMgr, program)
             // start up the device
             await runner.device()
-            const { "switch server 1": sw } = await getRoles(tester, roleMgr, program)
+            const { "switch server 1": sw } = await getRoles(
+                tester,
+                roleMgr,
+                program
+            )
 
             // start up the VM
             await runner.startAsync()
