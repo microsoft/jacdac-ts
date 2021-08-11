@@ -84,7 +84,7 @@ export class FastForwardTester
     // start() and stop() are made available, but recommend using withTestBus() instead
     public start() {
         this.bus.start()
-        this.scheduler.start()  // run in background
+        this.scheduler.start() // run in background
     }
 
     public stop() {

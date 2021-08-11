@@ -56,4 +56,21 @@ suite("fast forward scheduler", () => {
             assert(count == 3)
         })
     )
+
+    test(
+        "fires concurrent setTimeout, with waitForDelay",
+        makeTest(async tester => {
+            let finished1: number
+            let finished2: number
+            tester.bus.scheduler.setTimeout(() => {
+                finished1 = tester.bus.timestamp
+            }, 400)
+            tester.bus.scheduler.setTimeout(() => {
+                finished2 = tester.bus.timestamp
+            }, 500)
+            await tester.waitForDelay(501)
+            assert(finished1 == 400)
+            assert(finished2 == 500)
+        })
+    )
 })

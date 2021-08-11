@@ -30,22 +30,20 @@ export class FastForwardScheduler implements Scheduler {
 
     // Driver queue of promises, where the scheduler continues advancing time as long as this is not empty
     protected driverQueue = new Set()
-    protected schedulerDone = false  // set to true to terminate the scheduler, which also prevents additional runs
+    protected schedulerDone = false // set to true to terminate the scheduler, which also prevents additional runs
 
     protected async scheduler() {
         while (!this.schedulerDone) {
-            assert(
-                !this.eventQueue.isEmpty(),
-                "empty scheduler"
-            )
+            assert(!this.eventQueue.isEmpty(), "empty scheduler")
 
-            if (this.driverQueue.size > 0) {  // only advance time if there are items on the driver queue
+            if (this.driverQueue.size > 0) {
+                // only advance time if there are items on the driver queue
                 const nextEvent = this.eventQueue.pop()
                 assert(nextEvent.nextTime >= this.currentTime)
-    
+
                 this.currentTime = nextEvent.nextTime
                 nextEvent.callback(nextEvent.callbackArgs)
-    
+
                 if (nextEvent.interval !== undefined) {
                     // for intervals, push a new event
                     // update events in-place so handles remain valid
@@ -53,7 +51,7 @@ export class FastForwardScheduler implements Scheduler {
                     this.eventQueue.push(nextEvent)
                 }
             }
-            
+
             // Note: setTimeout goes on the macrotask queue, so all microtasks (promise resolutions,
             // including chained promises) should be resolved when setTimeout returns.
             await new Promise(resolve => setTimeout(resolve, 0))
@@ -62,9 +60,12 @@ export class FastForwardScheduler implements Scheduler {
 
     public async start() {
         assert(!this.schedulerDone, "can't restart scheduler")
-        assert(!this.schedulerRunning, "can't have multiple concurrent runs of a scheduler")
+        assert(
+            !this.schedulerRunning,
+            "can't have multiple concurrent runs of a scheduler"
+        )
         this.schedulerRunning = true
-        
+
         this.scheduler()
     }
 
@@ -94,10 +95,18 @@ export class FastForwardScheduler implements Scheduler {
         this.driverQueue.add(promise)
         promise.then(
             fulfilled => {
-                this.driverQueue.delete(promise)
+                const removed = this.driverQueue.delete(promise)
+                assert(
+                    removed,
+                    "failed to remove fulfilled promise from driver queue"
+                )
             },
             rejected => {
-                this.driverQueue.delete(promise)
+                const removed = this.driverQueue.delete(promise)
+                assert(
+                    removed,
+                    "failed to remove rejected promise from driver queue"
+                )
             }
         )
 
