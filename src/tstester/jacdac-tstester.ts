@@ -4,10 +4,12 @@ import {
     DEVICE_ANNOUNCE,
     JDDevice,
     SRV_BUTTON,
+    SRV_LED_PIXEL,
     SRV_POTENTIOMETER,
 } from "../jdom/jacdac-jdom"
 import { TestDriver, ConsoleUi } from "./base"
 import { ButtonTestRoutine } from "./button.spec"
+import { LedPixelTestRoutine } from "./ledpixel.spec"
 import { PotentiometerTestRoutine } from "./potentiometer.spec"
 import { ServiceTester } from "./servicewrapper"
 import { BusTester } from "./testwrappers"
@@ -66,6 +68,23 @@ export function main(document: Document) {
                 await potTest.testMin()
                 await potTest.testSlideUp()
                 await potTest.testSlideDown()
+            } catch (e: unknown) {
+                ui.log(`pot test: exception: ${e}`)
+                throw e
+            }
+        }
+        const pixelServices = device.services({ serviceClass: SRV_LED_PIXEL })
+        if (pixelServices.length == 1) {
+            const serviceTester = new ServiceTester(pixelServices[0])
+            ui.log(`starting pixel test: ${serviceTester.name}`)
+            const pixelTest = new LedPixelTestRoutine(
+                serviceTester,
+                testdriver
+            )
+            try {
+                await pixelTest.testSolidColors()
+                await pixelTest.testShift()
+                await pixelTest.testSetOne()
             } catch (e: unknown) {
                 ui.log(`pot test: exception: ${e}`)
                 throw e
