@@ -2,15 +2,10 @@ import { suite, test } from "mocha"
 import { readFileSync } from "fs"
 import { VMProgram } from "../../src/vm/ir"
 import { VMProgramRunner } from "../../src/vm/runner"
-import { JDBus } from "../../src/jdom/bus"
 
 import {
-    withTestBus,
-    createServices,
     CreatedServerService,
-    runForDelay,
-    nextEventFrom,
-} from "../jdom/tester"
+} from "../jdom/fastforwardtester"
 import RoleManager from "../../src/servers/rolemanager"
 import { assert } from "../../src/jdom/utils"
 import { bindRoles, getRoles } from "./vmtester"
@@ -19,28 +14,29 @@ import {
     SwitchEvent,
     SwitchReg,
 } from "../../jacdac-spec/dist/specconstants"
-import { JDService } from "../../src/jdom/service"
 import SensorServer from "../../src/servers/sensorserver"
+import { FastForwardTester } from "../jdom/fastforwardtester"
+import { ServiceTester } from "../../src/tstester/servicewrapper"
 
 suite("pot to switch adapter", () => {
     const program: VMProgram = JSON.parse(
         readFileSync("vm/suites/pottoswitch.json", "utf8")
     )
 
-    async function withHarness(
+    function makeVmTest(
         testBody: (
-            bus: JDBus,
+            tester: FastForwardTester,
             pot: CreatedServerService<SensorServer<[number]>>,
-            sw: JDService
+            sw: ServiceTester
         ) => void
     ) {
-        await withTestBus(async bus => {
-            const { pot } = await createServices(bus, {
+        return FastForwardTester.makeTest(async tester => {
+            const { pot } = await tester.createServices({
                 pot: new SensorServer<[number]>(SRV_POTENTIOMETER, {
                     readingValues: [0],
                 }),
             })
-            const roleMgr = new RoleManager(bus)
+            const roleMgr = new RoleManager(tester.bus)
             bindRoles(roleMgr, program, {
                 "potentiometer 1": pot.service,
             })
@@ -52,68 +48,58 @@ suite("pot to switch adapter", () => {
 
             await runner.startAsync()
 
-            await testBody(bus, pot, sw)
+            await testBody(tester, pot, new ServiceTester(sw))
         })
     }
 
-    test("turns on", async () => {
-        await withHarness(async (bus, pot, sw) => {
+    test("turns on", makeVmTest(async (tester, pot, sw) => {
             pot.server.reading.setValues([0.2])
-            await runForDelay(bus, 100)
+            await tester.waitForDelay(100)
             pot.server.reading.setValues([0.7])
 
-            assert(
-                (
-                    await nextEventFrom(sw, {
-                        within: 100,
-                    })
-                ).code == SwitchEvent.On
+            await tester.waitForAll([
+                sw.nextEvent(SwitchEvent.On),
+                // sw.register(SwitchReg.Active).onUpdate({triggerRange: [0.5, 1]})
+            ],
+                {within: 100, synchronization: 50}
             )
-            await sw.register(SwitchReg.Active).refresh()
-            assert(sw.register(SwitchReg.Active).unpackedValue[0] == 1)
         })
-    })
+    )
 
-    test("turns off", async () => {
-        await withHarness(async (bus, pot, sw) => {
+    test("turns off", makeVmTest(async (tester, pot, sw) => {
             pot.server.reading.setValues([1])
-            await runForDelay(bus, 100)
+            await tester.waitForDelay(100)
 
             pot.server.reading.setValues([0.3])
-            assert(
-                (
-                    await nextEventFrom(sw, {
-                        within: 100,
-                    })
-                ).code == SwitchEvent.Off
+
+            await tester.waitForAll([
+                sw.nextEvent(SwitchEvent.Off),
+                // sw.register(SwitchReg.Active).onUpdate({triggerRange: [0, 0.5]})
+            ],
+                {within: 100, synchronization: 50}
             )
-            await sw.register(SwitchReg.Active).refresh()
-            assert(sw.register(SwitchReg.Active).unpackedValue[0] == 0)
         })
-    })
+    )
 
-    test("does not turn off within hysteresis region", async () => {
-        await withHarness(async (bus, pot, sw) => {
+    test("does not turn off within hysteresis region", makeVmTest(async (tester, pot, sw) => {
             pot.server.reading.setValues([0.9])
-            await runForDelay(bus, 100)
+            await tester.waitForDelay(100)
 
-            pot.server.reading.setValues([0.55])
+            pot.server.reading.setValues([0.45])
             // TODO check for absence of event?
-
-            await sw.register(SwitchReg.Active).refresh()
-            assert(sw.register(SwitchReg.Active).unpackedValue[0])
+            await sw.register(SwitchReg.Active).register.refresh()
+            assert(sw.register(SwitchReg.Active).register.unpackedValue[0] > 0.5)
         })
-    })
+    )
 
-    test("does not turn on within hysteresis region", async () => {
-        await withHarness(async (bus, pot, sw) => {
+    test("does not turn on within hysteresis region", makeVmTest(async (tester, pot, sw) => {
             pot.server.reading.setValues([0])
-            await runForDelay(bus, 100)
+            await tester.waitForDelay(100)
 
             pot.server.reading.setValues([0.55])
             // TODO check for absence of event?
-            await sw.register(SwitchReg.Active).refresh()
-            assert(sw.register(SwitchReg.Active).unpackedValue[0] === 0)
+            await sw.register(SwitchReg.Active).register.refresh()
+            assert(sw.register(SwitchReg.Active).register.unpackedValue[0] < 0.5)
         })
-    })
+    )
 })

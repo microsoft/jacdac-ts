@@ -1,61 +1,51 @@
 import { suite, test } from "mocha"
-import { runForDelay, withTestBus } from "./tester"
 import { assert } from "../../src/jdom/utils"
 import { FastForwardScheduler } from "./scheduler"
+import { FastForwardTester } from "./fastforwardtester"
 
 suite("fast forward scheduler", () => {
-    test("fires setTimeout", async function () {
-        await withTestBus(async bus => {
-            assert(bus.scheduler instanceof FastForwardScheduler)
-
+    test("fires setTimeout", FastForwardTester.makeTest(async tester => {
             let done = false
-            bus.scheduler.setTimeout(() => {
+            tester.bus.scheduler.setTimeout(() => {
                 done = true
             }, 500)
-            await runForDelay(bus, 501)
+            await tester.waitForDelay(501)
             assert(done)
         })
-    })
+    )
 
-    test("fires setInterval, repeatedly", async function () {
-        await withTestBus(async bus => {
-            assert(bus.scheduler instanceof FastForwardScheduler)
-
+    test("fires setInterval, repeatedly", FastForwardTester.makeTest(async tester => {
             let count = 0
-            bus.scheduler.setInterval(() => {
+            tester.bus.scheduler.setInterval(() => {
                 count += 1
             }, 100)
-            await runForDelay(bus, 501)
+            await tester.waitForDelay(501)
             assert(count == 5)
         })
-    })
+    )
 
-    test("clear setTimeout", async function () {
-        await withTestBus(async bus => {
-            assert(bus.scheduler instanceof FastForwardScheduler)
-
+    test("clear setTimeout", FastForwardTester.makeTest(async tester => {
             let called = false
-            const handler = bus.scheduler.setTimeout(() => {
+            const handler = tester.bus.scheduler.setTimeout(() => {
                 called = true
             }, 500)
-            await runForDelay(bus, 400)
-            bus.scheduler.clearTimeout(handler)
-            await runForDelay(bus, 101)
+            await tester.waitForDelay(400)
+            tester.bus.scheduler.clearTimeout(handler)
+            await tester.waitForDelay(101)
             assert(!called)
         })
-    })
+    )
 
-    test("clear setInterval", async function () {
-        await withTestBus(async bus => {
-            assert(bus.scheduler instanceof FastForwardScheduler)
+    test("clear setInterval", FastForwardTester.makeTest(async tester => {
+            assert(tester.bus.scheduler instanceof FastForwardScheduler)
 
             let count = 0
-            const handler = bus.scheduler.setInterval(() => {
+            const handler = tester.bus.scheduler.setInterval(() => {
                 count += 1
             }, 100)
-            await runForDelay(bus, 301)
-            bus.scheduler.clearInterval(handler)
+            await tester.waitForDelay(301)
+            tester.bus.scheduler.clearInterval(handler)
             assert(count == 3)
         })
-    })
+    )
 })
