@@ -5,9 +5,11 @@
  *  DTDL specification: https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md.
  */
 
+import { SystemReg } from "../jdom/constants"
 import {
+    isHighLevelEvent,
+    isHighLevelRegister,
     serviceSpecificationFromClassIdentifier,
-    serviceSpecificationFromName,
 } from "../jdom/spec"
 import { uniqueMap } from "../jdom/utils"
 import {
@@ -190,6 +192,10 @@ function fieldType(
     }
 }
 
+function toLocalizedString(str: string) {
+    return str ? { en: str } : undefined
+}
+
 // converts JADAC pkt data layout into a DTDL schema
 function toSchema(
     srv: jdspec.ServiceSpec,
@@ -258,7 +264,7 @@ function packetToDTDL(
         "@type": types[pkt.kind] || `Unsupported${pkt.kind}`,
         name: pkt.name,
         "@id": toDTMI([srv.classIdentifier, pkt.kind, pkt.name]),
-        description: pkt.description,
+        description: toLocalizedString(pkt.description),
     }
     switch (pkt.kind) {
         case "report":
@@ -275,10 +281,9 @@ function packetToDTDL(
             }
             dtdl.schema = toSchema(srv, pkt, false)
             if (pkt.kind === "rw") dtdl.writable = true
-            if (!dtdl.schema && pkt.kind === "event") {
-                // keep a count of the events
+            if (pkt.kind === "event") {
                 dtdl["@type"] = [dtdl["@type"], "Event"]
-                dtdl.schema = toDTMI([srv.classIdentifier, "event"])
+                if (!dtdl.schema) dtdl.schema = "integer"
             } else if (unit && unit.semantic)
                 dtdl["@type"] = [dtdl["@type"], unit.semantic]
             break
@@ -299,13 +304,21 @@ function packetToDTDL(
 export function serviceSpecificationToDTDL(
     srv: jdspec.ServiceSpec
 ): DTDLInterface {
+    const registers = srv.packets.filter(
+        pkt =>
+            isHighLevelRegister(pkt) &&
+            !pkt.client &&
+            pkt.identifier !== SystemReg.Variant
+    )
+    const events = srv.packets.filter(
+        pkt => isHighLevelEvent(pkt) && !pkt.client
+    )
     const dtdl: DTDLInterface = {
         "@type": "Interface",
         "@id": serviceSpecificationDTMI(srv),
         displayName: escapeDisplayName(srv.name),
-        description: srv.notes["short"],
-        contents: srv.packets
-            .filter(pkt => !pkt.derived && !pkt.internal)
+        description: toLocalizedString(srv.notes["short"]),
+        contents: [...registers, ...events]
             .map(pkt => {
                 try {
                     return packetToDTDL(srv, pkt)
@@ -316,26 +329,11 @@ export function serviceSpecificationToDTDL(
             })
             .filter(c => !!c),
     }
-    if (srv.extends.length)
-        dtdl.extends = srv.extends.map(id =>
-            serviceSpecificationDTMI(serviceSpecificationFromName(id))
-        )
 
-    const hasEvents = srv.packets.find(pkt => pkt.kind === "event")
+    // TODO extends support
     const hasEnums = Object.keys(srv.enums).length
-    if (hasEvents || hasEnums) {
+    if (hasEnums) {
         dtdl.schemas = []
-        if (hasEvents)
-            dtdl.schemas.push({
-                "@id": toDTMI([srv.classIdentifier, "event"]),
-                "@type": "Object",
-                fields: [
-                    {
-                        name: "count",
-                        schema: "integer",
-                    },
-                ],
-            })
         if (hasEnums)
             dtdl.schemas = dtdl.schemas.concat(
                 Object.keys(srv.enums).map(en => enumSchema(srv, srv.enums[en]))
@@ -348,22 +346,30 @@ export function serviceSpecificationToDTDL(
 export function serviceSpecificationToComponent(
     srv: jdspec.ServiceSpec,
     name: string
-): any {
+): {
+    "@type": "Component"
+    name: string
+    displayName: string
+    schema: string
+} {
     const dtdl = {
         "@type": "Component",
         name: name,
         displayName: escapeDisplayName(srv.name),
         schema: serviceSpecificationDTMI(srv),
     }
-    return dtdl
+    return dtdl as any
 }
 
 export interface DTDLGenerationOptions {
     inlineServices?: boolean // generate all services
 }
 
-export function serviceSpecificationDTMI(srv: jdspec.ServiceSpec) {
-    return toDTMI(["services", srv.classIdentifier])
+export function serviceSpecificationDTMI(
+    srv: jdspec.ServiceSpec,
+    customPath?: string
+) {
+    return toDTMI([customPath || "services", srv.classIdentifier])
 }
 
 export function deviceSpecificationDTMI(dev: jdspec.DeviceSpec) {
@@ -406,7 +412,7 @@ export function deviceSpecificationToDTDL(
         "@type": "Interface",
         "@id": deviceSpecificationDTMI(dev),
         displayName: escapeDisplayName(dev.name),
-        description: dev.description,
+        description: toLocalizedString(dev.description),
         contents: services.map((srv, i) =>
             serviceSpecificationToComponent(srv, names[i])
         ),

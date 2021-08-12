@@ -48,6 +48,11 @@ export class JDField extends JDNode {
         return parts.join(".")
     }
 
+    get dataTypeName(): string {
+        const parts = [this.member.service.specification.shortName, this.name]
+        return parts.join(".")
+    }
+
     get unit(): jdspec.Unit {
         return this.specification.unit
     }

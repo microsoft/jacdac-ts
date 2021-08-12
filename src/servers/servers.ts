@@ -79,6 +79,8 @@ import {
     SRV_HID_KEYBOARD,
     SRV_HID_MOUSE,
     SRV_AZURE_IOT_HUB,
+    SRV_DIMMER,
+    DimmerVariant,
 } from "../jdom/constants"
 import JDServiceProvider from "../jdom/serviceprovider"
 import ProtocolTestServer from "../jdom/protocoltestserver"
@@ -120,6 +122,7 @@ import CapacitiveButtonServer from "./capacitivebuttonserver"
 import HIDKeyboardServer from "./hidkeyboardserver"
 import HIDMouseServer from "./hidmouseserver"
 import AzureIoTHubServer from "./azureiothubserver"
+import DimmerServer from "./dimmerserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "indoor",
@@ -409,6 +412,20 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         name: "compass",
         serviceClasses: [SRV_COMPASS],
         services: () => [new CompassServer()],
+    },
+    {
+        name: "dimmer (fan)",
+        serviceClasses: [SRV_DIMMER],
+        services: () => [
+            new DimmerServer("fan", { variant: DimmerVariant.Fan }),
+        ],
+    },
+    {
+        name: "dimmer (light)",
+        serviceClasses: [SRV_DIMMER],
+        services: () => [
+            new DimmerServer("light", { variant: DimmerVariant.Light }),
+        ],
     },
     {
         name: "distance (sonar)",
