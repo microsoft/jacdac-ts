@@ -6,9 +6,7 @@ import { RegisterTester } from "./registerwrapper"
 
 // Base service events trigger that handles bus on/off
 class BaseServiceEventTrigger extends EventWithHoldAdapter<JDEvent> {
-    constructor(
-        protected readonly service: ServiceTester,
-    ) {
+    constructor(protected readonly service: ServiceTester) {
         super()
     }
 
@@ -21,7 +19,7 @@ class BaseServiceEventTrigger extends EventWithHoldAdapter<JDEvent> {
     }
 }
 
-export class ServiceHold extends BaseServiceEventTrigger{
+export class ServiceHold extends BaseServiceEventTrigger {
     protected processHold(data: JDEvent) {
         throw new Error(
             `service ${this.service.name} got event ${data.code} (${data.name}) when hold asserted`

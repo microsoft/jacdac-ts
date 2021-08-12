@@ -41,7 +41,9 @@ suite("button servo", () => {
             const runner = new VMProgramRunner(roleMgr, program)
             await runner.startAsync()
 
-            const servoReg = new RegisterTester(servo.service.register(ServoReg.Angle))
+            const servoReg = new RegisterTester(
+                servo.service.register(ServoReg.Angle)
+            )
             await testBody(tester, button1.server, button2.server, servoReg)
         })
     }

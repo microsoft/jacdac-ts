@@ -244,7 +244,7 @@ export class FastForwardTester
 
             holdingPromises.forEach(holdingPromise => {
                 holdingPromise.then(
-                    fulfilled => {},  // shouldn't happen
+                    fulfilled => {}, // shouldn't happen
                     rejected => {
                         // reject the overall promise if any of the holding promises reject
                         reject(rejected)
@@ -252,7 +252,8 @@ export class FastForwardTester
                 )
             })
 
-            body().then(value => { // only the main body promise can resolve the overall promise
+            body().then(value => {
+                // only the main body promise can resolve the overall promise
                 if (waitingTriggerPromises.size === 0) {
                     resolve(value)
                 } else {

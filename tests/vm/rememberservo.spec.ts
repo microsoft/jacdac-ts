@@ -42,8 +42,16 @@ suite("remember servo", () => {
             const runner = new VMProgramRunner(roleMgr, program)
             await runner.startAsync()
 
-            const servoReg = new RegisterTester(servo.service.register(ServoReg.Angle))
-            await testBody(tester, recall.server, set.server, servo.server, servoReg)
+            const servoReg = new RegisterTester(
+                servo.service.register(ServoReg.Angle)
+            )
+            await testBody(
+                tester,
+                recall.server,
+                set.server,
+                servo.server,
+                servoReg
+            )
         })
     }
 
@@ -58,9 +66,11 @@ suite("remember servo", () => {
 
             servo.angle.setValues([0]) // make sure the difference on recall is visible
             await tester.assertWith(
-                servoReg.onUpdate({
-                    triggerRange: [50, 50]
-                }).hold(),
+                servoReg
+                    .onUpdate({
+                        triggerRange: [50, 50],
+                    })
+                    .hold(),
                 async () => {
                     recall.down()
                     await tester.waitForDelay(100)
@@ -88,9 +98,11 @@ suite("remember servo", () => {
 
             servo.angle.setValues([0]) // make sure the difference on recall is visible
             await tester.assertWith(
-                servoReg.onUpdate({
-                    triggerRange: [-50, -50]
-                }).hold(),
+                servoReg
+                    .onUpdate({
+                        triggerRange: [-50, -50],
+                    })
+                    .hold(),
                 async () => {
                     recall.down()
                     await tester.waitForDelay(100)

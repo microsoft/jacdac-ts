@@ -39,7 +39,9 @@ suite("button servo", () => {
             const runner = new VMProgramRunner(roleMgr, program)
             await runner.startAsync()
 
-            const servoReg = new RegisterTester(servo.service.register(ServoReg.Angle))
+            const servoReg = new RegisterTester(
+                servo.service.register(ServoReg.Angle)
+            )
             await testBody(tester, button.server, servo.server, servoReg)
         })
     }
@@ -50,9 +52,11 @@ suite("button servo", () => {
             servo.angle.setValues([50])
 
             await tester.assertWith(
-                servoReg.onUpdate({
-                    triggerRange: [-50, -50]
-                }).hold(),
+                servoReg
+                    .onUpdate({
+                        triggerRange: [-50, -50],
+                    })
+                    .hold(),
                 async () => {
                     button.down()
                     await tester.waitForDelay(100)
@@ -68,12 +72,9 @@ suite("button servo", () => {
         makeVmTest(async (tester, button, servo, servoReg) => {
             servo.angle.setValues([50])
 
-            await tester.assertWith(
-                servoReg.hold([50, 50]),
-                async () => {
-                    await tester.waitForDelay(100)
-                }
-            )
+            await tester.assertWith(servoReg.hold([50, 50]), async () => {
+                await tester.waitForDelay(100)
+            })
         })
     )
 
@@ -83,9 +84,11 @@ suite("button servo", () => {
             servo.angle.setValues([50])
 
             await tester.assertWith(
-                servoReg.onUpdate({
-                    triggerRange: [-50, -50]
-                }).hold(),
+                servoReg
+                    .onUpdate({
+                        triggerRange: [-50, -50],
+                    })
+                    .hold(),
                 async () => {
                     button.down()
                     await tester.waitForDelay(100)
@@ -95,10 +98,12 @@ suite("button servo", () => {
             )
 
             await tester.assertWith(
-                servoReg.onUpdate({
-                    preRequiredRange: [-50, -50],
-                    triggerRange: [50, 50]
-                }).hold(),
+                servoReg
+                    .onUpdate({
+                        preRequiredRange: [-50, -50],
+                        triggerRange: [50, 50],
+                    })
+                    .hold(),
                 async () => {
                     button.down()
                     await tester.waitForDelay(100)

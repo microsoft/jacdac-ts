@@ -103,12 +103,7 @@ suite("pot to switch adapter", () => {
             await tester.waitForDelay(100)
 
             await tester.assertWith(
-                [
-                    sw.hold(),
-                    sw
-                        .register(SwitchReg.Active)
-                        .hold([0.5, 1]),
-                ],
+                [sw.hold(), sw.register(SwitchReg.Active).hold([0.5, 1])],
                 async () => {
                     pot.setValues([0.45])
                     await tester.waitForDelay(150)
@@ -124,12 +119,7 @@ suite("pot to switch adapter", () => {
             await tester.waitForDelay(100)
 
             await tester.assertWith(
-                [
-                    sw.hold(),
-                    sw
-                        .register(SwitchReg.Active)
-                        .hold([0, 0.5]),
-                ],
+                [sw.hold(), sw.register(SwitchReg.Active).hold([0, 0.5])],
                 async () => {
                     pot.setValues([0.55])
                     await tester.waitForDelay(150)
