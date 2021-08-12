@@ -5,11 +5,19 @@
  *  DTDL specification: https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md.
  */
 
-import { SystemReg } from "../jdom/constants"
+import {
+    SRV_BOOTLOADER,
+    SRV_CONTROL,
+    SRV_LOGGER,
+    SRV_PROTO_TEST,
+    SRV_ROLE_MANAGER,
+    SystemReg,
+} from "../jdom/constants"
 import {
     isHighLevelEvent,
     isHighLevelRegister,
     serviceSpecificationFromClassIdentifier,
+    serviceSpecifications,
 } from "../jdom/spec"
 import { uniqueMap } from "../jdom/utils"
 import {
@@ -25,7 +33,7 @@ import {
 
 // https://github.com/Azure/digital-twin-model-identifier
 // ^dtmi:(?:_+[A-Za-z0-9]|[A-Za-z])(?:[A-Za-z0-9_]*[A-Za-z0-9])?(?::(?:_+[A-Za-z0-9]|[A-Za-z])(?:[A-Za-z0-9_]*[A-Za-z0-9])?)*;[1-9][0-9]{0,8}$
-function toDTMI(segments: (string | number)[], version?: number) {
+export function toDTMI(segments: (string | number)[], version?: number) {
     return `dtmi:jacdac:${[...segments]
         .map(seg =>
             seg === undefined
@@ -341,6 +349,20 @@ export function serviceSpecificationToDTDL(
     }
     dtdl["@context"] = DTDL_CONTEXT
     return dtdl
+}
+
+export function serviceSpecificationsWithDTDL() {
+    const ignoredServices = [
+        SRV_CONTROL,
+        SRV_LOGGER,
+        SRV_ROLE_MANAGER,
+        SRV_PROTO_TEST,
+        SRV_BOOTLOADER,
+    ]
+    const specs = serviceSpecifications()
+        .filter(spec => ignoredServices.indexOf(spec.classIdentifier) < 0)
+        .filter(spec => !/^_/.test(spec.shortName))
+    return specs
 }
 
 export function serviceSpecificationToComponent(

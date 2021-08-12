@@ -11,9 +11,10 @@ import { createUSBTransport } from "../jdom/transport/usb"
 import { createNodeUSBOptions } from "../jdom/transport/nodewebusb"
 import {
     deviceSpecificationToDTDL,
+    serviceSpecificationsWithDTDL,
     serviceSpecificationToDTDL,
 } from "../azure-iot/dtdlspec"
-import { deviceSpecifications, serviceSpecifications } from "../jdom/spec"
+import { deviceSpecifications } from "../jdom/spec"
 import { JDBus } from "../jdom/bus"
 import { printPacket } from "../jdom/pretty"
 import { parseLogicLog, replayLog } from "../jdom/logparser"
@@ -51,7 +52,7 @@ if (options.dtdl) {
         if (options.rm) fs.emptyDirSync(dir)
         // generate services
         {
-            let services = serviceSpecifications()
+            let services = serviceSpecificationsWithDTDL()
             if (options.services) {
                 const rx = new RegExp(options.services, "i")
                 services = services.filter(dev => rx.test(dev.name))
