@@ -361,7 +361,7 @@ export function serviceSpecificationsWithDTDL() {
     ]
     const specs = serviceSpecifications()
         .filter(spec => ignoredServices.indexOf(spec.classIdentifier) < 0)
-        .filter(spec => !/^_/.test(spec.shortName))
+        .filter(spec => !/^_/.test(spec.shortId))
     return specs
 }
 
