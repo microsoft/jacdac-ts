@@ -8,7 +8,6 @@ import { RegisterTester } from "./registerwrapper"
 class BaseServiceEventTrigger extends EventWithHoldAdapter<JDEvent> {
     constructor(
         protected readonly service: ServiceTester,
-        protected eventCode?: number
     ) {
         super()
     }
@@ -22,13 +21,21 @@ class BaseServiceEventTrigger extends EventWithHoldAdapter<JDEvent> {
     }
 }
 
+export class ServiceHold extends BaseServiceEventTrigger{
+    protected processHold(data: JDEvent) {
+        throw new Error(
+            `service ${this.service.name} got event ${data.code} (${data.name}) when hold asserted`
+        )
+    }
+}
+
 // Event that fires on a matching event code from the specified service
 class BaseServiceAnyEventTrigger extends BaseServiceEventTrigger {
     constructor(
         protected readonly service: ServiceTester,
         protected eventCode: number
     ) {
-        super(service, eventCode)
+        super(service)
     }
 
     protected processTrigger(data: JDEvent) {
@@ -59,6 +66,13 @@ export class ServiceNextEventError extends TestErrorBase {}
 
 // Event that fires on the next event, which must match the eventCode
 class BaseServiceNextEventTrigger extends BaseServiceEventTrigger {
+    constructor(
+        protected readonly service: ServiceTester,
+        protected eventCode?: number
+    ) {
+        super(service)
+    }
+
     protected processTrigger(data: JDEvent) {
         if (this.eventCode === undefined || data.code == this.eventCode) {
             return true
@@ -95,6 +109,11 @@ export class ServiceTester {
 
     public register(registerCode: number) {
         return new RegisterTester(this.service.register(registerCode))
+    }
+
+    // Holding condition that asserts no events fired
+    public hold() {
+        return new ServiceHold(this)
     }
 
     // Event that fires on a service event
