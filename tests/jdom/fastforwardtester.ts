@@ -1,6 +1,7 @@
 import { JDBus } from "../../src/jdom/bus"
 import { DEVICE_ANNOUNCE } from "../../src/jdom/constants"
 import { JDDevice } from "../../src/jdom/device"
+import { JDService } from "../../src/jdom/service"
 import JDServiceProvider from "../../src/jdom/serviceprovider"
 import JDServiceServer from "../../src/jdom/serviceserver"
 import { assert } from "../../src/jdom/utils"
@@ -10,12 +11,10 @@ import {
     TestDriver,
     TestDriverInterface,
     TesterEvent,
-    WaitTimingOptions,
 } from "../../src/tstester/base"
 import { BusTester } from "../../src/tstester/testwrappers"
 import { loadSpecifications } from "../testutils"
 import { FastForwardScheduler } from "./scheduler"
-import { CreatedServerService } from "./tester"
 
 // Set equals is not a built-in operation.
 function setEquals<T>(set1: Set<T>, set2: Set<T>): boolean {
@@ -28,6 +27,13 @@ function setEquals<T>(set1: Set<T>, set2: Set<T>): boolean {
         }
     })
     return true
+}
+
+// Structure returned from createServices for each server, that contains the server passed in,
+// the created device, and the service on the device corresponding to the server.
+export interface CreatedServerService<ServiceType extends JDServiceServer> {
+    server: ServiceType
+    service: JDService
 }
 
 export function makeTest(test: (bus: FastForwardTester) => Promise<void>) {

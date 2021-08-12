@@ -1,36 +1,26 @@
 import { suite, test } from "mocha"
-import { ButtonEvent } from "../../src/jdom/constants"
-import {
-    withTestBus,
-    nextEventFrom,
-    nextUpdateFrom,
-    createServices,
-    runForDelay,
-} from "./tester"
-import { assert } from "../../src/jdom/utils"
+import { ButtonEvent, ButtonReg } from "../../src/jdom/constants"
 import { SRV_POTENTIOMETER, SystemReg } from "../../src/jdom/constants"
 import SensorServer from "../../src/servers/sensorserver"
 import ButtonServer from "../../src/servers/buttonserver"
 import { ServerCsvSource } from "./servercsvsource"
+import { makeTest } from "./fastforwardtester"
+import { RegisterTester } from "../../src/tstester/registerwrapper"
+import { ServiceTester } from "../../src/tstester/servicewrapper"
 
 // Configured to ignore differences for a 16-bit fixed point
-function approxEquals(
-    actual: number,
-    expected: number,
-    maxPctDiff = 1 / 32767
-) {
-    if (expected == 0) {
-        // special case to avoid divide-by-zero
-        return actual == 0
-    } else {
-        return Math.abs(actual - expected) / expected < maxPctDiff
-    }
+function withTolerance(
+    center: number,
+    tolerance = 1 / 32767
+): [number, number] {
+    return [center * (1 - tolerance), center * (1 + tolerance)]
 }
 
 suite('"CSV" trace server', () => {
-    test("produces register data as expected", async function () {
-        await withTestBus(async bus => {
-            const { pot } = await createServices(bus, {
+    test(
+        "produces register data as expected",
+        makeTest(async tester => {
+            const { pot } = await tester.createServices({
                 pot: new SensorServer<[number]>(SRV_POTENTIOMETER),
             })
             const potStreamer = new ServerCsvSource(
@@ -45,64 +35,33 @@ suite('"CSV" trace server', () => {
                     { time: 1.2, "BP95.position": 0.6 },
                 ]
             )
-
-            // TODO ideally this would use potService.register(SystemReg.Reading).unpackedValue
-            // but timing of the update seems really iffy, so the tests are instead synchronized
-            // to register events.
-
-            await runForDelay(bus, 600 + 10 - bus.timestamp)
-            assert(
-                approxEquals(
-                    (
-                        await nextUpdateFrom(
-                            pot.service.register(SystemReg.Reading)
-                        )
-                    )[0],
-                    0.5
-                )
+            const register = new RegisterTester(
+                pot.service.register(SystemReg.Reading)
             )
 
-            await runForDelay(bus, 800 + 10 - bus.timestamp)
-            assert(
-                approxEquals(
-                    (
-                        await nextUpdateFrom(
-                            pot.service.register(SystemReg.Reading)
-                        )
-                    )[0],
-                    1.0
-                )
+            await tester.waitFor(
+                register.onUpdate({ triggerRange: withTolerance(0.5) })
+                // absolute time not tested, just wait for first sample
             )
-
-            await runForDelay(bus, 1000 + 10 - bus.timestamp)
-            assert(
-                approxEquals(
-                    (
-                        await nextUpdateFrom(
-                            pot.service.register(SystemReg.Reading)
-                        )
-                    )[0],
-                    0.8
-                )
+            await tester.waitFor(
+                register.onUpdate({ triggerRange: withTolerance(1.0) }),
+                { after: 200, tolerance: 50 }
             )
-
-            await runForDelay(bus, 1200 + 10 - bus.timestamp)
-            assert(
-                approxEquals(
-                    (
-                        await nextUpdateFrom(
-                            pot.service.register(SystemReg.Reading)
-                        )
-                    )[0],
-                    0.6
-                )
+            await tester.waitFor(
+                register.onUpdate({ triggerRange: withTolerance(0.8) }),
+                { after: 200, tolerance: 50 }
+            )
+            await tester.waitFor(
+                register.onUpdate({ triggerRange: withTolerance(0.6) }),
+                { after: 200, tolerance: 50 }
             )
         })
-    })
+    )
 
-    test("ignore null cells", async function () {
-        await withTestBus(async bus => {
-            const { pot } = await createServices(bus, {
+    test(
+        "should ignore null cells",
+        makeTest(async tester => {
+            const { pot } = await tester.createServices({
                 pot: new SensorServer<[number]>(SRV_POTENTIOMETER),
             })
             const potStreamer = new ServerCsvSource(
@@ -116,24 +75,25 @@ suite('"CSV" trace server', () => {
                     { time: 1.0, "BP95.position": 1.0 },
                 ]
             )
+            const register = new RegisterTester(
+                pot.service.register(SystemReg.Reading)
+            )
 
-            await runForDelay(bus, 800 + 10 - bus.timestamp)
-            assert(
-                approxEquals(
-                    (
-                        await nextUpdateFrom(
-                            pot.service.register(SystemReg.Reading)
-                        )
-                    )[0],
-                    0.5
-                )
+            await tester.waitFor(
+                register.onUpdate({ triggerRange: withTolerance(0.5) })
+                // absolute time not tested, just wait for first sample
+            )
+            await tester.waitFor(
+                register.onUpdate({ triggerRange: withTolerance(1.0) }),
+                { after: 400, tolerance: 50 }
             )
         })
-    })
+    )
 
-    test("produces derived events supported by the underlying server", async function () {
-        await withTestBus(async bus => {
-            const { button } = await createServices(bus, {
+    test(
+        "produces derived events supported by the underlying server",
+        makeTest(async tester => {
+            const { button } = await tester.createServices({
                 button: new ButtonServer(),
             })
             const buttonStreamer = new ServerCsvSource(
@@ -147,18 +107,41 @@ suite('"CSV" trace server', () => {
                     { time: 0.9, "AB34.pressure": ButtonServer.INACTIVE_VALUE },
                 ]
             )
+            const service = new ServiceTester(button.service)
+            const register = service.register(ButtonReg.Pressure)
 
-            await runForDelay(bus, 700 + 10 - bus.timestamp)
-            assert(
-                (await nextEventFrom(button.service, { within: 110 })).code ==
-                    ButtonEvent.Down
+            await tester.waitFor(
+                [
+                    service.nextEvent(ButtonEvent.Down).hold(),
+                    register
+                        .onUpdate({
+                            preRequiredRange: withTolerance(
+                                ButtonServer.INACTIVE_VALUE
+                            ),
+                            triggerRange: withTolerance(
+                                ButtonServer.ACTIVE_VALUE
+                            ),
+                        })
+                        .hold(),
+                ]
+                // absolute time not tested, just wait for first sample
             )
-
-            await runForDelay(bus, 900 + 10 - bus.timestamp)
-            assert(
-                (await nextEventFrom(button.service, { within: 110 })).code ==
-                    ButtonEvent.Up
+            await tester.waitFor(
+                [
+                    service.nextEvent(ButtonEvent.Up).hold(),
+                    register
+                        .onUpdate({
+                            preRequiredRange: withTolerance(
+                                ButtonServer.ACTIVE_VALUE
+                            ),
+                            triggerRange: withTolerance(
+                                ButtonServer.INACTIVE_VALUE
+                            ),
+                        })
+                        .hold(),
+                ],
+                { after: 200, tolerance: 50, synchronization: 50 }
             )
         })
-    })
+    )
 })
