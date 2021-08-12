@@ -132,8 +132,8 @@ class RegisterHold extends BaseRegisterEvent {
 
         if (
             thisValue === undefined ||
-            thisValue <= this.range[0] ||
-            thisValue >= this.range[1]
+            thisValue < this.range[0] ||
+            thisValue > this.range[1]
         ) {
             throw new RegisterPreConditionError(
                 `register value ${this.register.name} = ${thisValue} not in precondition ${this.range}`
