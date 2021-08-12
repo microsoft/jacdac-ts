@@ -1,4 +1,5 @@
 import { EVENT, EventHandler, JDEvent, JDService } from "../jdom/jacdac-jdom"
+import { TestErrorBase } from "./base"
 import { EventWithHoldAdapter } from "./eventhold"
 import { TestingNamer } from "./naming"
 import { RegisterTester } from "./registerwrapper"
@@ -13,11 +14,11 @@ class BaseServiceEventTrigger extends EventWithHoldAdapter<JDEvent> {
     }
 
     protected register(handler: (data: JDEvent) => void) {
-        return this.service.service.device.bus.on(EVENT, handler)
+        return this.service.service.on(EVENT, handler)
     }
 
     protected deregister(handle: unknown) {
-        this.service.service.device.bus.off(EVENT, handle as EventHandler)
+        this.service.service.off(EVENT, handle as EventHandler)
     }
 }
 
@@ -54,7 +55,7 @@ class ServiceAnyEventHeldTrigger extends BaseServiceAnyEventTrigger {
 }
 
 // An error that fires if the next does not match
-class ServiceNextEventError extends Error {}
+export class ServiceNextEventError extends TestErrorBase {}
 
 // Event that fires on the next event, which must match the eventCode
 class BaseServiceNextEventTrigger extends BaseServiceEventTrigger {

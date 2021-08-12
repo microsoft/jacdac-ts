@@ -55,7 +55,6 @@ export interface CreatedServerService<ServiceType extends JDServiceServer> {
     service: JDService
 }
 
-
 // Creates devices around the given servers, specified as mapping of names to objects.
 // These devices are attached to the bus, and waited on for announcement so services are ready.
 // Returns the services, as an object mapping the input names to the corresponding services.

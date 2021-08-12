@@ -2,16 +2,15 @@ import {
     assert,
     EventHandler,
     JDRegister,
-    jdunpack,
     PackedValues,
-    Packet,
     REPORT_RECEIVE,
 } from "../jdom/jacdac-jdom"
+import { TestErrorBase } from "./base"
 import { EventWithHoldAdapter } from "./eventhold"
 import { TestingNamer } from "./naming"
 
 // An error that fires if the register is not within bounds before the trigger
-class RegisterPreConditionError extends Error {}
+export class RegisterPreConditionError extends TestErrorBase {}
 
 // TODO support non-[number] registers?
 export interface RegisterUpdateOptions {
@@ -20,7 +19,7 @@ export interface RegisterUpdateOptions {
 }
 
 // Base service for register events that provides utilities as well as handles bus on/off
-abstract class BaseRegisterEvent extends EventWithHoldAdapter<Packet> {
+abstract class BaseRegisterEvent extends EventWithHoldAdapter<JDRegister> {
     readonly packFormat: string
 
     constructor(protected readonly busRegister: RegisterTester) {
@@ -29,7 +28,7 @@ abstract class BaseRegisterEvent extends EventWithHoldAdapter<Packet> {
         this.packFormat = busRegister.register.specification.packFormat
     }
 
-    protected register(handler: (data: Packet) => void) {
+    protected register(handler: (data: JDRegister) => void) {
         return this.busRegister.register.on(REPORT_RECEIVE, handler)
     }
 
@@ -56,10 +55,8 @@ class BaseRegisterUpdateEvent extends BaseRegisterEvent {
         super(busRegister)
     }
 
-    protected processTrigger(packet: Packet) {
-        const thisValue = this.maybeGetValue(
-            jdunpack(packet.data, this.packFormat)
-        )
+    protected processTrigger(register: JDRegister) {
+        const thisValue = this.maybeGetValue(register.unpackedValue)
 
         // check if the sample is valid for preRequiredRange
         const precondition =
@@ -107,10 +104,8 @@ class RegisterUpdateEventHold extends BaseRegisterUpdateEvent {
         )
     }
 
-    protected processHold(packet: Packet) {
-        const thisValue = this.maybeGetValue(
-            jdunpack(packet.data, this.packFormat)
-        )
+    protected processHold(register: JDRegister) {
+        const thisValue = this.maybeGetValue(register.unpackedValue)
 
         if (
             thisValue === undefined ||
@@ -132,10 +127,8 @@ class RegisterHold extends BaseRegisterEvent {
         super(busRegister)
     }
 
-    protected processHold(packet: Packet) {
-        const thisValue = this.maybeGetValue(
-            jdunpack(packet.data, this.packFormat)
-        )
+    protected processHold(register: JDRegister) {
+        const thisValue = this.maybeGetValue(register.unpackedValue)
 
         if (
             thisValue === undefined ||

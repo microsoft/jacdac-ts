@@ -2,8 +2,16 @@
 import { JDBus } from "../jdom/bus"
 import { assert } from "../jdom/utils"
 
+// A base class that abstracts away user-facing logging events, eg to pipe it to a web page
 export interface ConsoleUi {
     log: (msg: string) => void
+}
+
+// ConsoleUi that dumps to the debugging console
+export class DebugConsoleUi implements ConsoleUi {
+    public log(msg: string) {
+        console.log(msg)
+    }
 }
 
 // TODO separate out some kind of human (tester) interface class? which can have different implementations,
@@ -28,8 +36,17 @@ export abstract class TesterEvent {
     public abstract makePromise(): EventWithHold
 }
 
+// Base error class that sets its name based on its class,
+// see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/name
+export class TestErrorBase extends Error {
+    constructor(message: string) {
+        super(message)
+        this.name = this.constructor.name
+    }
+}
+
 // An error that fires when the after/within/tolerance in WaitTimingOptions is not met.
-class WaitTimeoutError extends Error {}
+export class WaitTimeoutError extends TestErrorBase {}
 
 export interface WaitTimingOptions {
     after?: number // event must happen at least this many ms after the current time (by default, 0)
@@ -39,13 +56,27 @@ export interface WaitTimingOptions {
 }
 
 // An error that fires if events are not synchronized within the timing window
-class WaitSynchronizationError extends Error {}
+export class WaitSynchronizationError extends TestErrorBase {}
 
 export interface SynchronizationTimingOptions extends WaitTimingOptions {
     synchronization?: number // all events must trigger within this time range
 }
 
-export class TestDriver {
+export interface TestDriverInterface {
+    // Waits for an event, with optional timing parameters.
+    // Returns the amount of time spent waiting, or throws an error if not within timing bounds.
+    waitFor(event: TesterEvent, options?: WaitTimingOptions): Promise<number>
+
+    // Waits for multiple events, with optional timing parameters.
+    // All events must fire within the timing window, but with no constarints on order.
+    // Returns the amount of time spent waiting to the last event, or throws an error if not within timing bounds.
+    waitFor(
+        event: TesterEvent[],
+        options?: SynchronizationTimingOptions
+    ): Promise<number>
+}
+
+export class TestDriver implements TestDriverInterface {
     constructor(
         protected readonly bus: JDBus,
         protected readonly ui: ConsoleUi
@@ -127,22 +158,19 @@ export class TestDriver {
         }
     }
 
-    // Waits for an event, with optional timing parameters.
-    // Returns the amount of time spent waiting, or throws an error if not within timing bounds.
     async waitFor(
-        event: TesterEvent,
-        options: WaitTimingOptions = {}
-    ): Promise<number> {
-        return this.waitForAll([event], options) // simple delegation wrapper
-    }
-
-    // Waits for multiple events, with optional timing parameters.
-    // All events must fire within the timing window, but with no constarints on order.
-    // Returns the amount of time spent waiting to the last event, or throws an error if not within timing bounds.
-    async waitForAll(
-        events: TesterEvent[],
+        events: TesterEvent | TesterEvent[],
         options: SynchronizationTimingOptions = {}
     ): Promise<number> {
+        let eventsList: TesterEvent[]
+        if (Array.isArray(events)) {
+            eventsList = events
+        } else if (events instanceof TesterEvent) {
+            eventsList = [events]
+        } else {
+            throw Error("events not a TesterEvent[] or TeseterEvent")
+        }
+
         // TODO the returned timing may be a bit inconsistent with options for realtime systems
         const start = this.bus.scheduler.timestamp
         let firstTriggerTime: number | undefined = undefined // for synchronization
@@ -150,14 +178,19 @@ export class TestDriver {
         // This wraps all the promises with the timing bounds, then wraps them again with synchronization bounds
         const triggerPromises: Promise<unknown>[] = []
         const holdingListeners: HoldingListener[] = []
-        events.forEach(event => {
+        eventsList.forEach(event => {
             const { triggerPromise, holdingListener: holdingPromise } =
                 event.makePromise()
 
             if (triggerPromise !== undefined) {
-                // wrap trigger promise with synchronization code
+                // wrap with timing code
+                const timedPromise = this.makePromiseTimed(
+                    triggerPromise,
+                    options
+                )
+                // wrap trigger promise with synchronization code - TODO: unify?
                 if (options.synchronization !== undefined) {
-                    const wrappedPromise = triggerPromise.then(() => {
+                    const wrappedPromise = timedPromise.then(() => {
                         if (firstTriggerTime === undefined) {
                             firstTriggerTime = this.bus.scheduler.timestamp
                         } else {
@@ -173,7 +206,7 @@ export class TestDriver {
                     })
                     triggerPromises.push(wrappedPromise)
                 } else {
-                    triggerPromises.push(triggerPromise)
+                    triggerPromises.push(timedPromise)
                 }
             }
             if (holdingPromise !== undefined) {
