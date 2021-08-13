@@ -56,7 +56,7 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
     const flags = new Set<string>()
     const serviceClasses = new Set<number>()
     const pkts = new Set<string>()
-    const firmwares = new Set<number>()
+    const productIdentifiers = new Set<number>()
     let repeatedAnnounce: boolean = undefined
     let announce: boolean = undefined
     let resetIn: boolean = undefined
@@ -143,12 +143,12 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
                 }
                 break
             }
-            case "fw":
-            case "firmware-identifier": {
+            case "pid":
+            case "product-identifier": {
                 if (!value) return
                 // find register
-                const fwid = parseInt(value.replace(/^0?x/, ""), 16)
-                if (!isNaN(fwid)) firmwares.add(fwid)
+                const pid = parseInt(value.replace(/^0?x/, ""), 16)
+                if (!isNaN(pid)) productIdentifiers.add(pid)
                 break
             }
             case "pkt":
@@ -211,7 +211,8 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
         requiresAck,
         collapseAck,
         log,
-        productIdentifiers: !!firmwares.size && Array.from(firmwares.keys()),
+        productIdentifiers:
+            !!productIdentifiers.size && Array.from(productIdentifiers.keys()),
         flags: !!flags.size && Array.from(flags.keys()),
         regGet,
         regSet,
