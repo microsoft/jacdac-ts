@@ -58,13 +58,13 @@ export function serviceSpecifications() {
     return _serviceSpecifications.slice(0)
 }
 
-export function deviceSpecificationFromFirmwareIdentifier(
-    firmwareIdentifier: number
+export function deviceSpecificationFromProductIdentifier(
+    productIdentifier: number
 ): jdspec.DeviceSpec {
-    if (firmwareIdentifier === undefined) return undefined
+    if (isNaN(productIdentifier)) return undefined
 
     const spec = _deviceRegistry.find(
-        spec => spec.firmwares.indexOf(firmwareIdentifier) > -1
+        spec => spec.productIdentifiers?.indexOf(productIdentifier) > -1
     )
     return spec
 }
@@ -81,7 +81,7 @@ export function deviceSpecificationFromIdentifier(
 export function deviceSpecificationsForService(
     serviceClass: number
 ): jdspec.DeviceSpec[] {
-    if (serviceClass === undefined) return undefined
+    if (isNaN(serviceClass)) return undefined
     return _deviceRegistry.filter(
         spec => spec.services.indexOf(serviceClass) > -1
     )

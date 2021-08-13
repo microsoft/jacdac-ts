@@ -36,7 +36,7 @@ const uf2ExtTags: SMap<number> = {
     version: -0x9fc7bc,
     name: -0x650d9d,
     pageSize: 0x0be9f7,
-    firmwareIdentifier: 0xc8a729,
+    productIdentifier: 0xc8a729,
 }
 
 export interface FirmwarePage {
@@ -46,7 +46,7 @@ export interface FirmwarePage {
 
 export interface FirmwareBlob {
     pages: FirmwarePage[]
-    firmwareIdentifier: number
+    productIdentifier: number
     pageSize: number
     name: string
     version: string
@@ -339,7 +339,7 @@ export function parseUF2(uf2: Uint8Array, store: string): FirmwareBlob[] {
             flush()
             currBlob = {
                 pages: [],
-                firmwareIdentifier: familyID,
+                productIdentifier: familyID,
                 version: "",
                 pageSize: 1024,
                 name: "FW " + familyID.toString(16),
@@ -403,7 +403,7 @@ export function parseUF2(uf2: Uint8Array, store: string): FirmwareBlob[] {
 
 export function generateDeviceList(uf2: Uint8Array) {
     return parseUF2(uf2, "")
-        .map(b => `* \`\`0x${b.firmwareIdentifier.toString(16)}\`\` ${b.name}`)
+        .map(b => `* \`\`0x${b.productIdentifier.toString(16)}\`\` ${b.name}`)
         .join("\n")
 }
 
@@ -411,8 +411,8 @@ export interface FirmwareInfo {
     deviceId: string
     version: string
     name: string
-    firmwareIdentifier: number
-    blFirmwareIdentifier: number
+    productIdentifier: number
+    bootloaderProductIdentifier: number
 }
 
 export async function parseFirmwareFile(
@@ -439,8 +439,8 @@ async function scanCore(
             // ask all CTRL services for bootloader info
             if (!makeFlashers) {
                 for (const reg of [
-                    ControlReg.BootloaderFirmwareIdentifier,
-                    ControlReg.FirmwareIdentifier,
+                    ControlReg.BootloaderProductIdentifier,
+                    ControlReg.ProductIdentifier,
                     ControlReg.FirmwareVersion,
                     ControlReg.DeviceDescription,
                 ]) {
@@ -462,10 +462,11 @@ async function scanCore(
         bus.off(PACKET_REPORT, handlePkt)
     }
     const devs = Object.values(devices).filter(d => {
-        if (!d.blFirmwareIdentifier)
-            d.blFirmwareIdentifier = d.firmwareIdentifier
-        if (!d.firmwareIdentifier) d.firmwareIdentifier = d.blFirmwareIdentifier
-        if (!d.firmwareIdentifier) return false
+        if (!d.bootloaderProductIdentifier)
+            d.bootloaderProductIdentifier = d.productIdentifier
+        if (!d.productIdentifier)
+            d.productIdentifier = d.bootloaderProductIdentifier
+        if (!d.productIdentifier) return false
         return true
     })
     // store info in objects
@@ -483,10 +484,10 @@ async function scanCore(
         if (!dev) {
             dev = devices[p.deviceIdentifier] = {
                 deviceId: p.deviceIdentifier,
-                firmwareIdentifier: null,
+                productIdentifier: null,
                 version: null,
                 name: null,
-                blFirmwareIdentifier: null,
+                bootloaderProductIdentifier: null,
             }
         }
 
@@ -497,7 +498,10 @@ async function scanCore(
             p.serviceCommand == CMD_ADVERTISEMENT_DATA &&
             p.getNumber(NumberFormat.UInt32LE, 0) == SRV_BOOTLOADER
         ) {
-            dev.blFirmwareIdentifier = p.getNumber(NumberFormat.UInt32LE, 12)
+            dev.bootloaderProductIdentifier = p.getNumber(
+                NumberFormat.UInt32LE,
+                12
+            )
             if (makeFlashers) {
                 if (
                     !flashers.find(f => f.device.deviceId == p.deviceIdentifier)
@@ -514,10 +518,10 @@ async function scanCore(
             p.serviceCommand & CMD_GET_REG
         ) {
             const reg = p.serviceCommand & CMD_REG_MASK
-            if (reg == ControlReg.BootloaderFirmwareIdentifier)
-                dev.blFirmwareIdentifier = p.uintData
-            else if (reg == ControlReg.FirmwareIdentifier)
-                dev.firmwareIdentifier = p.uintData
+            if (reg == ControlReg.BootloaderProductIdentifier)
+                dev.bootloaderProductIdentifier = p.uintData
+            else if (reg == ControlReg.ProductIdentifier)
+                dev.productIdentifier = p.uintData
             else if (reg == ControlReg.DeviceDescription)
                 dev.name = bufferToString(p.data)
             else if (reg == ControlReg.FirmwareVersion)
@@ -539,7 +543,7 @@ export function updateApplicable(dev: FirmwareInfo, blob: FirmwareBlob) {
     return (
         dev &&
         blob &&
-        dev.blFirmwareIdentifier == blob.firmwareIdentifier &&
+        dev.bootloaderProductIdentifier == blob.productIdentifier &&
         dev.version !== blob.version
     )
 }
@@ -576,7 +580,7 @@ export async function flashFirmwareBlob(
     }
     const allFlashers = (await scanCore(bus, 10, true, true)).flashers
     const flashers = allFlashers.filter(
-        f => !!ignoreFirmwareCheck || f.dev_class == blob.firmwareIdentifier
+        f => !!ignoreFirmwareCheck || f.dev_class == blob.productIdentifier
     )
     console.log({ allFlashers, flashers })
     if (!flashers.length) throw new Error("no devices to flash")
