@@ -558,9 +558,9 @@ export class JDDevice extends JDNode {
         return this.service(0)?.sendCmdAsync(ControlCmd.Reset)
     }
 
-    async resolveFirmwareIdentifier(retry = 0): Promise<number> {
+    async resolveProductIdentifier(retry = 0): Promise<number> {
         const fwIdRegister = this.service(0)?.register(
-            ControlReg.FirmwareIdentifier
+            ControlReg.ProductIdentifier
         )
         if (!fwIdRegister) return undefined
 
@@ -569,9 +569,9 @@ export class JDDevice extends JDNode {
         return fwIdRegister.uintValue
     }
 
-    get firmwareIdentifier(): number {
+    get productIdentifier(): number {
         const fwIdRegister = this.service(0)?.register(
-            ControlReg.FirmwareIdentifier
+            ControlReg.ProductIdentifier
         )
         const v = fwIdRegister?.uintValue
         if (fwIdRegister && v === undefined) fwIdRegister?.refresh(true)

@@ -18,7 +18,7 @@ export interface PacketFilterProps {
     minPriority?: boolean
     requiresAck?: boolean
     log?: boolean
-    firmwareIdentifiers?: number[]
+    productIdentifiers?: number[]
     flags?: string[]
     regGet?: boolean
     regSet?: boolean
@@ -211,7 +211,7 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
         requiresAck,
         collapseAck,
         log,
-        firmwareIdentifiers: !!firmwares.size && Array.from(firmwares.keys()),
+        productIdentifiers: !!firmwares.size && Array.from(firmwares.keys()),
         flags: !!flags.size && Array.from(flags.keys()),
         regGet,
         regSet,
@@ -253,7 +253,7 @@ export function compileFilter(props: PacketFilterProps) {
         minPriority,
         requiresAck,
         log,
-        firmwareIdentifiers,
+        productIdentifiers,
         flags,
         regGet,
         regSet,
@@ -341,10 +341,10 @@ export function compileFilter(props: PacketFilterProps) {
                 pkts.indexOf(pkt.decoded?.info.name) > -1
         )
     }
-    if (firmwareIdentifiers)
+    if (productIdentifiers)
         filters.push(pkt => {
-            const fwid = pkt.device?.firmwareIdentifier
-            return fwid === undefined || firmwareIdentifiers.indexOf(fwid) > -1
+            const fwid = pkt.device?.productIdentifier
+            return fwid === undefined || productIdentifiers.indexOf(fwid) > -1
         })
 
     const filter: CompiledPacketFilter = (pkt: Packet) =>
