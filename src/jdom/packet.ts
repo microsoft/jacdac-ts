@@ -145,7 +145,7 @@ export class Packet {
         return this._header[13] & JD_SERVICE_INDEX_MASK
     }
     set serviceIndex(value: number) {
-        if (value == null) throw new Error("service_number not set")
+        if (value == null) throw new Error("service_index not set")
         this._header[13] =
             (this._header[13] & JD_SERVICE_INDEX_INV_MASK) | value
         this._decoded = undefined

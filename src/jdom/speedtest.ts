@@ -2,11 +2,10 @@ import * as U from "./utils"
 import Packet from "./packet"
 import { JDDevice } from "./device"
 import { PACKET_REPORT, CMD_GET_REG, JD_SERVICE_INDEX_CTRL } from "./constants"
-
-const REG_CTRL_FIRMWARE_IDENTIFIER = 0x181
+import { ControlReg } from "../../jacdac-spec/dist/specconstants"
 
 export async function packetSpeedTest(dev: JDDevice) {
-    const pingCmd = CMD_GET_REG | REG_CTRL_FIRMWARE_IDENTIFIER
+    const pingCmd = CMD_GET_REG | ControlReg.ProductIdentifier
 
     dev.on(PACKET_REPORT, onPacket)
     const t0 = Date.now()

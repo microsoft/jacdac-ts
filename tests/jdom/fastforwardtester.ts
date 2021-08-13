@@ -11,7 +11,6 @@ import {
     TestDriver,
     TestDriverInterface,
     TesterEvent,
-    WaitTimingOptions,
 } from "../../src/tstester/base"
 import { BusTester } from "../../src/tstester/testwrappers"
 import { loadSpecifications } from "../testutils"
