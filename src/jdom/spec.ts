@@ -61,7 +61,7 @@ export function serviceSpecifications() {
 export function deviceSpecificationFromProductIdentifier(
     productIdentifier: number
 ): jdspec.DeviceSpec {
-    if (productIdentifier === undefined) return undefined
+    if (isNaN(productIdentifier)) return undefined
 
     const spec = _deviceRegistry.find(
         spec => spec.productIdentifiers?.indexOf(productIdentifier) > -1
@@ -81,7 +81,7 @@ export function deviceSpecificationFromIdentifier(
 export function deviceSpecificationsForService(
     serviceClass: number
 ): jdspec.DeviceSpec[] {
-    if (serviceClass === undefined) return undefined
+    if (isNaN(serviceClass)) return undefined
     return _deviceRegistry.filter(
         spec => spec.services.indexOf(serviceClass) > -1
     )
