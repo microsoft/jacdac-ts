@@ -58,13 +58,13 @@ export function serviceSpecifications() {
     return _serviceSpecifications.slice(0)
 }
 
-export function deviceSpecificationFromFirmwareIdentifier(
-    firmwareIdentifier: number
+export function deviceSpecificationFromProductIdentifier(
+    productIdentifier: number
 ): jdspec.DeviceSpec {
-    if (firmwareIdentifier === undefined) return undefined
+    if (productIdentifier === undefined) return undefined
 
     const spec = _deviceRegistry.find(
-        spec => spec.firmwares.indexOf(firmwareIdentifier) > -1
+        spec => spec.productIdentifiers?.indexOf(productIdentifier) > -1
     )
     return spec
 }

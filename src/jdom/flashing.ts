@@ -36,7 +36,7 @@ const uf2ExtTags: SMap<number> = {
     version: -0x9fc7bc,
     name: -0x650d9d,
     pageSize: 0x0be9f7,
-    firmwareIdentifier: 0xc8a729,
+    productIdentifier: 0xc8a729,
 }
 
 export interface FirmwarePage {
