@@ -19,6 +19,7 @@ class BaseServiceEventTrigger extends EventWithHoldAdapter<JDEvent> {
     }
 }
 
+// Requires a service not fire events for the hold duration
 export class ServiceHold extends BaseServiceEventTrigger {
     protected processHold(data: JDEvent) {
         throw new Error(
@@ -27,7 +28,7 @@ export class ServiceHold extends BaseServiceEventTrigger {
     }
 }
 
-// Event that fires on a matching event code from the specified service
+// Base service for events that fires on a matching event code from the specified service
 class BaseServiceAnyEventTrigger extends BaseServiceEventTrigger {
     constructor(
         protected readonly service: ServiceTester,

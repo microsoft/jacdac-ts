@@ -9,46 +9,88 @@ export class LedPixelTestRoutine {
         // Avoid over-use of "this" everywhere
         const service = this.service.service
         await service.register(LedPixelReg.NumPixels).refresh()
-        this.driver.log(`${service.register(LedPixelReg.NumPixels).unpackedValue} pixels`)
+        this.driver.log(
+            `${service.register(LedPixelReg.NumPixels).unpackedValue} pixels`
+        )
 
         // TODO the LED command constants should be defined somewhere
         // Cycle through R - G - B
-        await service.sendCmdAsync(LedPixelCmd.Run, Uint8Array.from([0xD0, 0xc1, 0x79, 0x00, 0x00]), true)
+        await service.sendCmdAsync(
+            LedPixelCmd.Run,
+            Uint8Array.from([0xd0, 0xc1, 0x79, 0x00, 0x00]),
+            true
+        )
         await new Promise(resolve => setTimeout(resolve, 500))
-        await service.sendCmdAsync(LedPixelCmd.Run, Uint8Array.from([0xD0, 0xc1, 0x00, 0x79, 0x00]), true)
+        await service.sendCmdAsync(
+            LedPixelCmd.Run,
+            Uint8Array.from([0xd0, 0xc1, 0x00, 0x79, 0x00]),
+            true
+        )
         await new Promise(resolve => setTimeout(resolve, 500))
-        await service.sendCmdAsync(LedPixelCmd.Run, Uint8Array.from([0xD0, 0xc1, 0x00, 0x00, 0x79]), true)
+        await service.sendCmdAsync(
+            LedPixelCmd.Run,
+            Uint8Array.from([0xd0, 0xc1, 0x00, 0x00, 0x79]),
+            true
+        )
         await new Promise(resolve => setTimeout(resolve, 500))
-        
+
         // Cycle through yellow - cyan - purple
-        await service.sendCmdAsync(LedPixelCmd.Run, Uint8Array.from([0xD0, 0xc1, 0x79, 0x79, 0x00]), true)
+        await service.sendCmdAsync(
+            LedPixelCmd.Run,
+            Uint8Array.from([0xd0, 0xc1, 0x79, 0x79, 0x00]),
+            true
+        )
         await new Promise(resolve => setTimeout(resolve, 500))
-        await service.sendCmdAsync(LedPixelCmd.Run, Uint8Array.from([0xD0, 0xc1, 0x00, 0x79, 0x79]), true)
+        await service.sendCmdAsync(
+            LedPixelCmd.Run,
+            Uint8Array.from([0xd0, 0xc1, 0x00, 0x79, 0x79]),
+            true
+        )
         await new Promise(resolve => setTimeout(resolve, 500))
-        await service.sendCmdAsync(LedPixelCmd.Run, Uint8Array.from([0xD0, 0xc1, 0x79, 0x00, 0x79]), true)
+        await service.sendCmdAsync(
+            LedPixelCmd.Run,
+            Uint8Array.from([0xd0, 0xc1, 0x79, 0x00, 0x79]),
+            true
+        )
         await new Promise(resolve => setTimeout(resolve, 500))
 
         // White
-        await service.sendCmdAsync(LedPixelCmd.Run, Uint8Array.from([0xD0, 0xc1, 0x79, 0x79, 0x79]), true)
+        await service.sendCmdAsync(
+            LedPixelCmd.Run,
+            Uint8Array.from([0xd0, 0xc1, 0x79, 0x79, 0x79]),
+            true
+        )
         await new Promise(resolve => setTimeout(resolve, 500))
     }
 
     public async testShift() {
         const service = this.service.service
-        
-        await service.sendCmdAsync(LedPixelCmd.Run, Uint8Array.from([0xD1, 0xc3, 
-            0x79, 0x00, 0x00,
-            0x00, 0x79, 0x00,
-            0x00, 0x00, 0x79]), true)
+
+        await service.sendCmdAsync(
+            LedPixelCmd.Run,
+            Uint8Array.from([
+                0xd1, 0xc3, 0x79, 0x00, 0x00, 0x00, 0x79, 0x00, 0x00, 0x00,
+                0x79,
+            ]),
+            true
+        )
         await new Promise(resolve => setTimeout(resolve, 500))
 
-        for (let i=0; i<8; i++) {
-            await service.sendCmdAsync(LedPixelCmd.Run, Uint8Array.from([0xD3, 0x01]), true)
+        for (let i = 0; i < 8; i++) {
+            await service.sendCmdAsync(
+                LedPixelCmd.Run,
+                Uint8Array.from([0xd3, 0x01]),
+                true
+            )
             await new Promise(resolve => setTimeout(resolve, 100))
         }
 
-        for (let i=0; i<8; i++) {
-            await service.sendCmdAsync(LedPixelCmd.Run, Uint8Array.from([0xD4, 0x01]), true)
+        for (let i = 0; i < 8; i++) {
+            await service.sendCmdAsync(
+                LedPixelCmd.Run,
+                Uint8Array.from([0xd4, 0x01]),
+                true
+            )
             await new Promise(resolve => setTimeout(resolve, 100))
         }
 
@@ -57,32 +99,61 @@ export class LedPixelTestRoutine {
 
     public async testSetOne() {
         const service = this.service.service
-        
-        await service.sendCmdAsync(LedPixelCmd.Run, Uint8Array.from([0xD0, 0xc1, 0x00, 0x00, 0x00]), true)
+
+        await service.sendCmdAsync(
+            LedPixelCmd.Run,
+            Uint8Array.from([0xd0, 0xc1, 0x00, 0x00, 0x00]),
+            true
+        )
         await new Promise(resolve => setTimeout(resolve, 500))
 
-
-        await service.sendCmdAsync(LedPixelCmd.Run, Uint8Array.from([0xCF, 0x00, 0x79, 0x00, 0x00]), true)
+        await service.sendCmdAsync(
+            LedPixelCmd.Run,
+            Uint8Array.from([0xcf, 0x00, 0x79, 0x00, 0x00]),
+            true
+        )
         await new Promise(resolve => setTimeout(resolve, 100))
 
-        await service.sendCmdAsync(LedPixelCmd.Run, Uint8Array.from([0xCF, 0x01, 0x00, 0x79, 0x00]), true)
+        await service.sendCmdAsync(
+            LedPixelCmd.Run,
+            Uint8Array.from([0xcf, 0x01, 0x00, 0x79, 0x00]),
+            true
+        )
         await new Promise(resolve => setTimeout(resolve, 100))
 
-        await service.sendCmdAsync(LedPixelCmd.Run, Uint8Array.from([0xCF, 0x02, 0x00, 0x00, 0x79]), true)
+        await service.sendCmdAsync(
+            LedPixelCmd.Run,
+            Uint8Array.from([0xcf, 0x02, 0x00, 0x00, 0x79]),
+            true
+        )
         await new Promise(resolve => setTimeout(resolve, 100))
 
-
-        await service.sendCmdAsync(LedPixelCmd.Run, Uint8Array.from([0xCF, 0x03, 0x79, 0x79, 0x00]), true)
+        await service.sendCmdAsync(
+            LedPixelCmd.Run,
+            Uint8Array.from([0xcf, 0x03, 0x79, 0x79, 0x00]),
+            true
+        )
         await new Promise(resolve => setTimeout(resolve, 100))
 
-        await service.sendCmdAsync(LedPixelCmd.Run, Uint8Array.from([0xCF, 0x04, 0x00, 0x79, 0x79]), true)
+        await service.sendCmdAsync(
+            LedPixelCmd.Run,
+            Uint8Array.from([0xcf, 0x04, 0x00, 0x79, 0x79]),
+            true
+        )
         await new Promise(resolve => setTimeout(resolve, 100))
 
-        await service.sendCmdAsync(LedPixelCmd.Run, Uint8Array.from([0xCF, 0x05, 0x79, 0x00, 0x79]), true)
+        await service.sendCmdAsync(
+            LedPixelCmd.Run,
+            Uint8Array.from([0xcf, 0x05, 0x79, 0x00, 0x79]),
+            true
+        )
         await new Promise(resolve => setTimeout(resolve, 100))
 
-        
-        await service.sendCmdAsync(LedPixelCmd.Run, Uint8Array.from([0xCF, 0x06, 0x79, 0x79, 0x79]), true)
+        await service.sendCmdAsync(
+            LedPixelCmd.Run,
+            Uint8Array.from([0xcf, 0x06, 0x79, 0x79, 0x79]),
+            true
+        )
         await new Promise(resolve => setTimeout(resolve, 100))
 
         this.driver.log("setting done")

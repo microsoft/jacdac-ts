@@ -77,10 +77,7 @@ export function main(document: Document) {
         if (pixelServices.length == 1) {
             const serviceTester = new ServiceTester(pixelServices[0])
             ui.log(`starting pixel test: ${serviceTester.name}`)
-            const pixelTest = new LedPixelTestRoutine(
-                serviceTester,
-                testdriver
-            )
+            const pixelTest = new LedPixelTestRoutine(serviceTester, testdriver)
             try {
                 await pixelTest.testSolidColors()
                 await pixelTest.testShift()

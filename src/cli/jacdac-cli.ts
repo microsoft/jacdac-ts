@@ -11,12 +11,14 @@ import { createUSBTransport } from "../jdom/transport/usb"
 import { createNodeUSBOptions } from "../jdom/transport/nodewebusb"
 import {
     deviceSpecificationToDTDL,
+    serviceSpecificationsWithDTDL,
     serviceSpecificationToDTDL,
 } from "../azure-iot/dtdlspec"
-import { deviceSpecifications, serviceSpecifications } from "../jdom/spec"
+import { deviceSpecifications } from "../jdom/spec"
 import { JDBus } from "../jdom/bus"
 import { printPacket } from "../jdom/pretty"
 import { parseLogicLog, replayLog } from "../jdom/logparser"
+import { dashify } from "../../jacdac-spec/spectool/jdspec"
 
 cli.setApp("jacdac", "1.0.6")
 cli.enable("version")
@@ -50,14 +52,14 @@ if (options.dtdl) {
         if (options.rm) fs.emptyDirSync(dir)
         // generate services
         {
-            let services = serviceSpecifications()
+            let services = serviceSpecificationsWithDTDL()
             if (options.services) {
                 const rx = new RegExp(options.services, "i")
                 services = services.filter(dev => rx.test(dev.name))
             }
             cli.info(`${services.length} services`)
             services.forEach((srv, i) => {
-                const fn = `${dir}/${srv.shortName}.json`
+                const fn = `${dir}/${dashify(srv.shortName)}.json`
                 cli.debug(`${srv.name} => ${fn}`)
                 cli.progress(i / (services.length - 1))
                 const dtdl = serviceSpecificationToDTDL(srv)
@@ -75,7 +77,7 @@ if (options.dtdl) {
             }
             cli.info(`${devices.length} devices`)
             devices.forEach((dev, i) => {
-                const fn = `${dir}/${dev.name}.json`
+                const fn = `${dir}/${dashify(dev.name)}.json`
                 cli.debug(`${dev.name} => ${fn}`)
                 cli.progress(i / (devices.length - 1))
                 const dtdl = deviceSpecificationToDTDL(dev)
@@ -104,8 +106,7 @@ if (options.usb) {
 
 // Logic parsing
 if (options.parse) {
-    let jd = new JDBus([])
-
+    const jd = new JDBus([])
     const opts = {
         skipRepeatedAnnounce: false,
         showTime: true,
