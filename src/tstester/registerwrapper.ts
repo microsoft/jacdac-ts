@@ -45,12 +45,21 @@ abstract class BaseRegisterEvent extends EventWithHoldAdapter<JDRegister> {
     }
 
     // Checks if a value is within a condition specified as either an exact matching number of valid interval
-    protected valueWithinCondition(value: number, requirement: number | [number, number]) {
-        if (typeof requirement == 'number') {  // is a single number, check exact match
+    protected valueWithinCondition(
+        value: number,
+        requirement: number | [number, number]
+    ) {
+        if (typeof requirement == "number") {
+            // is a single number, check exact match
             return value == (requirement as number)
-        } else if (Array.isArray(requirement)) {  // is array, interpret as range
-            const low = requirement[0] as number, high = requirement[1] as number
-            assert(low <= high, `lower end of requirement range ${low} must be <= higher end of requirement range ${high}`)
+        } else if (Array.isArray(requirement)) {
+            // is array, interpret as range
+            const low = requirement[0] as number,
+                high = requirement[1] as number
+            assert(
+                low <= high,
+                `lower end of requirement range ${low} must be <= higher end of requirement range ${high}`
+            )
             return value >= low && value <= high
         }
     }
@@ -72,12 +81,13 @@ class BaseRegisterUpdateEvent extends BaseRegisterEvent {
         // check if the sample is valid for preRequiredRange
         const precondition =
             this.options.precondition === undefined ||
-            (thisValue !== undefined && this.valueWithinCondition(thisValue, this.options.precondition))
+            (thisValue !== undefined &&
+                this.valueWithinCondition(thisValue, this.options.precondition))
 
         // whether or not toRange is defined, the current sample must be valid
         const triggered =
-            thisValue !== undefined && this.valueWithinCondition(thisValue, this.trigger)
-            
+            thisValue !== undefined &&
+            this.valueWithinCondition(thisValue, this.trigger)
 
         if (triggered) {
             // ignore precondition on trigger
@@ -95,7 +105,11 @@ class BaseRegisterUpdateEvent extends BaseRegisterEvent {
 
 class RegisterUpdateEvent extends BaseRegisterUpdateEvent {
     public hold() {
-        return new RegisterUpdateEventHold(this.busRegister, this.trigger, this.options)
+        return new RegisterUpdateEventHold(
+            this.busRegister,
+            this.trigger,
+            this.options
+        )
     }
 }
 
@@ -111,7 +125,9 @@ class RegisterUpdateEventHold extends BaseRegisterUpdateEvent {
     protected processHold(register: JDRegister) {
         const thisValue = this.maybeGetValue(register.unpackedValue)
 
-        const hold = thisValue !== undefined && this.valueWithinCondition(thisValue, this.trigger)
+        const hold =
+            thisValue !== undefined &&
+            this.valueWithinCondition(thisValue, this.trigger)
 
         if (!hold) {
             throw new RegisterConditionError(
@@ -132,7 +148,9 @@ class RegisterHold extends BaseRegisterEvent {
     protected processHold(register: JDRegister) {
         const thisValue = this.maybeGetValue(register.unpackedValue)
 
-        const valid = thisValue !== undefined && this.valueWithinCondition(thisValue, this.value)
+        const valid =
+            thisValue !== undefined &&
+            this.valueWithinCondition(thisValue, this.value)
 
         if (!valid) {
             throw new RegisterConditionError(
@@ -150,8 +168,10 @@ export class RegisterTester {
     }
 
     // Event that fires on a register update (even with unchagned value), optionally with a starting (arming) and to (trigger) filter
-    public onValue(trigger: number | [number, number],
-        options: RegisterValueOptions = {}) {
+    public onValue(
+        trigger: number | [number, number],
+        options: RegisterValueOptions = {}
+    ) {
         return new RegisterUpdateEvent(this, trigger, options)
     }
 

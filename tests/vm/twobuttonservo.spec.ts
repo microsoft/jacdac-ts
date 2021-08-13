@@ -51,56 +51,41 @@ suite("button servo", () => {
     test(
         "sets to 10 when button1 pressed",
         makeVmTest(async (tester, button1, button2, servoReg) => {
-            await tester.assertWith(
-                servoReg
-                    .onValue(10)
-                    .hold(),
-                async () => {
-                    button1.down()
-                    await tester.waitForDelay(100)
-                    button1.up()
-                    await tester.waitForDelay(100)
-                }
-            )
+            await tester.assertWith(servoReg.onValue(10).hold(), async () => {
+                button1.down()
+                await tester.waitForDelay(100)
+                button1.up()
+                await tester.waitForDelay(100)
+            })
         })
     )
 
     test(
         "sets to 45 when button2 pressed",
         makeVmTest(async (tester, button1, button2, servoReg) => {
-            await tester.assertWith(
-                servoReg
-                    .onValue(45)
-                    .hold(),
-                async () => {
-                    button2.down()
-                    await tester.waitForDelay(100)
-                    button2.up()
-                    await tester.waitForDelay(100)
-                }
-            )
+            await tester.assertWith(servoReg.onValue(45).hold(), async () => {
+                button2.down()
+                await tester.waitForDelay(100)
+                button2.up()
+                await tester.waitForDelay(100)
+            })
         })
     )
 
     test(
         "works when button 1, then button2 pressed",
         makeVmTest(async (tester, button1, button2, servoReg) => {
-            await tester.assertWith(
-                servoReg
-                    .onValue(10)
-                    .hold(),
-                async () => {
-                    button1.down()
-                    await tester.waitForDelay(100)
-                    button1.up()
-                    await tester.waitForDelay(100)
-                }
-            )
+            await tester.assertWith(servoReg.onValue(10).hold(), async () => {
+                button1.down()
+                await tester.waitForDelay(100)
+                button1.up()
+                await tester.waitForDelay(100)
+            })
 
             await tester.assertWith(
                 servoReg
                     .onValue(45, {
-                        precondition: 10
+                        precondition: 10,
                     })
                     .hold(),
                 async () => {
@@ -116,23 +101,17 @@ suite("button servo", () => {
     test(
         "works when button2, then button1 pressed",
         makeVmTest(async (tester, button1, button2, servoReg) => {
-            await tester.assertWith(
-                servoReg
-                    .onValue(45)
-                    .hold(),
-                async () => {
-                    button2.down()
-                    await tester.waitForDelay(100)
-                    button2.up()
-                    await tester.waitForDelay(100)
-                }
-            )
+            await tester.assertWith(servoReg.onValue(45).hold(), async () => {
+                button2.down()
+                await tester.waitForDelay(100)
+                button2.up()
+                await tester.waitForDelay(100)
+            })
 
             await tester.assertWith(
                 servoReg
-                    .onValue(10,
-                        {
-                        precondition: 45 // shouldn't change from before
+                    .onValue(10, {
+                        precondition: 45, // shouldn't change from before
                     })
                     .hold(),
                 async () => {

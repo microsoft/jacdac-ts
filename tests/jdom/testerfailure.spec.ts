@@ -73,7 +73,7 @@ suite("testdriver with button server", () => {
                 const register = service.register(ButtonReg.Pressure)
                 await tester.waitFor(
                     register.onValue(10, {
-                        precondition: 1,  // would start at 0
+                        precondition: 1, // would start at 0
                     }),
                     { within: 1000 }
                 )

@@ -19,7 +19,9 @@ suite("button server", () => {
             await tester.waitFor(
                 [
                     service.onEvent(ButtonEvent.Down).hold(),
-                    register.onValue([0.5, 1], {precondition: [0, 0.5]}).hold(),
+                    register
+                        .onValue([0.5, 1], { precondition: [0, 0.5] })
+                        .hold(),
                 ],
                 { within: 100, synchronization: 50 }
             )
@@ -28,7 +30,9 @@ suite("button server", () => {
             await tester.waitFor(
                 [
                     service.nextEvent(ButtonEvent.Up).hold(),
-                    register.onValue([0, 0.5], {precondition: [0.5, 1]}).hold(),
+                    register
+                        .onValue([0, 0.5], { precondition: [0.5, 1] })
+                        .hold(),
                 ],
                 { within: 100, synchronization: 50 }
             )
@@ -49,7 +53,8 @@ suite("button server", () => {
                 [
                     service.onEvent(ButtonEvent.Down).hold(),
                     register
-                        .onValue([0.5, 1], {precondition: [0, 0.5]}).hold(),
+                        .onValue([0.5, 1], { precondition: [0, 0.5] })
+                        .hold(),
                 ],
                 { within: 100, synchronization: 50 }
             )
@@ -66,8 +71,7 @@ suite("button server", () => {
             await tester.waitFor(
                 [
                     service.nextEvent(ButtonEvent.Up).hold(),
-                    register.onValue([0, 0.5])
-                        .hold(),
+                    register.onValue([0, 0.5]).hold(),
                 ],
                 { within: 100, synchronization: 50 }
             )

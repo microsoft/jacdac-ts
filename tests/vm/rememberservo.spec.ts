@@ -65,17 +65,12 @@ suite("remember servo", () => {
             await tester.waitForDelay(100)
 
             servo.angle.setValues([0]) // make sure the difference on recall is visible
-            await tester.assertWith(
-                servoReg
-                    .onValue(50)
-                    .hold(),
-                async () => {
-                    recall.down()
-                    await tester.waitForDelay(100)
-                    recall.up()
-                    await tester.waitForDelay(100)
-                }
-            )
+            await tester.assertWith(servoReg.onValue(50).hold(), async () => {
+                recall.down()
+                await tester.waitForDelay(100)
+                recall.up()
+                await tester.waitForDelay(100)
+            })
         })
     )
 
@@ -95,17 +90,12 @@ suite("remember servo", () => {
             await tester.waitForDelay(100)
 
             servo.angle.setValues([0]) // make sure the difference on recall is visible
-            await tester.assertWith(
-                servoReg
-                    .onValue(-50)
-                    .hold(),
-                async () => {
-                    recall.down()
-                    await tester.waitForDelay(100)
-                    recall.up()
-                    await tester.waitForDelay(100)
-                }
-            )
+            await tester.assertWith(servoReg.onValue(-50).hold(), async () => {
+                recall.down()
+                await tester.waitForDelay(100)
+                recall.up()
+                await tester.waitForDelay(100)
+            })
         })
     )
 })

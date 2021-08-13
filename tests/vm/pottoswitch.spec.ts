@@ -63,9 +63,7 @@ suite("pot to switch adapter", () => {
             await tester.assertWith(
                 [
                     sw.nextEvent(SwitchEvent.On),
-                    sw
-                        .register(SwitchReg.Active)
-                        .onValue(1),
+                    sw.register(SwitchReg.Active).onValue(1),
                 ],
                 async () => {
                     pot.setValues([0.7])
@@ -84,9 +82,7 @@ suite("pot to switch adapter", () => {
             await tester.assertWith(
                 [
                     sw.nextEvent(SwitchEvent.Off),
-                    sw
-                        .register(SwitchReg.Active)
-                        .onValue(0),
+                    sw.register(SwitchReg.Active).onValue(0),
                 ],
                 async () => {
                     pot.setValues([0.3])

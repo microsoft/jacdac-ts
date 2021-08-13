@@ -50,12 +50,9 @@ suite("button to switch adapter", () => {
     test(
         "switch starts off",
         makeVmTest(async (tester, button, sw) => {
-            await tester.waitFor(
-                sw
-                    .register(SwitchReg.Active)
-                    .onValue(0),
-                { within: 100 }
-            )
+            await tester.waitFor(sw.register(SwitchReg.Active).onValue(0), {
+                within: 100,
+            })
         })
     )
 
@@ -66,9 +63,7 @@ suite("button to switch adapter", () => {
             await tester.waitFor(
                 [
                     sw.nextEvent(SwitchEvent.On),
-                    sw
-                        .register(SwitchReg.Active)
-                        .onValue(1),
+                    sw.register(SwitchReg.Active).onValue(1),
                 ],
                 { within: 110, synchronization: 110 }
             )
@@ -80,9 +75,7 @@ suite("button to switch adapter", () => {
             await tester.waitFor(
                 [
                     sw.nextEvent(SwitchEvent.Off),
-                    sw
-                        .register(SwitchReg.Active)
-                        .onValue(0),
+                    sw.register(SwitchReg.Active).onValue(0),
                 ],
                 { within: 110, synchronization: 110 }
             )

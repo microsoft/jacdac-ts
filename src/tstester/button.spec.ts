@@ -17,7 +17,7 @@ export class ButtonTestRoutine {
                 service.onEvent(ButtonEvent.Down).hold(),
                 register
                     .onValue([0.5, 1], {
-                        precondition: [0, 0.5]
+                        precondition: [0, 0.5],
                     })
                     .hold(),
             ],
@@ -30,7 +30,7 @@ export class ButtonTestRoutine {
                 service.nextEvent(ButtonEvent.Up).hold(),
                 register
                     .onValue([0, 0.5], {
-                        precondition: [0.5, 1]
+                        precondition: [0.5, 1],
                     })
                     .hold(),
             ],
@@ -51,7 +51,7 @@ export class ButtonTestRoutine {
                 service.onEvent(ButtonEvent.Down).hold(),
                 register
                     .onValue([0.5, 1], {
-                        precondition: [0, 0.5]
+                        precondition: [0, 0.5],
                     })
                     .hold(),
             ],
@@ -89,9 +89,7 @@ export class ButtonTestRoutine {
         await this.driver.waitFor(
             [
                 service.onEvent(ButtonEvent.Up).hold(), // ignore any continued hold events
-                register
-                    .onValue([0, 0.5])
-                    .hold(),
+                register.onValue([0, 0.5]).hold(),
             ],
             { synchronization: 50 }
         )

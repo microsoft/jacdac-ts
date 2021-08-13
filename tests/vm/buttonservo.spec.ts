@@ -51,17 +51,12 @@ suite("button servo", () => {
         makeVmTest(async (tester, button, servo, servoReg) => {
             servo.angle.setValues([50])
 
-            await tester.assertWith(
-                servoReg
-                    .onValue(-50)
-                    .hold(),
-                async () => {
-                    button.down()
-                    await tester.waitForDelay(100)
-                    button.up()
-                    await tester.waitForDelay(100)
-                }
-            )
+            await tester.assertWith(servoReg.onValue(-50).hold(), async () => {
+                button.down()
+                await tester.waitForDelay(100)
+                button.up()
+                await tester.waitForDelay(100)
+            })
         })
     )
 
@@ -81,22 +76,17 @@ suite("button servo", () => {
         makeVmTest(async (tester, button, servo, servoReg) => {
             servo.angle.setValues([50])
 
-            await tester.assertWith(
-                servoReg
-                    .onValue(-50)
-                    .hold(),
-                async () => {
-                    button.down()
-                    await tester.waitForDelay(100)
-                    button.up()
-                    await tester.waitForDelay(100)
-                }
-            )
+            await tester.assertWith(servoReg.onValue(-50).hold(), async () => {
+                button.down()
+                await tester.waitForDelay(100)
+                button.up()
+                await tester.waitForDelay(100)
+            })
 
             await tester.assertWith(
                 servoReg
                     .onValue(50, {
-                        precondition: -50
+                        precondition: -50,
                     })
                     .hold(),
                 async () => {
