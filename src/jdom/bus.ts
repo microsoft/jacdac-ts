@@ -98,7 +98,7 @@ export interface DeviceFilter {
     ignoreSelf?: boolean
     announced?: boolean
     ignoreSimulators?: boolean
-    firmwareIdentifier?: boolean
+    productIdentifier?: boolean
     physical?: boolean
 }
 
@@ -526,7 +526,7 @@ export class JDBus extends JDNode {
         if (options?.announced) r = r.filter(s => s.announced)
         if (options?.ignoreSimulators)
             r = r.filter(r => !this.findServiceProvider(r.deviceId))
-        if (options?.firmwareIdentifier)
+        if (options?.productIdentifier)
             r = r.filter(r => !!r.productIdentifier)
         if (options?.physical) r = r.filter(r => !!r.physical)
         return r
