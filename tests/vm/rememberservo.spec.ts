@@ -67,9 +67,7 @@ suite("remember servo", () => {
             servo.angle.setValues([0]) // make sure the difference on recall is visible
             await tester.assertWith(
                 servoReg
-                    .onUpdate({
-                        triggerRange: [50, 50],
-                    })
+                    .onValue(50)
                     .hold(),
                 async () => {
                     recall.down()
@@ -99,9 +97,7 @@ suite("remember servo", () => {
             servo.angle.setValues([0]) // make sure the difference on recall is visible
             await tester.assertWith(
                 servoReg
-                    .onUpdate({
-                        triggerRange: [-50, -50],
-                    })
+                    .onValue(-50)
                     .hold(),
                 async () => {
                     recall.down()

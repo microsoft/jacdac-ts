@@ -4,7 +4,7 @@ import { suite, test } from "mocha"
 import { ButtonEvent, ButtonReg } from "../../src/jdom/constants"
 import ButtonServer from "../../src/servers/buttonserver"
 import { WaitTimeoutError } from "../../src/tstester/base"
-import { RegisterPreConditionError } from "../../src/tstester/registerwrapper"
+import { RegisterConditionError } from "../../src/tstester/registerwrapper"
 import {
     ServiceNextEventError,
     ServiceTester,
@@ -68,13 +68,12 @@ suite("testdriver with button server", () => {
     test(
         "should fail on incorrect register precondition",
         makeButtonTest(
-            RegisterPreConditionError,
+            RegisterConditionError,
             async (tester, button, service) => {
                 const register = service.register(ButtonReg.Pressure)
                 await tester.waitFor(
-                    register.onUpdate({
-                        preRequiredRange: [0.5, 1],
-                        triggerRange: [10, 10], // impossible
+                    register.onValue(10, {
+                        precondition: 1,  // would start at 0
                     }),
                     { within: 1000 }
                 )

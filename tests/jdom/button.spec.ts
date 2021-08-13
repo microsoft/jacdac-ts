@@ -19,12 +19,7 @@ suite("button server", () => {
             await tester.waitFor(
                 [
                     service.onEvent(ButtonEvent.Down).hold(),
-                    register
-                        .onUpdate({
-                            preRequiredRange: [0, 0.5],
-                            triggerRange: [0.5, 1],
-                        })
-                        .hold(),
+                    register.onValue([0.5, 1], {precondition: [0, 0.5]}).hold(),
                 ],
                 { within: 100, synchronization: 50 }
             )
@@ -33,12 +28,7 @@ suite("button server", () => {
             await tester.waitFor(
                 [
                     service.nextEvent(ButtonEvent.Up).hold(),
-                    register
-                        .onUpdate({
-                            preRequiredRange: [0.5, 1],
-                            triggerRange: [0, 0.5],
-                        })
-                        .hold(),
+                    register.onValue([0, 0.5], {precondition: [0.5, 1]}).hold(),
                 ],
                 { within: 100, synchronization: 50 }
             )
@@ -59,11 +49,7 @@ suite("button server", () => {
                 [
                     service.onEvent(ButtonEvent.Down).hold(),
                     register
-                        .onUpdate({
-                            preRequiredRange: [0, 0.5],
-                            triggerRange: [0.5, 1],
-                        })
-                        .hold(),
+                        .onValue([0.5, 1], {precondition: [0, 0.5]}).hold(),
                 ],
                 { within: 100, synchronization: 50 }
             )
@@ -71,7 +57,7 @@ suite("button server", () => {
             await tester.waitFor(
                 [
                     service.nextEvent(ButtonEvent.Hold).hold(),
-                    register.hold([0.5, 1.0]),
+                    register.hold([0.5, 1]),
                 ],
                 { after: 500, tolerance: 100 }
             )
@@ -80,10 +66,7 @@ suite("button server", () => {
             await tester.waitFor(
                 [
                     service.nextEvent(ButtonEvent.Up).hold(),
-                    register
-                        .onUpdate({
-                            triggerRange: [0, 0.5],
-                        })
+                    register.onValue([0, 0.5])
                         .hold(),
                 ],
                 { within: 100, synchronization: 50 }

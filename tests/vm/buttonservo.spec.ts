@@ -53,9 +53,7 @@ suite("button servo", () => {
 
             await tester.assertWith(
                 servoReg
-                    .onUpdate({
-                        triggerRange: [-50, -50],
-                    })
+                    .onValue(-50)
                     .hold(),
                 async () => {
                     button.down()
@@ -85,9 +83,7 @@ suite("button servo", () => {
 
             await tester.assertWith(
                 servoReg
-                    .onUpdate({
-                        triggerRange: [-50, -50],
-                    })
+                    .onValue(-50)
                     .hold(),
                 async () => {
                     button.down()
@@ -99,9 +95,8 @@ suite("button servo", () => {
 
             await tester.assertWith(
                 servoReg
-                    .onUpdate({
-                        preRequiredRange: [-50, -50],
-                        triggerRange: [50, 50],
+                    .onValue(50, {
+                        precondition: -50
                     })
                     .hold(),
                 async () => {

@@ -65,7 +65,7 @@ suite("pot to switch adapter", () => {
                     sw.nextEvent(SwitchEvent.On),
                     sw
                         .register(SwitchReg.Active)
-                        .onUpdate({ triggerRange: [0.5, 1] }),
+                        .onValue(1),
                 ],
                 async () => {
                     pot.setValues([0.7])
@@ -86,7 +86,7 @@ suite("pot to switch adapter", () => {
                     sw.nextEvent(SwitchEvent.Off),
                     sw
                         .register(SwitchReg.Active)
-                        .onUpdate({ triggerRange: [0, 0.5] }),
+                        .onValue(0),
                 ],
                 async () => {
                     pot.setValues([0.3])
@@ -103,7 +103,7 @@ suite("pot to switch adapter", () => {
             await tester.waitForDelay(100)
 
             await tester.assertWith(
-                [sw.hold(), sw.register(SwitchReg.Active).hold([0.5, 1])],
+                [sw.hold(), sw.register(SwitchReg.Active).hold(1)],
                 async () => {
                     pot.setValues([0.45])
                     await tester.waitForDelay(150)
@@ -119,7 +119,7 @@ suite("pot to switch adapter", () => {
             await tester.waitForDelay(100)
 
             await tester.assertWith(
-                [sw.hold(), sw.register(SwitchReg.Active).hold([0, 0.5])],
+                [sw.hold(), sw.register(SwitchReg.Active).hold(0)],
                 async () => {
                     pot.setValues([0.55])
                     await tester.waitForDelay(150)

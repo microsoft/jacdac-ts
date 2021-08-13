@@ -40,19 +40,19 @@ suite('"CSV" trace server', () => {
             )
 
             await tester.waitFor(
-                register.onUpdate({ triggerRange: withTolerance(0.5) })
+                register.onValue(withTolerance(0.5))
                 // absolute time not tested, just wait for first sample
             )
             await tester.waitFor(
-                register.onUpdate({ triggerRange: withTolerance(1.0) }),
+                register.onValue(withTolerance(1.0)),
                 { after: 200, tolerance: 50 }
             )
             await tester.waitFor(
-                register.onUpdate({ triggerRange: withTolerance(0.8) }),
+                register.onValue(withTolerance(0.8)),
                 { after: 200, tolerance: 50 }
             )
             await tester.waitFor(
-                register.onUpdate({ triggerRange: withTolerance(0.6) }),
+                register.onValue(withTolerance(0.6)),
                 { after: 200, tolerance: 50 }
             )
         })
@@ -80,11 +80,11 @@ suite('"CSV" trace server', () => {
             )
 
             await tester.waitFor(
-                register.onUpdate({ triggerRange: withTolerance(0.5) })
+                register.onValue(withTolerance(0.5))
                 // absolute time not tested, just wait for first sample
             )
             await tester.waitFor(
-                register.onUpdate({ triggerRange: withTolerance(1.0) }),
+                register.onValue(withTolerance(1.0)),
                 { after: 400, tolerance: 50 }
             )
         })
@@ -114,13 +114,9 @@ suite('"CSV" trace server', () => {
                 [
                     service.nextEvent(ButtonEvent.Down).hold(),
                     register
-                        .onUpdate({
-                            preRequiredRange: withTolerance(
-                                ButtonServer.INACTIVE_VALUE
-                            ),
-                            triggerRange: withTolerance(
-                                ButtonServer.ACTIVE_VALUE
-                            ),
+                        .onValue(withTolerance(ButtonServer.ACTIVE_VALUE), {
+                            precondition: 
+                                withTolerance(ButtonServer.INACTIVE_VALUE)
                         })
                         .hold(),
                 ]
@@ -130,13 +126,10 @@ suite('"CSV" trace server', () => {
                 [
                     service.nextEvent(ButtonEvent.Up).hold(),
                     register
-                        .onUpdate({
-                            preRequiredRange: withTolerance(
-                                ButtonServer.ACTIVE_VALUE
-                            ),
-                            triggerRange: withTolerance(
-                                ButtonServer.INACTIVE_VALUE
-                            ),
+                        .onValue(withTolerance(ButtonServer.INACTIVE_VALUE), {
+                            precondition: 
+                                withTolerance(ButtonServer.ACTIVE_VALUE)
+                            
                         })
                         .hold(),
                 ],

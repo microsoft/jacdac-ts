@@ -16,9 +16,8 @@ export class ButtonTestRoutine {
             [
                 service.onEvent(ButtonEvent.Down).hold(),
                 register
-                    .onUpdate({
-                        preRequiredRange: [0, 0.5],
-                        triggerRange: [0.5, 1],
+                    .onValue([0.5, 1], {
+                        precondition: [0, 0.5]
                     })
                     .hold(),
             ],
@@ -30,9 +29,8 @@ export class ButtonTestRoutine {
             [
                 service.nextEvent(ButtonEvent.Up).hold(),
                 register
-                    .onUpdate({
-                        preRequiredRange: [0.5, 1],
-                        triggerRange: [0, 0.5],
+                    .onValue([0, 0.5], {
+                        precondition: [0.5, 1]
                     })
                     .hold(),
             ],
@@ -52,9 +50,8 @@ export class ButtonTestRoutine {
             [
                 service.onEvent(ButtonEvent.Down).hold(),
                 register
-                    .onUpdate({
-                        preRequiredRange: [0, 0.5],
-                        triggerRange: [0.5, 1],
+                    .onValue([0.5, 1], {
+                        precondition: [0, 0.5]
                     })
                     .hold(),
             ],
@@ -93,9 +90,7 @@ export class ButtonTestRoutine {
             [
                 service.onEvent(ButtonEvent.Up).hold(), // ignore any continued hold events
                 register
-                    .onUpdate({
-                        triggerRange: [0, 0.5],
-                    })
+                    .onValue([0, 0.5])
                     .hold(),
             ],
             { synchronization: 50 }

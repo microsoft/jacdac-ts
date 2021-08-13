@@ -12,9 +12,7 @@ export class PotentiometerTestRoutine {
 
         // TODO hold-for
         await this.driver.waitFor(
-            register.onUpdate({
-                triggerRange: [0, 0.1],
-            })
+            register.onValue([0, 0.1])
         )
         this.driver.log("saw min")
     }
@@ -26,9 +24,7 @@ export class PotentiometerTestRoutine {
 
         // TODO hold-for
         await this.driver.waitFor(
-            register.onUpdate({
-                triggerRange: [0.9, 1],
-            })
+            register.onValue([0.9, 1])
         )
         this.driver.log("saw max")
     }
@@ -41,18 +37,16 @@ export class PotentiometerTestRoutine {
 
         // First one isn't time bounded to give the user time to start the rest
         await this.driver.waitFor(
-            register.onUpdate({
-                preRequiredRange: [0, 0.1],
-                triggerRange: [0.1, 0.2],
+            register.onValue([0.1, 0.2], {
+                precondition: [0, 0.1]
             })
         )
         this.driver.log(`saw approx 1 / 10`)
 
         for (let i = 2; i < 10; i++) {
             await this.driver.waitFor(
-                register.onUpdate({
-                    preRequiredRange: [(i - 1) / 10.0, i / 1.0],
-                    triggerRange: [i / 10.0, (i + 1) / 10.0],
+                register.onValue([i / 10.0, (i + 1) / 10.0], {
+                    precondition: [(i - 1) / 10.0, i / 1.0]
                 }),
                 { after: 200, tolerance: 200 }
             )
@@ -70,18 +64,16 @@ export class PotentiometerTestRoutine {
 
         // First one isn't time bounded to give the user time to start the rest
         await this.driver.waitFor(
-            register.onUpdate({
-                preRequiredRange: [0.9, 1.0],
-                triggerRange: [0.8, 0.9],
+            register.onValue([0.8, 0.9], {
+                precondition: [0.9, 1.0]
             })
         )
         this.driver.log(`saw approx 9 / 10`)
 
         for (let i = 7; i >= 0; i--) {
             await this.driver.waitFor(
-                register.onUpdate({
-                    preRequiredRange: [(i + 1) / 10.0, (i + 2) / 10.0],
-                    triggerRange: [i / 10.0, (i + 1) / 10.0],
+                register.onValue([i / 10.0, (i + 1) / 10.0], {
+                    precondition: [(i + 1) / 10.0, (i + 2) / 10.0]
                 }),
                 { after: 200, tolerance: 200 }
             )

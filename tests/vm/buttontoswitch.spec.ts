@@ -53,7 +53,7 @@ suite("button to switch adapter", () => {
             await tester.waitFor(
                 sw
                     .register(SwitchReg.Active)
-                    .onUpdate({ triggerRange: [0, 0.5] }),
+                    .onValue(0),
                 { within: 100 }
             )
         })
@@ -68,7 +68,7 @@ suite("button to switch adapter", () => {
                     sw.nextEvent(SwitchEvent.On),
                     sw
                         .register(SwitchReg.Active)
-                        .onUpdate({ triggerRange: [0.5, 1] }),
+                        .onValue(1),
                 ],
                 { within: 110, synchronization: 110 }
             )
@@ -82,7 +82,7 @@ suite("button to switch adapter", () => {
                     sw.nextEvent(SwitchEvent.Off),
                     sw
                         .register(SwitchReg.Active)
-                        .onUpdate({ triggerRange: [0, 0.5] }),
+                        .onValue(0),
                 ],
                 { within: 110, synchronization: 110 }
             )
