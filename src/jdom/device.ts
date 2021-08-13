@@ -389,7 +389,7 @@ export class JDDevice extends JDNode {
 
             // listen for specific registers
             const ctrl = this._services?.[0]
-            const codes = [ControlReg.FirmwareIdentifier]
+            const codes = [ControlReg.ProductIdentifier]
             codes.forEach(code =>
                 ctrl.register(code).once(REPORT_UPDATE, () => this.emit(CHANGE))
             )
