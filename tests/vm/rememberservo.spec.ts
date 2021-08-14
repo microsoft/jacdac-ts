@@ -3,13 +3,14 @@ import { readFileSync } from "fs"
 import { VMProgram } from "../../src/vm/ir"
 import { VMProgramRunner } from "../../src/vm/runner"
 
-import { CreatedServerService, makeTest } from "../jdom/fastforwardtester"
+import { makeTest } from "../jdom/fastforwardtester"
 import ButtonServer from "../../src/servers/buttonserver"
 import RoleManager from "../../src/servers/rolemanager"
 import ServoServer from "../../src/servers/servoserver"
-import { assert } from "../../src/jdom/utils"
 import { bindRoles } from "./vmtester"
 import { FastForwardTester } from "../jdom/fastforwardtester"
+import { RegisterTester } from "../../src/tstester/registerwrapper"
+import { ServoReg } from "../../jacdac-spec/dist/specconstants"
 
 suite("remember servo", () => {
     const program: VMProgram = JSON.parse(
@@ -19,9 +20,10 @@ suite("remember servo", () => {
     function makeVmTest(
         testBody: (
             tester: FastForwardTester,
-            recall: CreatedServerService<ButtonServer>,
-            set: CreatedServerService<ButtonServer>,
-            servo: CreatedServerService<ServoServer>
+            recall: ButtonServer,
+            set: ButtonServer,
+            servo: ServoServer,
+            servoReg: RegisterTester
         ) => void
     ) {
         return makeTest(async tester => {
@@ -40,50 +42,60 @@ suite("remember servo", () => {
             const runner = new VMProgramRunner(roleMgr, program)
             await runner.startAsync()
 
-            await testBody(tester, recall, set, servo)
+            const servoReg = new RegisterTester(
+                servo.service.register(ServoReg.Angle)
+            )
+            await testBody(
+                tester,
+                recall.server,
+                set.server,
+                servo.server,
+                servoReg
+            )
         })
     }
 
     test(
         "sets and recalls",
-        makeVmTest(async (tester, recall, set, servo) => {
-            servo.server.angle.setValues([50])
-            set.server.down()
-
+        makeVmTest(async (tester, recall, set, servo, servoReg) => {
+            servo.angle.setValues([50])
+            set.down()
             await tester.waitForDelay(100)
-            set.server.up()
-
-            servo.server.angle.setValues([0]) // make sure the difference on recall is visible
-            assert(servo.server.angle.values()[0] == 0.0)
-
-            recall.server.down()
+            set.up()
             await tester.waitForDelay(100)
-            recall.server.up()
-            assert(servo.server.angle.values()[0] == 50.0)
+
+            servo.angle.setValues([0]) // make sure the difference on recall is visible
+            await tester.assertWith(servoReg.onValue(50).hold(), async () => {
+                recall.down()
+                await tester.waitForDelay(100)
+                recall.up()
+                await tester.waitForDelay(100)
+            })
         })
     )
 
     test(
         "sets, re-sets, and recalls",
-        makeVmTest(async (tester, recall, set, servo) => {
-            servo.server.angle.setValues([50])
-            set.server.down()
+        makeVmTest(async (tester, recall, set, servo, servoReg) => {
+            servo.angle.setValues([50])
+            set.down()
             await tester.waitForDelay(100)
-            set.server.up()
+            set.up()
+            await tester.waitForDelay(100)
 
+            servo.angle.setValues([-50])
+            set.down()
             await tester.waitForDelay(100)
-            servo.server.angle.setValues([-50])
-            set.server.down()
+            set.up()
             await tester.waitForDelay(100)
-            set.server.up()
 
-            servo.server.angle.setValues([0]) // make sure the difference on recall is visible
-            assert(servo.server.angle.values()[0] == 0.0)
-
-            recall.server.down()
-            await tester.waitForDelay(100)
-            recall.server.up()
-            assert(servo.server.angle.values()[0] == -50.0)
+            servo.angle.setValues([0]) // make sure the difference on recall is visible
+            await tester.assertWith(servoReg.onValue(-50).hold(), async () => {
+                recall.down()
+                await tester.waitForDelay(100)
+                recall.up()
+                await tester.waitForDelay(100)
+            })
         })
     )
 })

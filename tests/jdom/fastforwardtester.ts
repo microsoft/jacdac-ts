@@ -7,6 +7,7 @@ import JDServiceServer from "../../src/jdom/serviceserver"
 import { assert } from "../../src/jdom/utils"
 import {
     DebugConsoleUi,
+    HoldingListener,
     SynchronizationTimingOptions,
     TestDriver,
     TestDriverInterface,
@@ -83,10 +84,12 @@ export class FastForwardTester
     // start() and stop() are made available, but recommend using withTestBus() instead
     public start() {
         this.bus.start()
+        this.scheduler.start() // run in background
     }
 
     public stop() {
         this.bus.stop()
+        this.scheduler.stop()
     }
 
     // Waits for all the devices (by deviceId) to be announced on the bus.
@@ -182,5 +185,88 @@ export class FastForwardTester
     // Runs the fast-forward scheduler for some amount of time
     async waitForDelay(millis: number) {
         return this.scheduler.runForDelay(millis)
+    }
+
+    // Runs the body, asserting that the triggers in events are fired by the time the body ends,
+    // and any holding assertions are met.
+    // Can be nested.
+    async assertWith<T>(
+        events: TesterEvent | TesterEvent[],
+        body: () => Promise<T>
+    ): Promise<T> {
+        let eventsList: TesterEvent[] // TODO dedup w/ TestDriver:waitFor
+        if (Array.isArray(events)) {
+            eventsList = events
+        } else if (events instanceof TesterEvent) {
+            eventsList = [events]
+        } else {
+            throw Error("events not a TesterEvent[] or TeseterEvent")
+        }
+
+        const triggerPromises: Promise<unknown>[] = []
+        const holdingListeners: HoldingListener[] = []
+        eventsList.forEach(event => {
+            const { triggerPromise, holdingListener } = event.makePromise()
+            if (triggerPromise !== undefined) {
+                triggerPromises.push(triggerPromise)
+            }
+            if (holdingListener !== undefined) {
+                holdingListeners.push(holdingListener)
+            }
+        })
+
+        const holdingPromises = holdingListeners.map(
+            // fails when any fails (holding listeners cannot complete)
+            holdingListener => holdingListener.holdingPromise
+        )
+
+        const waitingTriggerPromises = new Set<Promise<unknown>>(
+            triggerPromises
+        )
+
+        // Stack a promise on top of the body promise to check that all events were satisfied
+        const overallPromise = new Promise<T>((resolve, reject) => {
+            triggerPromises.forEach(triggerPromise => {
+                triggerPromise.then(
+                    fulfilled => {
+                        // delete the triggered promise from the waiting queue
+                        const deleted =
+                            waitingTriggerPromises.delete(triggerPromise)
+                        assert(deleted, "failed to delete trigger promise")
+                    },
+                    rejected => {
+                        // reject the overall promise if any of the triggering promises reject
+                        reject(rejected)
+                    }
+                )
+            })
+
+            holdingPromises.forEach(holdingPromise => {
+                holdingPromise.then(
+                    fulfilled => {}, // shouldn't happen
+                    rejected => {
+                        // reject the overall promise if any of the holding promises reject
+                        reject(rejected)
+                    }
+                )
+            })
+
+            body().then(value => {
+                // only the main body promise can resolve the overall promise
+                if (waitingTriggerPromises.size === 0) {
+                    resolve(value)
+                } else {
+                    // TODO better error messages
+                    reject(Error("not all events triggered"))
+                }
+            })
+        })
+        const value = await this.scheduler.runToPromise(overallPromise)
+
+        holdingListeners.forEach(holdingListener =>
+            holdingListener.terminateHold()
+        )
+
+        return value
     }
 }

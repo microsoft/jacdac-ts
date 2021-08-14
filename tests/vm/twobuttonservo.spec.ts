@@ -3,13 +3,14 @@ import { readFileSync } from "fs"
 import { VMProgram } from "../../src/vm/ir"
 import { VMProgramRunner } from "../../src/vm/runner"
 
-import { CreatedServerService, makeTest } from "../jdom/fastforwardtester"
+import { makeTest } from "../jdom/fastforwardtester"
 import ButtonServer from "../../src/servers/buttonserver"
 import RoleManager from "../../src/servers/rolemanager"
 import ServoServer from "../../src/servers/servoserver"
-import { assert } from "../../src/jdom/utils"
 import { bindRoles } from "./vmtester"
 import { FastForwardTester } from "../jdom/fastforwardtester"
+import { ServoReg } from "../../jacdac-spec/dist/specconstants"
+import { RegisterTester } from "../../src/tstester/registerwrapper"
 
 suite("button servo", () => {
     const program: VMProgram = JSON.parse(
@@ -19,9 +20,9 @@ suite("button servo", () => {
     function makeVmTest(
         testBody: (
             tester: FastForwardTester,
-            button1: CreatedServerService<ButtonServer>,
-            button2: CreatedServerService<ButtonServer>,
-            servo: CreatedServerService<ServoServer>
+            button1: ButtonServer,
+            button2: ButtonServer,
+            servoReg: RegisterTester
         ) => void
     ) {
         return makeTest(async tester => {
@@ -40,65 +41,86 @@ suite("button servo", () => {
             const runner = new VMProgramRunner(roleMgr, program)
             await runner.startAsync()
 
-            await testBody(tester, button1, button2, servo)
+            const servoReg = new RegisterTester(
+                servo.service.register(ServoReg.Angle)
+            )
+            await testBody(tester, button1.server, button2.server, servoReg)
         })
     }
 
     test(
         "sets to 10 when button1 pressed",
-        makeVmTest(async (tester, button1, button2, servo) => {
-            servo.server.angle.setValues([0])
-
-            button1.server.down()
-            await tester.waitForDelay(100)
-            button1.server.up()
-            assert(servo.server.angle.values()[0] == 10.0)
+        makeVmTest(async (tester, button1, button2, servoReg) => {
+            await tester.assertWith(servoReg.onValue(10).hold(), async () => {
+                button1.down()
+                await tester.waitForDelay(100)
+                button1.up()
+                await tester.waitForDelay(100)
+            })
         })
     )
 
     test(
         "sets to 45 when button2 pressed",
-        makeVmTest(async (tester, button1, button2, servo) => {
-            servo.server.angle.setValues([0])
-
-            button2.server.down()
-            await tester.waitForDelay(100)
-            button2.server.up()
-            assert(servo.server.angle.values()[0] == 45.0)
+        makeVmTest(async (tester, button1, button2, servoReg) => {
+            await tester.assertWith(servoReg.onValue(45).hold(), async () => {
+                button2.down()
+                await tester.waitForDelay(100)
+                button2.up()
+                await tester.waitForDelay(100)
+            })
         })
     )
 
     test(
         "works when button 1, then button2 pressed",
-        makeVmTest(async (tester, button1, button2, servo) => {
-            servo.server.angle.setValues([0])
+        makeVmTest(async (tester, button1, button2, servoReg) => {
+            await tester.assertWith(servoReg.onValue(10).hold(), async () => {
+                button1.down()
+                await tester.waitForDelay(100)
+                button1.up()
+                await tester.waitForDelay(100)
+            })
 
-            button1.server.down()
-            await tester.waitForDelay(100)
-            button1.server.up()
-
-            button2.server.down()
-            await tester.waitForDelay(100)
-            button2.server.up()
-
-            assert(servo.server.angle.values()[0] == 45.0)
+            await tester.assertWith(
+                servoReg
+                    .onValue(45, {
+                        precondition: 10,
+                    })
+                    .hold(),
+                async () => {
+                    button2.down()
+                    await tester.waitForDelay(100)
+                    button2.up()
+                    await tester.waitForDelay(100)
+                }
+            )
         })
     )
 
     test(
         "works when button2, then button1 pressed",
-        makeVmTest(async (tester, button1, button2, servo) => {
-            servo.server.angle.setValues([0])
+        makeVmTest(async (tester, button1, button2, servoReg) => {
+            await tester.assertWith(servoReg.onValue(45).hold(), async () => {
+                button2.down()
+                await tester.waitForDelay(100)
+                button2.up()
+                await tester.waitForDelay(100)
+            })
 
-            button2.server.down()
-            await tester.waitForDelay(100)
-            button2.server.up()
-
-            button1.server.down()
-            await tester.waitForDelay(100)
-            button1.server.up()
-
-            assert(servo.server.angle.values()[0] == 10.0)
+            await tester.assertWith(
+                servoReg
+                    .onValue(10, {
+                        precondition: 45, // shouldn't change from before
+                    })
+                    .hold(),
+                async () => {
+                    button1.down()
+                    await tester.waitForDelay(100)
+                    button1.up()
+                    await tester.waitForDelay(100)
+                }
+            )
         })
     )
 })

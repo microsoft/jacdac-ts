@@ -19,13 +19,59 @@ function eventMinComparator(a: EventRecord, b: EventRecord) {
     }
 }
 
-// Fast forward scheduler that is independent of wall time, where time advance is controlled by runToPromise
-// but runs as fast as possible within that.
+// Fast forward scheduler that is independent of wall time, where time advances as long as there is something
+// on the task queue but otherwise executes as fast as possible.
 export class FastForwardScheduler implements Scheduler {
     protected currentTime = 0
     protected schedulerRunning = false
 
+    // Event queue, for events requested by bus devices, through setTimeout / setInterval
     protected eventQueue = new Heap<EventRecord>(eventMinComparator)
+
+    // Driver queue of promises, where the scheduler continues advancing time as long as this is not empty
+    protected driverQueue = new Set()
+    protected schedulerDone = false // set to true to terminate the scheduler, which also prevents additional runs
+
+    protected async scheduler() {
+        while (!this.schedulerDone) {
+            assert(!this.eventQueue.isEmpty(), "empty scheduler")
+
+            if (this.driverQueue.size > 0) {
+                // only advance time if there are items on the driver queue
+                const nextEvent = this.eventQueue.pop()
+                assert(nextEvent.nextTime >= this.currentTime)
+
+                this.currentTime = nextEvent.nextTime
+                nextEvent.callback(nextEvent.callbackArgs)
+
+                if (nextEvent.interval !== undefined) {
+                    // for intervals, push a new event
+                    // update events in-place so handles remain valid
+                    nextEvent.nextTime += nextEvent.interval
+                    this.eventQueue.push(nextEvent)
+                }
+            }
+
+            // Note: setTimeout goes on the macrotask queue, so all microtasks (promise resolutions,
+            // including chained promises) should be resolved when setTimeout returns.
+            await new Promise(resolve => setTimeout(resolve, 0))
+        }
+    }
+
+    public async start() {
+        assert(!this.schedulerDone, "can't restart scheduler")
+        assert(
+            !this.schedulerRunning,
+            "can't have multiple concurrent runs of a scheduler"
+        )
+        this.schedulerRunning = true
+
+        this.scheduler()
+    }
+
+    public async stop() {
+        this.schedulerDone = true
+    }
 
     // Runs the scheduler for some duration of simulated time.
     public async runForDelay(delayMs: number) {
@@ -42,58 +88,29 @@ export class FastForwardScheduler implements Scheduler {
     // TODO: is this the right API?
     public async runToPromise<T>(promise: Promise<T>): Promise<T> {
         assert(
-            !this.schedulerRunning,
-            "multiple concurrent run invocations on fast-forward scheduler currently not supported"
+            this.schedulerRunning,
+            "scheduler must be running to advance time"
         )
-        this.schedulerRunning = true
 
-        // TODO these would really be better as status: "wait" | "resolved" | "rejected"
-        // but TS doesn't seem to understand the promise.then can run while in the while loop...
-        let promiseResolved = false
-        let promiseRejected = false
-        let value: T
-        let rejectedValue: any
+        this.driverQueue.add(promise)
         promise.then(
             fulfilled => {
-                value = fulfilled
-                promiseResolved = true
+                const removed = this.driverQueue.delete(promise)
+                assert(
+                    removed,
+                    "failed to remove fulfilled promise from driver queue"
+                )
             },
             rejected => {
-                rejectedValue = rejected
-                promiseRejected = true
+                const removed = this.driverQueue.delete(promise)
+                assert(
+                    removed,
+                    "failed to remove rejected promise from driver queue"
+                )
             }
         )
 
-        while (!promiseResolved) {
-            // Run the event scheduled for the next event in time
-            assert(
-                !this.eventQueue.isEmpty(),
-                "empty scheduler before promise resolved"
-            )
-            const nextEvent = this.eventQueue.pop()
-            assert(nextEvent.nextTime >= this.currentTime)
-
-            this.currentTime = nextEvent.nextTime
-            nextEvent.callback(nextEvent.callbackArgs)
-
-            if (nextEvent.interval !== undefined) {
-                // for intervals, push a new event
-                // update events in-place so handles remain valid
-                nextEvent.nextTime += nextEvent.interval
-                this.eventQueue.push(nextEvent)
-            }
-
-            // Let background events run - including any promise resolutions
-            await new Promise(resolve => setTimeout(resolve, 0))
-
-            if (promiseRejected) {
-                this.schedulerRunning = false
-                throw rejectedValue
-            }
-        }
-
-        this.schedulerRunning = false
-        return value
+        return promise
     }
 
     get timestamp(): number {

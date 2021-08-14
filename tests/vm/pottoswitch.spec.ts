@@ -3,9 +3,8 @@ import { readFileSync } from "fs"
 import { VMProgram } from "../../src/vm/ir"
 import { VMProgramRunner } from "../../src/vm/runner"
 
-import { CreatedServerService, makeTest } from "../jdom/fastforwardtester"
+import { makeTest } from "../jdom/fastforwardtester"
 import RoleManager from "../../src/servers/rolemanager"
-import { assert } from "../../src/jdom/utils"
 import { bindRoles, getRoles } from "./vmtester"
 import {
     SRV_POTENTIOMETER,
@@ -15,6 +14,7 @@ import {
 import SensorServer from "../../src/servers/sensorserver"
 import { FastForwardTester } from "../jdom/fastforwardtester"
 import { ServiceTester } from "../../src/tstester/servicewrapper"
+import JDRegisterServer from "../../src/jdom/registerserver"
 
 suite("pot to switch adapter", () => {
     const program: VMProgram = JSON.parse(
@@ -24,7 +24,7 @@ suite("pot to switch adapter", () => {
     function makeVmTest(
         testBody: (
             tester: FastForwardTester,
-            pot: CreatedServerService<SensorServer<[number]>>,
+            pot: JDRegisterServer<[number]>,
             sw: ServiceTester
         ) => void
     ) {
@@ -50,25 +50,25 @@ suite("pot to switch adapter", () => {
 
             await runner.startAsync()
 
-            await testBody(tester, pot, new ServiceTester(sw))
+            await testBody(tester, pot.server.reading, new ServiceTester(sw))
         })
     }
 
     test(
         "turns on",
         makeVmTest(async (tester, pot, sw) => {
-            pot.server.reading.setValues([0.2])
+            pot.setValues([0.2])
             await tester.waitForDelay(100)
 
-            pot.server.reading.setValues([0.7])
-            await tester.waitFor(
+            await tester.assertWith(
                 [
                     sw.nextEvent(SwitchEvent.On),
-                    sw
-                        .register(SwitchReg.Active)
-                        .onUpdate({ triggerRange: [0.5, 1] }),
+                    sw.register(SwitchReg.Active).onValue(1),
                 ],
-                { within: 110, synchronization: 110 }
+                async () => {
+                    pot.setValues([0.7])
+                    await tester.waitForDelay(150) // takes longer than 100ms for register to update
+                }
             )
         })
     )
@@ -76,18 +76,18 @@ suite("pot to switch adapter", () => {
     test(
         "turns off",
         makeVmTest(async (tester, pot, sw) => {
-            pot.server.reading.setValues([1])
+            pot.setValues([1])
             await tester.waitForDelay(100)
 
-            pot.server.reading.setValues([0.3])
-            await tester.waitFor(
+            await tester.assertWith(
                 [
                     sw.nextEvent(SwitchEvent.Off),
-                    sw
-                        .register(SwitchReg.Active)
-                        .onUpdate({ triggerRange: [0, 0.5] }),
+                    sw.register(SwitchReg.Active).onValue(0),
                 ],
-                { within: 110, synchronization: 110 }
+                async () => {
+                    pot.setValues([0.3])
+                    await tester.waitForDelay(150) // takes longer than 100ms for register to update
+                }
             )
         })
     )
@@ -95,14 +95,15 @@ suite("pot to switch adapter", () => {
     test(
         "does not turn off within hysteresis region",
         makeVmTest(async (tester, pot, sw) => {
-            pot.server.reading.setValues([0.9])
+            pot.setValues([0.9])
             await tester.waitForDelay(100)
 
-            pot.server.reading.setValues([0.45])
-            // TODO check for absence of event?
-            await sw.register(SwitchReg.Active).register.refresh()
-            assert(
-                sw.register(SwitchReg.Active).register.unpackedValue[0] > 0.5
+            await tester.assertWith(
+                [sw.hold(), sw.register(SwitchReg.Active).hold(1)],
+                async () => {
+                    pot.setValues([0.45])
+                    await tester.waitForDelay(150)
+                }
             )
         })
     )
@@ -110,14 +111,15 @@ suite("pot to switch adapter", () => {
     test(
         "does not turn on within hysteresis region",
         makeVmTest(async (tester, pot, sw) => {
-            pot.server.reading.setValues([0])
+            pot.setValues([0])
             await tester.waitForDelay(100)
 
-            pot.server.reading.setValues([0.55])
-            // TODO check for absence of event?
-            await sw.register(SwitchReg.Active).register.refresh()
-            assert(
-                sw.register(SwitchReg.Active).register.unpackedValue[0] < 0.5
+            await tester.assertWith(
+                [sw.hold(), sw.register(SwitchReg.Active).hold(0)],
+                async () => {
+                    pot.setValues([0.55])
+                    await tester.waitForDelay(150)
+                }
             )
         })
     )
