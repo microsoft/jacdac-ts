@@ -1,6 +1,6 @@
 import { HF2Proto, HF2_IO } from "./hf2"
 import Proto from "./proto"
-import { assert, delay, throwError, toHex, uint8ArrayToString } from "../utils"
+import { assert, bufferConcat, delay, throwError, toHex } from "../utils"
 import Flags from "../flags"
 import errorCode, { JDError } from "../error"
 
@@ -93,6 +93,22 @@ export default class WebSerialIO implements HF2_IO {
         this.readLoopStarted = true
         console.debug("start read loop")
 
+        const readpkt = async (
+            reader: ReadableStreamDefaultReader<Uint8Array>
+        ) => {
+            let value: Uint8Array = null
+            for (;;) {
+                const tmp = await reader.read()
+                if (tmp.done || !this.dev) return null // reader cancelled
+                if (!value) value = tmp.value
+                else value = bufferConcat(value, tmp.value)
+                // Despite the fact that the device always sends full 64 bytes USB packets
+                // the Windows serial driver will sometimes give only one character, and then the remaining
+                // 63 in the second read - this must be going through some UART abstraction layers I guess... ¯\_(ツ)_/¯
+                if (value && (value.length & 63) == 0) return value
+            }
+        }
+
         for (;;) {
             const reader = this.dev?.readable?.getReader()
             if (!reader) {
@@ -104,11 +120,8 @@ export default class WebSerialIO implements HF2_IO {
             try {
                 // eslint-disable-next-line no-constant-condition
                 for (;;) {
-                    const { value, done } = await reader.read()
-                    if (done || !this.dev) {
-                        // |reader| has been canceled.
-                        break
-                    }
+                    const value = await readpkt(reader)
+                    if (!value) break
                     // console.log("Recv", toHex(value))
                     if (value.length > 64)
                         for (let i = 0; i < value.length; i += 64) {
