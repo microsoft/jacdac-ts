@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { JDEventSource } from "./eventsource"
 
 /**
@@ -53,7 +54,12 @@ export abstract class JDNode extends JDEventSource {
      */
     abstract get children(): JDNode[]
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    /**
+     * Emit event in current node and parent nodes
+     * @param event event to emit
+     * @param arg event arguments
+     * @category JDOM
+     */
     emitPropagated(event: string, arg?: any) {
         let current = this as JDNode
         while (current) {

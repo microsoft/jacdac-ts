@@ -46,21 +46,53 @@ export function dependencyId(nodes: IEventSource[]) {
 }
 
 let nextNodeId = 0
+
+/**
+ * Base class for evented nodes in Jacdac
+ */
 export class JDEventSource implements IEventSource {
-    public readonly nodeId = nextNodeId++ // debugging
+    /**
+     * Gets an internal unique node identifier, mostly used for debugging.
+     * @category JDOM
+     */
+    public readonly nodeId = nextNodeId++
+
     private readonly listeners: SMap<Listener[]> = {}
+
+    /**
+     * Gets a counter of event emit calls.
+     * @category JDOM
+     */
     readonly eventStats: SMap<number> = {}
+
+    /**
+     * Gets a counter map from events to new listener counts
+     * @category JDOM
+     */
     newListenerStats: SMap<number> = undefined
 
     constructor() {}
 
+    /**
+     * Registers a handler for one or more events
+     * @param eventName name or names of the events to subscribe
+     * @param handler handler to register
+     * @returns current object instance
+     */
     on(eventName: string | string[], handler: EventHandler) {
+        if (!handler) return this
         normalizeEventNames(eventName).forEach(eventName =>
             this.addListenerInternal(eventName, handler, false)
         )
         return this
     }
 
+    /**
+     * Unregisters a handler for one or more events
+     * @param eventName name or names of the events to subscribe
+     * @param handler handler to unregister
+     * @returns current object instance
+     */
     off(eventName: string | string[], handler: EventHandler) {
         normalizeEventNames(eventName).forEach(eventName =>
             this.removeListenerInternal(eventName, handler)
@@ -68,6 +100,12 @@ export class JDEventSource implements IEventSource {
         return this
     }
 
+    /**
+     * Registers a handler for one or more events to run only once.
+     * @param eventName name or names of the events to subscribe
+     * @param handler handler to execute
+     * @returns current object instance
+     */
     once(eventName: string | string[], handler: EventHandler) {
         normalizeEventNames(eventName).forEach(eventName =>
             this.addListenerInternal(eventName, handler, true)
@@ -129,12 +167,13 @@ export class JDEventSource implements IEventSource {
     }
 
     /**
-     * Synchronously calls each of the listeners registered for the event named eventName, in the order they were registered, passing the supplied arguments to each.
+     * Synchronously calls each of the listeners registered for the event named eventName,
+     * in the order they were registered, passing the supplied arguments to each.
      * @param eventName
      * @param args
+     * @category JDOM
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    emit(eventName: string, ...args: any[]): boolean {
+    emit(eventName: string, ...args: unknown[]): boolean {
         if (!eventName) return false
 
         // track event stats
@@ -164,12 +203,24 @@ export class JDEventSource implements IEventSource {
         return true
     }
 
+    /**
+     * Gets the number of listeners for a given event
+     * @param eventName name of the event
+     * @returns number of registered handlers
+     * @category JDOM
+     */
     listenerCount(eventName: string): number {
         if (!eventName) return 0
         const listeners = this.listeners[eventName]
         return listeners?.length || 0
     }
 
+    /**
+     * Gets the list stack trace where an event was registered. Only enabled if ``Flags.debug`` is true.
+     * @param eventName name of the event
+     * @returns stack traces where a listener was added
+     * @category JDOM
+     */
     listenerStackTraces(eventName: string): string[] {
         const listeners = this.listeners[eventName]
         return listeners?.map(listener => listener.stackTrace)
@@ -177,6 +228,7 @@ export class JDEventSource implements IEventSource {
 
     /**
      * Returns an array listing the events for which the emitter has registered listeners.
+     * @category JDOM
      */
     eventNames(): string[] {
         return Object.keys(this.listeners)
@@ -185,6 +237,7 @@ export class JDEventSource implements IEventSource {
     /**
      * Creates an observable from the given event
      * @param eventName
+     * @category JDOM
      */
     observe<T>(eventName: string | string[]): Observable<T> {
         return fromEvent<T>(this, eventName)
@@ -194,6 +247,7 @@ export class JDEventSource implements IEventSource {
      * Subscribes to an event and returns the unsubscription handler
      * @param eventName
      * @param next
+     * @category JDOM
      */
     subscribe<T>(
         eventName: string | string[],
@@ -203,6 +257,10 @@ export class JDEventSource implements IEventSource {
         return observer.subscribe({ next }).unsubscribe
     }
 
+    /**
+     * Gets a counter for the ``CHANGE`` event.
+     * @category JDOM
+     */
     get changeId() {
         return this.eventStats[CHANGE] || 0
     }

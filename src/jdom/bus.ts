@@ -390,11 +390,19 @@ export class JDBus extends JDNode {
         return "bus"
     }
 
+    /**
+     * Gets the bus name
+     * @category JDOM
+     */
     get friendlyName(): string {
         return this.name
     }
 
-    get qualifiedName(): string {
+    /**
+     * Gets the bus name
+     * @category JDOM
+     */
+     get qualifiedName(): string {
         return this.name
     }
 
@@ -406,10 +414,18 @@ export class JDBus extends JDNode {
         return BUS_NODE_NAME
     }
 
+    /**
+     * Gets the default role manager service client, if any
+     * @category Service Clients
+     */
     get roleManager(): RoleManagerClient {
         return this._roleManagerClient
     }
 
+    /**
+     * Sets the default role manager service client
+     * @category Service Clients
+     */
     setRoleManagerService(service: JDService) {
         //console.log(`set role manager`, { service })
         // clean if needed
@@ -436,6 +452,12 @@ export class JDBus extends JDNode {
         return this.id
     }
 
+    /**
+     * Resolves a JDOM node from an identifier
+     * @param id node identifier
+     * @returns node if found, undefined otherwise
+     * @category JDOM
+     */
     node(id: string): JDNode {
         const resolve = (): JDNode => {
             const m =
@@ -497,6 +519,10 @@ export class JDBus extends JDNode {
         }
     }
 
+    /**
+     * Returns undefined
+     * @category JDOM
+     */
     get parent(): JDNode {
         return undefined
     }
@@ -635,6 +661,10 @@ export class JDBus extends JDNode {
         }
     }
 
+    /**
+     * Gets the list of devices
+     * @category JDOM
+     */
     get children(): JDNode[] {
         return this.devices()
     }
@@ -680,6 +710,11 @@ export class JDBus extends JDNode {
     }
 
     private _debouncedScanFirmwares: () => void
+    /**
+     * Enables or disables automatically scanning and resolving firmware updates
+     * @param enabled true to scan firmware in the background
+     * @category Firmware
+     */
     setBackgroundFirmwareScans(enabled: boolean) {
         const isSSR = typeof window === "undefined"
         if (isSSR) enabled = false
@@ -814,6 +849,7 @@ export class JDBus extends JDNode {
 
     /**
      * Gets the virtual device created by this bus to handle pipes.
+     * @category Service Clients
      */
     get selfDevice() {
         return this.device(this.selfDeviceId)
@@ -875,7 +911,7 @@ export class JDBus extends JDNode {
 
     /**
      * Indicates if registers are automatically refreshed in the background.
-     * @category Lifecycle
+     * @category Service Clients
      */
     get backgroundRefreshRegisters() {
         return !!this._refreshRegistersInterval
@@ -884,7 +920,7 @@ export class JDBus extends JDNode {
     /**
      * Enables or disables automatically refreshing registers in the background.
      * @param enabled true to automatically refresh registers
-     * @category Lifecycle
+     * @category Service Clients
      */
     set backgroundRefreshRegisters(enabled: boolean) {
         if (!!enabled !== this.backgroundRefreshRegisters) {
