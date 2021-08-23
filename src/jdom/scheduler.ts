@@ -1,20 +1,41 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-/** @internal */
+/**
+ * A time scheduler to orchestrate time in the bus.
+ */
 export interface Scheduler {
+    /**
+     * Gets the current timestamp
+     */
     get timestamp(): number
+    /**
+     * Reset time
+     * @param delta
+     */
     resetTime(delta: number): void
+    /**
+     * Start a timeout timer
+     */
     setTimeout(
         handler: (...args: any[]) => void,
         delay: number,
         ...args: any[]
     ): any
+    /**
+     * Cancel an existing timeout timer
+     */
     clearTimeout(handle: any): void
+    /**
+     * Start an interval timer
+     */
     setInterval(
         handler: (...args: any[]) => void,
         delay: number,
         ...args: any[]
     ): any
+    /**
+     * Clear an interval timer
+     */
     clearInterval(handle: any): void
 }
 

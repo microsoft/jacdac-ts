@@ -1,19 +1,20 @@
 import { suite, test } from "mocha"
 import { ProtoTestCmd, SRV_PROTO_TEST } from "../../src/jdom/constants"
 import { serviceSpecificationFromClassIdentifier } from "../../src/jdom/spec"
-import { ArgType, packArguments } from "../../src/jdom/command"
+import { packArguments } from "../../src/jdom/command"
 import { loadSpecifications } from "../testutils"
+import { PackedValues } from "../../src/jdom/pack"
 
 loadSpecifications()
 
 suite("packArguments", () => {
-    function testOne(cmdid: number, args: ArgType[]) {
+    function testOne(cmdid: number, args: PackedValues) {
         const service = serviceSpecificationFromClassIdentifier(SRV_PROTO_TEST)
         const cmd = service.packets.find(
             pkt => pkt.kind === "command" && pkt.identifier === cmdid
         )
         const pkt = packArguments(cmd, args)
-        // TODO: do something with this
+        console.log({ args, pkt })
     }
     test("cbool", () => testOne(ProtoTestCmd.CBool, [true]))
     test("c32", () => testOne(ProtoTestCmd.CU32, [42]))
