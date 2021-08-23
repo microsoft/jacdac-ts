@@ -58,7 +58,7 @@ export abstract class JDServiceMemberNode extends JDNode {
      * Gets the qualitified event name, if specified.
      * @category JDOM
      */
-     get qualifiedName() {
+    get qualifiedName() {
         return `${this.service.qualifiedName}.${this.name}`
     }
 
@@ -66,7 +66,7 @@ export abstract class JDServiceMemberNode extends JDNode {
      * Gets the event specification if known.
      * @category Specification
      */
-     get specification() {
+    get specification() {
         if (this._specification === null)
             // lookup once
             this._specification = this.service.specification?.packets.find(
@@ -88,7 +88,7 @@ export abstract class JDServiceMemberNode extends JDNode {
      * Gets the event friendly name.
      * @category JDOM
      */
-     get friendlyName() {
+    get friendlyName() {
         const parts = [this.service.friendlyName, this.name]
         return parts.join(".")
     }
