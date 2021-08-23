@@ -12,7 +12,7 @@ import {
     CHANGE,
     ROLE_CHANGE,
 } from "./constants"
-import { JDNode } from "./node"
+import JDNode from "./node"
 import {
     serviceSpecificationFromClassIdentifier,
     isRegister,
@@ -23,7 +23,7 @@ import {
     isOptionalReadingRegisterCode,
     isConstRegister,
 } from "./spec"
-import { JDEvent } from "./event"
+import JDEvent from "./event"
 import { strcmp } from "./utils"
 import {
     BaseEvent,

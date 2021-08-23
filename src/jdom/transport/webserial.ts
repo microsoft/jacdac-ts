@@ -1,7 +1,7 @@
 import Packet from "../packet"
 import Flags from "../flags"
 import { SERIAL_TRANSPORT, USB_TRANSPORT } from "../constants"
-import { JDTransport } from "./transport"
+import JDTransport from "./transport"
 import JDBus from "../bus"
 import Proto from "./proto"
 import WebSerialIO from "./webserialio"

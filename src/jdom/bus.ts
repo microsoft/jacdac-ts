@@ -50,7 +50,7 @@ import {
     REFRESH_REGISTER_POLL,
 } from "./constants"
 import { serviceClass } from "./pretty"
-import { JDNode } from "./node"
+import JDNode from "./node"
 import {
     FirmwareBlob,
     scanFirmwares,
@@ -69,7 +69,7 @@ import {
 import JDServiceProvider from "./serviceprovider"
 import RealTimeClockServer from "../servers/realtimeclockserver"
 import { SRV_ROLE_MANAGER } from "../../src/jdom/constants"
-import { JDTransport } from "./transport/transport"
+import JDTransport from "./transport/transport"
 import { BusStatsMonitor } from "./busstats"
 import RoleManagerClient from "./clients/rolemanagerclient"
 import JDBridge from "./bridge"

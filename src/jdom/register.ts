@@ -18,7 +18,7 @@ import { DecodedPacket } from "./pretty"
 import { isRegister, isReading } from "./spec"
 import JDField from "./field"
 import { JDServiceMemberNode } from "./servicemembernode"
-import { JDNode } from "./node"
+import JDNode from "./node"
 import { jdpack, jdunpack, PackedValues } from "./pack"
 import { PackedObject, unpackedToObject } from "./packobject"
 

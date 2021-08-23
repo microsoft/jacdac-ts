@@ -7,7 +7,7 @@ import {
     BLUETOOTH_JACDAC_SERVICE,
     BLUETOOTH_TRANSPORT,
 } from "../constants"
-import { JDTransport } from "./transport"
+import JDTransport from "./transport"
 
 const JD_BLE_FIRST_CHUNK_FLAG = 0x80
 

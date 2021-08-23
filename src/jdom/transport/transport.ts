@@ -322,3 +322,5 @@ export abstract class JDTransport extends JDEventSource {
         this._cleanups = []
     }
 }
+
+export default JDTransport

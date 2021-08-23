@@ -1,4 +1,4 @@
-import { JDNode } from "./node"
+import JDNode from "./node"
 import JDService from "./service"
 import Packet from "./packet"
 import { intOfBuffer } from "./buffer"
@@ -89,3 +89,5 @@ export class JDEvent extends JDServiceMemberNode {
         device.eventCounter = pkt.eventCounter
     }
 }
+
+export default JDEvent
