@@ -11,7 +11,7 @@ import {
 import { isEvent } from "./spec"
 import { JDServiceMemberNode } from "./servicemembernode"
 import { DecodedPacket } from "./pretty"
-import { JDField } from "./field"
+import JDField from "./field"
 
 /**
  * A Jacdac event client.
