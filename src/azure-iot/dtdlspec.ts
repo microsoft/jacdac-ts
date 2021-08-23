@@ -61,7 +61,7 @@ function toUnit(pkt: jdspec.PacketInfo) {
         | "varh" | "kvarh" | "kVAh" | "Wh/km" | "KiB" | "GB" | "Mbit/s" | "B/s" | "MB/s" | "mV" | "mA" | "dBm" | "ug/m3"
         | "mm/h" | "m/h" | "ppm" | "/100" | "/1000" | "hPa" | "mm" | "cm" | "km" | "km/h";
      */
-    const units: jdspec.SMap<{ semantic: string; unit: string }> = {
+    const units: Record<string, { semantic: string; unit: string }> = {
         "m/s2": {
             semantic: "Acceleration",
             unit: "metrePerSecondSquared",
@@ -261,7 +261,7 @@ function packetToDTDL(
     srv: jdspec.ServiceSpec,
     pkt: jdspec.PacketInfo
 ): DTDLContent {
-    const types: jdspec.SMap<string> = {
+    const types: Record<string, string> = {
         const: "Property",
         rw: "Property",
         ro: "Telemetry",

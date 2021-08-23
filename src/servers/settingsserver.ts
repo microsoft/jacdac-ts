@@ -3,10 +3,10 @@ import { jdpack } from "../jdom/pack"
 import Packet from "../jdom/packet"
 import { OutPipe } from "../jdom/pipes"
 import JDServiceServer from "../jdom/serviceserver"
-import { fromHex, SMap, toHex } from "../jdom/utils"
+import { fromHex, toHex } from "../jdom/utils"
 
 export default class SettingsServer extends JDServiceServer {
-    private settings: SMap<string>
+    private settings: Record<string, string>
 
     constructor(readonly storageKey?: string) {
         super(SRV_SETTINGS)
@@ -82,7 +82,7 @@ export default class SettingsServer extends JDServiceServer {
         this.save()
     }
 
-    private read(): SMap<string> {
+    private read(): Record<string, string> {
         if (!this.storageKey) return {}
 
         try {

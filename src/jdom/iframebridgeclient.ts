@@ -18,13 +18,7 @@ import JDIFrameClient from "./iframeclient"
 import { resolveMakecodeServiceFromClassIdentifier } from "./makecode"
 import Packet from "./packet"
 import JDService from "./service"
-import {
-    arrayConcatMany,
-    debounce,
-    roundWithPrecision,
-    SMap,
-    unique,
-} from "./utils"
+import { arrayConcatMany, debounce, roundWithPrecision, unique } from "./utils"
 
 export interface PacketMessage {
     channel: "jacdac"
@@ -42,20 +36,20 @@ interface SimulatorRunOptions {
     builtinParts?: string[]
     fnArgs?: unknown
     aspectRatio?: number
-    partDefinitions?: SMap<unknown> // SMap<PartDefinition>;
+    partDefinitions?: Record<string, unknown> // SMap<PartDefinition>;
     mute?: boolean
     highContrast?: boolean
     light?: boolean
     cdnUrl?: string
-    localizedStrings?: SMap<string>
+    localizedStrings?: Record<string, string>
     refCountingDebug?: boolean
     version?: string
     clickTrigger?: boolean
     breakOnStart?: boolean
-    storedState?: SMap<unknown>
+    storedState?: Record<string, unknown>
     autoRun?: boolean
     ipc?: boolean
-    dependencies?: SMap<string> // Map<string>;
+    dependencies?: Record<string, string> // Map<string>;
     // single iframe, no message simulators
     single?: boolean
 }

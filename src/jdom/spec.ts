@@ -6,7 +6,7 @@
 import { NumberFormat } from "./buffer"
 import serviceSpecificationData from "../../jacdac-spec/dist/services.json"
 import deviceRegistryData from "../../jacdac-spec/dist/devices.json"
-import { fromHex, SMap, toHex } from "./utils"
+import { fromHex, toHex } from "./utils"
 import {
     SystemEvent,
     SystemReg,
@@ -23,7 +23,7 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _serviceSpecifications: jdspec.ServiceSpec[] =
     serviceSpecificationData as any
-let _customServiceSpecifications: SMap<jdspec.ServiceSpec> = {}
+let _customServiceSpecifications: Record<string, jdspec.ServiceSpec> = {}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const _deviceRegistry: jdspec.DeviceSpec[] = deviceRegistryData as any
 
@@ -48,8 +48,8 @@ export function clearCustomServiceSpecifications() {
     _customServiceSpecifications = {}
 }
 
-export function serviceMap(): SMap<jdspec.ServiceSpec> {
-    const m: SMap<jdspec.ServiceSpec> = {}
+export function serviceMap(): Record<string, jdspec.ServiceSpec> {
+    const m: Record<string, jdspec.ServiceSpec> = {}
     _serviceSpecifications.forEach(spec => (m[spec.shortId] = spec))
     return m
 }

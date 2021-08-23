@@ -2,7 +2,6 @@ import Proto from "./proto"
 import {
     throwError,
     assert,
-    SMap,
     PromiseBuffer,
     PromiseQueue,
     memcpy,
@@ -105,6 +104,7 @@ export const HF2_EV_JDS_PACKET = 0x800020
 
 export interface HF2_IO {
     onData: (v: Uint8Array) => void
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     log(msg: string, v?: any): void
     disconnectAsync(): Promise<void>
     error(msg: string, code?: string): void
@@ -112,7 +112,7 @@ export interface HF2_IO {
 }
 
 export class HF2Proto implements Proto {
-    eventHandlers: SMap<(buf: Uint8Array) => void> = {}
+    eventHandlers: Record<string, (buf: Uint8Array) => void> = {}
     msgs = new PromiseBuffer<Uint8Array>()
     cmdSeq = (Math.random() * 0xffff) | 0
     private lock = new PromiseQueue()

@@ -37,7 +37,7 @@ import {
     REPORT_UPDATE,
     SERIAL_TRANSPORT,
 } from "./constants"
-import { read32, SMap, bufferEq, setAckError, read16 } from "./utils"
+import { read32, bufferEq, setAckError, read16 } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
 import { JDBus, ServiceFilter } from "./bus"
 import JDService from "./service"
@@ -93,7 +93,7 @@ export class JDDevice extends JDNode {
     lastServiceUpdate: number
     private _shortId: string
     private _services: JDService[]
-    private _ports: SMap<PipeInfo>
+    private _ports: Record<string, PipeInfo>
     private _firmwareInfo: FirmwareInfo
     private _ackAwaiting: AckAwaiter[]
     private _flashing = false
