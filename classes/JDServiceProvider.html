@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>JDServiceClient | Jacdac TypeScript - v1.14.4</title>
+	<title>JDServiceProvider | Jacdac TypeScript - v1.14.4</title>
 	<meta name="description" content="Documentation for Jacdac TypeScript - v1.14.4">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -53,10 +53,10 @@
 					<a href="../index.html">Jacdac TypeScript - v1.14.4</a>
 				</li>
 				<li>
-					<a href="JDServiceClient.html">JDServiceClient</a>
+					<a href="JDServiceProvider.html">JDServiceProvider</a>
 				</li>
 			</ul>
-			<h1>Class JDServiceClient</h1>
+			<h1>Class JDServiceProvider</h1>
 		</div>
 	</div>
 </header>
@@ -66,7 +66,7 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>Base class for service clients</p>
+						<p>Implements a device with service servers.</p>
 					</div>
 				</div>
 			</section>
@@ -74,24 +74,10 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<a href="JDClient.html" class="tsd-signature-type" data-tsd-kind="Class">JDClient</a>
+						<a href="JDEventSource.html" class="tsd-signature-type" data-tsd-kind="Class">JDEventSource</a>
 						<ul class="tsd-hierarchy">
 							<li>
-								<span class="target">JDServiceClient</span>
-								<ul class="tsd-hierarchy">
-									<li>
-										<a href="SensorAggregatorClient.html" class="tsd-signature-type" data-tsd-kind="Class">SensorAggregatorClient</a>
-									</li>
-									<li>
-										<a href="ModelRunnerClient.html" class="tsd-signature-type" data-tsd-kind="Class">ModelRunnerClient</a>
-									</li>
-									<li>
-										<a href="SettingsClient.html" class="tsd-signature-type" data-tsd-kind="Class">SettingsClient</a>
-									</li>
-									<li>
-										<a href="RoleManagerClient.html" class="tsd-signature-type" data-tsd-kind="Class">RoleManagerClient</a>
-									</li>
-								</ul>
+								<span class="target">JDServiceProvider</span>
 							</li>
 						</ul>
 					</li>
@@ -104,52 +90,60 @@
 						<section class="tsd-index-section ">
 							<h3>Constructors</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite"><a href="JDServiceClient.html#constructor" class="tsd-kind-icon">constructor</a></li>
+								<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite"><a href="JDServiceProvider.html#constructor" class="tsd-kind-icon">constructor</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>JDOM Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="JDServiceClient.html#eventStats" class="tsd-kind-icon">event<wbr>Stats</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="JDServiceClient.html#newListenerStats" class="tsd-kind-icon">new<wbr>Listener<wbr>Stats</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="JDServiceClient.html#nodeId" class="tsd-kind-icon">node<wbr>Id</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="JDServiceProvider.html#eventStats" class="tsd-kind-icon">event<wbr>Stats</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="JDServiceProvider.html#newListenerStats" class="tsd-kind-icon">new<wbr>Listener<wbr>Stats</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="JDServiceProvider.html#nodeId" class="tsd-kind-icon">node<wbr>Id</a></li>
 							</ul>
 							<h3>Other Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="JDServiceClient.html#service" class="tsd-kind-icon">service</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected"><a href="JDServiceClient.html#unmounted" class="tsd-kind-icon">unmounted</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="JDServiceProvider.html#controlService" class="tsd-kind-icon">control<wbr>Service</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="JDServiceProvider.html#deviceId" class="tsd-kind-icon">device<wbr>Id</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="JDServiceProvider.html#shortId" class="tsd-kind-icon">short<wbr>Id</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>JDOM Accessors</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited"><a href="JDServiceClient.html#changeId" class="tsd-kind-icon">change<wbr>Id</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited"><a href="JDServiceProvider.html#changeId" class="tsd-kind-icon">change<wbr>Id</a></li>
 							</ul>
 							<h3>Other Accessors</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-protected"><a href="JDServiceClient.html#bus" class="tsd-kind-icon">bus</a></li>
-								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-protected"><a href="JDServiceClient.html#device" class="tsd-kind-icon">device</a></li>
+								<li class="tsd-kind-accessor tsd-parent-kind-class"><a href="JDServiceProvider.html#bus" class="tsd-kind-icon">bus</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="JDServiceProvider.html#eventCounter" class="tsd-kind-icon">event<wbr>Counter</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="JDServiceProvider.html#packetCount" class="tsd-kind-icon">packet<wbr>Count</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="JDServiceProvider.html#restartCounter" class="tsd-kind-icon">restart<wbr>Counter</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>JDOM Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="JDServiceClient.html#emit" class="tsd-kind-icon">emit</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="JDServiceClient.html#eventNames" class="tsd-kind-icon">event<wbr>Names</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="JDServiceClient.html#listenerCount" class="tsd-kind-icon">listener<wbr>Count</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="JDServiceClient.html#listenerStackTraces" class="tsd-kind-icon">listener<wbr>Stack<wbr>Traces</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited"><a href="JDServiceClient.html#observe" class="tsd-kind-icon">observe</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited"><a href="JDServiceClient.html#subscribe" class="tsd-kind-icon">subscribe</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="JDServiceProvider.html#emit" class="tsd-kind-icon">emit</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="JDServiceProvider.html#eventNames" class="tsd-kind-icon">event<wbr>Names</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="JDServiceProvider.html#listenerCount" class="tsd-kind-icon">listener<wbr>Count</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="JDServiceProvider.html#listenerStackTraces" class="tsd-kind-icon">listener<wbr>Stack<wbr>Traces</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited"><a href="JDServiceProvider.html#observe" class="tsd-kind-icon">observe</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited"><a href="JDServiceProvider.html#subscribe" class="tsd-kind-icon">subscribe</a></li>
 							</ul>
 							<h3>Other Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected"><a href="JDServiceClient.html#log" class="tsd-kind-icon">log</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="JDServiceClient.html#mount" class="tsd-kind-icon">mount</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="JDServiceClient.html#off" class="tsd-kind-icon">off</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="JDServiceClient.html#on" class="tsd-kind-icon">on</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="JDServiceClient.html#once" class="tsd-kind-icon">once</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="JDServiceClient.html#toString" class="tsd-kind-icon">to<wbr>String</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="JDServiceClient.html#unmount" class="tsd-kind-icon">unmount</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="JDServiceProvider.html#createEventCmd" class="tsd-kind-icon">create<wbr>Event<wbr>Cmd</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="JDServiceProvider.html#delayedSend" class="tsd-kind-icon">delayed<wbr>Send</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="JDServiceProvider.html#off" class="tsd-kind-icon">off</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="JDServiceProvider.html#on" class="tsd-kind-icon">on</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="JDServiceProvider.html#once" class="tsd-kind-icon">once</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="JDServiceProvider.html#removeService" class="tsd-kind-icon">remove<wbr>Service</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="JDServiceProvider.html#reset" class="tsd-kind-icon">reset</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="JDServiceProvider.html#sendPacketAsync" class="tsd-kind-icon">send<wbr>Packet<wbr>Async</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="JDServiceProvider.html#service" class="tsd-kind-icon">service</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="JDServiceProvider.html#services" class="tsd-kind-icon">services</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="JDServiceProvider.html#toString" class="tsd-kind-icon">to<wbr>String</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="JDServiceProvider.html#updateServices" class="tsd-kind-icon">update<wbr>Services</a></li>
 							</ul>
 						</section>
 					</div>
@@ -161,23 +155,34 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite">
-						<li class="tsd-signature tsd-kind-icon">new JDService<wbr>Client<span class="tsd-signature-symbol">(</span>service<span class="tsd-signature-symbol">: </span><a href="JDService.html" class="tsd-signature-type" data-tsd-kind="Class">JDService</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="JDServiceClient.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceClient</a></li>
+						<li class="tsd-signature tsd-kind-icon">new JDService<wbr>Provider<span class="tsd-signature-symbol">(</span>services<span class="tsd-signature-symbol">: </span><a href="JDServiceServer.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceServer</a><span class="tsd-signature-symbol">[]</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-symbol">{ </span>deviceId<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>resetIn<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="JDServiceProvider.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceProvider</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Overrides <a href="JDClient.html">JDClient</a>.<a href="JDClient.html#constructor">constructor</a></p>
+								<p>Overrides <a href="JDEventSource.html">JDEventSource</a>.<a href="JDEventSource.html#constructor">constructor</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/serviceclient.ts#L11">serviceclient.ts:11</a></li>
+									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/serviceprovider.ts#L42">serviceprovider.ts:42</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>service: <a href="JDService.html" class="tsd-signature-type" data-tsd-kind="Class">JDService</a></h5>
+									<h5>services: <a href="JDServiceServer.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceServer</a><span class="tsd-signature-symbol">[]</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-symbol">{ </span>deviceId<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>resetIn<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> }</span></h5>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter">
+											<h5><span class="tsd-flag ts-flagOptional">Optional</span> device<wbr>Id<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span></h5>
+										</li>
+										<li class="tsd-parameter">
+											<h5><span class="tsd-flag ts-flagOptional">Optional</span> reset<wbr>In<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span></h5>
+										</li>
+									</ul>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="JDServiceClient.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceClient</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="JDServiceProvider.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceProvider</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -189,7 +194,7 @@
 					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> event<wbr>Stats</h3>
 					<div class="tsd-signature tsd-kind-icon">event<wbr>Stats<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = {}</span></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="JDClient.html">JDClient</a>.<a href="JDClient.html#eventStats">eventStats</a></p>
+						<p>Inherited from <a href="JDEventSource.html">JDEventSource</a>.<a href="JDEventSource.html#eventStats">eventStats</a></p>
 						<ul>
 							<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/eventsource.ts#L66">eventsource.ts:66</a></li>
 						</ul>
@@ -205,7 +210,7 @@
 					<h3>new<wbr>Listener<wbr>Stats</h3>
 					<div class="tsd-signature tsd-kind-icon">new<wbr>Listener<wbr>Stats<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = ...</span></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="JDClient.html">JDClient</a>.<a href="JDClient.html#newListenerStats">newListenerStats</a></p>
+						<p>Inherited from <a href="JDEventSource.html">JDEventSource</a>.<a href="JDEventSource.html#newListenerStats">newListenerStats</a></p>
 						<ul>
 							<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/eventsource.ts#L72">eventsource.ts:72</a></li>
 						</ul>
@@ -221,7 +226,7 @@
 					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> node<wbr>Id</h3>
 					<div class="tsd-signature tsd-kind-icon">node<wbr>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = ...</span></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="JDClient.html">JDClient</a>.<a href="JDClient.html#nodeId">nodeId</a></p>
+						<p>Inherited from <a href="JDEventSource.html">JDEventSource</a>.<a href="JDEventSource.html#nodeId">nodeId</a></p>
 						<ul>
 							<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/eventsource.ts#L58">eventsource.ts:58</a></li>
 						</ul>
@@ -236,20 +241,32 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Other Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="service" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> service</h3>
-					<div class="tsd-signature tsd-kind-icon">service<span class="tsd-signature-symbol">:</span> <a href="JDService.html" class="tsd-signature-type" data-tsd-kind="Class">JDService</a></div>
+					<a name="controlService" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> control<wbr>Service</h3>
+					<div class="tsd-signature tsd-kind-icon">control<wbr>Service<span class="tsd-signature-symbol">:</span> <a href="ControlServer.html" class="tsd-signature-type" data-tsd-kind="Class">ControlServer</a></div>
 					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/serviceprovider.ts#L33">serviceprovider.ts:33</a></li>
+						</ul>
 					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
-					<a name="unmounted" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagProtected">Protected</span> unmounted</h3>
-					<div class="tsd-signature tsd-kind-icon">unmounted<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> = false</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="deviceId" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> device<wbr>Id</h3>
+					<div class="tsd-signature tsd-kind-icon">device<wbr>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="JDClient.html">JDClient</a>.<a href="JDClient.html#unmounted">unmounted</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/client.ts#L9">client.ts:9</a></li>
+							<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/serviceprovider.ts#L31">serviceprovider.ts:31</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="shortId" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> short<wbr>Id</h3>
+					<div class="tsd-signature tsd-kind-icon">short<wbr>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/serviceprovider.ts#L32">serviceprovider.ts:32</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -286,37 +303,86 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Other Accessors</h2>
-				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class tsd-is-protected">
+				<section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class">
 					<a name="bus" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagProtected">Protected</span> bus</h3>
-					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class tsd-is-protected">
+					<h3>bus</h3>
+					<ul class="tsd-signatures tsd-kind-accessor tsd-parent-kind-class">
 						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> bus<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="JDBus.html" class="tsd-signature-type" data-tsd-kind="Class">JDBus</a></li>
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">set</span> bus<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><a href="JDBus.html" class="tsd-signature-type" data-tsd-kind="Class">JDBus</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/serviceclient.ts#L19">serviceclient.ts:19</a></li>
+									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/serviceprovider.ts#L96">serviceprovider.ts:96</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <a href="JDBus.html" class="tsd-signature-type" data-tsd-kind="Class">JDBus</a></h4>
 						</li>
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/serviceprovider.ts#L100">serviceprovider.ts:100</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <a href="JDBus.html" class="tsd-signature-type" data-tsd-kind="Class">JDBus</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class tsd-is-protected">
-					<a name="device" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagProtected">Protected</span> device</h3>
-					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class tsd-is-protected">
-						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> device<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="JDDevice.html" class="tsd-signature-type" data-tsd-kind="Class">JDDevice</a></li>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class">
+					<a name="eventCounter" class="tsd-anchor"></a>
+					<h3>event<wbr>Counter</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> eventCounter<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/serviceclient.ts#L15">serviceclient.ts:15</a></li>
+									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/serviceprovider.ts#L161">serviceprovider.ts:161</a></li>
 								</ul>
 							</aside>
-							<h4 class="tsd-returns-title">Returns <a href="JDDevice.html" class="tsd-signature-type" data-tsd-kind="Class">JDDevice</a></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class">
+					<a name="packetCount" class="tsd-anchor"></a>
+					<h3>packet<wbr>Count</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> packetCount<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/serviceprovider.ts#L145">serviceprovider.ts:145</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class">
+					<a name="restartCounter" class="tsd-anchor"></a>
+					<h3>restart<wbr>Counter</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> restartCounter<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/serviceprovider.ts#L141">serviceprovider.ts:141</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -332,7 +398,7 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="JDClient.html">JDClient</a>.<a href="JDClient.html#emit">emit</a></p>
+								<p>Inherited from <a href="JDEventSource.html">JDEventSource</a>.<a href="JDEventSource.html#emit">emit</a></p>
 								<ul>
 									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/eventsource.ts#L176">eventsource.ts:176</a></li>
 								</ul>
@@ -365,7 +431,7 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="JDClient.html">JDClient</a>.<a href="JDClient.html#eventNames">eventNames</a></p>
+								<p>Inherited from <a href="JDEventSource.html">JDEventSource</a>.<a href="JDEventSource.html#eventNames">eventNames</a></p>
 								<ul>
 									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/eventsource.ts#L233">eventsource.ts:233</a></li>
 								</ul>
@@ -388,7 +454,7 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="JDClient.html">JDClient</a>.<a href="JDClient.html#listenerCount">listenerCount</a></p>
+								<p>Inherited from <a href="JDEventSource.html">JDEventSource</a>.<a href="JDEventSource.html#listenerCount">listenerCount</a></p>
 								<ul>
 									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/eventsource.ts#L212">eventsource.ts:212</a></li>
 								</ul>
@@ -421,7 +487,7 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="JDClient.html">JDClient</a>.<a href="JDClient.html#listenerStackTraces">listenerStackTraces</a></p>
+								<p>Inherited from <a href="JDEventSource.html">JDEventSource</a>.<a href="JDEventSource.html#listenerStackTraces">listenerStackTraces</a></p>
 								<ul>
 									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/eventsource.ts#L224">eventsource.ts:224</a></li>
 								</ul>
@@ -454,7 +520,7 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="JDClient.html">JDClient</a>.<a href="JDClient.html#observe">observe</a></p>
+								<p>Inherited from <a href="JDEventSource.html">JDEventSource</a>.<a href="JDEventSource.html#observe">observe</a></p>
 								<ul>
 									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/eventsource.ts#L242">eventsource.ts:242</a></li>
 								</ul>
@@ -489,7 +555,7 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="JDClient.html">JDClient</a>.<a href="JDClient.html#subscribe">subscribe</a></p>
+								<p>Inherited from <a href="JDEventSource.html">JDEventSource</a>.<a href="JDEventSource.html#subscribe">subscribe</a></p>
 								<ul>
 									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/eventsource.ts#L252">eventsource.ts:252</a></li>
 								</ul>
@@ -561,24 +627,49 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Other Methods</h2>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
-					<a name="log" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagProtected">Protected</span> log</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
-						<li class="tsd-signature tsd-kind-icon">log<span class="tsd-signature-symbol">(</span>msg<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="createEventCmd" class="tsd-anchor"></a>
+					<h3>create<wbr>Event<wbr>Cmd</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">create<wbr>Event<wbr>Cmd<span class="tsd-signature-symbol">(</span>evCode<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="JDClient.html">JDClient</a>.<a href="JDClient.html#log">log</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/client.ts#L15">client.ts:15</a></li>
+									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/serviceprovider.ts#L165">serviceprovider.ts:165</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>msg: <span class="tsd-signature-type">any</span></h5>
+									<h5>evCode: <span class="tsd-signature-type">number</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="delayedSend" class="tsd-anchor"></a>
+					<h3>delayed<wbr>Send</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">delayed<wbr>Send<span class="tsd-signature-symbol">(</span>pkt<span class="tsd-signature-symbol">: </span><a href="Packet.html" class="tsd-signature-type" data-tsd-kind="Class">Packet</a>, timestamp<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/serviceprovider.ts#L191">serviceprovider.ts:191</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>pkt: <a href="Packet.html" class="tsd-signature-type" data-tsd-kind="Class">Packet</a></h5>
+								</li>
+								<li>
+									<h5>timestamp: <span class="tsd-signature-type">number</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -586,63 +677,15 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-					<a name="mount" class="tsd-anchor"></a>
-					<h3>mount</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">mount<span class="tsd-signature-symbol">(</span>unsubscribe<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<p>Inherited from <a href="JDClient.html">JDClient</a>.<a href="JDClient.html#mount">mount</a></p>
-								<ul>
-									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/client.ts#L19">client.ts:19</a></li>
-								</ul>
-							</aside>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>unsubscribe: <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span></h5>
-									<ul class="tsd-parameters">
-										<li class="tsd-parameter-signature">
-											<ul class="tsd-signatures tsd-kind-type-literal">
-												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
-											</ul>
-											<ul class="tsd-descriptions">
-												<li class="tsd-description">
-													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
-												</li>
-											</ul>
-										</li>
-									</ul>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span></h4>
-							<ul class="tsd-parameters">
-								<li class="tsd-parameter-signature">
-									<ul class="tsd-signatures tsd-kind-type-literal">
-										<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
-									</ul>
-									<ul class="tsd-descriptions">
-										<li class="tsd-description">
-											<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
-										</li>
-									</ul>
-								</li>
-							</ul>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
 					<a name="off" class="tsd-anchor"></a>
 					<h3>off</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">off<span class="tsd-signature-symbol">(</span>eventName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, handler<span class="tsd-signature-symbol">: </span><a href="../index.html#EventHandler" class="tsd-signature-type" data-tsd-kind="Type alias">EventHandler</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="JDServiceClient.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceClient</a></li>
+						<li class="tsd-signature tsd-kind-icon">off<span class="tsd-signature-symbol">(</span>eventName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, handler<span class="tsd-signature-symbol">: </span><a href="../index.html#EventHandler" class="tsd-signature-type" data-tsd-kind="Type alias">EventHandler</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="JDServiceProvider.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceProvider</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="JDClient.html">JDClient</a>.<a href="JDClient.html#off">off</a></p>
+								<p>Inherited from <a href="JDEventSource.html">JDEventSource</a>.<a href="JDEventSource.html#off">off</a></p>
 								<ul>
 									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/eventsource.ts#L96">eventsource.ts:96</a></li>
 								</ul>
@@ -667,7 +710,7 @@
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="JDServiceClient.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceClient</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="JDServiceProvider.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceProvider</a></h4>
 							<p>current object instance</p>
 						</li>
 					</ul>
@@ -676,12 +719,12 @@
 					<a name="on" class="tsd-anchor"></a>
 					<h3>on</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">on<span class="tsd-signature-symbol">(</span>eventName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, handler<span class="tsd-signature-symbol">: </span><a href="../index.html#EventHandler" class="tsd-signature-type" data-tsd-kind="Type alias">EventHandler</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="JDServiceClient.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceClient</a></li>
+						<li class="tsd-signature tsd-kind-icon">on<span class="tsd-signature-symbol">(</span>eventName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, handler<span class="tsd-signature-symbol">: </span><a href="../index.html#EventHandler" class="tsd-signature-type" data-tsd-kind="Type alias">EventHandler</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="JDServiceProvider.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceProvider</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="JDClient.html">JDClient</a>.<a href="JDClient.html#on">on</a></p>
+								<p>Inherited from <a href="JDEventSource.html">JDEventSource</a>.<a href="JDEventSource.html#on">on</a></p>
 								<ul>
 									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/eventsource.ts#L82">eventsource.ts:82</a></li>
 								</ul>
@@ -706,7 +749,7 @@
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="JDServiceClient.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceClient</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="JDServiceProvider.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceProvider</a></h4>
 							<p>current object instance</p>
 						</li>
 					</ul>
@@ -715,12 +758,12 @@
 					<a name="once" class="tsd-anchor"></a>
 					<h3>once</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">once<span class="tsd-signature-symbol">(</span>eventName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, handler<span class="tsd-signature-symbol">: </span><a href="../index.html#EventHandler" class="tsd-signature-type" data-tsd-kind="Type alias">EventHandler</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="JDServiceClient.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceClient</a></li>
+						<li class="tsd-signature tsd-kind-icon">once<span class="tsd-signature-symbol">(</span>eventName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, handler<span class="tsd-signature-symbol">: </span><a href="../index.html#EventHandler" class="tsd-signature-type" data-tsd-kind="Type alias">EventHandler</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="JDServiceProvider.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceProvider</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="JDClient.html">JDClient</a>.<a href="JDClient.html#once">once</a></p>
+								<p>Inherited from <a href="JDEventSource.html">JDEventSource</a>.<a href="JDEventSource.html#once">once</a></p>
 								<ul>
 									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/eventsource.ts#L109">eventsource.ts:109</a></li>
 								</ul>
@@ -745,8 +788,111 @@
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="JDServiceClient.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceClient</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="JDServiceProvider.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceProvider</a></h4>
 							<p>current object instance</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="removeService" class="tsd-anchor"></a>
+					<h3>remove<wbr>Service</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">remove<wbr>Service<span class="tsd-signature-symbol">(</span>service<span class="tsd-signature-symbol">: </span><a href="JDServiceServer.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceServer</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/serviceprovider.ts#L86">serviceprovider.ts:86</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>service: <a href="JDServiceServer.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceServer</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="reset" class="tsd-anchor"></a>
+					<h3>reset</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">reset<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/serviceprovider.ts#L261">serviceprovider.ts:261</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="sendPacketAsync" class="tsd-anchor"></a>
+					<h3>send<wbr>Packet<wbr>Async</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">send<wbr>Packet<wbr>Async<span class="tsd-signature-symbol">(</span>pkt<span class="tsd-signature-symbol">: </span><a href="Packet.html" class="tsd-signature-type" data-tsd-kind="Class">Packet</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/serviceprovider.ts#L176">serviceprovider.ts:176</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>pkt: <a href="Packet.html" class="tsd-signature-type" data-tsd-kind="Class">Packet</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="service" class="tsd-anchor"></a>
+					<h3>service</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">service<span class="tsd-signature-symbol">(</span>serviceIndex<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="JDServiceServer.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceServer</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/serviceprovider.ts#L153">serviceprovider.ts:153</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>serviceIndex: <span class="tsd-signature-type">number</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="JDServiceServer.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceServer</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="services" class="tsd-anchor"></a>
+					<h3>services</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">services<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="JDServiceServer.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceServer</a><span class="tsd-signature-symbol">[]</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/serviceprovider.ts#L149">serviceprovider.ts:149</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="JDServiceServer.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceServer</a><span class="tsd-signature-symbol">[]</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -760,27 +906,32 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/serviceclient.ts#L23">serviceclient.ts:23</a></li>
+									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/serviceprovider.ts#L157">serviceprovider.ts:157</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-					<a name="unmount" class="tsd-anchor"></a>
-					<h3>unmount</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">unmount<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="updateServices" class="tsd-anchor"></a>
+					<h3>update<wbr>Services</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">update<wbr>Services<span class="tsd-signature-symbol">(</span>services<span class="tsd-signature-symbol">: </span><a href="JDServiceServer.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceServer</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="JDClient.html">JDClient</a>.<a href="JDClient.html#unmount">unmount</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/client.ts#L26">client.ts:26</a></li>
+									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/922a39d7/src/jdom/serviceprovider.ts#L66">serviceprovider.ts:66</a></li>
 								</ul>
 							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>services: <a href="JDServiceServer.html" class="tsd-signature-type" data-tsd-kind="Class">JDServiceServer</a><span class="tsd-signature-symbol">[]</span></h5>
+								</li>
+							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 						</li>
 					</ul>
@@ -800,73 +951,97 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-class">
-						<a href="JDServiceClient.html" class="tsd-kind-icon">JDService<wbr>Client</a>
+						<a href="JDServiceProvider.html" class="tsd-kind-icon">JDService<wbr>Provider</a>
 						<ul>
 							<li class=" tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite">
-								<a href="JDServiceClient.html#constructor" class="tsd-kind-icon">constructor</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
-								<a href="JDServiceClient.html#eventStats" class="tsd-kind-icon">event<wbr>Stats</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
-								<a href="JDServiceClient.html#newListenerStats" class="tsd-kind-icon">new<wbr>Listener<wbr>Stats</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
-								<a href="JDServiceClient.html#nodeId" class="tsd-kind-icon">node<wbr>Id</a>
+								<a href="JDServiceProvider.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="JDServiceClient.html#service" class="tsd-kind-icon">service</a>
+								<a href="JDServiceProvider.html#controlService" class="tsd-kind-icon">control<wbr>Service</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
-								<a href="JDServiceClient.html#unmounted" class="tsd-kind-icon">unmounted</a>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="JDServiceProvider.html#deviceId" class="tsd-kind-icon">device<wbr>Id</a>
 							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-protected">
-								<a href="JDServiceClient.html#bus" class="tsd-kind-icon">bus</a>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="JDServiceProvider.html#eventStats" class="tsd-kind-icon">event<wbr>Stats</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="JDServiceProvider.html#newListenerStats" class="tsd-kind-icon">new<wbr>Listener<wbr>Stats</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="JDServiceProvider.html#nodeId" class="tsd-kind-icon">node<wbr>Id</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="JDServiceProvider.html#shortId" class="tsd-kind-icon">short<wbr>Id</a>
+							</li>
+							<li class=" tsd-kind-accessor tsd-parent-kind-class">
+								<a href="JDServiceProvider.html#bus" class="tsd-kind-icon">bus</a>
 							</li>
 							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
-								<a href="JDServiceClient.html#changeId" class="tsd-kind-icon">change<wbr>Id</a>
+								<a href="JDServiceProvider.html#changeId" class="tsd-kind-icon">change<wbr>Id</a>
 							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-protected">
-								<a href="JDServiceClient.html#device" class="tsd-kind-icon">device</a>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
+								<a href="JDServiceProvider.html#eventCounter" class="tsd-kind-icon">event<wbr>Counter</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="JDServiceClient.html#emit" class="tsd-kind-icon">emit</a>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
+								<a href="JDServiceProvider.html#packetCount" class="tsd-kind-icon">packet<wbr>Count</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="JDServiceClient.html#eventNames" class="tsd-kind-icon">event<wbr>Names</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="JDServiceClient.html#listenerCount" class="tsd-kind-icon">listener<wbr>Count</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="JDServiceClient.html#listenerStackTraces" class="tsd-kind-icon">listener<wbr>Stack<wbr>Traces</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
-								<a href="JDServiceClient.html#log" class="tsd-kind-icon">log</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="JDServiceClient.html#mount" class="tsd-kind-icon">mount</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
-								<a href="JDServiceClient.html#observe" class="tsd-kind-icon">observe</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="JDServiceClient.html#off" class="tsd-kind-icon">off</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="JDServiceClient.html#on" class="tsd-kind-icon">on</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="JDServiceClient.html#once" class="tsd-kind-icon">once</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
-								<a href="JDServiceClient.html#subscribe" class="tsd-kind-icon">subscribe</a>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
+								<a href="JDServiceProvider.html#restartCounter" class="tsd-kind-icon">restart<wbr>Counter</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="JDServiceClient.html#toString" class="tsd-kind-icon">to<wbr>String</a>
+								<a href="JDServiceProvider.html#createEventCmd" class="tsd-kind-icon">create<wbr>Event<wbr>Cmd</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="JDServiceProvider.html#delayedSend" class="tsd-kind-icon">delayed<wbr>Send</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="JDServiceClient.html#unmount" class="tsd-kind-icon">unmount</a>
+								<a href="JDServiceProvider.html#emit" class="tsd-kind-icon">emit</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="JDServiceProvider.html#eventNames" class="tsd-kind-icon">event<wbr>Names</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="JDServiceProvider.html#listenerCount" class="tsd-kind-icon">listener<wbr>Count</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="JDServiceProvider.html#listenerStackTraces" class="tsd-kind-icon">listener<wbr>Stack<wbr>Traces</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+								<a href="JDServiceProvider.html#observe" class="tsd-kind-icon">observe</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="JDServiceProvider.html#off" class="tsd-kind-icon">off</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="JDServiceProvider.html#on" class="tsd-kind-icon">on</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="JDServiceProvider.html#once" class="tsd-kind-icon">once</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="JDServiceProvider.html#removeService" class="tsd-kind-icon">remove<wbr>Service</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="JDServiceProvider.html#reset" class="tsd-kind-icon">reset</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="JDServiceProvider.html#sendPacketAsync" class="tsd-kind-icon">send<wbr>Packet<wbr>Async</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="JDServiceProvider.html#service" class="tsd-kind-icon">service</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="JDServiceProvider.html#services" class="tsd-kind-icon">services</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+								<a href="JDServiceProvider.html#subscribe" class="tsd-kind-icon">subscribe</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="JDServiceProvider.html#toString" class="tsd-kind-icon">to<wbr>String</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="JDServiceProvider.html#updateServices" class="tsd-kind-icon">update<wbr>Services</a>
 							</li>
 						</ul>
 					</li>
