@@ -201,7 +201,7 @@ export class JDService extends JDNode {
      * Gets the ``value`` register associated to this service, if the specification supports it.
      * @category Registers
      */
-     get valueRegister(): JDRegister {
+    get valueRegister(): JDRegister {
         if (!this._valueRegister) {
             const pkt = this.specification?.packets.find(pkt => isValue(pkt))
             this._valueRegister = pkt && this.register(pkt.identifier)
@@ -214,7 +214,7 @@ export class JDService extends JDNode {
      * Gets the ``intensity`` register associated to this service, if the specification supports it.
      * @category Registers
      */
-     get intensityRegister(): JDRegister {
+    get intensityRegister(): JDRegister {
         if (!this._intensityRegister) {
             const pkt = this.specification?.packets.find(pkt =>
                 isIntensity(pkt)
@@ -229,7 +229,7 @@ export class JDService extends JDNode {
      * Gets the ``status_code`` register associated to this service, if the specification supports it.
      * @category Registers
      */
-     get statusCodeRegister(): JDRegister {
+    get statusCodeRegister(): JDRegister {
         if (!this._statusCodeRegister) {
             const pkt = this.specification?.packets.find(
                 pkt => pkt.identifier === SystemReg.StatusCode
