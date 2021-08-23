@@ -124,6 +124,9 @@ export class JDBus extends JDNode {
      * @category Scheduling
      */
     readonly scheduler: Scheduler
+    /**
+     * @internal
+     */
     readonly parentOrigin: string
     private readonly _transports: JDTransport[] = []
     private _bridges: JDBridge[] = []
@@ -150,6 +153,10 @@ export class JDBus extends JDNode {
      * @category Diagnostics
      **/
     public readonly packetStats: BusStatsMonitor
+
+    /**
+     * @internal
+     */
     public iframeBridge: IFrameBridgeClient
 
     /**
@@ -362,6 +369,7 @@ export class JDBus extends JDNode {
     /**
      * Clears known devices and service providers (simulators). Optionally reset bus timestamp.
      * @param timestamp
+     * @category Services
      */
     clear(timestamp = 0) {
         // clear hosts
@@ -425,7 +433,7 @@ export class JDBus extends JDNode {
 
     /**
      * Gets the default role manager service client, if any
-     * @category Service Clients
+     * @category Services
      */
     get roleManager(): RoleManagerClient {
         return this._roleManagerClient
@@ -433,7 +441,7 @@ export class JDBus extends JDNode {
 
     /**
      * Sets the default role manager service client
-     * @category Service Clients
+     * @category Services
      */
     setRoleManagerService(service: JDService) {
         //console.log(`set role manager`, { service })
@@ -571,6 +579,7 @@ export class JDBus extends JDNode {
     /**
      * Sends a packet to the bus
      * @param packet packet to send
+     * @internal
      */
     async sendPacketAsync(packet: Packet) {
         packet.timestamp = this.timestamp
@@ -601,7 +610,7 @@ export class JDBus extends JDNode {
 
     /**
      * Gets the current list of known devices on the bus
-     * @category Service Clients
+     * @category Services
      */
     devices(options?: DeviceFilter) {
         if (options?.serviceName && options?.serviceClass > -1)
@@ -625,7 +634,7 @@ export class JDBus extends JDNode {
 
     /**
      * Gets the current list of service providers on the bus
-     * @category Service Servers
+     * @category Services
      */
     serviceProviders(): JDServiceProvider[] {
         return this._serviceProviders.slice(0)
@@ -634,7 +643,7 @@ export class JDBus extends JDNode {
     /**
      * Get a service providers for a given device
      * @param deviceId
-     * @category Service Servers
+     * @category Services
      */
     findServiceProvider(deviceId: string) {
         return this._serviceProviders.find(d => d.deviceId === deviceId)
@@ -643,7 +652,7 @@ export class JDBus extends JDNode {
     /**
      * Adds the service provider to the bus and returns the associated devoce
      * @param provider instance to add
-     * @category Service Servers
+     * @category Services
      */
     addServiceProvider(provider: JDServiceProvider) {
         if (provider && this._serviceProviders.indexOf(provider) < 0) {
@@ -660,7 +669,7 @@ export class JDBus extends JDNode {
     /**
      * Removes the service provider from the bus
      * @param provider instance to remove
-     * @category Service Servers
+     * @category Services
      */
     removeServiceProvider(provider: JDServiceProvider) {
         if (!provider) return
@@ -699,7 +708,7 @@ export class JDBus extends JDNode {
 
     /**
      * Gets the current list of services from all the known devices on the bus
-     * @category Service Clients
+     * @category Services
      */
     services(options?: ServiceFilter & DeviceFilter): JDService[] {
         return arrayConcatMany(
@@ -712,7 +721,7 @@ export class JDBus extends JDNode {
      * @param id device identifier to query
      * @param skipCreate do not create new device if missing
      * @param pkt packet that generated this device query
-     * @category Service Clients
+     * @category Services
      */
     device(id: string, skipCreate?: boolean, pkt?: Packet) {
         if (id === "0000000000000000" && !skipCreate) {
@@ -877,7 +886,7 @@ export class JDBus extends JDNode {
 
     /**
      * Gets the virtual device created by this bus to handle pipes.
-     * @category Service Clients
+     * @category Services
      */
     get selfDevice() {
         return this.device(this.selfDeviceId)
@@ -939,7 +948,7 @@ export class JDBus extends JDNode {
 
     /**
      * Indicates if registers are automatically refreshed in the background.
-     * @category Service Clients
+     * @category Services
      */
     get backgroundRefreshRegisters() {
         return !!this._refreshRegistersInterval
@@ -948,7 +957,7 @@ export class JDBus extends JDNode {
     /**
      * Enables or disables automatically refreshing registers in the background.
      * @param enabled true to automatically refresh registers
-     * @category Service Clients
+     * @category Services
      */
     set backgroundRefreshRegisters(enabled: boolean) {
         if (!!enabled !== this.backgroundRefreshRegisters) {
@@ -1091,10 +1100,11 @@ export class JDBus extends JDNode {
 
     /**
      * Runs a promise with a timeout. Returns undefined if timeout happens before of disconnection.
-     * @param timeout
-     * @param p
+     * @param timeout duration to wait before declaring timeout
+     * @param promise promise to wrap
+     * @category Lifecycle
      */
-    withTimeout<T>(timeout: number, p: Promise<T>): Promise<T> {
+    withTimeout<T>(timeout: number, promise: Promise<T>): Promise<T> {
         return new Promise<T>((resolve, reject) => {
             let done = false
             const tid = setTimeout(() => {
@@ -1113,7 +1123,7 @@ export class JDBus extends JDNode {
                     }
                 }
             }, timeout)
-            p.then(
+            promise.then(
                 v => {
                     if (!done) {
                         done = true

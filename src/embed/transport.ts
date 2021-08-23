@@ -1,6 +1,4 @@
-import JDBus from "../jdom/bus"
-import JDIFrameClient from "../jdom/iframeclient"
-import { SMap } from "../jdom/utils"
+import JDClient from "../jdom/client"
 import { IAckMessage, IMessage, IStatusMessage } from "./protocol"
 
 export interface ITransport {
@@ -13,12 +11,15 @@ export interface ITransport {
     ): void
 }
 
-export class IFrameTransport extends JDIFrameClient implements ITransport {
+/**
+ * @internal
+ */
+export class IFrameTransport extends JDClient implements ITransport {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private readonly ackAwaiters: Record<string, (msg: any) => void> = {}
 
-    constructor(bus: JDBus) {
-        super(bus)
+    constructor(readonly origin: string) {
+        super()
         this.handleMessage = this.handleMessage.bind(this)
 
         window.addEventListener("message", this.handleMessage, false)
@@ -27,6 +28,13 @@ export class IFrameTransport extends JDIFrameClient implements ITransport {
         )
     }
 
+    private isOriginValid(msg: MessageEvent) {
+        return this.origin === "*" || msg.origin === this.origin
+    }
+
+    /**
+     * @internal
+     */
     postReady() {
         this.postMessage({
             type: "status",
@@ -38,7 +46,7 @@ export class IFrameTransport extends JDIFrameClient implements ITransport {
 
     /**
      * Post message to client and awaits for ack if needed
-     * @param msg
+     * @internal
      */
     postMessage<TMessage extends IMessage, IAckMessage>(
         msg: TMessage
