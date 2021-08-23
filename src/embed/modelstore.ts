@@ -1,5 +1,5 @@
 import { CHANGE } from "../jdom/constants"
-import { JDEventSource } from "../jdom/eventsource"
+import JDEventSource from "../jdom/eventsource"
 import {
     IFile,
     IFileContent,

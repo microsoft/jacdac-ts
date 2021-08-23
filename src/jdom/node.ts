@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { JDEventSource } from "./eventsource"
+import JDEventSource from "./eventsource"
 
 /**
  * Base class for JDOM Node classes.
@@ -68,6 +68,9 @@ export abstract class JDNode extends JDEventSource {
         }
     }
 
+    /**
+     * @hidden
+     */
     toString() {
         return this.friendlyName
     }

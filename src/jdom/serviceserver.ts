@@ -12,7 +12,7 @@ import {
     REPORT_UPDATE,
 } from "./constants"
 import JDServiceProvider from "./serviceprovider"
-import { JDEventSource } from "./eventsource"
+import JDEventSource from "./eventsource"
 import Packet from "./packet"
 import JDRegisterServer from "./registerserver"
 import { isRegister, serviceSpecificationFromClassIdentifier } from "./spec"

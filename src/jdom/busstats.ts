@@ -1,6 +1,6 @@
 import JDBus from "./bus"
 import { CHANGE, PACKET_PROCESS, PACKET_SEND, SELF_ANNOUNCE } from "./constants"
-import { JDEventSource } from "./eventsource"
+import JDEventSource from "./eventsource"
 import Packet from "./packet"
 
 export interface BusStats {

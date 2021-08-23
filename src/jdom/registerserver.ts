@@ -2,7 +2,7 @@ import JDServiceServer from "./serviceserver"
 import { jdpack, jdunpack, PackedSimpleValue, PackedValues } from "./pack"
 import Packet from "./packet"
 import { bufferEq, isSet, pick } from "./utils"
-import { JDEventSource } from "./eventsource"
+import JDEventSource from "./eventsource"
 import {
     CHANGE,
     CMD_GET_REG,

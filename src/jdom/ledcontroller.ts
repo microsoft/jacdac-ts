@@ -1,4 +1,4 @@
-import { JDEventSource } from "./eventsource"
+import JDEventSource from "./eventsource"
 import { jdpack } from "./pack"
 import JDService from "./service"
 

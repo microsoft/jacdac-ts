@@ -5,7 +5,7 @@ import {
 import { exprVisitor } from "../../jacdac-spec/spectool/jdutils"
 
 import { CHANGE } from "../jdom/constants"
-import { JDEventSource } from "../jdom/eventsource"
+import JDEventSource from "../jdom/eventsource"
 import JDService from "../jdom/service"
 import { JDServiceClient } from "../jdom/serviceclient"
 import { roundWithPrecision } from "../jdom/utils"

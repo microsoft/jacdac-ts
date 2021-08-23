@@ -13,7 +13,7 @@ import {
     TRANSPORT_CONNECT_RETRY_DELAY,
     TRANSPORT_PULSE_TIMEOUT,
 } from "../constants"
-import { JDEventSource } from "../eventsource"
+import JDEventSource from "../eventsource"
 import { Observable } from "../observable"
 import Packet from "../packet"
 import { assert, delay } from "../utils"

@@ -4,7 +4,7 @@ import Packet from "./packet"
 import { shortDeviceId } from "./pretty"
 import { isBufferEmpty, toHex } from "./utils"
 import ControlServer from "./controlserver"
-import { JDEventSource } from "./eventsource"
+import JDEventSource from "./eventsource"
 import {
     CHANGE,
     CMD_EVENT_COUNTER_MASK,

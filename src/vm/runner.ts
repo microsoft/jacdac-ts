@@ -10,7 +10,7 @@ import {
     ExternalRequest,
 } from "./environment"
 import { VMExprEvaluator, unparse, CallEvaluator } from "./expr"
-import { JDEventSource } from "../jdom/eventsource"
+import JDEventSource from "../jdom/eventsource"
 import {
     CHANGE,
     ROLE_BOUND,

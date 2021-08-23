@@ -1,4 +1,4 @@
-import { JDEventSource } from "./eventsource"
+import JDEventSource from "./eventsource"
 
 /**
  * Base class for clients

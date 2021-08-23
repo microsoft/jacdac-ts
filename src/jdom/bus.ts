@@ -628,7 +628,7 @@ export class JDBus extends JDNode {
         if (options?.ignoreSimulators)
             r = r.filter(r => !this.findServiceProvider(r.deviceId))
         if (options?.productIdentifier) r = r.filter(r => !!r.productIdentifier)
-        if (options?.physical) r = r.filter(r => !!r.physical)
+        if (options?.physical) r = r.filter(r => !!r.isPhysical)
         return r
     }
 

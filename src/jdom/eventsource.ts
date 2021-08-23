@@ -296,6 +296,8 @@ class EventObservable<T> implements Observable<T> {
     }
 }
 
+export default JDEventSource
+
 export function fromEvent<T>(
     eventEmitter: JDEventSource,
     eventNames: string | string[]
