@@ -1,5 +1,5 @@
 import { JDService } from "./service"
-import { JDDevice } from "./device"
+import JDDevice from "./device"
 import { JDBus } from "./bus"
 import { JDClient } from "./client"
 

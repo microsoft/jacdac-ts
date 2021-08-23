@@ -13,7 +13,7 @@ import {
     PACKET_PROCESS,
     PACKET_SEND,
 } from "./constants"
-import { JDDevice } from "./device"
+import JDDevice from "./device"
 import JDIFrameClient from "./iframeclient"
 import { resolveMakecodeServiceFromClassIdentifier } from "./makecode"
 import Packet from "./packet"

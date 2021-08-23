@@ -35,7 +35,7 @@ import {
     CMD_EVENT_MASK,
     CMD_EVENT_COUNTER_POS,
 } from "./constants"
-import { JDDevice } from "./device"
+import JDDevice from "./device"
 import { NumberFormat, getNumber } from "./buffer"
 import { JDBus } from "./bus"
 import {

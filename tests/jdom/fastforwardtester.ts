@@ -1,6 +1,6 @@
 import { JDBus } from "../../src/jdom/bus"
 import { DEVICE_ANNOUNCE } from "../../src/jdom/constants"
-import { JDDevice } from "../../src/jdom/device"
+import JDDevice from "../../src/jdom/device"
 import { JDService } from "../../src/jdom/service"
 import JDServiceProvider from "../../src/jdom/serviceprovider"
 import JDServiceServer from "../../src/jdom/serviceserver"

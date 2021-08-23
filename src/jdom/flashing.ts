@@ -1,7 +1,7 @@
 import { bufferToArray, NumberFormat, getNumber } from "./buffer"
 import { JDBus } from "./bus"
 import Packet from "./packet"
-import { JDDevice } from "./device"
+import JDDevice from "./device"
 import {
     BootloaderCmd,
     ControlCmd,

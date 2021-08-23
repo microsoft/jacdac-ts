@@ -1,4 +1,4 @@
-import { JDDevice } from "./device"
+import JDDevice from "./device"
 import Packet from "./packet"
 import { serviceName } from "./pretty"
 import { JDRegister } from "./register"

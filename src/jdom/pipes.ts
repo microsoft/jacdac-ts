@@ -1,4 +1,4 @@
-import { JDDevice } from "./device"
+import JDDevice from "./device"
 import {
     PIPE_PORT_SHIFT,
     PIPE_COUNTER_MASK,
