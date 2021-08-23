@@ -43,6 +43,11 @@ import JDServiceServer from "./serviceserver"
  * @category JDOM
  */
 export class JDService extends JDNode {
+    /**
+     * Gets the service class
+     * @category Control
+     */
+    readonly serviceClass: number
     private _role: string
     private _registers: JDRegister[]
     private _events: JDEvent[]
@@ -59,6 +64,7 @@ export class JDService extends JDNode {
         public readonly serviceIndex: number
     ) {
         super()
+        this.serviceClass = this.device.serviceClassAt(this.serviceIndex)
 
         const statusCodeChanged = this.event(BaseEvent.StatusCodeChanged)
         statusCodeChanged.on(CHANGE, () => {
@@ -81,18 +87,26 @@ export class JDService extends JDNode {
         }:${this.serviceIndex.toString(16)}`
     }
 
+    /**
+     * Gets the ``SERVICE_NODE_NAME`` identifier
+     * @category JDOM
+     */
     get nodeKind() {
         return SERVICE_NODE_NAME
     }
 
-    get serviceClass() {
-        return this.device.serviceClassAt(this.serviceIndex)
-    }
-
+    /**
+     * Gets the service name
+     * @category JDOM
+     */
     get name() {
         return serviceName(this.serviceClass)?.toLowerCase()
     }
 
+    /**
+     * Gets the service name and parent names
+     * @category JDOM
+     */
     get friendlyName() {
         const parts = [this.device.friendlyName]
         if (
@@ -102,10 +116,18 @@ export class JDService extends JDNode {
         return parts.join(".")
     }
 
+    /**
+     * Gets the service qualified name
+     * @category JDOM
+     */
     get qualifiedName() {
         return `${this.device.qualifiedName}[${this.serviceIndex.toString(16)}]`
     }
 
+    /**
+     * Gets the device holding the service
+     * @category JDOM
+     */
     get parent(): JDNode {
         return this.device
     }
@@ -162,6 +184,10 @@ export class JDService extends JDNode {
     }
 
     private _readingRegister: JDRegister
+    /**
+     * Gets the ``reading`` register associated to this service, if the specification supports it.
+     * @category Registers
+     */
     get readingRegister(): JDRegister {
         if (!this._readingRegister) {
             const pkt = this.specification?.packets.find(pkt => isReading(pkt))
@@ -171,7 +197,11 @@ export class JDService extends JDNode {
     }
 
     private _valueRegister: JDRegister
-    get valueRegister(): JDRegister {
+    /**
+     * Gets the ``value`` register associated to this service, if the specification supports it.
+     * @category Registers
+     */
+     get valueRegister(): JDRegister {
         if (!this._valueRegister) {
             const pkt = this.specification?.packets.find(pkt => isValue(pkt))
             this._valueRegister = pkt && this.register(pkt.identifier)
@@ -180,7 +210,11 @@ export class JDService extends JDNode {
     }
 
     private _intensityRegister: JDRegister
-    get intensityRegister(): JDRegister {
+    /**
+     * Gets the ``intensity`` register associated to this service, if the specification supports it.
+     * @category Registers
+     */
+     get intensityRegister(): JDRegister {
         if (!this._intensityRegister) {
             const pkt = this.specification?.packets.find(pkt =>
                 isIntensity(pkt)
@@ -191,7 +225,11 @@ export class JDService extends JDNode {
     }
 
     private _statusCodeRegister: JDRegister
-    get statusCodeRegister(): JDRegister {
+    /**
+     * Gets the ``status_code`` register associated to this service, if the specification supports it.
+     * @category Registers
+     */
+     get statusCodeRegister(): JDRegister {
         if (!this._statusCodeRegister) {
             const pkt = this.specification?.packets.find(
                 pkt => pkt.identifier === SystemReg.StatusCode
@@ -214,6 +252,7 @@ export class JDService extends JDNode {
 
     /**
      * Gets the specification of the service. Undefined if unknown
+     * @category Services
      */
     get specification() {
         if (this._specification === null)
@@ -241,6 +280,10 @@ export class JDService extends JDNode {
         return this._registers.slice(0)
     }
 
+    /**
+     * Gets the registers and events
+     * @category JDOM
+     */
     get children(): JDNode[] {
         return [...this.registers(), ...this.events]
     }
