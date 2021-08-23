@@ -59,11 +59,24 @@ export class JDService extends JDNode {
 
     private _twin: JDServiceServer
 
-    constructor(
-        public readonly device: JDDevice,
-        public readonly serviceIndex: number
-    ) {
+    /**
+     * Gets the device this service belongs to
+     * @category JDOM
+     */
+    public readonly device: JDDevice
+    /**
+     * Gets the service index in the service list
+     * @category Control
+     */
+    public readonly serviceIndex: number
+
+    /**
+     * @internal
+     */
+    constructor(device: JDDevice, serviceIndex: number) {
         super()
+        this.device = device
+        this.serviceIndex = serviceIndex
         this.serviceClass = this.device.serviceClassAt(this.serviceIndex)
 
         const statusCodeChanged = this.event(BaseEvent.StatusCodeChanged)
@@ -239,11 +252,19 @@ export class JDService extends JDNode {
         return this._statusCodeRegister
     }
 
+    /**
+     * Gets the service instance name, if resolved
+     * @category Control
+     */
     get instanceName() {
         const r = this.register(SystemReg.InstanceName)
         return r?.stringValue
     }
 
+    /**
+     * Resolves the service instance name, if resolved
+     * @category Control
+     */
     async resolveInstanceName() {
         const r = this.register(SystemReg.InstanceName)
         await r?.refresh()
@@ -288,8 +309,14 @@ export class JDService extends JDNode {
         return [...this.registers(), ...this.events]
     }
 
+    /**
+     * Gets a register for the given code
+     * @param registerCode register identifier as found in the specification
+     * @returns a register instance (if found in specifiaction)
+     * @category Registers
+     */
     register(registerCode: number): JDRegister {
-        if (registerCode === undefined) return undefined
+        if (isNaN(registerCode)) return undefined
         // cache known registers
         this.registers()
         let register = this._registers.find(reg => reg.code === registerCode)
@@ -321,7 +348,15 @@ export class JDService extends JDNode {
         return register
     }
 
+    /**
+     * Gets an event for the given code
+     * @param eventCode event identifier as found in the specification
+     * @returns a event instance (if found in specifiaction)
+     * @category Events
+     */
     event(eventCode: number): JDEvent {
+        if (isNaN(eventCode)) return undefined
+
         if (!this._events) this._events = []
         let event = this._events.find(ev => ev.code === eventCode)
         if (!event) {
@@ -346,6 +381,12 @@ export class JDService extends JDNode {
         return event
     }
 
+    /**
+     * Send packet to the service server
+     * @param pkt packet to send
+     * @param ack acknolegment required
+     * @category Packets
+     */
     async sendPacketAsync(pkt: Packet, ack?: boolean) {
         pkt.device = this.device
         pkt.serviceIndex = this.serviceIndex
@@ -359,11 +400,23 @@ export class JDService extends JDNode {
             this.invalidateRegisterValues(pkt)
     }
 
+    /**
+     * Send a command to the service server
+     * @param pkt packet to send
+     * @param ack acknolegment required
+     * @category Packets
+     */
     sendCmdAsync(cmd: number, data?: Uint8Array, ack?: boolean) {
         const pkt = data ? Packet.from(cmd, data) : Packet.onlyHeader(cmd)
         return this.sendPacketAsync(pkt, ack)
     }
 
+    /**
+     * Send a command and await response to the service server
+     * @param pkt packet to send
+     * @param ack acknolegment required
+     * @category Packets
+     */
     sendCmdAwaitResponseAsync(pkt: Packet, timeout = 500) {
         const { bus } = this.device
         return new Promise<Packet>((resolve, reject) => {
@@ -392,6 +445,9 @@ export class JDService extends JDNode {
         })
     }
 
+    /**
+     * @internal
+     */
     processPacket(pkt: Packet) {
         this.emit(PACKET_RECEIVE, pkt)
         if (pkt.isReport) {
@@ -422,6 +478,9 @@ export class JDService extends JDNode {
             .forEach(r => r.clearGetTimestamp())
     }
 
+    /**
+     * @internal
+     */
     compareTo(b: JDService): number {
         return (
             this.serviceClass - b.serviceClass ||
