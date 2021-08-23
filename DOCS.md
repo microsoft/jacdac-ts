@@ -1,0 +1,41 @@
+# JavaScript/TypeScript package
+
+There are various ways to integrate Jacdac into your web or Node.JS projects.
+
+## JDOM
+
+The JDOM module is a dependency-free JavaScript object model 
+that reflects the state of the Jacdac elements and allows sending commands as well. JDOM also handles connection through WebUSB, WebBLE and other transports.
+
+* [JDOM introduction](/clients/javascript/jdom)
+
+## Installation
+
+Add the [jacdac-ts npm package](https://www.npmjs.com/package/jacdac-ts) module 
+to your project
+
+```
+npm install --save jacdac-ts
+```
+or
+```
+yarn add jacdac-ts
+```
+
+then import components as needed using ES6 import syntax
+
+```javascript
+import { createUSBBus } from "jacdac-ts"
+const jd = createUSBBus()
+```
+
+### CDN / UMD
+
+You can also use CDN services to import ``jacdac`` into your html page directly.
+This will load the ES6 build of the library.
+
+```html
+<script src="https://unpkg.com/jacdac-ts@VERSION/dist/jacdac.js"></script>
+```
+
+where ``@VERSION`` is the desired version. 

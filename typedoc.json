@@ -16,6 +16,6 @@
     "excludeExternals": true,
     "name": "Jacdac TypeScript",
     "categoryOrder": ["JDOM", "Clients", "Servers", "Trace", "*"],
-    "readme": "none",
+    "readme": "./DOCS.md",
     "includeVersion": true
 }
