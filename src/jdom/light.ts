@@ -48,9 +48,9 @@ function isWhiteSpace(code: number) {
 
 /**
  * Encodes a light command into a buffer
- * @param format 
- * @param args 
- * @returns 
+ * @param format
+ * @param args
+ * @returns
  * @category Data Packing
  */
 export function lightEncode(format: string, args: (number | number[])[]) {

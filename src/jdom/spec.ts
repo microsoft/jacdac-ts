@@ -156,8 +156,8 @@ export function isInstanceOf(
 
 /**
  * Checks if the service supports the Jacdac infrastructure
- * @param spec 
- * @returns 
+ * @param spec
+ * @returns
  * @category Specification
  */
 export function isInfrastructure(spec: jdspec.ServiceSpec) {
@@ -401,7 +401,7 @@ export function isReportOf(cmd: jdspec.PacketInfo, report: jdspec.PacketInfo) {
  * Indicates if the `report` packet is the *pipe* report specication of the `cmd` command.
  * @category Specification
  */
- export function isPipeReportOf(
+export function isPipeReportOf(
     cmd: jdspec.PacketInfo,
     pipeReport: jdspec.PacketInfo
 ) {
