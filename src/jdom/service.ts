@@ -71,6 +71,10 @@ export class JDService extends JDNode {
         })
     }
 
+    /**
+     * Gets the node identifier
+     * @category JDOM
+     */
     get id() {
         return `${this.nodeKind}:${
             this.device.deviceId
