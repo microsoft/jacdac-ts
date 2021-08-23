@@ -1,5 +1,5 @@
 import Packet from "../packet"
-import { EventTargetObservable } from "../eventtargetobservable"
+import EventTargetObservable from "./eventtargetobservable"
 import Flags from "../flags"
 import { USB_TRANSPORT } from "../constants"
 import { JDTransport } from "./transport"
