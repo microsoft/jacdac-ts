@@ -5,7 +5,7 @@ import {
 import { bufferToArray, NumberFormat } from "../buffer"
 import { JD_SERIAL_MAX_PAYLOAD_SIZE, REPORT_RECEIVE } from "../constants"
 import { jdpack } from "../pack"
-import { JDRegister } from "../register"
+import JDRegister from "../register"
 import JDService from "../service"
 import { JDServiceClient } from "../serviceclient"
 import { isReading, serviceSpecificationFromClassIdentifier } from "../spec"

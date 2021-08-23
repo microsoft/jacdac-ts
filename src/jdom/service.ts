@@ -1,7 +1,7 @@
 import JDDevice from "./device"
 import Packet from "./packet"
 import { serviceName } from "./pretty"
-import { JDRegister } from "./register"
+import JDRegister from "./register"
 import {
     PACKET_RECEIVE,
     PACKET_SEND,

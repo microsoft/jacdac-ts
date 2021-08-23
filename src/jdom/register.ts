@@ -247,6 +247,8 @@ export class JDRegister extends JDServiceMemberNode {
     }
 }
 
+export default JDRegister
+
 export function stableSortRegisters(registers: JDRegister[]): JDRegister[] {
     return registers?.sort((a, b) => a.compareTo(b))
 }
