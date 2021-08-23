@@ -5,7 +5,7 @@ import {
     SRV_ROLE_MANAGER,
     SRV_SETTINGS,
 } from "../jdom/constants"
-import { JDBus } from "./bus"
+import JDBus from "./bus"
 import {
     CHANGE,
     DEVICE_ANNOUNCE,

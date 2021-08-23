@@ -1,4 +1,4 @@
-import { JDBus } from "../jdom/bus"
+import JDBus from "../jdom/bus"
 import {
     CharacterScreenTextDirection,
     CharacterScreenVariant,

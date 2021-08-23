@@ -37,7 +37,7 @@ import {
 } from "./constants"
 import JDDevice from "./device"
 import { NumberFormat, getNumber } from "./buffer"
-import { JDBus } from "./bus"
+import JDBus from "./bus"
 import {
     commandName,
     DecodedPacket,

@@ -1,5 +1,5 @@
 import { arrayConcatMany, fromHex } from "./utils"
-import { JDBus } from "./bus"
+import JDBus from "./bus"
 import Packet from "./packet"
 import TracePlayer from "./traceplayer"
 import Frame from "./frame"

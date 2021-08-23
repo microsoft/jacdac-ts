@@ -999,3 +999,5 @@ export class JDBus extends JDNode {
         })
     }
 }
+
+export default JDBus

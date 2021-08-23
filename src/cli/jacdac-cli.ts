@@ -15,7 +15,7 @@ import {
     serviceSpecificationToDTDL,
 } from "../azure-iot/dtdlspec"
 import { deviceSpecifications } from "../jdom/spec"
-import { JDBus } from "../jdom/bus"
+import JDBus from "../jdom/bus"
 import { printPacket } from "../jdom/pretty"
 import { parseLogicLog, replayLog } from "../jdom/logparser"
 import { dashify } from "../../jacdac-spec/spectool/jdspec"

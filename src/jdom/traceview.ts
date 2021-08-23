@@ -1,4 +1,4 @@
-import { JDBus } from "./bus"
+import JDBus from "./bus"
 import { JDClient } from "./client"
 import {
     CHANGE,

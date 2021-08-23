@@ -10,7 +10,7 @@ import {
     CLOSE,
 } from "./constants"
 import Packet from "./packet"
-import { JDBus } from "./bus"
+import JDBus from "./bus"
 import { signal, fromHex, throwError, toHex } from "./utils"
 import { JDClient } from "./client"
 import { jdpack } from "./pack"

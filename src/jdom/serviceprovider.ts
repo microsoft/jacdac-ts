@@ -1,4 +1,4 @@
-import { JDBus } from "./bus"
+import JDBus from "./bus"
 import JDServiceServer from "./serviceserver"
 import Packet from "./packet"
 import { shortDeviceId } from "./pretty"

@@ -7,7 +7,7 @@ import {
     SRV_REAL_TIME_CLOCK,
 } from "../jdom/constants"
 import JDRegisterServer from "../jdom/registerserver"
-import { JDBus } from "../jdom/bus"
+import JDBus from "../jdom/bus"
 import Packet from "../jdom/packet"
 
 export type RealTimeClockReadingType = [
