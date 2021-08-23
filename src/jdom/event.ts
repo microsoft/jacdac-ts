@@ -9,7 +9,7 @@ import {
     EVENT_NODE_NAME,
 } from "./constants"
 import { isEvent } from "./spec"
-import { JDServiceMemberNode } from "./servicemembernode"
+import JDServiceMemberNode from "./servicemembernode"
 import { DecodedPacket } from "./pretty"
 import JDField from "./field"
 

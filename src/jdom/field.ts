@@ -1,7 +1,7 @@
 import { FIELD_NODE_NAME } from "./constants"
 import JDNode from "./node"
 import { DecodedMember } from "./pretty"
-import { JDServiceMemberNode } from "./servicemembernode"
+import JDServiceMemberNode from "./servicemembernode"
 
 /**
  * A Jacdac field.
