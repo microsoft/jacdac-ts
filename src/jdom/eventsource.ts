@@ -57,19 +57,19 @@ export class JDEventSource implements IEventSource {
      */
     public readonly nodeId = nextNodeId++
 
-    private readonly listeners: SMap<Listener[]> = {}
+    private readonly listeners: Record<string, Listener[]> = {}
 
     /**
      * Gets a counter of event emit calls.
      * @category JDOM
      */
-    readonly eventStats: SMap<number> = {}
+    readonly eventStats: Record<string, number> = {}
 
     /**
      * Gets a counter map from events to new listener counts
      * @category JDOM
      */
-    newListenerStats: SMap<number> = undefined
+    newListenerStats: Record<string, number> = undefined
 
     constructor() {}
 

@@ -22,7 +22,7 @@ export interface PacketFilterProps {
     flags?: string[]
     regGet?: boolean
     regSet?: boolean
-    devices?: SMap<{ from?: boolean; to?: boolean }>
+    devices?: Record<string, { from?: boolean; to?: boolean }>
     selfDevice?: boolean
     serviceClasses?: number[]
     pkts?: string[]
@@ -67,7 +67,7 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
     let log: boolean = undefined
     let before: number = undefined
     let after: number = undefined
-    const devices: SMap<{ from: boolean; to: boolean }> = {}
+    const devices: Record<string, { from: boolean; to: boolean }> = {}
     let grouping = true
     let pipes: boolean = undefined
     let port: number = undefined

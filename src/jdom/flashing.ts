@@ -32,7 +32,7 @@ const BL_PAGE_DELAY = 5
 
 let _startTime = 0
 
-const uf2ExtTags: SMap<number> = {
+const uf2ExtTags: Record<string, number> = {
     version: -0x9fc7bc,
     name: -0x650d9d,
     pageSize: 0x0be9f7,
@@ -431,7 +431,7 @@ async function scanCore(
     makeFlashers: boolean,
     recovery = false
 ) {
-    const devices: SMap<FirmwareInfo> = {}
+    const devices: Record<string, FirmwareInfo> = {}
     const flashers: FlashClient[] = []
     try {
         bus.on(PACKET_REPORT, handlePkt)
