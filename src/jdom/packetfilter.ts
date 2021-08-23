@@ -7,7 +7,6 @@ import {
 import JDBus from "./bus"
 import Packet from "./packet"
 import { isInstanceOf, serviceSpecificationFromName } from "./spec"
-import { SMap } from "./utils"
 
 export type CompiledPacketFilter = (pkt: Packet) => boolean
 
