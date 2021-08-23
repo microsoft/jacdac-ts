@@ -32,7 +32,7 @@ export interface DTDLNode {
     // ^[a-zA-Z](?:[a-zA-Z0-9_]*[a-zA-Z0-9])?$
     name?: string
     displayName?: string
-    description?: SMap<string>
+    description?: Record<string, string>
 }
 
 export interface DTDLSchema extends DTDLNode {

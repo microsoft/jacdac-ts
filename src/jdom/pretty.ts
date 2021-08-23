@@ -2,7 +2,6 @@ import Packet from "./packet"
 import { NumberFormat } from "./buffer"
 import {
     roundWithPrecision,
-    SMap,
     idiv,
     fromHex,
     hash,
@@ -485,7 +484,7 @@ export function decodePacketData(pkt: Packet): DecodedPacket {
     return decodePacket(service, pkt)
 }
 
-function reverseLookup(map: SMap<number>, n: number) {
+function reverseLookup(map: Record<string, number>, n: number) {
     for (const k of Object.keys(map)) {
         if (map[k] == n) return k
     }

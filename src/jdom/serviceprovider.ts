@@ -1,4 +1,4 @@
-import { JDBus } from "./bus"
+import JDBus from "./bus"
 import JDServiceServer from "./serviceserver"
 import Packet from "./packet"
 import { shortDeviceId } from "./pretty"
@@ -21,7 +21,11 @@ import {
 } from "./constants"
 import { anyRandomUint32 } from "./random"
 
-export default class JDServiceProvider extends JDEventSource {
+/**
+ * Implements a device with service servers.
+ * @category Servers
+ */
+export class JDServiceProvider extends JDEventSource {
     private _bus: JDBus
     private _services: JDServiceServer[]
     public readonly deviceId: string
@@ -261,3 +265,4 @@ export default class JDServiceProvider extends JDEventSource {
         this.emit(RESET)
     }
 }
+export default JDServiceProvider

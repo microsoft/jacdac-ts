@@ -1,5 +1,5 @@
 import { suite, test, afterEach } from "mocha"
-import { JDBus } from "../../src/jdom/bus"
+import JDBus from "../../src/jdom/bus"
 import { SELF_ANNOUNCE } from "../../src/jdom/constants"
 import { mkBus } from "../testutils"
 

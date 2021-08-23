@@ -32,7 +32,7 @@ import { Mutex, atomic } from "./utils"
 import { assert, SMap } from "../jdom/utils"
 import { JDClient } from "../jdom/client"
 import JDServiceProvider from "../jdom/serviceprovider"
-import { JDDevice } from "../jdom/device"
+import JDDevice from "../jdom/device"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type VMTraceContext = any

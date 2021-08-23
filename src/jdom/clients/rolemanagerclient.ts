@@ -1,7 +1,7 @@
 import {
     addServiceProvider,
     serviceProviderDefinitionFromServiceClass,
-} from "../servers/servers"
+} from "../../servers/servers"
 import {
     CHANGE,
     DEVICE_ANNOUNCE,
@@ -15,19 +15,19 @@ import {
     SRV_LOGGER,
     SRV_ROLE_MANAGER,
     SystemEvent,
-} from "./constants"
-import { jdpack, jdunpack } from "./pack"
-import Packet from "./packet"
-import { InPipeReader } from "./pipes"
-import { JDService } from "./service"
-import { JDServiceClient } from "./serviceclient"
+} from "../constants"
+import { jdpack, jdunpack } from "../pack"
+import Packet from "../packet"
+import { InPipeReader } from "../pipes"
+import JDService from "../service"
+import { JDServiceClient } from "../serviceclient"
 import {
     arrayConcatMany,
     debounceAsync,
     fromHex,
     groupBy,
     toHex,
-} from "./utils"
+} from "../utils"
 
 export interface Role {
     deviceId: string
@@ -267,3 +267,4 @@ export class RoleManagerClient extends JDServiceClient {
         }
     }
 }
+export default RoleManagerClient

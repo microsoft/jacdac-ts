@@ -7,9 +7,9 @@ import {
     ROLE_UNBOUND,
     UNBOUND,
 } from "../jdom/constants"
-import { JDBus } from "../jdom/bus"
-import { JDDevice } from "../jdom/device"
-import { JDService } from "../jdom/service"
+import JDBus from "../jdom/bus"
+import JDDevice from "../jdom/device"
+import JDService from "../jdom/service"
 import { serviceSpecificationFromClassIdentifier } from "../jdom/spec"
 import { JDClient } from "../jdom/client"
 

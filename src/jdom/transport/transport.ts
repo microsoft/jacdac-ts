@@ -1,4 +1,4 @@
-import { JDBus } from "../bus"
+import JDBus from "../bus"
 import {
     CHANGE,
     CONNECT,
@@ -322,3 +322,5 @@ export abstract class JDTransport extends JDEventSource {
         this._cleanups = []
     }
 }
+
+export default JDTransport

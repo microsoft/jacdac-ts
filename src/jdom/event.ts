@@ -1,5 +1,5 @@
-import { JDNode } from "./node"
-import { JDService } from "./service"
+import JDNode from "./node"
+import JDService from "./service"
 import Packet from "./packet"
 import { intOfBuffer } from "./buffer"
 import {
@@ -9,9 +9,9 @@ import {
     EVENT_NODE_NAME,
 } from "./constants"
 import { isEvent } from "./spec"
-import { JDServiceMemberNode } from "./servicemembernode"
+import JDServiceMemberNode from "./servicemembernode"
 import { DecodedPacket } from "./pretty"
-import { JDField } from "./field"
+import JDField from "./field"
 
 /**
  * A Jacdac event client.
@@ -63,6 +63,9 @@ export class JDEvent extends JDServiceMemberNode {
         return this._lastReportPkt?.decoded
     }
 
+    /**
+     * @internal
+     */
     processEvent(pkt: Packet) {
         const { device } = this.service
         const ec = (device.eventCounter || 0) + 1
@@ -89,3 +92,5 @@ export class JDEvent extends JDServiceMemberNode {
         device.eventCounter = pkt.eventCounter
     }
 }
+
+export default JDEvent

@@ -1,4 +1,4 @@
-import { Observable, Observer } from "./observable"
+import { Observable, Observer } from "../observable"
 
 export class EventTargetObservable<TEvent> implements Observable<TEvent> {
     constructor(
@@ -16,3 +16,4 @@ export class EventTargetObservable<TEvent> implements Observable<TEvent> {
         }
     }
 }
+export default EventTargetObservable

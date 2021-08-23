@@ -19,7 +19,7 @@ export interface InputJSON {
     type: number
     name: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fields: SMap<FieldJSON>
+    fields: Record<string, FieldJSON>
     child?: BlockJSON
 }
 

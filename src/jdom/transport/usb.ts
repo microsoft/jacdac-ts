@@ -1,9 +1,9 @@
 import Packet from "../packet"
-import { EventTargetObservable } from "../eventtargetobservable"
+import EventTargetObservable from "./eventtargetobservable"
 import Flags from "../flags"
 import { USB_TRANSPORT } from "../constants"
-import { JDTransport } from "./transport"
-import { JDBus } from "../bus"
+import JDTransport from "./transport"
+import JDBus from "../bus"
 import Proto from "./proto"
 import USBIO, { USBOptions } from "./usbio"
 

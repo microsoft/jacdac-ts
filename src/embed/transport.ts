@@ -1,4 +1,4 @@
-import { JDBus } from "../jdom/bus"
+import JDBus from "../jdom/bus"
 import JDIFrameClient from "../jdom/iframeclient"
 import { SMap } from "../jdom/utils"
 import { IAckMessage, IMessage, IStatusMessage } from "./protocol"
@@ -14,7 +14,8 @@ export interface ITransport {
 }
 
 export class IFrameTransport extends JDIFrameClient implements ITransport {
-    private readonly ackAwaiters: SMap<(msg: any) => void> = {}
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private readonly ackAwaiters: Record<string, (msg: any) => void> = {}
 
     constructor(bus: JDBus) {
         super(bus)

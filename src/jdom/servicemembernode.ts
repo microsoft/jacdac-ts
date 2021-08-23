@@ -1,5 +1,5 @@
-import { JDNode } from "./node"
-import { JDService } from "./service"
+import JDNode from "./node"
+import JDService from "./service"
 import { DecodedPacket } from "./pretty"
 
 /**
@@ -53,3 +53,5 @@ export abstract class JDServiceMemberNode extends JDNode {
 
     abstract get decoded(): DecodedPacket
 }
+
+export default JDServiceMemberNode

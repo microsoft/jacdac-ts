@@ -1,6 +1,6 @@
 import { loadServiceSpecifications } from "../src/jdom/spec"
 import { readFileSync } from "fs"
-import { JDBus } from "../src/jdom/bus"
+import JDBus from "../src/jdom/bus"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let specs: any

@@ -11,14 +11,14 @@ import {
     REGISTER_REFRESH_RETRY_0,
     GET_ATTEMPT,
 } from "./constants"
-import { JDService } from "./service"
+import JDService from "./service"
 import { intOfBuffer, uintOfBuffer } from "./buffer"
 import { bufferEq, toHex, fromUTF8, uint8ArrayToString } from "./utils"
 import { DecodedPacket } from "./pretty"
 import { isRegister, isReading } from "./spec"
-import { JDField } from "./field"
-import { JDServiceMemberNode } from "./servicemembernode"
-import { JDNode } from "./node"
+import JDField from "./field"
+import JDServiceMemberNode from "./servicemembernode"
+import JDNode from "./node"
 import { jdpack, jdunpack, PackedValues } from "./pack"
 import { PackedObject, unpackedToObject } from "./packobject"
 
@@ -246,6 +246,8 @@ export class JDRegister extends JDServiceMemberNode {
         return this.code - b.code || this.service.compareTo(b.service)
     }
 }
+
+export default JDRegister
 
 export function stableSortRegisters(registers: JDRegister[]): JDRegister[] {
     return registers?.sort((a, b) => a.compareTo(b))

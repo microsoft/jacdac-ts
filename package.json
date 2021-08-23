@@ -33,7 +33,7 @@
     "prettier": "prettier --write src/**/*.ts tests/**/*.ts",
     "predist": "rm -rf dist",
     "dist": "node node_modules/rollup/dist/bin/rollup -c rollup.config.ts",
-    "watch": "node node_modules/rollup/dist/bin/rollup -c rollup.config.ts -w",
+    "watch:ts": "node node_modules/rollup/dist/bin/rollup -c rollup.config.ts -w",
     "test": "cd tests && node ../node_modules/mocha/bin/mocha --require ts-node/register --watch-extensions ts,tsx -p ./tsconfig.json **/*.spec.ts",
     "tools": "npx http-server . -c-1",
     "disttools": "cd docs && mkdir tools && cd ../tools && node ./prepare.js && cp * -t ../docs/tools",
@@ -41,7 +41,8 @@
     "builddtdl": "node dist/jacdac-cli.js --dtdl dist/dtdl --rm=on",
     "buildpxt": "cd pxt-jacdac && sh mk.sh",
     "builddocs": "node node_modules/typedoc/bin/typedoc && cp .nojekyll docs",
-    "watchdocs": "node node_modules/typedoc/bin/typedoc --watch"
+    "watch:docs": "node node_modules/typedoc/bin/typedoc --watch",
+    "watch": "node node_modules/concurrently/bin/concurrently.js --kill-others \"npm:watch:*\""
   },
   "devDependencies": {
     "@semantic-release/exec": "^5.0.0",
@@ -78,7 +79,8 @@
     "typescript": "^4.3.5",
     "webusb": "^2.2.0",
     "yargs-parser": "^20.2.9",
-    "typedoc": "^0.21.6"
+    "typedoc": "^0.21.6",
+    "concurrently": "^6.2.1"
   },
   "dependencies": {
     "@types/node": "^16.7.1",

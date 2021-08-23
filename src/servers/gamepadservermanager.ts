@@ -1,4 +1,4 @@
-import { JDBus } from "../jdom/bus"
+import JDBus from "../jdom/bus"
 import { JDClient } from "../jdom/client"
 import { JoystickVariant } from "../jdom/constants"
 import JDServiceProvider from "../jdom/serviceprovider"

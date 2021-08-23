@@ -37,12 +37,12 @@ import {
     REPORT_UPDATE,
     SERIAL_TRANSPORT,
 } from "./constants"
-import { read32, SMap, bufferEq, setAckError, read16 } from "./utils"
+import { read32, bufferEq, setAckError, read16 } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
 import { JDBus, ServiceFilter } from "./bus"
-import { JDService } from "./service"
+import JDService from "./service"
 import { serviceClass, shortDeviceId } from "./pretty"
-import { JDNode } from "./node"
+import JDNode from "./node"
 import { isInstanceOf } from "./spec"
 import { FirmwareInfo } from "./flashing"
 import { QualityOfService } from "./qualityofservice"
@@ -71,17 +71,29 @@ export interface JDServiceGroup {
  * @category JDOM
  */
 export class JDDevice extends JDNode {
+    /**
+     * Indicates if the device is connected to a bus
+     * @category Lifecycle
+     */
     connected: boolean
     private _source: string
     private _replay: boolean
     private _lost: boolean
     private _servicesData: Uint8Array
     private _statusLight: LEDController
+    /**
+     * Timestamp of the last packet received from the device
+     * @category Lifecycle
+     */
     lastSeen: number
+    /**
+     * Timestamp of the last service update packet received from the device
+     * @category Lifecycle
+     */
     lastServiceUpdate: number
     private _shortId: string
     private _services: JDService[]
-    private _ports: SMap<PipeInfo>
+    private _ports: Record<string, PipeInfo>
     private _firmwareInfo: FirmwareInfo
     private _ackAwaiting: AckAwaiter[]
     private _flashing = false
@@ -131,6 +143,7 @@ export class JDDevice extends JDNode {
 
     /**
      * Gets a unique identifier for this device in the bus
+     * @category JDOM
      */
     get id() {
         return `${this.nodeKind}:${this.deviceId}`
@@ -138,6 +151,7 @@ export class JDDevice extends JDNode {
 
     /**
      * Gets the short id of the device
+     * @category JDOM
      */
     get name() {
         return this.shortId
@@ -145,6 +159,7 @@ export class JDDevice extends JDNode {
 
     /**
      * Identifies node as a device
+     * @category JDOM
      */
     get nodeKind() {
         return DEVICE_NODE_NAME
@@ -171,15 +186,24 @@ export class JDDevice extends JDNode {
 
     /**
      * Indicates if the device is part of a trace replay
+     * @category Lifecycle
      */
     get replay() {
         return this._replay
     }
 
+    /**
+     * Gets the device short name
+     * @category JDOM
+     */
     get friendlyName() {
         return this.shortId
     }
 
+    /**
+     * Gets the device short name
+     * @category JDOM
+     */
     get qualifiedName() {
         return this.shortId
     }
@@ -187,6 +211,7 @@ export class JDDevice extends JDNode {
     /**
      * Indicates if service information is available.
      * This happens after a announce packet has been received.
+     * @category Lifecycle
      */
     get announced(): boolean {
         return !!this._servicesData?.length
@@ -194,6 +219,7 @@ export class JDDevice extends JDNode {
 
     /**
      * Gets the control announce flag from the annouce packet.
+     * @category Announce
      */
     get announceFlags(): ControlAnnounceFlags {
         return this._servicesData ? read16(this._servicesData, 0) : 0
@@ -201,6 +227,7 @@ export class JDDevice extends JDNode {
 
     /**
      * Gets the restart counter from the announce packet.
+     * @category Announce
      */
     get restartCounter(): number {
         return this.announceFlags & ControlAnnounceFlags.RestartCounterSteady
@@ -208,6 +235,7 @@ export class JDDevice extends JDNode {
 
     /**
      * Gets the status light announce flags from the announce packet.
+     * @category Announce
      */
     get statusLightFlags(): ControlAnnounceFlags {
         return this.announceFlags & ControlAnnounceFlags.StatusLightRgbFade
@@ -215,6 +243,7 @@ export class JDDevice extends JDNode {
 
     /**
      * Indicates if the device is announced as a client
+     * @category Announce
      */
     get isClient() {
         return !!(this.announceFlags & ControlAnnounceFlags.IsClient)
@@ -223,11 +252,16 @@ export class JDDevice extends JDNode {
     /**
      * Gets the number of packets sent since the last announce packet,
      * as read from the announce packet.
+     * @category Announce
      */
     get packetCount(): number {
         return this._servicesData?.[2] || 0
     }
 
+    /**
+     * Gets the device short identifier
+     * @category JDOM
+     */
     get shortId() {
         // TODO measure if caching is worth it
         if (!this._shortId) this._shortId = shortDeviceId(this.deviceId)
@@ -236,6 +270,7 @@ export class JDDevice extends JDNode {
 
     /**
      * Gets the bus instance hosting this device.
+     * @category JDOM
      */
     get parent(): JDNode {
         return this.bus
@@ -243,6 +278,7 @@ export class JDDevice extends JDNode {
 
     /**
      * Gets the firmware information if any.
+     * @category Firmware
      */
     get firmwareInfo() {
         return this._firmwareInfo
@@ -250,6 +286,7 @@ export class JDDevice extends JDNode {
 
     /**
      * Sets the firmware information.
+     * @category Firmware
      */
     set firmwareInfo(info: FirmwareInfo) {
         const changed =
@@ -265,6 +302,7 @@ export class JDDevice extends JDNode {
 
     /**
      * Indicates if no packet from this device has been observed in a while.
+     * @category Lifecycle
      */
     get lost() {
         return this._lost
@@ -272,6 +310,8 @@ export class JDDevice extends JDNode {
 
     /**
      * Sets the lost status
+     * @category Lifecycle
+     * @internal
      */
     set lost(v: boolean) {
         if (!!v === this._lost) return
@@ -292,6 +332,7 @@ export class JDDevice extends JDNode {
 
     /**
      * A flashing sequence is in progress
+     * @category Lifecycle
      */
     get flashing() {
         return this._flashing
@@ -299,6 +340,7 @@ export class JDDevice extends JDNode {
 
     /**
      * Sets the flashing sequence state
+     * @category Lifecycle
      */
     set flashing(value: boolean) {
         if (value !== this._flashing) {
@@ -309,10 +351,17 @@ export class JDDevice extends JDNode {
         }
     }
 
+    /**
+     * Gets the number of events received by the service clients in this device
+     * @category Lifecycle
+     */
     get eventCounter() {
         return this._eventCounter
     }
 
+    /**
+     * @internal
+     */
     set eventCounter(v: number) {
         this._eventCounter = v
     }
@@ -321,6 +370,7 @@ export class JDDevice extends JDNode {
      * Indicates if the device contains at least one service matching the service class
      * @param serviceClass service class to match
      * @returns true if at least one service present
+     * @category Service Clients
      */
     hasService(serviceClass: number): boolean {
         if (!this.announced) return false
@@ -338,6 +388,7 @@ export class JDDevice extends JDNode {
      * Gets or allocates a pipe port
      * @param id identifier of the port
      * @returns a pipe port
+     * @category Pipes
      */
     port(id: number) {
         if (!this._ports) this._ports = {}
@@ -349,6 +400,7 @@ export class JDDevice extends JDNode {
 
     /**
      * Gets the number of services hosted by the device
+     * @category Service Clients
      */
     get serviceLength() {
         if (!this.announced) return 0
@@ -359,6 +411,7 @@ export class JDDevice extends JDNode {
      * Gets the service class at a given index
      * @param index index of the service
      * @returns service class
+     * @category Service Clients
      */
     serviceClassAt(index: number): number {
         if (index == 0) return 0
@@ -369,6 +422,10 @@ export class JDDevice extends JDNode {
         return read32(this._servicesData, index)
     }
 
+    /**
+     * Gets the list of service classes
+     * @category Service Clients
+     */
     get serviceClasses(): number[] {
         const r = []
         const n = this.serviceLength
@@ -400,6 +457,7 @@ export class JDDevice extends JDNode {
      * Gets the service client at the given service index
      * @param serviceIndex index of the service client
      * @returns service client
+     * @category Service Clients
      */
     service(serviceIndex: number): JDService {
         if (!this.announced) return undefined
@@ -412,6 +470,7 @@ export class JDDevice extends JDNode {
      * Gets a filtered list of service clients.
      * @param options filters for services
      * @returns services matching the filter
+     * @category Service Clients
      */
     services(options?: ServiceFilter): JDService[] {
         if (!this.announced) return []
@@ -439,6 +498,7 @@ export class JDDevice extends JDNode {
 
     /**
      * Gets the list of child services.
+     * @category JDOM
      */
     get children(): JDNode[] {
         return this.services()
@@ -452,6 +512,9 @@ export class JDDevice extends JDNode {
         return pkt.sendCmdAsync(this)
     }
 
+    /**
+     * @internal
+     */
     processAnnouncement(pkt: Packet) {
         this.qualityOfService.processAnnouncement(pkt)
 
@@ -500,6 +563,9 @@ export class JDDevice extends JDNode {
         }
     }
 
+    /**
+     * @internal
+     */
     processPacket(pkt: Packet) {
         this.qualityOfService.processPacket(pkt)
         this.lost = false
@@ -511,6 +577,9 @@ export class JDDevice extends JDNode {
         if (service) service.processPacket(pkt)
     }
 
+    /**
+     * @internal
+     */
     disconnect() {
         this.connected = false
         this.emit(DISCONNECT)
@@ -529,6 +598,10 @@ export class JDDevice extends JDNode {
         return this._statusLight
     }
 
+    /**
+     * Sends an ``identify`` command to the device
+     * @category Lifecycle
+     */
     async identify() {
         if (this._identifying) return
 
@@ -550,10 +623,18 @@ export class JDDevice extends JDNode {
         }
     }
 
+    /**
+     * Indicates the device should be identifying.
+     * @category Lifecycle
+     */
     get identifying() {
         return this._identifying
     }
 
+    /**
+     * Sends a ``reset`` command to the device
+     * @category Lifecycle
+     */
     reset() {
         return this.service(0)?.sendCmdAsync(ControlCmd.Reset)
     }
@@ -652,3 +733,5 @@ export class JDDevice extends JDNode {
         await this.sendPktWithAck(pkt)
     }
 }
+
+export default JDDevice

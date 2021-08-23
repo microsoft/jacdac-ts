@@ -17,7 +17,7 @@ import Packet from "./packet"
 import JDRegisterServer from "./registerserver"
 import { isRegister, serviceSpecificationFromClassIdentifier } from "./spec"
 import { PackedValues } from "./pack"
-import { JDService } from "./service"
+import JDService from "./service"
 
 const CALIBRATION_DELAY = 5000
 export interface ServerOptions {
@@ -35,7 +35,11 @@ export interface ServerOptions {
     }[]
 }
 
-export default class JDServiceServer extends JDEventSource {
+/**
+ * Base class for service server implementations
+ * @category Servers
+ */
+export class JDServiceServer extends JDEventSource {
     public serviceIndex = -1 // set by device
     private _device: JDServiceProvider
     public readonly specification: jdspec.ServiceSpec
@@ -264,3 +268,4 @@ export default class JDServiceServer extends JDEventSource {
         this.statusCode.setValues([SystemStatusCodes.Ready, 0])
     }
 }
+export default JDServiceServer

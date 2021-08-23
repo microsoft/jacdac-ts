@@ -1,7 +1,7 @@
-import { JDDevice } from "./device"
+import JDDevice from "./device"
 import Packet from "./packet"
 import { serviceName } from "./pretty"
-import { JDRegister } from "./register"
+import JDRegister from "./register"
 import {
     PACKET_RECEIVE,
     PACKET_SEND,
@@ -12,7 +12,7 @@ import {
     CHANGE,
     ROLE_CHANGE,
 } from "./constants"
-import { JDNode } from "./node"
+import JDNode from "./node"
 import {
     serviceSpecificationFromClassIdentifier,
     isRegister,
@@ -23,7 +23,7 @@ import {
     isOptionalReadingRegisterCode,
     isConstRegister,
 } from "./spec"
-import { JDEvent } from "./event"
+import JDEvent from "./event"
 import { strcmp } from "./utils"
 import {
     BaseEvent,
@@ -417,6 +417,8 @@ export class JDService extends JDNode {
         return recv
     }
 }
+
+export default JDService
 
 export function stableSortServices(services: JDService[]): JDService[] {
     return services?.sort((a, b) => a.compareTo(b))

@@ -1,5 +1,5 @@
-import { JDBus } from "./bus"
-import { JDClient } from "./client"
+import JDBus from "../bus"
+import { JDClient } from "../client"
 import {
     CHANGE,
     DEVICE_ANNOUNCE,
@@ -9,11 +9,11 @@ import {
     PACKET_PROCESS,
     PACKET_SEND,
     TRACE_FILTER_HORIZON,
-} from "./constants"
-import Packet from "./packet"
-import { PacketFilter, parsePacketFilter } from "./packetfilter"
+} from "../constants"
+import Packet from "../packet"
+import { PacketFilter, parsePacketFilter } from "../packetfilter"
 import Trace from "./trace"
-import { throttle } from "./utils"
+import { throttle } from "../utils"
 
 const FILTERED_TRACE_MAX_ITEMS = 100
 const DUPLICATE_PACKET_MERGE_HORIZON_MAX_DISTANCE = 10
@@ -25,7 +25,11 @@ export interface TracePacketProps {
     count?: number
 }
 
-export default class TraceView extends JDClient {
+/**
+ * A filtered view over a packet trace
+ * @category Trace
+ */
+export class TraceView extends JDClient {
     private id = "v" + Math.random()
     private _maxFilteredLength = FILTERED_TRACE_MAX_ITEMS
 
@@ -276,3 +280,4 @@ export default class TraceView extends JDClient {
         }
     }
 }
+export default TraceView

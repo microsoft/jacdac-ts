@@ -1,14 +1,14 @@
-import * as U from "./utils"
-import Packet from "./packet"
-import { REPORT_RECEIVE, SRV_MODEL_RUNNER } from "./constants"
-import { JDService } from "./service"
-import { ModelRunnerCmd, ModelRunnerReg } from "./constants"
-import { bufferToArray, NumberFormat } from "./buffer"
-import { OutPipe } from "./pipes"
-import { JDRegister } from "./register"
-import { JDServiceClient } from "./serviceclient"
-import { serviceSpecificationFromClassIdentifier } from "./spec"
-import { jdunpack } from "./pack"
+import * as U from "../utils"
+import Packet from "../packet"
+import { REPORT_RECEIVE, SRV_MODEL_RUNNER } from "../constants"
+import JDService from "../service"
+import { ModelRunnerCmd, ModelRunnerReg } from "../constants"
+import { bufferToArray, NumberFormat } from "../buffer"
+import { OutPipe } from "../pipes"
+import JDRegister from "../register"
+import { JDServiceClient } from "../serviceclient"
+import { serviceSpecificationFromClassIdentifier } from "../spec"
+import { jdunpack } from "../pack"
 
 /*
     enum SampleType : u8 {
@@ -135,6 +135,7 @@ export class ModelRunnerClient extends JDServiceClient {
         return info
     }
 }
+export default ModelRunnerClient
 
 export interface TFModelStats {
     modelSize: number

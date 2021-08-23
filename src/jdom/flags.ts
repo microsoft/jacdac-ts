@@ -1,4 +1,4 @@
-export default class Flags {
+export class Flags {
     /**
      * Enables additional logging and diagnostics
      */
@@ -22,3 +22,4 @@ export default class Flags {
      */
     static storage = false
 }
+export default Flags

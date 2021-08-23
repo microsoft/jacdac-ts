@@ -5,7 +5,7 @@ import {
     SRV_ROLE_MANAGER,
     SRV_SETTINGS,
 } from "../jdom/constants"
-import { JDBus } from "./bus"
+import JDBus from "./bus"
 import {
     CHANGE,
     DEVICE_ANNOUNCE,
@@ -13,18 +13,12 @@ import {
     PACKET_PROCESS,
     PACKET_SEND,
 } from "./constants"
-import { JDDevice } from "./device"
+import JDDevice from "./device"
 import JDIFrameClient from "./iframeclient"
 import { resolveMakecodeServiceFromClassIdentifier } from "./makecode"
 import Packet from "./packet"
-import { JDService } from "./service"
-import {
-    arrayConcatMany,
-    debounce,
-    roundWithPrecision,
-    SMap,
-    unique,
-} from "./utils"
+import JDService from "./service"
+import { arrayConcatMany, debounce, roundWithPrecision, unique } from "./utils"
 
 export interface PacketMessage {
     channel: "jacdac"
@@ -42,20 +36,20 @@ interface SimulatorRunOptions {
     builtinParts?: string[]
     fnArgs?: unknown
     aspectRatio?: number
-    partDefinitions?: SMap<unknown> // SMap<PartDefinition>;
+    partDefinitions?: Record<string, unknown> // SMap<PartDefinition>;
     mute?: boolean
     highContrast?: boolean
     light?: boolean
     cdnUrl?: string
-    localizedStrings?: SMap<string>
+    localizedStrings?: Record<string, string>
     refCountingDebug?: boolean
     version?: string
     clickTrigger?: boolean
     breakOnStart?: boolean
-    storedState?: SMap<unknown>
+    storedState?: Record<string, unknown>
     autoRun?: boolean
     ipc?: boolean
-    dependencies?: SMap<string> // Map<string>;
+    dependencies?: Record<string, string> // Map<string>;
     // single iframe, no message simulators
     single?: boolean
 }
@@ -71,7 +65,7 @@ const ignoredServices = [
 /**
  * A client that bridges received and sent packets to a parent iframe
  */
-export default class IFrameBridgeClient extends JDIFrameClient {
+export class IFrameBridgeClient extends JDIFrameClient {
     // this is a unique id used to trace packets sent by this bridge
     readonly bridgeId = "bridge" + Math.random()
     packetSent = 0
@@ -284,3 +278,5 @@ export default class IFrameBridgeClient extends JDIFrameClient {
         )
     }
 }
+
+export default IFrameBridgeClient

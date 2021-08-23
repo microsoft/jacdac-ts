@@ -1,12 +1,16 @@
-import { CHANGE, SettingsCmd } from "./constants"
-import { jdpack, jdunpack } from "./pack"
-import Packet from "./packet"
-import { InPipeReader } from "./pipes"
-import { JDService } from "./service"
-import { JDServiceClient } from "./serviceclient"
-import { bufferToString, stringToBuffer } from "./utils"
+import { CHANGE, SettingsCmd } from "../constants"
+import { jdpack, jdunpack } from "../pack"
+import Packet from "../packet"
+import { InPipeReader } from "../pipes"
+import JDService from "../service"
+import { JDServiceClient } from "../serviceclient"
+import { bufferToString, stringToBuffer } from "../utils"
 
-export default class SettingsClient extends JDServiceClient {
+/**
+ * A settings service client implementation.
+ * @category Clients
+ */
+export class SettingsClient extends JDServiceClient {
     constructor(service: JDService) {
         super(service)
         service.registersUseAcks = true
@@ -90,3 +94,4 @@ export default class SettingsClient extends JDServiceClient {
         this.emit(CHANGE)
     }
 }
+export default SettingsClient

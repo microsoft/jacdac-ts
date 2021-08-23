@@ -11,7 +11,11 @@ import Packet from "./packet"
 import JDRegisterServer from "./registerserver"
 import JDServiceServer from "./serviceserver"
 
-export default class ControlServer extends JDServiceServer {
+/**
+ * A control service server
+ * @category Servers
+ */
+export class ControlServer extends JDServiceServer {
     readonly deviceDescription: JDRegisterServer<[string]>
     readonly mcuTemperature: JDRegisterServer<[number]>
     readonly resetIn: JDRegisterServer<[number]>
@@ -102,3 +106,5 @@ export default class ControlServer extends JDServiceServer {
         this.emit(CHANGE)
     }
 }
+
+export default ControlServer

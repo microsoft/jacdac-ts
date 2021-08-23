@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { CHANGE } from "./constants"
 import { JDEventSource } from "./eventsource"
 import Packet from "./packet"
@@ -25,6 +26,9 @@ export class QualityOfService extends JDEventSource {
         return r
     }
 
+    /**
+     * @internal
+     */
     processAnnouncement(pkt: Packet) {
         // collect metrics
         const received = this._receivedPackets
@@ -38,7 +42,9 @@ export class QualityOfService extends JDEventSource {
         this.emit(CHANGE)
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    /**
+     * @internal
+     */
     processPacket(pkt: Packet) {
         this._receivedPackets++
     }
