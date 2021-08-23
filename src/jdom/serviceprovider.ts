@@ -21,6 +21,10 @@ import {
 } from "./constants"
 import { anyRandomUint32 } from "./random"
 
+/**
+ * Implements a device with service servers.
+ * @category Servers
+ */
 export class JDServiceProvider extends JDEventSource {
     private _bus: JDBus
     private _services: JDServiceServer[]

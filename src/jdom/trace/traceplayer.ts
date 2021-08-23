@@ -1,8 +1,12 @@
-import JDBus from "./bus"
-import JDClient from "./client"
-import { CHANGE, PROGRESS } from "./constants"
+import JDBus from "../bus"
+import JDClient from "../client"
+import { CHANGE, PROGRESS } from "../constants"
 import Trace from "./trace"
 
+/**
+ * A player for packet traces.
+ * @category Trace
+ */
 export class TracePlayer extends JDClient {
     private _trace: Trace
     private _busStartTimestamp = 0

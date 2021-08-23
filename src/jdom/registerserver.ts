@@ -65,6 +65,10 @@ function defaultPayload<T extends PackedValues>(
     return rs as T
 }
 
+/**
+ * A register "server" instance, used to assembly service servers.
+ * @category Servers
+ */
 export class JDRegisterServer<
     TValues extends PackedValues
 > extends JDEventSource {

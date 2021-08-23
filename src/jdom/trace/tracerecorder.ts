@@ -1,10 +1,15 @@
-import JDBus from "./bus"
-import JDClient from "./client"
-import { CHANGE, PACKET_PROCESS, PACKET_SEND, START, STOP } from "./constants"
-import Packet from "./packet"
+import JDBus from "../bus"
+import JDClient from "../client"
+import { CHANGE, PACKET_PROCESS, PACKET_SEND, START, STOP } from "../constants"
+import Packet from "../packet"
 import Trace from "./trace"
 
 const RECORDING_TRACE_MAX_ITEMS = 100000
+
+/**
+ * A recorder of packets to create traces.
+ * @category Trace
+ */
 export class TraceRecorder extends JDClient {
     public maxRecordingLength = RECORDING_TRACE_MAX_ITEMS
     private _trace: Trace

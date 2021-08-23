@@ -1,9 +1,9 @@
 import { arrayConcatMany, fromHex } from "./utils"
 import JDBus from "./bus"
 import Packet from "./packet"
-import TracePlayer from "./traceplayer"
+import TracePlayer from "./trace/traceplayer"
 import Frame from "./frame"
-import Trace from "./trace"
+import Trace from "./trace/trace"
 
 export function parseTrace(contents: string): Trace {
     const description: string[] = []

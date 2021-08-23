@@ -11,6 +11,10 @@ import Packet from "./packet"
 import JDRegisterServer from "./registerserver"
 import JDServiceServer from "./serviceserver"
 
+/**
+ * A control service server
+ * @category Servers
+ */
 export class ControlServer extends JDServiceServer {
     readonly deviceDescription: JDRegisterServer<[string]>
     readonly mcuTemperature: JDRegisterServer<[number]>

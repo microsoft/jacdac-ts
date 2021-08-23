@@ -6,6 +6,10 @@ import JDService from "../service"
 import { JDServiceClient } from "../serviceclient"
 import { bufferToString, stringToBuffer } from "../utils"
 
+/**
+ * A settings service client implementation.
+ * @category Clients
+ */
 export class SettingsClient extends JDServiceClient {
     constructor(service: JDService) {
         super(service)

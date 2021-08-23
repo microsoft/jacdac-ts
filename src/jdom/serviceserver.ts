@@ -35,6 +35,10 @@ export interface ServerOptions {
     }[]
 }
 
+/**
+ * Base class for service server implementations
+ * @category Servers
+ */
 export class JDServiceServer extends JDEventSource {
     public serviceIndex = -1 // set by device
     private _device: JDServiceProvider

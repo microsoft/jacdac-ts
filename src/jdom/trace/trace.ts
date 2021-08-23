@@ -1,7 +1,11 @@
-import Packet from "./packet"
-import { printPacket } from "./pretty"
-import { toHex } from "./utils"
+import Packet from "../packet"
+import { printPacket } from "../pretty"
+import { toHex } from "../utils"
 
+/**
+ * A sequence of packets.
+ * @category Trace
+ */
 export class Trace {
     constructor(public packets: Packet[] = [], public description?: string) {}
 
