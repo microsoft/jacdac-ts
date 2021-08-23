@@ -71,7 +71,7 @@ const ignoredServices = [
 /**
  * A client that bridges received and sent packets to a parent iframe
  */
-export default class IFrameBridgeClient extends JDIFrameClient {
+export class IFrameBridgeClient extends JDIFrameClient {
     // this is a unique id used to trace packets sent by this bridge
     readonly bridgeId = "bridge" + Math.random()
     packetSent = 0
@@ -284,3 +284,5 @@ export default class IFrameBridgeClient extends JDIFrameClient {
         )
     }
 }
+
+export default IFrameBridgeClient

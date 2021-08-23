@@ -1,7 +1,7 @@
 import JDBus from "./bus"
-import { JDClient } from "./client"
+import JDClient from "./client"
 
-export default class JDIFrameClient extends JDClient {
+export class JDIFrameClient extends JDClient {
     constructor(readonly bus: JDBus) {
         super()
     }
@@ -14,6 +14,8 @@ export default class JDIFrameClient extends JDClient {
         return this.origin === "*" || msg.origin === this.origin
     }
 }
+
+export default JDIFrameClient
 
 export function inIFrame() {
     try {

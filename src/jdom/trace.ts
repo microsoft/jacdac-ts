@@ -2,7 +2,7 @@ import Packet from "./packet"
 import { printPacket } from "./pretty"
 import { toHex } from "./utils"
 
-export default class Trace {
+export class Trace {
     constructor(public packets: Packet[] = [], public description?: string) {}
 
     get length() {
@@ -48,3 +48,4 @@ export default class Trace {
         return text.join("\n")
     }
 }
+export default Trace

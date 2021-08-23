@@ -40,7 +40,7 @@ export interface Role {
  * A client for the role manager service
  * @category Clients
  */
-export default class RoleManagerClient extends JDServiceClient {
+export class RoleManagerClient extends JDServiceClient {
     private _roles: Role[] = []
     private _needRefresh = true
     private _lastRefreshAttempt = 0
@@ -267,3 +267,4 @@ export default class RoleManagerClient extends JDServiceClient {
         }
     }
 }
+export default RoleManagerClient

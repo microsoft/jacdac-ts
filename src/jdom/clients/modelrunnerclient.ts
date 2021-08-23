@@ -57,7 +57,7 @@ export function getMLModelFormatName(model: Uint8Array) {
  * A client for the model runner service
  * @category Clients
  */
-export default class ModelRunnerClient extends JDServiceClient {
+export class ModelRunnerClient extends JDServiceClient {
     constructor(service: JDService) {
         super(service)
         this.service.registersUseAcks = true
@@ -135,6 +135,7 @@ export default class ModelRunnerClient extends JDServiceClient {
         return info
     }
 }
+export default ModelRunnerClient
 
 export interface TFModelStats {
     modelSize: number

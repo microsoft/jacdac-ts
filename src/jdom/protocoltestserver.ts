@@ -11,7 +11,7 @@ import { OutPipe } from "./pipes"
 import JDRegisterServer from "./registerserver"
 import JDServiceServer from "./serviceserver"
 
-export default class ProtocolTestServer extends JDServiceServer {
+export class ProtocolTestServer extends JDServiceServer {
     private rwBytes: JDRegisterServer<[Uint8Array]>
 
     constructor() {
@@ -105,3 +105,4 @@ export default class ProtocolTestServer extends JDServiceServer {
         })
     }
 }
+export default ProtocolTestServer

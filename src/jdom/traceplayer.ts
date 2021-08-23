@@ -1,9 +1,9 @@
 import JDBus from "./bus"
-import { JDClient } from "./client"
+import JDClient from "./client"
 import { CHANGE, PROGRESS } from "./constants"
 import Trace from "./trace"
 
-export default class TracePlayer extends JDClient {
+export class TracePlayer extends JDClient {
     private _trace: Trace
     private _busStartTimestamp = 0
     private _index = 0
@@ -101,3 +101,4 @@ export default class TracePlayer extends JDClient {
         }
     }
 }
+export default TracePlayer

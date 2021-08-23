@@ -33,7 +33,7 @@ export interface SensorAggregatorStats {
  * A client for the sensor aggregator service
  * @category Clients
  */
-export default class SensorAggregatorClient extends JDServiceClient {
+export class SensorAggregatorClient extends JDServiceClient {
     constructor(service: JDService) {
         super(service)
         this.service.registersUseAcks = true
@@ -168,3 +168,4 @@ export default class SensorAggregatorClient extends JDServiceClient {
         return info
     }
 }
+export default SensorAggregatorClient

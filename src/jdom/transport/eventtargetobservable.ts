@@ -1,6 +1,6 @@
 import { Observable, Observer } from "../observable"
 
-export default class EventTargetObservable<TEvent> implements Observable<TEvent> {
+export class EventTargetObservable<TEvent> implements Observable<TEvent> {
     constructor(
         public readonly element: EventTarget,
         public readonly eventName: string
@@ -16,3 +16,4 @@ export default class EventTargetObservable<TEvent> implements Observable<TEvent>
         }
     }
 }
+export default EventTargetObservable

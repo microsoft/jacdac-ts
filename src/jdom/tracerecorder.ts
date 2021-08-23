@@ -1,11 +1,11 @@
 import JDBus from "./bus"
-import { JDClient } from "./client"
+import JDClient from "./client"
 import { CHANGE, PACKET_PROCESS, PACKET_SEND, START, STOP } from "./constants"
 import Packet from "./packet"
 import Trace from "./trace"
 
 const RECORDING_TRACE_MAX_ITEMS = 100000
-export default class TraceRecorder extends JDClient {
+export class TraceRecorder extends JDClient {
     public maxRecordingLength = RECORDING_TRACE_MAX_ITEMS
     private _trace: Trace
     private _subscription: () => void
@@ -57,3 +57,4 @@ export default class TraceRecorder extends JDClient {
         this.emit(PACKET_PROCESS, pkt)
     }
 }
+export default TraceRecorder

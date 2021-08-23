@@ -35,7 +35,7 @@ export interface ServerOptions {
     }[]
 }
 
-export default class JDServiceServer extends JDEventSource {
+export class JDServiceServer extends JDEventSource {
     public serviceIndex = -1 // set by device
     private _device: JDServiceProvider
     public readonly specification: jdspec.ServiceSpec
@@ -264,3 +264,4 @@ export default class JDServiceServer extends JDEventSource {
         this.statusCode.setValues([SystemStatusCodes.Ready, 0])
     }
 }
+export default JDServiceServer

@@ -25,7 +25,7 @@ export interface TracePacketProps {
     count?: number
 }
 
-export default class TraceView extends JDClient {
+export class TraceView extends JDClient {
     private id = "v" + Math.random()
     private _maxFilteredLength = FILTERED_TRACE_MAX_ITEMS
 
@@ -276,3 +276,4 @@ export default class TraceView extends JDClient {
         }
     }
 }
+export default TraceView

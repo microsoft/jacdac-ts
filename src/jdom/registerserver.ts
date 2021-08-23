@@ -65,7 +65,7 @@ function defaultPayload<T extends PackedValues>(
     return rs as T
 }
 
-export default class JDRegisterServer<
+export class JDRegisterServer<
     TValues extends PackedValues
 > extends JDEventSource {
     data: Uint8Array
@@ -209,3 +209,4 @@ export default class JDRegisterServer<
         return true
     }
 }
+export default JDRegisterServer
