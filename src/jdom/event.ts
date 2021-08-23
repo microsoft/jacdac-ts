@@ -63,6 +63,9 @@ export class JDEvent extends JDServiceMemberNode {
         return this._lastReportPkt?.decoded
     }
 
+    /**
+     * @internal
+     */
     processEvent(pkt: Packet) {
         const { device } = this.service
         const ec = (device.eventCounter || 0) + 1
