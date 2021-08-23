@@ -73,7 +73,6 @@ import JDTransport from "./transport/transport"
 import { BusStatsMonitor } from "./busstats"
 import RoleManagerClient from "./clients/rolemanagerclient"
 import JDBridge from "./bridge"
-import IFrameBridgeClient from "./iframebridgeclient"
 import { randomDeviceId } from "./random"
 import { ControlReg, SRV_CONTROL } from "../../jacdac-spec/dist/specconstants"
 import { Scheduler, WallClockScheduler } from "./scheduler"
@@ -153,11 +152,6 @@ export class JDBus extends JDNode {
      * @category Diagnostics
      **/
     public readonly packetStats: BusStatsMonitor
-
-    /**
-     * @internal
-     */
-    public iframeBridge: IFrameBridgeClient
 
     /**
      * Creates the bus with the given transport

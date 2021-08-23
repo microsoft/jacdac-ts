@@ -6,6 +6,8 @@ import JDEventSource from "./eventsource"
  * @category JDOM
  */
 export abstract class JDNode extends JDEventSource {
+    private _nodeData: Record<string, unknown>
+
     constructor() {
         super()
     }
@@ -53,6 +55,14 @@ export abstract class JDNode extends JDEventSource {
      * @category JDOM
      */
     abstract get children(): JDNode[]
+
+    /**
+     * Gets a databag to store custom information
+     */
+    get nodeData() {
+        if (!this._nodeData) this._nodeData = {}
+        return this._nodeData
+    }
 
     /**
      * Emit event in current node and parent nodes
