@@ -402,7 +402,7 @@ export class JDBus extends JDNode {
      * Gets the bus name
      * @category JDOM
      */
-     get qualifiedName(): string {
+    get qualifiedName(): string {
         return this.name
     }
 
@@ -565,7 +565,7 @@ export class JDBus extends JDNode {
      * Sets the list of known firmware blobs
      * @category Firmware
      */
-     set firmwareBlobs(blobs: FirmwareBlob[]) {
+    set firmwareBlobs(blobs: FirmwareBlob[]) {
         this._firmwareBlobs = blobs
         this.emit(FIRMWARE_BLOBS_CHANGE)
         this.emit(CHANGE)
@@ -751,7 +751,7 @@ export class JDBus extends JDNode {
      * Pop a context to disable cleaning device that haven't issued packets recently.
      * @category Lifecycle
      */
-     popDeviceFrozen() {
+    popDeviceFrozen() {
         this._gcDevicesFrozen = Math.max(0, this._gcDevicesFrozen - 1)
     }
 
