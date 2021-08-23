@@ -1,14 +1,14 @@
-import * as U from "./utils"
-import Packet from "./packet"
-import { REPORT_RECEIVE, SRV_MODEL_RUNNER } from "./constants"
-import { JDService } from "./service"
-import { ModelRunnerCmd, ModelRunnerReg } from "./constants"
-import { bufferToArray, NumberFormat } from "./buffer"
-import { OutPipe } from "./pipes"
-import { JDRegister } from "./register"
-import { JDServiceClient } from "./serviceclient"
-import { serviceSpecificationFromClassIdentifier } from "./spec"
-import { jdunpack } from "./pack"
+import * as U from "../utils"
+import Packet from "../packet"
+import { REPORT_RECEIVE, SRV_MODEL_RUNNER } from "../constants"
+import { JDService } from "../service"
+import { ModelRunnerCmd, ModelRunnerReg } from "../constants"
+import { bufferToArray, NumberFormat } from "../buffer"
+import { OutPipe } from "../pipes"
+import { JDRegister } from "../register"
+import { JDServiceClient } from "../serviceclient"
+import { serviceSpecificationFromClassIdentifier } from "../spec"
+import { jdunpack } from "../pack"
 
 /*
     enum SampleType : u8 {
@@ -57,7 +57,7 @@ export function getMLModelFormatName(model: Uint8Array) {
  * A client for the model runner service
  * @category Clients
  */
-export class ModelRunnerClient extends JDServiceClient {
+export default class ModelRunnerClient extends JDServiceClient {
     constructor(service: JDService) {
         super(service)
         this.service.registersUseAcks = true

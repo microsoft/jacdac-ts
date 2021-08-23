@@ -15,5 +15,6 @@
     "excludeInternal": true,
     "excludeExternals": true,
     "name": "Jacdac TypeScript",
-    "categoryOrder": ["JDOM", "Clients", "*"]
+    "categoryOrder": ["JDOM", "Clients", "*"],
+    "readme": "none"
 }

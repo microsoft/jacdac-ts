@@ -1,15 +1,15 @@
 import {
     SensorAggregatorReg,
     SensorAggregatorSampleType,
-} from "../../jacdac-spec/dist/specconstants"
-import { bufferToArray, NumberFormat } from "./buffer"
-import { JD_SERIAL_MAX_PAYLOAD_SIZE, REPORT_RECEIVE } from "./constants"
-import { jdpack } from "./pack"
-import { JDRegister } from "./register"
-import { JDService } from "./service"
-import { JDServiceClient } from "./serviceclient"
-import { isReading, serviceSpecificationFromClassIdentifier } from "./spec"
-import { bufferConcat, bufferConcatMany, fromHex } from "./utils"
+} from "../../../jacdac-spec/dist/specconstants"
+import { bufferToArray, NumberFormat } from "../buffer"
+import { JD_SERIAL_MAX_PAYLOAD_SIZE, REPORT_RECEIVE } from "../constants"
+import { jdpack } from "../pack"
+import { JDRegister } from "../register"
+import { JDService } from "../service"
+import { JDServiceClient } from "../serviceclient"
+import { isReading, serviceSpecificationFromClassIdentifier } from "../spec"
+import { bufferConcat, bufferConcatMany, fromHex } from "../utils"
 
 export interface SensorAggregatorInputConfig {
     serviceClass: number
@@ -33,7 +33,7 @@ export interface SensorAggregatorStats {
  * A client for the sensor aggregator service
  * @category Clients
  */
-export class SensorAggregatorClient extends JDServiceClient {
+export default class SensorAggregatorClient extends JDServiceClient {
     constructor(service: JDService) {
         super(service)
         this.service.registersUseAcks = true
