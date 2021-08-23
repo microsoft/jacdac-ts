@@ -115,6 +115,9 @@ export interface ServiceFilter {
  * @category JDOM
  */
 export class JDBus extends JDNode {
+    /**
+     * @internal
+     */
     readonly selfDeviceId: string
     readonly scheduler: Scheduler
     readonly parentOrigin: string
@@ -135,7 +138,7 @@ export class JDBus extends JDNode {
     private _roleManagerClient: RoleManagerClient
     private _minLoggerPriority = LoggerPriority.Debug
     private _firmwareBlobs: FirmwareBlob[]
-    private _gcDevicesEnabled = 0
+    private _gcDevicesFrozen = 0
     private _serviceProviders: JDServiceProvider[] = []
 
     public readonly stats: BusStatsMonitor
@@ -169,6 +172,7 @@ export class JDBus extends JDNode {
 
     /**
      * Gets the list of transports registers with the bus
+     * @category Transports and Bridges
      */
     get transports() {
         return this._transports.slice(0)
@@ -176,6 +180,7 @@ export class JDBus extends JDNode {
 
     /**
      * Adds a transport to the bus
+     * @category Transports and Bridges
      */
     addTransport(transport: JDTransport) {
         if (this._transports.indexOf(transport) > -1) return // already added
@@ -187,6 +192,7 @@ export class JDBus extends JDNode {
 
     /**
      * Gets the list of bridges registered with the bus
+     * @category Transports and Bridges
      */
     get bridges() {
         return this._bridges.slice(0)
@@ -196,6 +202,7 @@ export class JDBus extends JDNode {
      * Add a bridge to the bus and returns a callback to remove it.
      * @param bridge
      * @returns callback to remove bridge
+     * @category Transports and Bridges
      */
     addBridge(bridge: JDBridge): () => void {
         if (this._bridges.indexOf(bridge) < 0) {
@@ -227,6 +234,7 @@ export class JDBus extends JDNode {
     /**
      * Connects the bus going through the transports chronologically. Does nothing if already connected.
      * @param background connection was triggered automatically
+     * @category Lifecycle
      */
     async connect(background?: boolean) {
         if (this.connected) return
@@ -241,6 +249,7 @@ export class JDBus extends JDNode {
 
     /**
      * Disconnects the bus and any connected transport.
+     * @category Lifecycle
      */
     async disconnect() {
         for (const transport of this._transports) {
@@ -249,7 +258,8 @@ export class JDBus extends JDNode {
     }
 
     /**
-     * Starts process packet and updates the JDOM nodes
+     * Starts to process packets and updates the JDOM nodes
+     * @category Lifecycle
      */
     start() {
         if (!this._announceInterval)
@@ -267,6 +277,7 @@ export class JDBus extends JDNode {
 
     /**
      * Stops processing packets
+     * @category Lifecycle
      */
     async stop() {
         await this.disconnect()
@@ -284,6 +295,7 @@ export class JDBus extends JDNode {
 
     /**
      * Stops the bus and all transport connections.
+     * @category Lifecycle
      */
     async dispose() {
         console.debug(`${this.id}: disposing.`)
@@ -294,6 +306,7 @@ export class JDBus extends JDNode {
     /**
      * Indicates that the bus is sending commands keep devices in bootloader mode.
      * This property is signaled by CHANGE.
+     * @category Lifecycle
      */
     get safeBoot() {
         return !!this._safeBootInterval
@@ -302,6 +315,7 @@ export class JDBus extends JDNode {
     /**
      * Turn on or off the safe boot mode where the bus keeps devices in bootloader mode.
      * Triggers a CHANGE event.
+     * @category Lifecycle
      */
     set safeBoot(enabled: boolean) {
         if (enabled && !this._safeBootInterval) {
@@ -321,6 +335,7 @@ export class JDBus extends JDNode {
     /**
      * Indicates if any of the transports is connected.
      * Some transports might be in the process of connecting or disconnecting.
+     * @category Lifecycle
      */
     get connected() {
         return this._transports.some(t => t.connected)
@@ -329,6 +344,7 @@ export class JDBus extends JDNode {
     /**
      * Indicates if any of the transports is disconnected.
      * Some transports might be in the process of connecting or disconnecting.
+     * @category Lifecycle
      */
     get disconnected() {
         return this._transports.every(t => t.disconnected)
@@ -360,11 +376,16 @@ export class JDBus extends JDNode {
 
     /**
      * Gets a unique identifier for this node in the Jacdac DOM.
+     * @category JDOM
      */
     get id(): string {
         return this.nodeKind
     }
 
+    /**
+     * Gets the bus name
+     * @category JDOM
+     */
     get name(): string {
         return "bus"
     }
@@ -377,6 +398,10 @@ export class JDBus extends JDNode {
         return this.name
     }
 
+    /**
+     * Returns the ``BUS_NODE_NAME``
+     * @category JDOM
+     */
     get nodeKind(): string {
         return BUS_NODE_NAME
     }
@@ -489,20 +514,32 @@ export class JDBus extends JDNode {
         this.setRoleManagerService(service)
     }
 
-    async sendPacketAsync(p: Packet) {
-        p.timestamp = this.timestamp
-        this.emit(PACKET_SEND, p)
+    /**
+     * Sends a packet to the bus
+     * @param packet packet to send
+     */
+    async sendPacketAsync(packet: Packet) {
+        packet.timestamp = this.timestamp
+        this.emit(PACKET_SEND, packet)
 
         await Promise.all(
-            this._transports.map(transport => transport.sendPacketAsync(p))
+            this._transports.map(transport => transport.sendPacketAsync(packet))
         )
     }
 
+    /**
+     * Gets the list of known firmware blobs
+     * @category Firmware
+     */
     get firmwareBlobs() {
         return this._firmwareBlobs
     }
 
-    set firmwareBlobs(blobs: FirmwareBlob[]) {
+    /**
+     * Sets the list of known firmware blobs
+     * @category Firmware
+     */
+     set firmwareBlobs(blobs: FirmwareBlob[]) {
         this._firmwareBlobs = blobs
         this.emit(FIRMWARE_BLOBS_CHANGE)
         this.emit(CHANGE)
@@ -510,6 +547,7 @@ export class JDBus extends JDNode {
 
     /**
      * Gets the current list of known devices on the bus
+     * @category Service Clients
      */
     devices(options?: DeviceFilter) {
         if (options?.serviceName && options?.serviceClass > -1)
@@ -533,6 +571,7 @@ export class JDBus extends JDNode {
 
     /**
      * Gets the current list of service providers on the bus
+     * @category Service Servers
      */
     serviceProviders(): JDServiceProvider[] {
         return this._serviceProviders.slice(0)
@@ -541,13 +580,16 @@ export class JDBus extends JDNode {
     /**
      * Get a service providers for a given device
      * @param deviceId
+     * @category Service Servers
      */
     findServiceProvider(deviceId: string) {
         return this._serviceProviders.find(d => d.deviceId === deviceId)
     }
 
     /**
-     * Adds the service provider to the bus
+     * Adds the service provider to the bus and returns the associated devoce
+     * @param provider instance to add
+     * @category Service Servers
      */
     addServiceProvider(provider: JDServiceProvider) {
         if (provider && this._serviceProviders.indexOf(provider) < 0) {
@@ -563,7 +605,8 @@ export class JDBus extends JDNode {
 
     /**
      * Removes the service provider from the bus
-     * @param provider
+     * @param provider instance to remove
+     * @category Service Servers
      */
     removeServiceProvider(provider: JDServiceProvider) {
         if (!provider) return
@@ -598,6 +641,7 @@ export class JDBus extends JDNode {
 
     /**
      * Gets the current list of services from all the known devices on the bus
+     * @category Service Clients
      */
     services(options?: ServiceFilter & DeviceFilter): JDService[] {
         return arrayConcatMany(
@@ -607,7 +651,10 @@ export class JDBus extends JDNode {
 
     /**
      * Gets a device on the bus
-     * @param id
+     * @param id device identifier to query
+     * @param skipCreate do not create new device if missing
+     * @param pkt packet that generated this device query
+     * @category Service Clients
      */
     device(id: string, skipCreate?: boolean, pkt?: Packet) {
         if (id === "0000000000000000" && !skipCreate) {
@@ -657,16 +704,28 @@ export class JDBus extends JDNode {
         }
     }
 
-    freezeDevices() {
-        this._gcDevicesEnabled++
+    /**
+     * Push a context to disable cleaning device that haven't issued packets recently.
+     * @category Lifecycle
+     */
+    pushDeviceFrozen() {
+        this._gcDevicesFrozen++
     }
 
-    unfreezeDevices() {
-        this._gcDevicesEnabled = Math.max(0, this._gcDevicesEnabled - 1)
+    /**
+     * Pop a context to disable cleaning device that haven't issued packets recently.
+     * @category Lifecycle
+     */
+     popDeviceFrozen() {
+        this._gcDevicesFrozen = Math.max(0, this._gcDevicesFrozen - 1)
     }
 
+    /**
+     * Indicates if the device list if currently frozen.
+     * @category Lifecycle
+     */
     get devicesFrozen() {
-        return this._gcDevicesEnabled > 0
+        return this._gcDevicesFrozen > 0
     }
 
     private gcDevices() {
@@ -704,6 +763,7 @@ export class JDBus extends JDNode {
     /**
      * Ingests and process a packet received from the bus.
      * @param pkt a jacdac packet
+     * @internal
      */
     processPacket(pkt: Packet) {
         if (!pkt.isMultiCommand && !pkt.device) {
@@ -752,6 +812,9 @@ export class JDBus extends JDNode {
         }
     }
 
+    /**
+     * Gets the virtual device created by this bus to handle pipes.
+     */
     get selfDevice() {
         return this.device(this.selfDeviceId)
     }
@@ -810,13 +873,22 @@ export class JDBus extends JDNode {
         }
     }
 
+    /**
+     * Indicates if registers are automatically refreshed in the background.
+     * @category Lifecycle
+     */
     get backgroundRefreshRegisters() {
         return !!this._refreshRegistersInterval
     }
 
-    set backgroundRefreshRegisters(value: boolean) {
-        if (!!value !== this.backgroundRefreshRegisters) {
-            if (!value) {
+    /**
+     * Enables or disables automatically refreshing registers in the background.
+     * @param enabled true to automatically refresh registers
+     * @category Lifecycle
+     */
+    set backgroundRefreshRegisters(enabled: boolean) {
+        if (!!enabled !== this.backgroundRefreshRegisters) {
+            if (!enabled) {
                 if (this._refreshRegistersInterval)
                     this.scheduler.clearInterval(this._refreshRegistersInterval)
                 this._refreshRegistersInterval = undefined
