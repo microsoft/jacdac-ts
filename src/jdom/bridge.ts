@@ -6,8 +6,9 @@ import { randomDeviceId } from "./random"
 
 /**
  * A client that bridges received and sent packets to a parent iframe.
+ * @category JDOM
  */
-export default abstract class JDBridge extends JDClient {
+export abstract class JDBridge extends JDClient {
     private _bus: JDBus
     readonly bridgeId = randomDeviceId()
     packetSent = 0
@@ -93,3 +94,4 @@ export default abstract class JDBridge extends JDClient {
      */
     protected abstract sendPacket(data: Uint8Array): void
 }
+export default JDBridge
