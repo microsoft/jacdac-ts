@@ -11,7 +11,7 @@ import {
     REGISTER_REFRESH_RETRY_0,
     GET_ATTEMPT,
 } from "./constants"
-import { JDService } from "./service"
+import JDService from "./service"
 import { intOfBuffer, uintOfBuffer } from "./buffer"
 import { bufferEq, toHex, fromUTF8, uint8ArrayToString } from "./utils"
 import { DecodedPacket } from "./pretty"

@@ -17,7 +17,7 @@ import JDDevice from "./device"
 import JDIFrameClient from "./iframeclient"
 import { resolveMakecodeServiceFromClassIdentifier } from "./makecode"
 import Packet from "./packet"
-import { JDService } from "./service"
+import JDService from "./service"
 import {
     arrayConcatMany,
     debounce,

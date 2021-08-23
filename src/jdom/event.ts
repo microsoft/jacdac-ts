@@ -1,5 +1,5 @@
 import { JDNode } from "./node"
-import { JDService } from "./service"
+import JDService from "./service"
 import Packet from "./packet"
 import { intOfBuffer } from "./buffer"
 import {

@@ -1,5 +1,5 @@
 import { JDNode } from "./node"
-import { JDService } from "./service"
+import JDService from "./service"
 import { DecodedPacket } from "./pretty"
 
 /**

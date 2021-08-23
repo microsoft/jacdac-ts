@@ -1,7 +1,7 @@
 import * as U from "../utils"
 import Packet from "../packet"
 import { REPORT_RECEIVE, SRV_MODEL_RUNNER } from "../constants"
-import { JDService } from "../service"
+import JDService from "../service"
 import { ModelRunnerCmd, ModelRunnerReg } from "../constants"
 import { bufferToArray, NumberFormat } from "../buffer"
 import { OutPipe } from "../pipes"

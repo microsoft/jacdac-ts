@@ -1,6 +1,6 @@
 import { isEvent, isRegister, isCommand, isIntensity } from "../jdom/spec"
 import { JDServiceClient } from "../jdom/serviceclient"
-import { JDService } from "../jdom/service"
+import JDService from "../jdom/service"
 import { JDRegister } from "../jdom/register"
 import { JDEvent } from "../jdom/event"
 import { CHANGE, EVENT, REPORT_UPDATE, SystemReg } from "../jdom/constants"

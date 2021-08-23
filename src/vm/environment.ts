@@ -1,5 +1,5 @@
 import { assert, SMap } from "../jdom/utils"
-import { JDService } from "../jdom/service"
+import JDService from "../jdom/service"
 import { JDEventSource } from "../jdom/eventsource"
 import { PackedValues } from "../jdom/pack"
 import { serviceSpecificationFromClassIdentifier } from "../jdom/spec"

@@ -40,7 +40,7 @@ import {
 import { read32, SMap, bufferEq, setAckError, read16 } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
 import { JDBus, ServiceFilter } from "./bus"
-import { JDService } from "./service"
+import JDService from "./service"
 import { serviceClass, shortDeviceId } from "./pretty"
 import { JDNode } from "./node"
 import { isInstanceOf } from "./spec"

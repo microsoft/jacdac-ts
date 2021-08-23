@@ -56,7 +56,7 @@ import {
     scanFirmwares,
     sendStayInBootloaderCommand,
 } from "./flashing"
-import { JDService } from "./service"
+import JDService from "./service"
 import { isConstRegister, isReading, isSensor } from "./spec"
 import {
     LoggerPriority,

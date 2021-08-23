@@ -19,7 +19,7 @@ import {
 import { jdpack, jdunpack } from "../pack"
 import Packet from "../packet"
 import { InPipeReader } from "../pipes"
-import { JDService } from "../service"
+import JDService from "../service"
 import { JDServiceClient } from "../serviceclient"
 import {
     arrayConcatMany,

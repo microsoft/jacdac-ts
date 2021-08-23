@@ -42,7 +42,7 @@ import JDServiceServer from "./serviceserver"
  * A Jacdac service client hosting registers, events.
  * @category JDOM
  */
-export class JDService extends JDNode {
+export default class JDService extends JDNode {
     private _role: string
     private _registers: JDRegister[]
     private _events: JDEvent[]

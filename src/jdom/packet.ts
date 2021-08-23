@@ -58,7 +58,7 @@ const { warn } = console
 export default class Packet {
     private _header: Uint8Array
     private _data: Uint8Array
-    private _meta: any = undefined // accesory data used by clients
+    private _meta: Record<string, unknown> = undefined // accesory data used by clients
     timestamp: number
     device: JDDevice
     private _decoded: DecodedPacket

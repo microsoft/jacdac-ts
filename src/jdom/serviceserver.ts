@@ -17,7 +17,7 @@ import Packet from "./packet"
 import JDRegisterServer from "./registerserver"
 import { isRegister, serviceSpecificationFromClassIdentifier } from "./spec"
 import { PackedValues } from "./pack"
-import { JDService } from "./service"
+import JDService from "./service"
 
 const CALIBRATION_DELAY = 5000
 export interface ServerOptions {
