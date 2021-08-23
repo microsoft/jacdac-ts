@@ -1,3 +1,6 @@
+/**
+ * @internal
+ */
 export function hsvToCss(
     hue: number,
     saturation: number,

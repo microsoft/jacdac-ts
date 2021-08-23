@@ -245,7 +245,7 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
     }
 }
 
-export function compileFilter(props: PacketFilterProps) {
+function compileFilter(props: PacketFilterProps) {
     const {
         announce,
         repeatedAnnounce,

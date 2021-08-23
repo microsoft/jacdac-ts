@@ -33,14 +33,6 @@ export interface IEventSource {
     ): () => void
 }
 
-export function dependencyChangeId(nodes: IEventSource[]) {
-    return (
-        nodes
-            ?.map(node => (node ? `${node.nodeId}:${node.changeId}` : "?"))
-            .join(",") || ""
-    )
-}
-
 export function dependencyId(nodes: IEventSource[]) {
     return nodes?.map(node => node?.nodeId || "?").join(",") || ""
 }
@@ -246,7 +238,7 @@ export class JDEventSource implements IEventSource {
      * @category JDOM
      */
     observe<T>(eventName: string | string[]): Observable<T> {
-        return fromEvent<T>(this, eventName)
+        return new EventObservable<T>(this, normalizeEventNames(eventName))
     }
 
     /**
@@ -295,12 +287,4 @@ class EventObservable<T> implements Observable<T> {
         }
     }
 }
-
 export default JDEventSource
-
-export function fromEvent<T>(
-    eventEmitter: JDEventSource,
-    eventNames: string | string[]
-): Observable<T> {
-    return new EventObservable<T>(eventEmitter, normalizeEventNames(eventNames))
-}

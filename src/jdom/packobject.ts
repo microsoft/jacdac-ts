@@ -1,4 +1,4 @@
-import { jdpack, PackedSimpleValue, PackedValues } from "./pack"
+import { PackedSimpleValue, PackedValues } from "./pack"
 
 export interface PackedObject {
     [index: string]: PackedSimpleValue | PackedObject | PackedObject[]
@@ -9,6 +9,7 @@ export interface PackedObject {
  * @param data
  * @param fields
  * @returns
+ * @category Data Packing
  */
 export function unpackedToObject(
     data: PackedValues,
@@ -35,6 +36,13 @@ export function unpackedToObject(
     return r
 }
 
+/**
+ * Converts an object structure into a flat packed data array
+ * @param pkt
+ * @param msg
+ * @returns
+ * @category Data Packing
+ */
 export function objectToUnpacked(
     pkt: jdspec.PacketInfo,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

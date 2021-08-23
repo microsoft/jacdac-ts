@@ -30,6 +30,7 @@ const _deviceRegistry: jdspec.DeviceSpec[] = deviceRegistryData as any
 /**
  * Override built-in service specifications
  * @param specs
+ * @category Specification
  */
 export function loadServiceSpecifications(specs: jdspec.ServiceSpec[]) {
     _serviceSpecifications = specs?.slice(0) || []
@@ -38,26 +39,43 @@ export function loadServiceSpecifications(specs: jdspec.ServiceSpec[]) {
 /**
  * Adds a custom service specification
  * @param service
+ * @category Specification
  */
 export function addCustomServiceSpecification(service: jdspec.ServiceSpec) {
     if (service && service.classIdentifier)
         _customServiceSpecifications[service.classIdentifier] = service
 }
 
+/**
+ * Clears any custom service specification
+ * @category Specification
+ */
 export function clearCustomServiceSpecifications() {
     _customServiceSpecifications = {}
 }
 
+/**
+ * Returns a map from service short ids to service specifications
+ * @category Specification
+ */
 export function serviceMap(): Record<string, jdspec.ServiceSpec> {
     const m: Record<string, jdspec.ServiceSpec> = {}
     _serviceSpecifications.forEach(spec => (m[spec.shortId] = spec))
     return m
 }
 
+/**
+ * Returns the list of service specifications
+ * @category Specification
+ */
 export function serviceSpecifications() {
     return _serviceSpecifications.slice(0)
 }
 
+/**
+ * Resolve the device specification from the product identiier
+ * @category Specification
+ */
 export function deviceSpecificationFromProductIdentifier(
     productIdentifier: number
 ): jdspec.DeviceSpec {
@@ -69,6 +87,9 @@ export function deviceSpecificationFromProductIdentifier(
     return spec
 }
 
+/**
+ * @internal
+ */
 export function deviceSpecificationFromIdentifier(
     id: string
 ): jdspec.DeviceSpec {
@@ -78,6 +99,11 @@ export function deviceSpecificationFromIdentifier(
     return spec
 }
 
+/**
+ * Gets the list of devices that use this service class
+ * @param serviceClass
+ * @category Specification
+ */
 export function deviceSpecificationsForService(
     serviceClass: number
 ): jdspec.DeviceSpec[] {
@@ -87,23 +113,32 @@ export function deviceSpecificationsForService(
     )
 }
 
+/**
+ * Gets the list of device specifications
+ * @returns
+ * @category Specification
+ */
 export function deviceSpecifications(): jdspec.DeviceSpec[] {
     return _deviceRegistry.slice(0)
 }
 
+/**
+ * @internal
+ */
 export function identifierToUrlPath(id: string) {
     return id?.replace(/-/g, "/")
 }
 
 /**
  * Checks if classIdentifier is compatible with requiredClassIdentifier
+ * @category Specification
  */
 export function isInstanceOf(
     classIdentifier: number,
     requiredClassIdentifier: number
 ): boolean {
     // garbage data
-    if (classIdentifier === undefined) return false
+    if (isNaN(classIdentifier)) return false
 
     // direct hit
     if (classIdentifier === requiredClassIdentifier) return true
@@ -119,6 +154,12 @@ export function isInstanceOf(
     })
 }
 
+/**
+ * Checks if the service supports the Jacdac infrastructure
+ * @param spec 
+ * @returns 
+ * @category Specification
+ */
 export function isInfrastructure(spec: jdspec.ServiceSpec) {
     return (
         spec &&
@@ -138,6 +179,7 @@ export function isInfrastructure(spec: jdspec.ServiceSpec) {
 /**
  * Looks up a service specification by name
  * @param shortId
+ * @category Specification
  */
 export function serviceSpecificationFromName(
     shortId: string
@@ -154,6 +196,7 @@ export function serviceSpecificationFromName(
 /**
  * Looks up a service specification by class
  * @param classIdentifier
+ * @category Specification
  */
 export function serviceSpecificationFromClassIdentifier(
     classIdentifier: number
@@ -171,6 +214,12 @@ export function serviceSpecificationFromClassIdentifier(
     )
 }
 
+/**
+ * Indicates if the specified service is a sensor
+ * @param spec
+ * @returns
+ * @category Specification
+ */
 export function isSensor(spec: jdspec.ServiceSpec): boolean {
     return (
         spec &&
@@ -182,6 +231,12 @@ export function isSensor(spec: jdspec.ServiceSpec): boolean {
     )
 }
 
+/**
+ * Indicates if the specified service is an actuator
+ * @param spec
+ * @returns
+ * @category Specification
+ */
 export function isActuator(spec: jdspec.ServiceSpec): boolean {
     return (
         spec &&
@@ -190,10 +245,22 @@ export function isActuator(spec: jdspec.ServiceSpec): boolean {
     )
 }
 
+/**
+ * Indicates if the packet information is a register
+ * @param spec
+ * @returns
+ * @category Specification
+ */
 export function isRegister(pkt: jdspec.PacketInfo) {
     return pkt && (pkt.kind == "const" || pkt.kind == "ro" || pkt.kind == "rw")
 }
 
+/**
+ * Indicates if the packet information is a ``reading`` register
+ * @param spec
+ * @returns
+ * @category Specification
+ */
 export function isReading(pkt: jdspec.PacketInfo) {
     return pkt && pkt.kind == "ro" && pkt.identifier == SystemReg.Reading
 }
@@ -212,6 +279,10 @@ const ignoredRegister = [
     SystemReg.MaxValue,
     SystemReg.MaxPower,
 ]
+/**
+ * Indicates if the register is usable from a high-level programming environment.
+ * @category Specification
+ */
 export function isHighLevelRegister(pkt: jdspec.PacketInfo) {
     return (
         isRegister(pkt) &&
@@ -222,6 +293,10 @@ export function isHighLevelRegister(pkt: jdspec.PacketInfo) {
 }
 
 const ignoredEvents = [SystemEvent.StatusCodeChanged]
+/**
+ * Indicates if the event is usable from a high-level programming environment.
+ * @category Specification
+ */
 export function isHighLevelEvent(pkt: jdspec.PacketInfo) {
     return (
         isEvent(pkt) &&
@@ -231,6 +306,12 @@ export function isHighLevelEvent(pkt: jdspec.PacketInfo) {
     )
 }
 
+/**
+ * Indicate if the register code is an auxilliary register to support streaming.
+ * @param code
+ * @returns
+ * @category Specification
+ */
 export function isOptionalReadingRegisterCode(code: number) {
     const regs = [
         SystemReg.MinReading,
@@ -242,14 +323,26 @@ export function isOptionalReadingRegisterCode(code: number) {
     return regs.indexOf(code) > -1
 }
 
+/**
+ * Indicates if the packet info represents an ``intensity`` register
+ * @category Specification
+ */
 export function isIntensity(pkt: jdspec.PacketInfo) {
     return pkt && pkt.kind == "rw" && pkt.identifier == SystemReg.Intensity
 }
 
+/**
+ * Indicates if the packet info represents a ``value`` register
+ * @category Specification
+ */
 export function isValue(pkt: jdspec.PacketInfo) {
     return pkt && pkt.kind == "rw" && pkt.identifier == SystemReg.Value
 }
 
+/**
+ * Indicates if the packet info represents a ``intensity`` or a ``value`` register
+ * @category Specification
+ */
 export function isValueOrIntensity(pkt: jdspec.PacketInfo) {
     return (
         pkt &&
@@ -259,22 +352,42 @@ export function isValueOrIntensity(pkt: jdspec.PacketInfo) {
     )
 }
 
+/**
+ * Indicates if the packet info represents an ``const`` register
+ * @category Specification
+ */
 export function isConstRegister(pkt: jdspec.PacketInfo) {
     return pkt?.kind == "const"
 }
 
+/**
+ * Indicates if the packet info represents an ``event``
+ * @category Specification
+ */
 export function isEvent(pkt: jdspec.PacketInfo) {
     return pkt.kind == "event"
 }
 
+/**
+ * Indicates if the packet info represents a ``command``
+ * @category Specification
+ */
 export function isCommand(pkt: jdspec.PacketInfo) {
     return pkt.kind == "command"
 }
 
+/**
+ * Indicates if the packet info represents a ``pipe_report``
+ * @category Specification
+ */
 export function isPipeReport(pkt: jdspec.PacketInfo) {
     return pkt.kind == "pipe_report"
 }
 
+/**
+ * Indicates if the `report` packet is the report specication of the `cmd` command.
+ * @category Specification
+ */
 export function isReportOf(cmd: jdspec.PacketInfo, report: jdspec.PacketInfo) {
     return (
         report.secondary &&
@@ -284,7 +397,11 @@ export function isReportOf(cmd: jdspec.PacketInfo, report: jdspec.PacketInfo) {
     )
 }
 
-export function isPipeReportOf(
+/**
+ * Indicates if the `report` packet is the *pipe* report specication of the `cmd` command.
+ * @category Specification
+ */
+ export function isPipeReportOf(
     cmd: jdspec.PacketInfo,
     pipeReport: jdspec.PacketInfo
 ) {
@@ -296,10 +413,16 @@ export function isPipeReportOf(
     )
 }
 
+/**
+ * @internal
+ */
 export function isIntegerType(tp: string) {
     return /^[ui]\d+(\.|$)/.test(tp) || tp == "pipe_port" || tp == "bool"
 }
 
+/**
+ * @internal
+ */
 export function numberFormatFromStorageType(tp: jdspec.StorageType) {
     switch (tp) {
         case -1:
@@ -325,6 +448,9 @@ export function numberFormatFromStorageType(tp: jdspec.StorageType) {
     }
 }
 
+/**
+ * @internal
+ */
 export function numberFormatToStorageType(nf: NumberFormat) {
     switch (nf) {
         case NumberFormat.Int8LE:
@@ -348,18 +474,27 @@ export function numberFormatToStorageType(nf: NumberFormat) {
     }
 }
 
+/**
+ * @internal
+ */
 export function scaleIntToFloat(v: number, info: jdspec.PacketMember) {
     if (!info.shift) return v
     if (info.shift < 0) return v * (1 << -info.shift)
     else return v / (1 << info.shift)
 }
 
+/**
+ * @internal
+ */
 export function scaleFloatToInt(v: number, info: jdspec.PacketMember) {
     if (!info.shift) return v
     if (info.shift < 0) return Math.round(v / (1 << -info.shift))
     else return Math.round(v * (1 << info.shift))
 }
 
+/**
+ * @internal
+ */
 export function storageTypeRange(tp: jdspec.StorageType): [number, number] {
     if (tp == 0) throw new Error("no range for 0")
     if (tp < 0) {
@@ -371,6 +506,9 @@ export function storageTypeRange(tp: jdspec.StorageType): [number, number] {
     }
 }
 
+/**
+ * @internal
+ */
 export function clampToStorage(v: number, tp: jdspec.StorageType) {
     const [min, max] = storageTypeRange(tp)
     if (isNaN(v)) return 0
@@ -379,6 +517,9 @@ export function clampToStorage(v: number, tp: jdspec.StorageType) {
     return v
 }
 
+/**
+ * @internal
+ */
 export function memberValueToString(
     value: any,
     info: jdspec.PacketMember
@@ -394,6 +535,9 @@ export function memberValueToString(
     }
 }
 
+/**
+ * @internal
+ */
 export function tryParseMemberValue(
     text: string,
     info: jdspec.PacketMember
@@ -418,12 +562,15 @@ export function tryParseMemberValue(
     }
 }
 
+/**
+ * Parses a device identifier into a buffer, returns undefined if invalid
+ * @param id
+ * @returns
+ * @category Specification
+ */
 export function parseDeviceId(id: string) {
+    if (!id) return undefined
     id = id.replace(/\s/g, "")
-    if (id.length != 16 || !/^[a-f0-9]+$/i.test(id)) return null
+    if (id.length != 16 || !/^[a-f0-9]+$/i.test(id)) return undefined
     return fromHex(id)
-}
-
-export function hasPipeReport(info: jdspec.PacketInfo) {
-    return info.fields.find(f => f.type == "pipe")
 }

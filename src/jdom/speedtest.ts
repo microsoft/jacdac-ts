@@ -4,6 +4,9 @@ import JDDevice from "./device"
 import { PACKET_REPORT, CMD_GET_REG, JD_SERVICE_INDEX_CTRL } from "./constants"
 import { ControlReg } from "../../jacdac-spec/dist/specconstants"
 
+/**
+ * @internal
+ */
 export async function packetSpeedTest(dev: JDDevice) {
     const pingCmd = CMD_GET_REG | ControlReg.ProductIdentifier
 

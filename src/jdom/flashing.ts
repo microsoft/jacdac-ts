@@ -401,12 +401,6 @@ export function parseUF2(uf2: Uint8Array, store: string): FirmwareBlob[] {
     }
 }
 
-export function generateDeviceList(uf2: Uint8Array) {
-    return parseUF2(uf2, "")
-        .map(b => `* \`\`0x${b.productIdentifier.toString(16)}\`\` ${b.name}`)
-        .join("\n")
-}
-
 export interface FirmwareInfo {
     deviceId: string
     version: string
@@ -415,6 +409,13 @@ export interface FirmwareInfo {
     bootloaderProductIdentifier: number
 }
 
+/**
+ * Parse a UF2 firmware file and extracts firmware blobs
+ * @param blob
+ * @param store
+ * @returns
+ * @category Firmware
+ */
 export async function parseFirmwareFile(
     blob: Blob,
     store?: string
@@ -530,6 +531,13 @@ async function scanCore(
     }
 }
 
+/**
+ * Scan bus for device with an available firmware update
+ * @param bus
+ * @param timeout
+ * @returns
+ * @category Firmware
+ */
 export async function scanFirmwares(
     bus: JDBus,
     timeout = 300
@@ -539,6 +547,13 @@ export async function scanFirmwares(
     return devs
 }
 
+/**
+ * Indicates if a firmware blob is applicated to the device information
+ * @param dev
+ * @param blob
+ * @returns
+ * @category Firmware
+ */
 export function updateApplicable(dev: FirmwareInfo, blob: FirmwareBlob) {
     return (
         dev &&
@@ -548,21 +563,16 @@ export function updateApplicable(dev: FirmwareInfo, blob: FirmwareBlob) {
     )
 }
 
-export function computeUpdates(devices: FirmwareInfo[], blobs: FirmwareBlob[]) {
-    return (blobs || [])
-        .map(blob => {
-            const updateCandidates = devices.filter(d =>
-                updateApplicable(d, blob)
-            )
-            if (updateCandidates.length == 0) return undefined
-            return {
-                blob,
-                updateCandidates,
-            }
-        })
-        .filter(r => !!r)
-}
-
+/**
+ * Flash firmware blob onto device
+ * @param bus
+ * @param blob
+ * @param updateCandidates
+ * @param ignoreFirmwareCheck
+ * @param progress
+ * @returns
+ * @category Firmware
+ */
 export async function flashFirmwareBlob(
     bus: JDBus,
     blob: FirmwareBlob,
@@ -598,6 +608,7 @@ export async function flashFirmwareBlob(
 /**
  * This command can be sent every 50ms to keep devices in bootloader mode
  * @param bus
+ * @category Firmware
  */
 export async function sendStayInBootloaderCommand(bus: JDBus) {
     const bl_announce = Packet.onlyHeader(BootloaderCmd.Info)

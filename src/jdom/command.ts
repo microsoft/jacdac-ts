@@ -1,5 +1,6 @@
 import { setNumber, sizeOfNumberFormat } from "./buffer"
 import { CMD_SET_REG, JD_SERIAL_MAX_PAYLOAD_SIZE } from "./constants"
+import { PackedSimpleValue } from "./pack"
 import Packet from "./packet"
 import {
     clampToStorage,
@@ -9,8 +10,13 @@ import {
 } from "./spec"
 import { stringToUint8Array, toUTF8 } from "./utils"
 
-export type ArgType = number | boolean | string | Uint8Array
-export function packArguments(info: jdspec.PacketInfo, args: ArgType[]) {
+/**
+ * @internal
+ */
+export function packArguments(
+    info: jdspec.PacketInfo,
+    args: PackedSimpleValue[]
+) {
     let repeatIdx = -1
     let numReps = 0
     let argIdx = 0

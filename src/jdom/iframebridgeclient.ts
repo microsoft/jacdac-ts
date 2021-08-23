@@ -6,6 +6,7 @@ import {
     SRV_SETTINGS,
 } from "../jdom/constants"
 import JDBus from "./bus"
+import JDClient from "./client"
 import {
     CHANGE,
     DEVICE_ANNOUNCE,
@@ -14,7 +15,6 @@ import {
     PACKET_SEND,
 } from "./constants"
 import JDDevice from "./device"
-import JDIFrameClient from "./iframeclient"
 import { resolveMakecodeServiceFromClassIdentifier } from "./makecode"
 import Packet from "./packet"
 import JDService from "./service"
@@ -66,7 +66,7 @@ const ignoredServices = [
  * A client that bridges received and sent packets to a parent iframe
  * @internal
  */
-export class IFrameBridgeClient extends JDIFrameClient {
+export class IFrameBridgeClient extends JDClient {
     // this is a unique id used to trace packets sent by this bridge
     readonly bridgeId = "bridge" + Math.random()
     packetSent = 0
@@ -76,13 +76,21 @@ export class IFrameBridgeClient extends JDIFrameClient {
     private _runOptions: SimulatorRunOptions
 
     constructor(readonly bus: JDBus, readonly frameId: string) {
-        super(bus)
+        super()
         this.postPacket = this.postPacket.bind(this)
         this.handleMessage = this.handleMessage.bind(this)
         this.handleResize = debounce(this.handleResize.bind(this), 200)
         this.registerEvents()
 
         this.bus.iframeBridge = this
+    }
+
+    get origin() {
+        return this.bus.parentOrigin
+    }
+
+    private isOriginValid(msg: MessageEvent) {
+        return this.origin === "*" || msg.origin === this.origin
     }
 
     get dependencies() {

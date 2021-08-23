@@ -11,31 +11,6 @@ export type PackedSimpleValue = number | boolean | string | Uint8Array
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type PackedValues = any[]
 
-/*
-
-## Format strings
-
-Format strings are space-separated sequences of type descriptions.
-All numbers are understood to be little endian.
-The following type descriptions are supported:
-
-* `u8`, `u16`, `u32` - unsigned, 1, 2, and 4 bytes long respectively
-* `i8`, `i16`, `i32` - similar, but signed
-* `b` - buffer until the end of input (has to be last)
-* `s` - similar, but utf-8 encoded string
-* `z` - NUL-terminated utf-8 string
-* `b[10]` - 10 byte buffer (10 is just an example, here and below)
-* `s[10]` - 10 byte utf-8 string; trailing NUL bytes (if any) are removed
-* `x[10]` - 10 bytes of padding
-
-There is one more token, `r:`. The type descriptions following it are repeated in order
-until the input buffer is exhausted.
-When unpacking, fields after `r:` are repeated as an array of tuples.
-
-In case there's only a single field repeating,
-it's also possible to append `[]` to its type, to get an array of values.
-*/
-
 // ASCII codes of characters
 const ch_b = 98
 const ch_i = 105
@@ -228,6 +203,11 @@ function jdunpackCore(buf: Uint8Array, fmt: string, repeat: number) {
     }
 }
 
+/**
+ Unpacks a byte buffer into structured data as specified in the format string.
+ See jdpack for format string reference.
+ @category Data Packing
+*/
 export function jdunpack<T extends PackedValues>(
     buf: Uint8Array,
     fmt: string
@@ -332,6 +312,30 @@ function jdpackCore(
     return off
 }
 
+/**
+
+* Format strings are space-separated sequences of type descriptions.
+* All numbers are understood to be little endian.
+* The following type descriptions are supported:
+* 
+* - `u8`, `u16`, `u32` - unsigned, 1, 2, and 4 bytes long respectively
+* - `i8`, `i16`, `i32` - similar, but signed
+* - `b` - buffer until the end of input (has to be last)
+* - `s` - similar, but utf-8 encoded string
+* - `z` - NUL-terminated utf-8 string
+* - `b[10]` - 10 byte buffer (10 is just an example, here and below)
+* - `s[10]` - 10 byte utf-8 string; trailing NUL bytes (if any) are removed
+* - `x[10]` - 10 bytes of padding
+* 
+* There is one more token, `r:`. The type descriptions following it are repeated in order
+* until the input buffer is exhausted.
+* When unpacking, fields after `r:` are repeated as an array of tuples.
+* 
+* In case there's only a single field repeating,
+* it's also possible to append `[]` to its type, to get an array of values.
+* 
+* @category Data Packing
+*/
 export function jdpack<T extends PackedValues>(fmt: string, data: T) {
     if (!fmt || !data) return undefined
 
@@ -352,6 +356,14 @@ export function jdpack<T extends PackedValues>(fmt: string, data: T) {
     return res
 }
 
+/**
+ * Checks if two packed values serialize to the same buffer
+ * @param fmt packing format string
+ * @param left left data
+ * @param right right data
+ * @returns true if both data serialize to the same buffer
+ * @category Data Packing
+ */
 export function jdpackEqual<T extends PackedValues>(
     fmt: string,
     left: T,

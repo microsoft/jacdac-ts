@@ -46,6 +46,13 @@ function isWhiteSpace(code: number) {
     return code == 32 || code == 13 || code == 10 || code == 9
 }
 
+/**
+ * Encodes a light command into a buffer
+ * @param format 
+ * @param args 
+ * @returns 
+ * @category Data Packing
+ */
 export function lightEncode(format: string, args: (number | number[])[]) {
     // tokens are white-space separated
     // % - number from args[]

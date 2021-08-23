@@ -1,7 +1,6 @@
 export * from "./constants"
 export * from "./utils"
 export * from "./buffer"
-export * from "./msgpack"
 export * from "./observable"
 export * from "./packet"
 export * from "./eventsource"
