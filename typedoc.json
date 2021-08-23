@@ -17,5 +17,6 @@
     "name": "Jacdac TypeScript",
     "categoryOrder": ["JDOM", "Clients", "Servers", "Trace", "*"],
     "readme": "./DOCS.md",
-    "includeVersion": true
+    "includeVersion": true,
+    "categorizeByGroup": false
 }

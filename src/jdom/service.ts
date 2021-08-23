@@ -419,7 +419,3 @@ export class JDService extends JDNode {
 }
 
 export default JDService
-
-export function stableSortServices(services: JDService[]): JDService[] {
-    return services?.sort((a, b) => a.compareTo(b))
-}

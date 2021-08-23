@@ -71,6 +71,9 @@ export class JDEventSource implements IEventSource {
      */
     newListenerStats: Record<string, number> = undefined
 
+    /**
+     * @internal
+     */
     constructor() {}
 
     /**
@@ -78,6 +81,7 @@ export class JDEventSource implements IEventSource {
      * @param eventName name or names of the events to subscribe
      * @param handler handler to register
      * @returns current object instance
+     * @category JDOM
      */
     on(eventName: string | string[], handler: EventHandler) {
         if (!handler) return this
@@ -92,6 +96,7 @@ export class JDEventSource implements IEventSource {
      * @param eventName name or names of the events to subscribe
      * @param handler handler to unregister
      * @returns current object instance
+     * @category JDOM
      */
     off(eventName: string | string[], handler: EventHandler) {
         normalizeEventNames(eventName).forEach(eventName =>
@@ -105,6 +110,7 @@ export class JDEventSource implements IEventSource {
      * @param eventName name or names of the events to subscribe
      * @param handler handler to execute
      * @returns current object instance
+     * @category JDOM
      */
     once(eventName: string | string[], handler: EventHandler) {
         normalizeEventNames(eventName).forEach(eventName =>

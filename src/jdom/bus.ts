@@ -119,6 +119,10 @@ export class JDBus extends JDNode {
      * @internal
      */
     readonly selfDeviceId: string
+    /**
+     * A timer and interval schedular to orchastrate bus timestamps
+     * @category Scheduling
+     */
     readonly scheduler: Scheduler
     readonly parentOrigin: string
     private readonly _transports: JDTransport[] = []
@@ -141,12 +145,17 @@ export class JDBus extends JDNode {
     private _gcDevicesFrozen = 0
     private _serviceProviders: JDServiceProvider[] = []
 
-    public readonly stats: BusStatsMonitor
+    /**
+     * Gets an instance that tracks packet statistics
+     * @category Diagnostics
+     **/
+    public readonly packetStats: BusStatsMonitor
     public iframeBridge: IFrameBridgeClient
 
     /**
      * Creates the bus with the given transport
      * @param sendPacket
+     * @category Lifecycle
      */
     constructor(transports?: JDTransport[], options?: BusOptions) {
         super()
@@ -154,7 +163,7 @@ export class JDBus extends JDNode {
         this.selfDeviceId = options?.deviceId || randomDeviceId()
         this.scheduler = options?.scheduler || new WallClockScheduler()
         this.parentOrigin = options?.parentOrigin || "*"
-        this.stats = new BusStatsMonitor(this)
+        this.packetStats = new BusStatsMonitor(this)
 
         transports?.filter(tr => !!tr).map(tr => this.addTransport(tr))
 
@@ -448,6 +457,9 @@ export class JDBus extends JDNode {
         }
     }
 
+    /**
+     * @internal
+     */
     toString(): string {
         return this.id
     }
@@ -498,20 +510,36 @@ export class JDBus extends JDNode {
         this.emit(CHANGE)
     }
 
+    /**
+     * Gets the current bus-relavite time in milliseconds
+     * @category Scheduling
+     */
     get timestamp(): number {
         return this.scheduler.timestamp
     }
 
+    /**
+     * Creates a promise that awaits for the given duration using the bus scheduler
+     * @category Scheduling
+     */
     delay<T>(millis: number, value?: T): Promise<T | undefined> {
         return new Promise(resolve =>
             this.scheduler.setTimeout(() => resolve(value), millis)
         )
     }
 
+    /**
+     * Gets the current desired minimum logger verbosity on the bus
+     * @category Diagnostics
+     */
     get minLoggerPriority(): LoggerPriority {
         return this._minLoggerPriority
     }
 
+    /**
+     * Sets the current desired minimum logger verbosity on the bus
+     * @category Diagnostics
+     */
     set minLoggerPriority(priority: LoggerPriority) {
         if (priority !== this._minLoggerPriority) {
             this._minLoggerPriority = priority

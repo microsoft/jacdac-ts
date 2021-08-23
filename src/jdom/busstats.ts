@@ -27,13 +27,19 @@ export class BusStatsMonitor extends JDEventSource {
         bytes: 0,
     }
 
-    constructor(readonly bus: JDBus) {
+    /**
+     * @internal
+     */
+    constructor(bus: JDBus) {
         super()
-        this.bus.on(PACKET_SEND, this.handlePacketSend.bind(this))
-        this.bus.on(PACKET_PROCESS, this.handlePacketProcess.bind(this))
-        this.bus.on(SELF_ANNOUNCE, this.handleSelfAnnounce.bind(this))
+        bus.on(PACKET_SEND, this.handlePacketSend.bind(this))
+        bus.on(PACKET_PROCESS, this.handlePacketProcess.bind(this))
+        bus.on(SELF_ANNOUNCE, this.handleSelfAnnounce.bind(this))
     }
 
+    /**
+     * Computes the current packet statistics of the bus
+     */
     get current(): BusStats {
         const r: BusStats = {
             packets: 0,

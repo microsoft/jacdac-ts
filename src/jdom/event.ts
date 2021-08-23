@@ -26,10 +26,18 @@ export class JDEvent extends JDServiceMemberNode {
         super(service, code, isEvent)
     }
 
+    /**
+     * Returns the ``EVENT_NODE_NAME`` identifier
+     * @category JDOM
+     */
     get nodeKind() {
         return EVENT_NODE_NAME
     }
 
+    /**
+     * Gets the field node
+     * @category Service Clients
+     */
     get fields() {
         if (!this._fields)
             this._fields = this.specification?.fields.map(
@@ -38,27 +46,49 @@ export class JDEvent extends JDServiceMemberNode {
         return this._fields.slice()
     }
 
+    /**
+     * Gets the list of fields
+     * @category JDOM
+     */
     get children(): JDNode[] {
         return this.fields
     }
 
+    /**
+     * Gets the raw data attached to the last event packet
+     * @category Data
+     */
     get data() {
         return this._lastReportPkt?.data
     }
 
+    /**
+     * Gets the unpacked data attached to the last event packet, if the event specification is known.
+     * @category Data
+     */
+    get unpacked() {
+        const { packFormat } = this.specification || {}
+        return packFormat && this._lastReportPkt?.jdunpack(packFormat)
+    }
+
+    /**
+     * Gets a counter of occurences for this event.
+     * @category Data
+     */
     get count() {
         return this._count
     }
 
+    /**
+     * Gets the timestamp of the last packet with data received for this event.
+     * @category Data
+     */
     get lastDataTimestamp() {
         return this._lastReportPkt?.timestamp
     }
-
-    get intValue(): number {
-        const d = this.data
-        return d && intOfBuffer(d)
-    }
-
+    /**
+     * @internal
+     */
     get decoded(): DecodedPacket {
         return this._lastReportPkt?.decoded
     }
