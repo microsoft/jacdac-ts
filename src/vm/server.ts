@@ -1,4 +1,3 @@
-import JDServiceServer from "../jdom/serviceserver"
 import {
     isHighLevelRegister,
     isHighLevelEvent,
@@ -8,7 +7,7 @@ import { SMap } from "../jdom/utils"
 import { jdpack, PackedValues } from "../jdom/pack"
 import { atomic } from "./utils"
 import { CHANGE } from "../jdom/constants"
-import { Packet } from "../jdom/packet"
+import Packet from "../jdom/packet"
 import { DecodedPacket } from "../jdom/pretty"
 import JDRegisterServer from "../jdom/registerserver"
 import { ExternalRequest } from "./environment"

@@ -55,7 +55,7 @@ const { warn } = console
  * A Jacdac packet
  * @category JDOM
  */
-export class Packet {
+export default class Packet {
     private _header: Uint8Array
     private _data: Uint8Array
     private _meta: any = undefined // accesory data used by clients
@@ -483,5 +483,3 @@ function frameToPackets(frame: Uint8Array, timestamp: number) {
 
     return []
 }
-
-export default Packet

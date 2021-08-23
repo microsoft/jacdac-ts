@@ -3,7 +3,7 @@ import {
     SpeechSynthesisReg,
     SRV_SPEECH_SYNTHESIS,
 } from "../jdom/constants"
-import { Packet } from "../jdom/packet"
+import Packet from "../jdom/packet"
 import JDRegisterServer from "../jdom/registerserver"
 import JDServiceServer from "../jdom/serviceserver"
 
