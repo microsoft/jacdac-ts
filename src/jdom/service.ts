@@ -42,7 +42,7 @@ import JDServiceServer from "./serviceserver"
  * A Jacdac service client hosting registers, events.
  * @category JDOM
  */
-export default class JDService extends JDNode {
+export class JDService extends JDNode {
     private _role: string
     private _registers: JDRegister[]
     private _events: JDEvent[]
@@ -417,6 +417,8 @@ export default class JDService extends JDNode {
         return recv
     }
 }
+
+export default JDService
 
 export function stableSortServices(services: JDService[]): JDService[] {
     return services?.sort((a, b) => a.compareTo(b))

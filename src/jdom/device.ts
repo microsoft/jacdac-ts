@@ -70,7 +70,7 @@ export interface JDServiceGroup {
  * A Jacdac device hosting services.
  * @category JDOM
  */
-export default class JDDevice extends JDNode {
+export class JDDevice extends JDNode {
     connected: boolean
     private _source: string
     private _replay: boolean
@@ -652,3 +652,5 @@ export default class JDDevice extends JDNode {
         await this.sendPktWithAck(pkt)
     }
 }
+
+export default JDDevice
