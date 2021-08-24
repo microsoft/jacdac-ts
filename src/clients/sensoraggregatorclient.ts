@@ -8,7 +8,10 @@ import { jdpack } from "../jdom/pack"
 import JDRegister from "../jdom/register"
 import JDService from "../jdom/service"
 import { JDServiceClient } from "../jdom/serviceclient"
-import { isReading, serviceSpecificationFromClassIdentifier } from "../jdom/spec"
+import {
+    isReading,
+    serviceSpecificationFromClassIdentifier,
+} from "../jdom/spec"
 import { bufferConcat, bufferConcatMany, fromHex } from "../jdom/utils"
 
 export interface SensorAggregatorInputConfig {
