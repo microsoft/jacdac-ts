@@ -248,6 +248,7 @@ export class JDBus extends JDNode {
             // keep going if not connected
             if (transport.connected) break
         }
+        this.emit(CHANGE)
     }
 
     /**
@@ -258,6 +259,7 @@ export class JDBus extends JDNode {
         for (const transport of this._transports) {
             await transport.disconnect()
         }
+        this.emit(CHANGE)
     }
 
     /**
