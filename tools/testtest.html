@@ -1,47 +1,43 @@
 <html>
+    <head>
+        <style>
+            body {
+                font-family: monospace;
+            }
 
-<head>
-    <style>
-        body {
-            font-family: monospace;
-        }
+            .device {
+                margin: 0.5rem;
+            }
 
-        .device {
-            margin: 0.5rem;
-        }
+            button:not(.active) {
+                opacity: 0.7;
+            }
 
-        button:not(.active) {
-            opacity: 0.7;
-        }
+            button.active {
+                font-weight: bold;
+            }
+        </style>
+        <script>
+            var process = {
+                env: {},
+            }
+        </script>
+    </head>
 
-        button.active {
-            font-weight: bold;
-        }
-    </style>
-    <script>
-        var process = {
-            env: {}
-        }
-    </script>
+    <body>
+        <h1>Jacdac/Testing</h1>
+        <div id="topbtn">
+            <button id="connect">connect</button>
+            <button id="disconnect">disconnect</button>
+        </div>
 
-</head>
+        <div id="log"></div>
 
-<body>
-    <h1>Jacdac/Testing</h1>
-    <div id="topbtn">
-        <button id="connect">connect</button>
-        <button id="disconnect">disconnect</button>
-    </div>
+        <script type="module">
+            import * as jacdac from "/dist/jacdac.js"
+            import * as tstester from "/dist/jacdac-tstester.js"
 
-    <div id="log">
-    </div>
-
-    <script type="module">
-        import * as jacdac from "/dist/jacdac.js"
-        import * as tstester from "/dist/jacdac-tstester.js"
-
-        tstester.main(document)
-    </script>
-</body>
-
+            tstester.main(document)
+        </script>
+    </body>
 </html>

@@ -1,3 +1,7 @@
+/**
+ * Various flags to control the runtime environment
+ * @category Runtime
+ */
 export class Flags {
     /**
      * Enables additional logging and diagnostics

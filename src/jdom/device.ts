@@ -64,6 +64,7 @@ interface AckAwaiter {
 
 /**
  * Collects packet statistics about the device
+ * @category JDOM
  */
 export class DeviceStats extends JDEventSource {
     private _receivedPackets = 0

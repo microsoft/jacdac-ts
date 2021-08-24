@@ -17,7 +17,7 @@ import {
 import { deviceSpecifications } from "../jdom/spec"
 import JDBus from "../jdom/bus"
 import { printPacket } from "../jdom/pretty"
-import { parseLogicLog, replayLog } from "../jdom/logparser"
+import { parseLogicLog, replayLogicLog } from "../jdom/logparser"
 import { dashify } from "../../jacdac-spec/spectool/jdspec"
 
 cli.setApp("jacdac", "1.0.6")
@@ -115,6 +115,6 @@ if (options.parse) {
     jd.on(PACKET_RECEIVE_ANNOUNCE, pkt => console.log(printPacket(pkt, opts)))
 
     const text = fs.readFileSync(options.parse, "utf8")
-    replayLog(jd, parseLogicLog(text), Number.POSITIVE_INFINITY)
+    replayLogicLog(jd, parseLogicLog(text), Number.POSITIVE_INFINITY)
     setTimeout(() => process.exit(0), 500)
 }

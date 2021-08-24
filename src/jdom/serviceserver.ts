@@ -20,15 +20,35 @@ import { PackedValues } from "./pack"
 import JDService from "./service"
 
 const CALIBRATION_DELAY = 5000
+
+/**
+ * Server instiation options
+ * @category Servers
+ */
 export interface ServerOptions {
+    /**
+     * Service instance name
+     */
     instanceName?: string
     /**
      * This server instance is a twin of a physical device and should not emit any packet
      */
     twin?: JDService
+    /**
+     * Initial value for the ``value`` register
+     */
     valueValues?: PackedValues
+    /**
+     * Initial value for the ``intensity`` register
+     */
     intensityValues?: PackedValues
+    /**
+     * Initial value for the ``variant`` register
+     */
     variant?: number
+    /**
+     * A map of custom register initial values
+     */
     registerValues?: {
         code: number
         values: PackedValues

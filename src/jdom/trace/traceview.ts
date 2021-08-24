@@ -19,6 +19,10 @@ const FILTERED_TRACE_MAX_ITEMS = 100
 const DUPLICATE_PACKET_MERGE_HORIZON_MAX_DISTANCE = 10
 const DUPLICATE_PACKET_MERGE_HORIZON_MAX_TIME = 5000
 
+/**
+ * A grouped packet
+ * @category Trace
+ */
 export interface TracePacketProps {
     key: string
     packet: Packet

@@ -1,5 +1,4 @@
-import { JACDAC_ERROR } from "../jdom/constants"
-import { JDError } from "../jdom/error"
+import { errorCode } from "../jdom/error"
 import TransportProxy from "./transportproxy"
 import { USBTransportProxy } from "./usbtransportproxy"
 
@@ -16,8 +15,7 @@ function handleError(resp: any, e: Error) {
             message: e.message,
             stack: e.stack,
             name: e.name,
-            jacdacName:
-                e.name === JACDAC_ERROR ? (e as JDError).jacdacName : undefined,
+            jacdacName: errorCode(e),
         },
     })
 }

@@ -29,10 +29,26 @@ import {
     toHex,
 } from "../utils"
 
+/**
+ * A service role assigment
+ * @category Clients
+ */
 export interface Role {
+    /**
+     * Identifier of the bound device
+     */
     deviceId: string
+    /**
+     * Service class bound, for sanity check
+     */
     serviceClass: number
+    /**
+     * Service index bound
+     */
     serviceIndex: number
+    /**
+     * Role name
+     */
     name: string
 }
 

@@ -79,16 +79,23 @@ import Scheduler, { WallClockScheduler } from "./scheduler"
 import ServiceFilter from "./filters/servicefilter"
 import DeviceFilter from "./filters/devicefilter"
 
+/**
+ * Creation options for a bus
+ * @category JDOM
+ */
 export interface BusOptions {
+    /**
+     * The self-device device id
+     */
     deviceId?: string
+    /**
+     * A custom scheduler to control time
+     */
     scheduler?: Scheduler
+    /**
+     * Parent domain origin to handle iframe messages
+     */
     parentOrigin?: string
-}
-
-export interface Error {
-    context: string
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    exception: any
 }
 
 const SCAN_FIRMWARE_INTERVAL = 30000

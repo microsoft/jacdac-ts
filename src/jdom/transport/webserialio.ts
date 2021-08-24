@@ -1,8 +1,8 @@
 import { HF2Proto, HF2_IO } from "./hf2"
 import Proto from "./proto"
-import { assert, bufferConcat, delay, throwError, toHex } from "../utils"
+import { assert, bufferConcat, delay, throwError } from "../utils"
 import Flags from "../flags"
-import errorCode, { JDError } from "../error"
+import JDError, { errorCode } from "../error"
 
 export const WEB_SERIAL_FILTERS = {
     filters: [
@@ -80,9 +80,11 @@ export default class WebSerialIO implements HF2_IO {
             try {
                 await this.reader.cancel()
                 this.reader.releaseLock()
+                // eslint-disable-next-line no-empty
             } catch {}
         try {
             this.writer.releaseLock()
+            // eslint-disable-next-line no-empty
         } catch {}
         await this.dev.close()
     }

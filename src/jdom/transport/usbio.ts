@@ -8,7 +8,7 @@ import { Observable } from "../observable"
 import Proto from "./proto"
 import { assert, delay, throwError } from "../utils"
 import Flags from "../flags"
-import errorCode, { JDError } from "../error"
+import JDError, { errorCode } from "../error"
 
 export const USB_FILTERS = {
     filters: [

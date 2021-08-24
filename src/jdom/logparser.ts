@@ -5,6 +5,12 @@ import TracePlayer from "./trace/traceplayer"
 import Frame from "./frame"
 import Trace from "./trace/trace"
 
+/**
+ * Parse a trace text file
+ * @param contents 
+ * @returns 
+ * @category Trace
+ */
 export function parseTrace(contents: string): Trace {
     const description: string[] = []
     const packets: Packet[] = []
@@ -26,6 +32,12 @@ export function parseTrace(contents: string): Trace {
     else return undefined
 }
 
+/**
+ * Parses a logic analyzer log into a trace
+ * @param logcontents
+ * @returns 
+ * @category Trace
+ */
 export function parseLogicLog(logcontents: string): Frame[] {
     if (!logcontents) return undefined
 
@@ -106,7 +118,14 @@ Time [s],Value,Parity Error,Framing Error
     return res
 }
 
-export function replayLog(bus: JDBus, frames: Frame[], speed?: number): void {
+/**
+ * Replays a parsed logic log
+ * @param bus 
+ * @param frames 
+ * @param speed 
+ * @category Trace
+ */
+export function replayLogicLog(bus: JDBus, frames: Frame[], speed?: number): void {
     const packets = arrayConcatMany(
         frames.map(frame => Packet.fromFrame(frame.data, frame.timestamp))
     )

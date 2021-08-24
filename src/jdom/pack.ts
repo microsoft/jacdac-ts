@@ -7,7 +7,14 @@ import {
 import { clampToStorage, numberFormatToStorageType } from "./spec"
 import { bufferEq, bufferToString, stringToBuffer } from "./utils"
 
+/**
+ * @category Data Packing
+ */
 export type PackedSimpleValue = number | boolean | string | Uint8Array
+
+/**
+ * @category Data Packing
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type PackedValues = any[]
 

@@ -1,5 +1,9 @@
 import { PackedSimpleValue, PackedValues } from "./pack"
 
+/**
+ * Unpacked data mapped as an object
+ * @category Data Packing
+ */
 export interface PackedObject {
     [index: string]: PackedSimpleValue | PackedObject | PackedObject[]
 }

@@ -322,7 +322,14 @@ const UF2_MAGIC_START0 = 0x0a324655
 const UF2_MAGIC_START1 = 0x9e5d5157
 const UF2_MAGIC_END = 0x0ab16f30
 
-export function parseUF2(uf2: Uint8Array, store: string): FirmwareBlob[] {
+/**
+ * Parses a UF2 firmware binary into firmware blobs
+ * @param uf2 
+ * @param store 
+ * @returns 
+ * @category Firmware
+ */
+export function parseUF2Firmware(uf2: Uint8Array, store: string): FirmwareBlob[] {
     const blobs: FirmwareBlob[] = []
     let currBlob: FirmwareBlob
     for (let off = 0; off < uf2.length; off += 512) {
@@ -410,6 +417,10 @@ export function parseUF2(uf2: Uint8Array, store: string): FirmwareBlob[] {
     }
 }
 
+/**
+ * Firmware information
+ * @internal
+ */
 export interface FirmwareInfo {
     deviceId: string
     version: string
@@ -431,7 +442,7 @@ export async function parseFirmwareFile(
 ): Promise<FirmwareBlob[]> {
     const data = await readBlobToUint8Array(blob)
     const buf = new Uint8Array(data)
-    const uf2Blobs = parseUF2(buf, store)
+    const uf2Blobs = parseUF2Firmware(buf, store)
     return uf2Blobs
 }
 

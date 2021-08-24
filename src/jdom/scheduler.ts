@@ -2,6 +2,7 @@
 
 /**
  * A time scheduler to orchestrate time in the bus.
+ * @category JDOM
  */
 export interface Scheduler {
     /**
