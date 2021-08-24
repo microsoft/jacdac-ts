@@ -75,7 +75,9 @@ import RoleManagerClient from "./clients/rolemanagerclient"
 import JDBridge from "./bridge"
 import { randomDeviceId } from "./random"
 import { ControlReg, SRV_CONTROL } from "../../jacdac-spec/dist/specconstants"
-import { Scheduler, WallClockScheduler } from "./scheduler"
+import Scheduler, { WallClockScheduler } from "./scheduler"
+import ServiceFilter from "./filters/servicefilter"
+import DeviceFilter from "./filters/devicefilter"
 
 export interface BusOptions {
     deviceId?: string
@@ -90,24 +92,6 @@ export interface Error {
 }
 
 const SCAN_FIRMWARE_INTERVAL = 30000
-
-export interface DeviceFilter {
-    serviceName?: string
-    serviceClass?: number
-    ignoreSelf?: boolean
-    announced?: boolean
-    ignoreSimulators?: boolean
-    productIdentifier?: boolean
-    physical?: boolean
-}
-
-export interface ServiceFilter {
-    serviceIndex?: number
-    serviceName?: string
-    serviceClass?: number
-    specification?: boolean
-    mixins?: boolean
-}
 
 /**
  * A Jacdac bus manager. This instance maintains the list of devices on the bus.

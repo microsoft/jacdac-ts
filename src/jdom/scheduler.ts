@@ -38,6 +38,7 @@ export interface Scheduler {
      */
     clearInterval(handle: any): void
 }
+export default Scheduler
 
 /** @internal */
 export class WallClockScheduler implements Scheduler {

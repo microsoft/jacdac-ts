@@ -39,7 +39,7 @@ import {
 } from "./constants"
 import { read32, bufferEq, setAckError, read16 } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
-import JDBus, { ServiceFilter } from "./bus"
+import JDBus from "./bus"
 import JDService from "./service"
 import { serviceClass, shortDeviceId } from "./pretty"
 import JDNode from "./node"
@@ -47,6 +47,7 @@ import { isInstanceOf } from "./spec"
 import { FirmwareInfo } from "./flashing"
 import LEDController from "./ledcontroller"
 import JDEventSource from "./eventsource"
+import { ServiceFilter } from "./filters/servicefilter"
 
 export interface PipeInfo {
     pipeType?: string
@@ -59,11 +60,6 @@ interface AckAwaiter {
     retriesLeft: number
     okCb: () => void
     errCb: () => void
-}
-
-export interface JDServiceGroup {
-    service: JDService
-    mixins: JDService[]
 }
 
 /**

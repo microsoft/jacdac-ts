@@ -17,7 +17,6 @@ import {
     assert,
     bufferConcat,
     bufferToString,
-    SMap,
     strcmp,
     readBlobToUint8Array,
 } from "./utils"
@@ -39,11 +38,21 @@ const uf2ExtTags: Record<string, number> = {
     productIdentifier: 0xc8a729,
 }
 
+/**
+ * UF2 page data structure
+ * @category Firmware
+ * @internal
+ */
 export interface FirmwarePage {
     data: Uint8Array
     targetAddress: number
 }
 
+/**
+ * Data structure representing a firmware binary
+ * @category Firmware
+ * @internal
+ */
 export interface FirmwareBlob {
     pages: FirmwarePage[]
     productIdentifier: number
