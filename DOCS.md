@@ -7,7 +7,7 @@ There are various ways to integrate Jacdac into your web or Node.JS projects.
 The JDOM module is a dependency-free JavaScript object model 
 that reflects the state of the Jacdac elements and allows sending commands as well. JDOM also handles connection through WebUSB, WebBLE and other transports.
 
-* [JDOM introduction](/clients/javascript/jdom)
+* [JDOM introduction](https://microsoft.github.io/jacdac-docs/clients/javascript/jdom)
 
 ## Installation
 
