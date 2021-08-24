@@ -33,6 +33,9 @@ export class JDRegister extends JDServiceMemberNode {
     private _lastGetTimestamp = -Infinity
     private _lastGetAttempts = 0
 
+    /**
+     * @internal
+     */
     constructor(service: JDService, code: number) {
         super(service, code, isRegister)
     }

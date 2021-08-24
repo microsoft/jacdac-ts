@@ -1,15 +1,15 @@
 import {
     SensorAggregatorReg,
     SensorAggregatorSampleType,
-} from "../../../jacdac-spec/dist/specconstants"
-import { bufferToArray, NumberFormat } from "../buffer"
-import { JD_SERIAL_MAX_PAYLOAD_SIZE, REPORT_RECEIVE } from "../constants"
-import { jdpack } from "../pack"
-import JDRegister from "../register"
-import JDService from "../service"
-import { JDServiceClient } from "../serviceclient"
-import { isReading, serviceSpecificationFromClassIdentifier } from "../spec"
-import { bufferConcat, bufferConcatMany, fromHex } from "../utils"
+} from "../../jacdac-spec/dist/specconstants"
+import { bufferToArray, NumberFormat } from "../jdom/buffer"
+import { JD_SERIAL_MAX_PAYLOAD_SIZE, REPORT_RECEIVE } from "../jdom/constants"
+import { jdpack } from "../jdom/pack"
+import JDRegister from "../jdom/register"
+import JDService from "../jdom/service"
+import { JDServiceClient } from "../jdom/serviceclient"
+import { isReading, serviceSpecificationFromClassIdentifier } from "../jdom/spec"
+import { bufferConcat, bufferConcatMany, fromHex } from "../jdom/utils"
 
 export interface SensorAggregatorInputConfig {
     serviceClass: number

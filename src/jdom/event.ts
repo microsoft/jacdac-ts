@@ -1,7 +1,6 @@
 import JDNode from "./node"
 import JDService from "./service"
 import Packet from "./packet"
-import { intOfBuffer } from "./buffer"
 import {
     CHANGE,
     CMD_EVENT_COUNTER_MASK,
@@ -22,6 +21,9 @@ export class JDEvent extends JDServiceMemberNode {
     private _fields: JDField[]
     private _count = 0
 
+    /**
+     * @internal
+     */
     constructor(service: JDService, code: number) {
         super(service, code, isEvent)
     }

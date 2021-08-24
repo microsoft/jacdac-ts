@@ -1,14 +1,14 @@
-import * as U from "../utils"
-import Packet from "../packet"
-import { REPORT_RECEIVE, SRV_MODEL_RUNNER } from "../constants"
-import JDService from "../service"
-import { ModelRunnerCmd, ModelRunnerReg } from "../constants"
-import { bufferToArray, NumberFormat } from "../buffer"
-import { OutPipe } from "../pipes"
-import JDRegister from "../register"
-import { JDServiceClient } from "../serviceclient"
-import { serviceSpecificationFromClassIdentifier } from "../spec"
-import { jdunpack } from "../pack"
+import Packet from "../jdom/packet"
+import { REPORT_RECEIVE, SRV_MODEL_RUNNER } from "../jdom/constants"
+import JDService from "../jdom/service"
+import { ModelRunnerCmd, ModelRunnerReg } from "../jdom/constants"
+import { bufferToArray, NumberFormat } from "../jdom/buffer"
+import { OutPipe } from "../jdom/pipes"
+import JDRegister from "../jdom/register"
+import { JDServiceClient } from "../jdom/serviceclient"
+import { serviceSpecificationFromClassIdentifier } from "../jdom/spec"
+import { jdunpack } from "../jdom/pack"
+import { read32, toHex, uint8ArrayToString } from "../jdom/utils"
 
 /*
     enum SampleType : u8 {
@@ -35,8 +35,7 @@ import { jdunpack } from "../pack"
 
 export function isMLModelSupported(model: Uint8Array, formatRegValue: number) {
     return (
-        U.read32(model, 0) == formatRegValue ||
-        U.read32(model, 4) == formatRegValue
+        read32(model, 0) == formatRegValue || read32(model, 4) == formatRegValue
     )
 }
 
@@ -45,12 +44,12 @@ export function getMLModelFormatName(model: Uint8Array) {
         serviceSpecificationFromClassIdentifier(SRV_MODEL_RUNNER).enums[
             "ModelFormat"
         ].members
-    const m0 = U.read32(model, 0)
-    const m1 = U.read32(model, 4)
+    const m0 = read32(model, 0)
+    const m1 = read32(model, 4)
     for (const v of Object.keys(map)) {
         if (map[v] == m0 || map[v] == m1) return v
     }
-    return "0x" + U.toHex(model.slice(0, 8))
+    return "0x" + toHex(model.slice(0, 8))
 }
 
 /**
@@ -126,7 +125,7 @@ export class ModelRunnerClient extends JDServiceClient {
                 bufferToArray(r.data, NumberFormat.UInt16LE)
             ),
             lastError: this.getReg(ModelRunnerReg.LastError, r =>
-                U.uint8ArrayToString(r.data)
+                uint8ArrayToString(r.data)
             ),
         }
         for (const id of Object.keys(info)) {

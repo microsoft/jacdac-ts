@@ -66,6 +66,9 @@ export interface JDServiceGroup {
     mixins: JDService[]
 }
 
+/**
+ * Collects packet statistics about the device
+ */
 export class DeviceStats extends JDEventSource {
     private _receivedPackets = 0
     private readonly _data: { received: number; total: number }[] = Array(10)
@@ -73,12 +76,16 @@ export class DeviceStats extends JDEventSource {
         .map(() => ({ received: 0, total: 0 }))
     private _dataIndex = 0
 
+    /**
+     * @internal
+     */
     constructor() {
         super()
     }
 
     /**
      * Average packet dropped per announce period
+     * @category Statistics
      */
     get dropped(): number {
         const r =
