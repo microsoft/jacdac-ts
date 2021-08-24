@@ -15,6 +15,7 @@ export default [
         umd: true,
         cjs: true,
     },
+    { libraryName: "jacdac-azure-iot", dir: "azure-iot", external: ["jacdac"] },
     { libraryName: "jacdac-test", dir: "test", external: ["jacdac"] },
     { libraryName: "jacdac-tstester", dir: "tstester", external: ["jacdac"] },
     {
