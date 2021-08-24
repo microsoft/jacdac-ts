@@ -1,6 +1,6 @@
 {
   "name": "jacdac-ts",
-  "version": "1.14.15",
+  "version": "1.14.16",
   "description": "",
   "keywords": [],
   "main": "dist/jacdac.js",
