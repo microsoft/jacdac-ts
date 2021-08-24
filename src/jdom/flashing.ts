@@ -324,12 +324,15 @@ const UF2_MAGIC_END = 0x0ab16f30
 
 /**
  * Parses a UF2 firmware binary into firmware blobs
- * @param uf2 
- * @param store 
- * @returns 
+ * @param uf2
+ * @param store
+ * @returns
  * @category Firmware
  */
-export function parseUF2Firmware(uf2: Uint8Array, store: string): FirmwareBlob[] {
+export function parseUF2Firmware(
+    uf2: Uint8Array,
+    store: string
+): FirmwareBlob[] {
     const blobs: FirmwareBlob[] = []
     let currBlob: FirmwareBlob
     for (let off = 0; off < uf2.length; off += 512) {

@@ -7,8 +7,8 @@ import Trace from "./trace/trace"
 
 /**
  * Parse a trace text file
- * @param contents 
- * @returns 
+ * @param contents
+ * @returns
  * @category Trace
  */
 export function parseTrace(contents: string): Trace {
@@ -35,7 +35,7 @@ export function parseTrace(contents: string): Trace {
 /**
  * Parses a logic analyzer log into a trace
  * @param logcontents
- * @returns 
+ * @returns
  * @category Trace
  */
 export function parseLogicLog(logcontents: string): Frame[] {
@@ -120,12 +120,16 @@ Time [s],Value,Parity Error,Framing Error
 
 /**
  * Replays a parsed logic log
- * @param bus 
- * @param frames 
- * @param speed 
+ * @param bus
+ * @param frames
+ * @param speed
  * @category Trace
  */
-export function replayLogicLog(bus: JDBus, frames: Frame[], speed?: number): void {
+export function replayLogicLog(
+    bus: JDBus,
+    frames: Frame[],
+    speed?: number
+): void {
     const packets = arrayConcatMany(
         frames.map(frame => Packet.fromFrame(frame.data, frame.timestamp))
     )

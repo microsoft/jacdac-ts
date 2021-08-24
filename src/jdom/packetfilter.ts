@@ -43,9 +43,9 @@ export interface PacketFilter {
 
 /**
  * Given a filter text, compiles packet filter
- * @param bus 
- * @param text 
- * @returns 
+ * @param bus
+ * @param text
+ * @returns
  * @category Trace
  */
 export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
