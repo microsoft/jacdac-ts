@@ -10,12 +10,18 @@ export default [
     {
         libraryName: "jacdac",
         dir: "",
-        watch: "src/**",
+        watch: "src/jdom/**",
         external: ["usb", "webusb"],
         umd: true,
         cjs: true,
     },
-    { libraryName: "jacdac-azure-iot", dir: "azure-iot", external: ["jacdac"] },
+    {
+        libraryName: "jacdac-azure-iot",
+        dir: "azure-iot",
+        watch: "src/azure-iot/**",
+        external: ["jacdac"],
+        cjs: true,
+    },
     { libraryName: "jacdac-test", dir: "test", external: ["jacdac"] },
     { libraryName: "jacdac-tstester", dir: "tstester", external: ["jacdac"] },
     {
