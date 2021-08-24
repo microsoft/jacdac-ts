@@ -1,4 +1,3 @@
-import { SMap } from "./utils"
 import { NEW_LISTENER, REMOVE_LISTENER, ERROR, CHANGE } from "./constants"
 import { Observable, Observer } from "./observable"
 import Flags from "./flags"
