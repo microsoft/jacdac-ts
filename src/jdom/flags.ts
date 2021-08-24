@@ -8,6 +8,10 @@ export class Flags {
      */
     static diagnostics = false
     /**
+     * Trace who and what generates packets
+     */
+    static trace = false
+    /**
      * Enables/disabled WebUSB
      */
     static webUSB = true

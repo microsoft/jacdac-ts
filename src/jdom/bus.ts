@@ -48,6 +48,7 @@ import {
     PING_LOGGERS_POLL,
     RESET_IN_TIME_US,
     REFRESH_REGISTER_POLL,
+    META_SENT_TRACE,
 } from "./constants"
 import { serviceClass } from "./pretty"
 import JDNode from "./node"
@@ -78,6 +79,7 @@ import { ControlReg, SRV_CONTROL } from "../../jacdac-spec/dist/specconstants"
 import Scheduler, { WallClockScheduler } from "./scheduler"
 import ServiceFilter from "./filters/servicefilter"
 import DeviceFilter from "./filters/devicefilter"
+import Flags from "./flags"
 
 /**
  * Creation options for a bus
@@ -568,6 +570,7 @@ export class JDBus extends JDNode {
      */
     async sendPacketAsync(packet: Packet) {
         packet.timestamp = this.timestamp
+        if (Flags.trace) packet.meta[META_SENT_TRACE] = new Error().stack
         this.emit(PACKET_SEND, packet)
 
         await Promise.all(

@@ -177,6 +177,7 @@ export const META_ACK = "ACK"
 export const META_ACK_FAILED = "ACK_FAILED"
 export const META_PIPE = "PIPE"
 export const META_GET = "GET"
+export const META_SENT_TRACE = "SEND_TRACE"
 
 export const REGISTER_PRE_GET = "registerPreGet"
 
