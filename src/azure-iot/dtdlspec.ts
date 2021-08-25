@@ -31,10 +31,14 @@ import {
     objectSchema,
 } from "./dtdl"
 
+export const DTDL_JACDAC_PATH = "jacdac"
+export const DTDL_SERVICES_PATH = "services"
+export const DTDL_DEVICES_PATH = "devices"
+
 // https://github.com/Azure/digital-twin-model-identifier
 // ^dtmi:(?:_+[A-Za-z0-9]|[A-Za-z])(?:[A-Za-z0-9_]*[A-Za-z0-9])?(?::(?:_+[A-Za-z0-9]|[A-Za-z])(?:[A-Za-z0-9_]*[A-Za-z0-9])?)*;[1-9][0-9]{0,8}$
 export function toDTMI(segments: (string | number)[], version?: number) {
-    return `dtmi:jacdac:${[...segments]
+    return `dtmi:${DTDL_JACDAC_PATH}:${[...segments]
         .map(seg =>
             seg === undefined
                 ? "???"
@@ -391,11 +395,11 @@ export function serviceSpecificationDTMI(
     srv: jdspec.ServiceSpec,
     customPath?: string
 ) {
-    return toDTMI([customPath || "services", srv.classIdentifier])
+    return toDTMI([customPath || DTDL_SERVICES_PATH, srv.classIdentifier])
 }
 
 export function deviceSpecificationDTMI(dev: jdspec.DeviceSpec) {
-    return toDTMI(["devices", dev.id.replace(/-/g, ":")])
+    return toDTMI([DTDL_DEVICES_PATH, dev.id.replace(/-/g, ":")])
 }
 
 export function DTMIToRoute(dtmi: string) {

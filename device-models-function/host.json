@@ -10,7 +10,7 @@
     },
     "extensions": {
         "http": {
-            "routePrefix": "dtmi"
+            "routePrefix": "dtmi/jacdac"
         }
     },
     "extensionBundle": {
