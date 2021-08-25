@@ -11,6 +11,7 @@ import { createUSBTransport } from "../jdom/transport/usb"
 import { createNodeUSBOptions } from "../jdom/transport/nodewebusb"
 import {
     deviceSpecificationToDTDL,
+    routeToDTDL,
     serviceSpecificationsWithDTDL,
     serviceSpecificationToDTDL,
 } from "../azure-iot/dtdlspec"
@@ -27,6 +28,7 @@ interface OptionsType {
     usb?: boolean
     packets?: boolean
     dtdl?: boolean
+    sdmi?: string
     devices?: string
     services?: string
     rm?: boolean
@@ -37,11 +39,19 @@ const options: OptionsType = cli.parse({
     usb: ["u", "listen to Jacdac over USB", true],
     packets: ["p", "show/hide all packets", true],
     dtdl: [false, "generate DTDL files", "file"],
+    sdmi: [false, "generate dynamic DTDL files", "string"],
     devices: ["d", "regular expression filter for devices", "string"],
     services: [false, "regular expression filter for services", "string"],
     rm: [false, "delete files from output folder", true],
     parse: ["l", "parse logic analyzer log file", "string"],
 })
+
+// SDMI
+if (options.sdmi) {
+    console.log(`sdmi: generate DTDL for ${options.sdmi}`)
+    const dtdl = routeToDTDL(options.sdmi)
+    console.log(dtdl)
+}
 
 // DTDL
 if (options.dtdl) {

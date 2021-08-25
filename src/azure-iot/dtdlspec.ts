@@ -408,12 +408,16 @@ export function DTMIToRoute(dtmi: string) {
     return route
 }
 
+function parseRoute(route: string) {
+    const [, path, version] = /(.*)-(\d+)\.json$/.exec(route)
+    const parts = path.split("/")
+    return { version, parts }
+}
+
 export function routeToDTMI(route: string) {
-    const parts = route.split("/")
-    const version = parts.pop()
+    const { parts, version } = parseRoute(route)
     if (parts[0] !== "dtmi") parts.unshift("dtmi")
-    if (parts[1] !== DTDL_JACDAC_PATH)
-        parts.splice(1, 0, DTDL_JACDAC_PATH)
+    if (parts[1] !== DTDL_JACDAC_PATH) parts.splice(1, 0, DTDL_JACDAC_PATH)
     return `${parts.join(":")}-${version}`
 }
 
@@ -427,10 +431,10 @@ export function serviceRouteToDTDL(route: string) {
 }
 
 export function encodedDeviceRouteToDTDL(route: string) {
-    const parts = route.split("/")
-    if (parts[0] !== DTDL_JACDAC_PATH || parts[1] !== DTDL_DEVICES_PATH)
-        throw Error("invalid route")
-    const services = parts.slice(2).map(part => {
+    const { parts } = parseRoute(route)
+    while (parts[0] === "dtmi" || parts[0] === DTDL_JACDAC_PATH) parts.shift()
+    if (parts[0] !== DTDL_DEVICES_PATH) throw Error("invalid route")
+    const services = parts.slice(1).map(part => {
         const m = /^(\d+)x(\w+)$/.exec(part)
         return {
             occurance: parseInt(m[1]),
@@ -445,12 +449,14 @@ export function encodedDeviceRouteToDTDL(route: string) {
         displayName: route,
         contents: arrayConcatMany(
             services.map(({ occurance, service }) =>
-                Array(occurance).map((_, i) =>
-                    serviceSpecificationToComponent(
-                        service,
-                        `${service.shortName}${i}`
+                Array(occurance)
+                    .fill(0)
+                    .map((_, i) =>
+                        serviceSpecificationToComponent(
+                            service,
+                            `${service.shortName}${i}`
+                        )
                     )
-                )
             )
         ),
         "@context": DTDL_CONTEXT,
@@ -459,16 +465,16 @@ export function encodedDeviceRouteToDTDL(route: string) {
 }
 
 const routes: Record<string, (route: string) => DTDLContent> = {
-    DTDL_SERVICES_PATH: serviceRouteToDTDL,
-    DTDL_DEVICES_PATH: encodedDeviceRouteToDTDL,
+    services: serviceRouteToDTDL,
+    devices: encodedDeviceRouteToDTDL,
 }
 export function routeToDTDL(route: string) {
-    const parts = route.split("/")
+    const { parts } = parseRoute(route)
     // eat prefix
-    while(parts[0] === "dtmi" || parts[0] === "jacdac")
-        parts.shift()
+    while (parts[0] === "dtmi" || parts[0] === "jacdac") parts.shift()
     const [path] = parts
-    return routes[path]?.(route)
+    const handler = routes[path]
+    return handler?.(route)
 }
 
 export function deviceSpecificationToDTDL(
