@@ -1,5 +1,5 @@
 import { VMProgram, VMHandler, VMCommand, VMRole } from "./ir"
-import RoleManager from "../servers/rolemanager"
+import RoleManager from "../jdom/rolemanager"
 import {
     VMEnvironment,
     VMException,
@@ -1034,7 +1034,7 @@ export class VMProgramRunner extends JDClient {
     private initializeRoleManagement() {
         // adding a (role,service) binding
         const addRoleService = (role: string) => {
-            const service = this.roleManager.getService(role)
+            const service = this.roleManager.service(role)
             if (service) {
                 this._env.serviceChanged(role, service)
             }
@@ -1075,7 +1075,7 @@ export class VMProgramRunner extends JDClient {
                 this._provider
             )
             servers.forEach((s, index) => {
-                this.roleManager.addRoleService(
+                this.roleManager.updateRole(
                     this._serverRoles[index].role,
                     s.serviceClass,
                     this._device.deviceId

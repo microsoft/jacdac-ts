@@ -5,7 +5,7 @@ import { VMProgramRunner } from "../../src/vm/runner"
 
 import { makeTest } from "../jdom/fastforwardtester"
 import ButtonServer from "../../src/servers/buttonserver"
-import RoleManager from "../../src/servers/rolemanager"
+import RoleManager from "../../src/jdom/rolemanager"
 import ServoServer from "../../src/servers/servoserver"
 import { bindRoles } from "./vmtester"
 import { FastForwardTester } from "../jdom/fastforwardtester"

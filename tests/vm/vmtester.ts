@@ -4,7 +4,7 @@ import { ROLE_BOUND } from "../../src/jdom/constants"
 import { EventHandler } from "../../src/jdom/jacdac-jdom"
 import JDService from "../../src/jdom/service"
 import { assert } from "../../src/jdom/utils"
-import RoleManager, { RoleBinding } from "../../src/servers/rolemanager"
+import RoleManager, { RoleBinding } from "../../src/jdom/rolemanager"
 import { TestDriverInterface } from "../../src/tstester/base"
 import { EventWithHoldAdapter } from "../../src/tstester/eventhold"
 import { VMProgram } from "../../src/vm/ir"
@@ -64,7 +64,7 @@ export function bindRoles(
     })
 
     // Bind roles
-    roleMgr.setRoles(serverRolesMap)
+    roleMgr.updateRoles(serverRolesMap)
 }
 
 // For a VM program, returns an object mapping server service names to services once the roles have been bound.
@@ -82,7 +82,7 @@ export async function getRoles(
 
     const outputMap: Record<string, JDService> = {}
     program.serverRoles.forEach(role => {
-        outputMap[role.role] = roleMgr.getService(role.role)
+        outputMap[role.role] = roleMgr.service(role.role)
     })
 
     return outputMap

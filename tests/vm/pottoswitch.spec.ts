@@ -4,7 +4,7 @@ import { VMProgram } from "../../src/vm/ir"
 import { VMProgramRunner } from "../../src/vm/runner"
 
 import { makeTest } from "../jdom/fastforwardtester"
-import RoleManager from "../../src/servers/rolemanager"
+import RoleManager from "../../src/jdom/rolemanager"
 import { bindRoles, getRoles } from "./vmtester"
 import {
     SRV_POTENTIOMETER,
