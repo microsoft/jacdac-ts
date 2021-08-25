@@ -1,13 +1,13 @@
 # JavaScript/TypeScript package
 
-There are various ways to integrate Jacdac into your web or Node.JS projects.
+This package allows you to integrate Jacdac into web applications or Node.JS projects. 
+The package exposes **JDOM**, a dependency-free JavaScript object model 
+that reflects the state of the Jacdac elements and allows sending commands as well. 
+JDOM also handles connection through WebUSB, WebBLE and other transports.
 
-## JDOM
+To read guides and overview documents about JDOM, go to [JDOM documentation](https://microsoft.github.io/jacdac-docs/clients/javascript/jdom).
 
-The JDOM module is a dependency-free JavaScript object model 
-that reflects the state of the Jacdac elements and allows sending commands as well. JDOM also handles connection through WebUSB, WebBLE and other transports.
-
-* [JDOM introduction](https://microsoft.github.io/jacdac-docs/clients/javascript/jdom)
+To browser the API documentation, use the list on this page to explore classes.
 
 ## Installation
 
