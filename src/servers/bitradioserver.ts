@@ -198,6 +198,10 @@ class RadioPacket {
     }
 }
 
+/**
+ * A server implementation of the bit:radio service
+ * @category Servers
+ */
 export default class BitRadioServer extends JDServiceServer {
     readonly enabled: JDRegisterServer<[number]>
     readonly group: JDRegisterServer<[number]>

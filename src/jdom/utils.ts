@@ -644,3 +644,18 @@ export function range(end: number): number[] {
         .fill(0)
         .map((_, i) => i)
 }
+
+export function toggleBit(data: Uint8Array, bitindex: number) {
+    // find bit to flip
+    let byte = data[bitindex >> 3]
+    const bit = bitindex % 8
+    const on = 1 === ((byte >> bit) & 1)
+    // flip bit
+    if (on) {
+        byte &= ~(1 << bit)
+    } else {
+        byte |= 1 << bit
+    }
+    // save
+    data[bitindex >> 3] = byte
+}

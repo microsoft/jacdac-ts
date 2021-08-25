@@ -10,6 +10,9 @@ import JDRegisterServer from "../jdom/registerserver"
 import JDBus from "../jdom/bus"
 import Packet from "../jdom/packet"
 
+/**
+ * @internal
+ */
 export type RealTimeClockReadingType = [
     number,
     number,
@@ -20,6 +23,9 @@ export type RealTimeClockReadingType = [
     number
 ]
 
+/**
+ * @internal
+ */
 export function dateToClock(n: Date): RealTimeClockReadingType {
     const year = n.getFullYear()
     const month = n.getMonth() + 1

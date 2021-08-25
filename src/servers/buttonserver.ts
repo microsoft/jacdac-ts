@@ -9,6 +9,10 @@ import SensorServer from "./sensorserver"
 import RegisterServer from "../jdom/registerserver"
 import { jdpack } from "../jdom/pack"
 
+/**
+ * Server implementation for the button service
+ * @category Servers
+ */
 export default class ButtonServer extends SensorServer<[number]> {
     public static readonly HOLD_TIME = 500
     public static readonly INACTIVE_VALUE = 0

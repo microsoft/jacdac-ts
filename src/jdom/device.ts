@@ -49,6 +49,10 @@ import LEDController from "./ledcontroller"
 import JDEventSource from "./eventsource"
 import { ServiceFilter } from "./filters/servicefilter"
 
+/**
+ * Pipe information
+ * @category Runtime
+ */
 export interface PipeInfo {
     pipeType?: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

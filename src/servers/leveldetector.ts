@@ -2,7 +2,7 @@ import { JDClient } from "../jdom/client"
 import { CHANGE, SystemEvent, SystemReadingThreshold } from "../jdom/constants"
 import AnalogSensorServer from "./analogsensorserver"
 
-export class LevelDetector extends JDClient {
+export default class LevelDetector extends JDClient {
     private _state: number
 
     constructor(readonly service: AnalogSensorServer) {

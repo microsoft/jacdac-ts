@@ -39,7 +39,9 @@ export default class HIDKeyboardServer extends JDServiceServer {
         }
     }
 }
-
+/**
+ * @internal
+ */
 export const selectors: SMap<number> = {
     a: 0x04,
     b: 0x05,
@@ -191,6 +193,9 @@ export const selectors: SMap<number> = {
 
     numpadcomma: 0x85,
 }
+/**
+ * @internal
+ */
 export const reverseSelectors: { [index: number]: string } = Object.keys(
     selectors
 ).reduce((r, key) => {
@@ -198,6 +203,9 @@ export const reverseSelectors: { [index: number]: string } = Object.keys(
     return r
 }, {} as { [index: number]: string })
 
+/**
+ * @internal
+ */
 export const modifierCodes = {
     controlleft: HidKeyboardModifiers.LeftControl,
     altleft: HidKeyboardModifiers.LeftAlt,
@@ -210,6 +218,9 @@ export const modifierCodes = {
     metaright: HidKeyboardModifiers.RightGUI,
 }
 
+/**
+ * @internal
+ */
 export function renderKeyboardKey(
     selector: number,
     modifiers: HidKeyboardModifiers,

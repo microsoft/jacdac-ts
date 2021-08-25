@@ -8,8 +8,16 @@ import JDBus from "./bus"
 import Packet from "./packet"
 import { isInstanceOf, serviceSpecificationFromName } from "./spec"
 
+/**
+ * @category Trace
+ * @internal
+ */
 export type CompiledPacketFilter = (pkt: Packet) => boolean
 
+/**
+ * @category Trace
+ * @internal
+ */
 export interface PacketFilterProps {
     announce?: boolean
     repeatedAnnounce?: boolean
@@ -35,6 +43,9 @@ export interface PacketFilterProps {
     collapseGets?: boolean
 }
 
+/**
+ * @internal
+ */
 export interface PacketFilter {
     source: string
     props: PacketFilterProps

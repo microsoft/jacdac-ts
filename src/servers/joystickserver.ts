@@ -7,12 +7,18 @@ import {
 import JDRegisterServer from "../jdom/registerserver"
 import SensorServer from "./sensorserver"
 
+/**
+ * @internal
+ */
 export const JOYSTICK_DPAD_BUTTONS =
     JoystickButtons.Left |
     JoystickButtons.Right |
     JoystickButtons.Up |
     JoystickButtons.Down
 
+/**
+ * @internal
+ */
 export const JOYSTICK_ARCADE_BUTTONS =
     JOYSTICK_DPAD_BUTTONS |
     JoystickButtons.A |
@@ -21,11 +27,20 @@ export const JOYSTICK_ARCADE_BUTTONS =
     JoystickButtons.Select |
     JoystickButtons.Exit
 
+/**
+ * @internal
+ */
 export const JOYSTICK_DPAD_A_BUTTONS = JOYSTICK_DPAD_BUTTONS | JoystickButtons.A
 
+/**
+ * @internal
+ */
 export const JOYSTICK_DPAD_AB_BUTTONS =
     JOYSTICK_DPAD_A_BUTTONS | JoystickButtons.B
 
+/**
+ * @internal
+ */
 export const JOYSTICK_GAMEPAD_EXTRA_BUTTONS =
     JoystickButtons.B |
     JoystickButtons.Select |

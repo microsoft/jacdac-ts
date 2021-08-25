@@ -13,6 +13,10 @@ import JDService from "./service"
 import { serviceSpecificationFromClassIdentifier } from "./spec"
 import { JDClient } from "./client"
 
+/**
+ * A binding from a name to a service
+ * @category Roles
+ */
 export interface RoleBinding {
     role: string
     serviceClass: number

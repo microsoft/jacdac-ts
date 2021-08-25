@@ -9,6 +9,9 @@ import { OutPipe } from "../jdom/pipes"
 import JDRegisterServer from "../jdom/registerserver"
 import JDServiceServer from "../jdom/serviceserver"
 
+/**
+ * @internal
+ */
 export type SoundPlayerSound = [number, string]
 
 export default class SoundPlayerServer extends JDServiceServer {

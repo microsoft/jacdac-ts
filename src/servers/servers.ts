@@ -163,6 +163,9 @@ const sonarOptions: AnalogSensorServerOptions = {
 }
 
 const SG90_STALL_TORQUE = 1.8
+/**
+ * @internal
+ */
 export const SG90_RESPONSE_SPEED = 0.12 // deg/60deg
 
 const microServoOptions = {
@@ -260,11 +263,30 @@ const soundSpectrum: SensorServiceOptions<[Uint8Array]> = {
     ],
 }
 
+/**
+ * A factory for instantiation a simulated service server
+ * @category Servers
+ */
 export interface ServiceProviderDefinition {
+    /**
+     * Name of the simulated device
+     */
     name: string
+    /**
+     * List of service classes hosted by the provider
+     */
     serviceClasses: number[]
+    /**
+     * Factory handler to instantiate simulated servers
+     */
     services: () => JDServiceServer[]
+    /**
+     * Indicates if the simulated device should support resetId
+     */
     resetIn?: boolean
+    /**
+     * Custom factory to wrap the services into a servie provider
+     */
     factory?: (services: JDServiceServer[]) => JDServiceProvider
 }
 
@@ -1339,10 +1361,18 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     },
 ]
 
+/**
+ * Gets the list of simulated service providers
+ * @category Servers
+ */
 export default function serviceProviderDefinitions() {
     return _providerDefinitions.slice(0)
 }
 
+/**
+ * Instantiates a new service provider instance and adds it to the bus
+ * @category Servers
+ */
 export function addServiceProvider(
     bus: JDBus,
     definition: ServiceProviderDefinition
@@ -1358,6 +1388,10 @@ export function addServiceProvider(
     return d
 }
 
+/**
+ * Finds the first service provider that supports the given service class
+ * @category Servers
+ */
 export function serviceProviderDefinitionFromServiceClass(
     serviceClass: number
 ) {
@@ -1368,6 +1402,10 @@ export function serviceProviderDefinitionFromServiceClass(
     )
 }
 
+/**
+ * Starts a service provider that hosts the given service class.
+ * @category Servers
+ */
 export function startServiceProviderFromServiceClass(
     bus: JDBus,
     serviceClass: number

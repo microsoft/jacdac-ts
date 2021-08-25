@@ -10,17 +10,31 @@ import RegisterServer from "../jdom/registerserver"
 import Packet from "../jdom/packet"
 import { jdpack } from "../jdom/pack"
 
+/**
+ * Server creation options for the Azure IoT hub message
+ * @category Servers
+ * @internal
+ */
 export interface AzureIoTHubServerOptions extends ServerOptions {
     hubName?: string
     deviceId?: string
 }
 
-export class AzureIoTHubMessage {
+/**
+ * A Azure IoT hub message
+ * @category Servers
+ * @internal
+ */
+export interface AzureIoTHubMessage {
     counter: number
     timestamp: number
     body: string
 }
 
+/**
+ * A server implementation of the bit:radio service
+ * @category Servers
+ */
 export default class AzureIoTHubServer extends JDServiceServer {
     readonly hubName: RegisterServer<[string]>
     readonly deviceId: RegisterServer<[string]>

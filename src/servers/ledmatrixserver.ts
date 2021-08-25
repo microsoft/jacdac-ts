@@ -7,21 +7,6 @@ import {
 import JDRegisterServer from "../jdom/registerserver"
 import JDServiceServer from "../jdom/serviceserver"
 
-export function toggle(data: Uint8Array, bitindex: number) {
-    // find bit to flip
-    let byte = data[bitindex >> 3]
-    const bit = bitindex % 8
-    const on = 1 === ((byte >> bit) & 1)
-    // flip bit
-    if (on) {
-        byte &= ~(1 << bit)
-    } else {
-        byte |= 1 << bit
-    }
-    // save
-    data[bitindex >> 3] = byte
-}
-
 export default class LEDMatrixServer extends JDServiceServer {
     readonly leds: JDRegisterServer<[Uint8Array]>
     readonly rows: JDRegisterServer<[number]>

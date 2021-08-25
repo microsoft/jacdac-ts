@@ -4,6 +4,11 @@ import { PackedValues } from "../jdom/pack"
 import JDRegisterServer from "../jdom/registerserver"
 import JDServiceServer, { ServerOptions } from "../jdom/serviceserver"
 
+/**
+ * Creation options for sensor servers
+ * @category Servers
+ * @internal
+ */
 export interface SensorServiceOptions<TReading extends PackedValues>
     extends ServerOptions {
     readingValues?: TReading

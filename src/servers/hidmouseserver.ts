@@ -8,6 +8,9 @@ import {
 import Packet from "../jdom/packet"
 import JDServiceServer, { ServerOptions } from "../jdom/serviceserver"
 
+/**
+ * @internal
+ */
 export function renderHidMouseButtons(buttons: HidMouseButton) {
     const btns = [
         buttons & HidMouseButton.Left ? "left" : "",

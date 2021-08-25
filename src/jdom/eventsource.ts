@@ -2,6 +2,9 @@ import { NEW_LISTENER, REMOVE_LISTENER, ERROR, CHANGE } from "./constants"
 import { Observable, Observer } from "./observable"
 import Flags from "./flags"
 
+/**
+ * @category JDOM
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type EventHandler = (...args: any[]) => void
 
@@ -36,8 +39,16 @@ export interface IEventSource {
     ): () => void
 }
 
-export function dependencyId(nodes: IEventSource[]) {
-    return nodes?.map(node => node?.nodeId || "?").join(",") || ""
+/**
+ * Given a node or set of nodes, generate a stable string that can be used to track dependencies in frameworks like React.
+ * @param nodes 
+ * @returns 
+ * @category JDOM
+ */
+export function dependencyId(nodes: IEventSource | IEventSource[]) {
+    if (Array.isArray(nodes))
+        return nodes?.map(node => node?.nodeId || "?").join(",") || ""
+    else return nodes?.nodeId || ""
 }
 
 let nextNodeId = 0

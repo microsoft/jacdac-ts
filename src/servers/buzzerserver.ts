@@ -4,18 +4,33 @@ import Packet from "../jdom/packet"
 import JDRegisterServer from "../jdom/registerserver"
 import JDServiceServer, { ServerOptions } from "../jdom/serviceserver"
 
+/**
+ * @internal
+ */
 export interface BuzzerTone {
     frequency: number
     duration: number
     volume: number
 }
 
+/**
+ * Encodes a buzzer tone information into a data payload
+ * @param frequency sound frequency in Hz
+ * @param ms sound duration in milliseconds
+ * @param volume volume from [0..1]
+ * @returns data payload
+ * @category Data Packing
+ */
 export function tonePayload(frequency: number, ms: number, volume: number) {
     const period = Math.round(1000000 / frequency)
     const duty = (period * volume) >> 11
     return jdpack("u16 u16 u16", [period, duty, ms])
 }
 
+/**
+ * Server implementation for the buzzer service
+ * @category Servers
+ */
 export default class BuzzerServer extends JDServiceServer {
     readonly volume: JDRegisterServer<[number]>
 
