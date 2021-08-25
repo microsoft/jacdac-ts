@@ -24,7 +24,7 @@
 		{
 			"type": "shell",
 			"label": "npm install (functions)",
-			"command": "yarn install",
+			"command": "yarn install --frozen-lockfile",
 			"options": {
 				"cwd": "${workspaceFolder}/device-models-function"
 			}
