@@ -41,8 +41,8 @@ export interface IEventSource {
 
 /**
  * Given a node or set of nodes, generate a stable string that can be used to track dependencies in frameworks like React.
- * @param nodes 
- * @returns 
+ * @param nodes
+ * @returns
  * @category JDOM
  */
 export function dependencyId(nodes: IEventSource | IEventSource[]) {

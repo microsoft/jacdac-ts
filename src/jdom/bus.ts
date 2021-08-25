@@ -458,7 +458,12 @@ export class JDBus extends JDNode {
      * @internal
      */
     toString(): string {
-        return `bus: ${this._devices?.length || 0} devices, ${this._transports?.filter(tr => tr.connected).map(tr => tr.type).join(", ") || ""}`
+        return `bus: ${this._devices?.length || 0} devices, ${
+            this._transports
+                ?.filter(tr => tr.connected)
+                .map(tr => tr.type)
+                .join(", ") || ""
+        }`
     }
 
     /**
