@@ -471,10 +471,8 @@ const routes: Record<string, (route: string) => DTDLContent> = {
     devices: encodedDeviceRouteToDTDL,
 }
 export function routeToDTDL(route: string) {
-    const { parts } = parseRoute(route)
-    // eat prefix
-    while (parts[0] === "dtmi" || parts[0] === "jacdac") parts.shift()
-    const [path] = parts
+    const { parts } = parseRoute(route, true)
+    const path = parts[0]
     const handler = routes[path]
     return handler?.(route)
 }
