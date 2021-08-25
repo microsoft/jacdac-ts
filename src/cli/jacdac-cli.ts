@@ -63,7 +63,7 @@ if (options.dtdl) {
                 cli.debug(`${srv.name} => ${fn}`)
                 cli.progress(i / (services.length - 1))
                 const dtdl = serviceSpecificationToDTDL(srv)
-                fs.writeJSONSync(fn, dtdl)
+                fs.writeJSONSync(fn, dtdl, { spaces: 2 })
             })
         }
 
@@ -81,7 +81,7 @@ if (options.dtdl) {
                 cli.debug(`${dev.name} => ${fn}`)
                 cli.progress(i / (devices.length - 1))
                 const dtdl = deviceSpecificationToDTDL(dev)
-                fs.writeJSONSync(fn, dtdl)
+                fs.writeJSONSync(fn, dtdl, { spaces: 2 })
             })
         }
 
