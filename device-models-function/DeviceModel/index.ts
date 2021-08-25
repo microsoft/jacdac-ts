@@ -17,7 +17,7 @@ const httpTrigger: AzureFunction = async function (
         case DTDL_SERVICES_PATH: {
             // resolve service
             const specification = serviceSpecifications().find(
-                spec => serviceSpecificationDTMI(spec) === dtmi
+                spec => serviceSpecificationToDTDL(spec) === dtmi
             )
             if (!specification) {
                 context.res = {
