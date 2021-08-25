@@ -19,9 +19,7 @@ export default class WebSerialIO implements HF2_IO {
     private writer: WritableStreamDefaultWriter<Uint8Array>
     private reader: ReadableStreamDefaultReader<Uint8Array>
 
-    constructor() {
-        navigator.serial
-    }
+    constructor() {}
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onData = (v: Uint8Array) => {}

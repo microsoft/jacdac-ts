@@ -6,6 +6,7 @@ import JDBus from "../bus"
 import Proto from "./proto"
 import WebSerialIO from "./webserialio"
 import { createUSBTransport } from "./usb"
+import { HF2_IO } from "./hf2"
 
 export function isWebSerialEnabled(): boolean {
     return !!Flags.webSerial
@@ -25,12 +26,12 @@ export function isWebSerialSupported(): boolean {
 
 class WebSerialTransport extends JDTransport {
     private hf2: Proto
-    constructor() {
+    constructor(private mkTransport: () => HF2_IO) {
         super(SERIAL_TRANSPORT)
     }
 
     protected async transportConnectAsync(background: boolean) {
-        const transport = new WebSerialIO()
+        const transport = this.mkTransport()
         transport.onError = e => this.errorHandler(USB_TRANSPORT, e)
         this.hf2 = await transport.connectAsync(background)
         this.hf2.onJDMessage(this.handleFrame.bind(this))
@@ -51,9 +52,10 @@ class WebSerialTransport extends JDTransport {
     }
 }
 
-
-export function createWebSerialTransport(): JDTransport {
-    return new WebSerialTransport()
+export function createWebSerialTransport(
+    mkTransport: () => HF2_IO = () => new WebSerialIO()
+): JDTransport {
+    return new WebSerialTransport(mkTransport)
 }
 
 export function createWebSerialBus() {
