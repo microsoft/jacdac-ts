@@ -1,8 +1,20 @@
+import { META_TRACE } from "../constants"
 import Packet from "../packet"
 import { printPacket } from "../pretty"
-import { toHex } from "../utils"
+import { roundWithPrecision, toHex } from "../utils"
 
 const TRACE_OVERSHOOT = 1.1
+
+/**
+ * Collect stack trace at the current execution position
+ * @returns
+ */
+export function stack() {
+    return new Error().stack
+        .replace(/^Error\n/, "")
+        .replace(/webpack-internal:\/\/\//g, "")
+        .replace(/https:\/\/microsoft\.github\.io\/jacdac-docs/g, "")
+}
 
 /**
  * A sequence of packets.
@@ -70,12 +82,14 @@ export class Trace {
      */
     serializeToText() {
         const start = this.packets[0]?.timestamp || 0
-        const text = this.packets.map(
-            pkt =>
-                `${pkt.timestamp - start}\t${toHex(
-                    pkt.toBuffer()
-                )}\t${printPacket(pkt, {}).replace(/\r?\n/g, " ")}`
-        )
+        const text = this.packets.map(pkt => {
+            let t = `${roundWithPrecision(pkt.timestamp - start, 3)}\t${toHex(
+                pkt.toBuffer()
+            )}\t${printPacket(pkt, {}).replace(/\r?\n/g, " ")}`
+            const trace = pkt.meta[META_TRACE]
+            if (trace) t += "\n" + trace
+            return t
+        })
         if (this.description) {
             text.unshift(this.description)
             text.unshift("")

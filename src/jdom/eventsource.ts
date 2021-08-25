@@ -1,6 +1,7 @@
 import { NEW_LISTENER, REMOVE_LISTENER, ERROR, CHANGE } from "./constants"
 import { Observable, Observer } from "./observable"
 import Flags from "./flags"
+import { stack } from "./trace/trace"
 
 /**
  * @category JDOM
@@ -149,7 +150,7 @@ export class JDEventSource implements IEventSource {
             handler,
             once: !!once,
             // debug only collection of trace for leak detection
-            stackTrace: Flags.diagnostics && new Error().stack,
+            stackTrace: Flags.diagnostics && stack(),
         })
         this.emit(NEW_LISTENER, eventName, handler)
         // diagnostics
