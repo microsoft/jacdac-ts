@@ -6,6 +6,7 @@ const httpTrigger: AzureFunction = async function (
 ): Promise<void> {
     const { bindingData } = context
     const dtmi = bindingData.dtmi as string
+    console.log(`dtmi: ${dtmi}`)
     const dtdl = routeToDTDL(dtmi)
     context.res = {
         status: dtdl ? 200 : 404,
