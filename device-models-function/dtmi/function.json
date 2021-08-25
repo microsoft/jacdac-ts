@@ -17,5 +17,5 @@
       "name": "res"
     }
   ],
-  "scriptFile": "../dist/DeviceModel/index.js"
+  "scriptFile": "../dist/dtmi/index.js"
 }
