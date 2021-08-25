@@ -578,8 +578,7 @@ export class JDBus extends JDNode {
      */
     async sendPacketAsync(packet: Packet) {
         packet.timestamp = this.timestamp
-        if (Flags.trace)
-            packet.meta[META_TRACE] = stack()
+        if (Flags.trace) packet.meta[META_TRACE] = stack()
         this.emit(PACKET_SEND, packet)
 
         await Promise.all(

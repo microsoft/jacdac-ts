@@ -9,11 +9,11 @@ export const DTDL_REFERENCE_URL =
 /**
  * @internal
  */
- export const DTDL_NAME = "Digital Twins Definition Language"
+export const DTDL_NAME = "Digital Twins Definition Language"
 /**
  * @internal
  */
- export const DTDL_CONTEXT = ["dtmi:dtdl:context;2"]
+export const DTDL_CONTEXT = ["dtmi:dtdl:context;2"]
 
 // warps fields into an object
 export function objectSchema(schemas: DTDLSchema[]): DTDLSchema {
