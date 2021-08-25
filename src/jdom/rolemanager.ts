@@ -24,12 +24,7 @@ export interface RoleBinding {
  * A role manager
  * @category JDOM
  */
-export default class RoleManager<
-    TRoles extends Record<
-        string,
-        { serviceClass: number; preferredDeviceId?: string }
-    > = Record<string, never>
-> extends JDClient {
+export class RoleManager extends JDClient {
     private readonly _roles: RoleBinding[] = []
 
     /**
@@ -213,5 +208,35 @@ export default class RoleManager<
         return this._roles
             .map(({ role, service }) => `${role}->${service || "?"}`)
             .join(",")
+    }
+}
+export default RoleManager
+
+export function assignRoles<
+    TRoles extends Record<
+        string,
+        { serviceClass: number; preferredDeviceId?: string }
+    >
+>(bus: JDBus, bindings: TRoles) {
+    const roleManager = new RoleManager(bus)
+    roleManager.updateRoles(
+        Object.keys(bindings).map(role => ({
+            role,
+            serviceClass: bindings[role].serviceClass,
+            preferredDeviceId: bindings[role].preferredDeviceId,
+        }))
+    )
+
+    return {
+        roleManager,
+        roles: (): Record<keyof TRoles, JDService> => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const r: Record<keyof TRoles, JDService> = {} as any
+            for (const key in bindings) {
+                const srv = roleManager.service(key)
+                if (srv) r[key] = srv
+            }
+            return r
+        },
     }
 }
