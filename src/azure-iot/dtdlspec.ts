@@ -19,7 +19,7 @@ import {
     serviceSpecificationFromClassIdentifier,
     serviceSpecifications,
 } from "../jdom/spec"
-import { uniqueMap } from "../jdom/utils"
+import { arrayConcatMany, uniqueMap } from "../jdom/utils"
 import {
     arraySchema,
     DTDLContent,
@@ -406,6 +406,69 @@ export function DTMIToRoute(dtmi: string) {
     const route =
         dtmi.toLowerCase().replace(/;/, "-").replace(/:/g, "/") + ".json"
     return route
+}
+
+export function routeToDTMI(route: string) {
+    const parts = route.split("/")
+    const version = parts.pop()
+    if (parts[0] !== "dtmi") parts.unshift("dtmi")
+    if (parts[1] !== DTDL_JACDAC_PATH)
+        parts.splice(1, 0, DTDL_JACDAC_PATH)
+    return `${parts.join(":")}-${version}`
+}
+
+export function serviceRouteToDTDL(route: string) {
+    const dtmi = routeToDTMI(route)
+    const specification = serviceSpecifications().find(
+        spec => serviceSpecificationDTMI(spec) === dtmi
+    )
+    const dtdl = serviceSpecificationToDTDL(specification)
+    return dtdl
+}
+
+export function encodedDeviceRouteToDTDL(route: string) {
+    const parts = route.split("/")
+    if (parts[0] !== DTDL_JACDAC_PATH || parts[1] !== DTDL_DEVICES_PATH)
+        throw Error("invalid route")
+    const services = parts.slice(2).map(part => {
+        const m = /^(\d+)x(\w+)$/.exec(part)
+        return {
+            occurance: parseInt(m[1]),
+            service: serviceSpecificationFromClassIdentifier(
+                parseInt(m[2], 16)
+            ),
+        }
+    })
+    const dtdl: DTDLInterface = {
+        "@type": "Interface",
+        "@id": routeToDTMI(route),
+        displayName: route,
+        contents: arrayConcatMany(
+            services.map(({ occurance, service }) =>
+                Array(occurance).map((_, i) =>
+                    serviceSpecificationToComponent(
+                        service,
+                        `${service.shortName}${i}`
+                    )
+                )
+            )
+        ),
+        "@context": DTDL_CONTEXT,
+    }
+    return dtdl
+}
+
+const routes: Record<string, (route: string) => DTDLContent> = {
+    DTDL_SERVICES_PATH: serviceRouteToDTDL,
+    DTDL_DEVICES_PATH: encodedDeviceRouteToDTDL,
+}
+export function routeToDTDL(route: string) {
+    const parts = route.split("/")
+    // eat prefix
+    while(parts[0] === "dtmi" || parts[0] === "jacdac")
+        parts.shift()
+    const [path] = parts
+    return routes[path]?.(route)
 }
 
 export function deviceSpecificationToDTDL(
