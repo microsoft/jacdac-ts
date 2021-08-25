@@ -201,11 +201,7 @@ export function serviceSpecificationFromName(
 export function serviceSpecificationFromClassIdentifier(
     classIdentifier: number
 ): jdspec.ServiceSpec {
-    if (
-        classIdentifier === null ||
-        classIdentifier === undefined ||
-        isNaN(classIdentifier)
-    )
+    if (isNaN(classIdentifier))
         return undefined
     return (
         _serviceSpecifications.find(

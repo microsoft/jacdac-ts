@@ -408,9 +408,12 @@ export function DTMIToRoute(dtmi: string) {
     return route
 }
 
-function parseRoute(route: string) {
+function parseRoute(route: string, normalize?: boolean) {
     const [, path, version] = /(.*)-(\d+)\.json$/.exec(route)
     const parts = path.split("/")
+    if (normalize)
+        while (parts[0] === "dtmi" || parts[0] === DTDL_JACDAC_PATH)
+            parts.shift()
     return { version, parts }
 }
 
@@ -422,25 +425,24 @@ export function routeToDTMI(route: string) {
 }
 
 export function serviceRouteToDTDL(route: string) {
-    const dtmi = routeToDTMI(route)
-    const specification = serviceSpecifications().find(
-        spec => serviceSpecificationDTMI(spec) === dtmi
-    )
+    const { parts } = parseRoute(route, true)
+    if (parts[0] !== DTDL_SERVICES_PATH) throw Error("invalid route")
+    const serviceClass = parseInt("0" + parts[1], 16)
+    const specification = serviceSpecificationFromClassIdentifier(serviceClass)
     const dtdl = serviceSpecificationToDTDL(specification)
     return dtdl
 }
 
 export function encodedDeviceRouteToDTDL(route: string) {
-    const { parts } = parseRoute(route)
-    while (parts[0] === "dtmi" || parts[0] === DTDL_JACDAC_PATH) parts.shift()
+    const { parts } = parseRoute(route, true)
     if (parts[0] !== DTDL_DEVICES_PATH) throw Error("invalid route")
     const services = parts.slice(1).map(part => {
-        const m = /^(\d+)x(\w+)$/.exec(part)
+        const m = /^x(\w{8,8})(\d*)$/.exec(part)
         return {
-            occurance: parseInt(m[1]),
             service: serviceSpecificationFromClassIdentifier(
-                parseInt(m[2], 16)
+                parseInt(m[1], 16)
             ),
+            occurance: m[2] ? parseInt(m[2]) : 1,
         }
     })
     const dtdl: DTDLInterface = {
