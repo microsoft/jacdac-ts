@@ -629,7 +629,7 @@ export function printPacket(
         }
     }
 
-    pdesc += `; ${sender}`
+    if (sender) pdesc += `; ${sender}`
 
     return (
         (!isNaN(pkt.timestamp) && opts?.showTime
