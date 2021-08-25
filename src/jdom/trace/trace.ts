@@ -8,10 +8,20 @@ const TRACE_OVERSHOOT = 1.1
 /**
  * Collect stack trace at the current execution position
  * @returns
+ * @internal
  */
 export function stack() {
     return new Error().stack
-        .replace(/^Error\n/, "")
+}
+
+/**
+ * @internal
+ */
+export function cleanStack(text: string) {
+    return text
+        ?.split(/\n/g)
+        .slice(2)
+        .join("\n") // drop first 2 lines
         .replace(/webpack-internal:\/\/\//g, "")
         .replace(/https:\/\/microsoft\.github\.io\/jacdac-docs/g, "")
 }
@@ -86,8 +96,8 @@ export class Trace {
             let t = `${roundWithPrecision(pkt.timestamp - start, 3)}\t${toHex(
                 pkt.toBuffer()
             )}\t${printPacket(pkt, {}).replace(/\r?\n/g, " ")}`
-            const trace = pkt.meta[META_TRACE]
-            if (trace) t += "\n" + trace
+            const trace = pkt.meta[META_TRACE] as string
+            if (trace) t += "\n" + cleanStack(trace)
             return t
         })
         if (this.description) {
