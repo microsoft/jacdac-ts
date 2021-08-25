@@ -12,6 +12,7 @@ import JDDevice from "./device"
 import JDService from "./service"
 import { serviceSpecificationFromClassIdentifier } from "./spec"
 import { JDClient } from "./client"
+import { SRV_BUTTON } from "../../jacdac-spec/dist/specconstants"
 
 export interface RoleBinding {
     role: string
@@ -22,7 +23,7 @@ export interface RoleBinding {
 
 /**
  * A role manager
- * @category JDOM
+ * @category Roles
  */
 export class RoleManager extends JDClient {
     private readonly _roles: RoleBinding[] = []
@@ -212,12 +213,32 @@ export class RoleManager extends JDClient {
 }
 export default RoleManager
 
-export function assignRoles<
+/**
+ * Tracks a set of roles
+ * @param bus bus hosting the devices
+ * @param bindings map of role names to device service pairs
+ * @param onUpdate callback to run whenver role assignments change
+ * @param options Additional options
+ * @returns A unsubscribe callback to cleanup handlers
+ * @category Roles
+ */
+export function trackRoles<
     TRoles extends Record<
         string,
         { serviceClass: number; preferredDeviceId?: string }
     >
->(bus: JDBus, bindings: TRoles) {
+>(
+    bus: JDBus,
+    bindings: TRoles,
+    onUpdate: (roles: Record<keyof TRoles, JDService>) => void,
+    options?: {
+        /**
+         * Calls update even if not all role around bound
+         */
+        incomplete?: boolean
+    }
+): () => void {
+    const { incomplete } = options || {}
     const roleManager = new RoleManager(bus)
     roleManager.updateRoles(
         Object.keys(bindings).map(role => ({
@@ -226,17 +247,36 @@ export function assignRoles<
             preferredDeviceId: bindings[role].preferredDeviceId,
         }))
     )
-
-    return {
-        roleManager,
-        roles: (): Record<keyof TRoles, JDService> => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const r: Record<keyof TRoles, JDService> = {} as any
-            for (const key in bindings) {
-                const srv = roleManager.service(key)
-                if (srv) r[key] = srv
-            }
-            return r
-        },
+    const roles = () => {
+        const r: Record<keyof TRoles, JDService> = {} as any
+        for (const key in bindings) {
+            const srv = roleManager.service(key)
+            if (srv) r[key] = srv
+        }
+        return r
     }
+    const update = () => {
+        if (!incomplete && !roleManager.isBound) return
+        onUpdate(roles())
+    }
+    const unsubscribe = roleManager.subscribe(CHANGE, update)
+    update()
+    return unsubscribe
 }
+
+/*
+function test(bus: JDBus) {
+    const bindings = {
+        thermo1: { serviceClass: SRV_BUTTON },
+        thermo2: { serviceClass: SRV_BUTTON },
+    }
+    trackRoles(
+        bus,
+        bindings,
+        ({ thermo1, thermo2 }) => {
+            console.log({ thermo1, thermo2 })
+        },
+        { incomplete: true }
+    )
+}
+*/
