@@ -6,12 +6,12 @@ import {
     ROLE_BOUND,
     ROLE_UNBOUND,
     UNBOUND,
-} from "../jdom/constants"
-import JDBus from "../jdom/bus"
-import JDDevice from "../jdom/device"
-import JDService from "../jdom/service"
-import { serviceSpecificationFromClassIdentifier } from "../jdom/spec"
-import { JDClient } from "../jdom/client"
+} from "./constants"
+import JDBus from "./bus"
+import JDDevice from "./device"
+import JDService from "./service"
+import { serviceSpecificationFromClassIdentifier } from "./spec"
+import { JDClient } from "./client"
 
 export interface RoleBinding {
     role: string
@@ -21,15 +21,25 @@ export interface RoleBinding {
 }
 
 /**
- * A client for the role manager service.
- * @category Clients
+ * A role manager
+ * @category JDOM
  */
-export default class RoleManager extends JDClient {
+export default class RoleManager<
+    TRoles extends Record<
+        string,
+        { serviceClass: number; preferredDeviceId?: string }
+    > = Record<string, never>
+> extends JDClient {
     private readonly _roles: RoleBinding[] = []
 
-    constructor(private readonly _bus: JDBus) {
-        super()
+    /**
+     * Gets the bus for this role
+     */
+    public readonly bus: JDBus
 
+    constructor(bus: JDBus) {
+        super()
+        this.bus = bus
         this.mount(
             this.bus.subscribe(DEVICE_ANNOUNCE, this.addServices.bind(this))
         )
@@ -43,28 +53,28 @@ export default class RoleManager extends JDClient {
         this.bindServices()
     }
 
-    get bus() {
-        return this._bus
-    }
-
-    get roles() {
-        return this._roles.slice(0)
-    }
-
-    get boundRoles() {
-        return this._roles.filter(r => !!r.service)
-    }
-
-    get unboundRoles() {
-        return this._roles.filter(r => !r.service)
-    }
-
-    get bound() {
+    /**
+     * Indicates if all roles are bound.
+     */
+    get isBound() {
         return this._roles.every(({ service }) => !!service)
     }
 
-    setRoles(newRoles: RoleBinding[]) {
-        const oldBound = this.bound
+    /**
+     * Gets the list of roles tracked by the manager
+     */
+    roles(bound: boolean = undefined) {
+        if (bound !== undefined)
+            return this._roles.filter(({ service }) => !!service === bound)
+        else return this._roles.slice(0)
+    }
+
+    /**
+     * Updates the list of roles
+     * @param newRoles
+     */
+    updateRoles(newRoles: RoleBinding[]) {
+        const oldBound = this.isBound
         let changed = false
 
         // remove unknown roles
@@ -107,11 +117,23 @@ export default class RoleManager extends JDClient {
         this.emitBoundEvents(oldBound)
     }
 
-    public getService(role: string): JDService {
+    /**
+     * Resolves the service bound to a given role.
+     * @param role
+     * @returns
+     */
+    public service(role: string): JDService {
         return this._roles.find(r => r.role === role)?.service
     }
 
-    public addRoleService(
+    /**
+     * Updates or creates a new role
+     * @param role name of the role
+     * @param serviceClass desired service class
+     * @param preferredDeviceId optional preferred device id
+     * @returns
+     */
+    public updateRole(
         role: string,
         serviceClass: number,
         preferredDeviceId?: string
@@ -127,7 +149,7 @@ export default class RoleManager extends JDClient {
             }
             return
         }
-        const oldBound = this.bound
+        const oldBound = this.isBound
         // new role
         binding = { role, serviceClass, preferredDeviceId }
         this._roles.push(binding)
@@ -139,7 +161,7 @@ export default class RoleManager extends JDClient {
     }
 
     private emitBoundEvents(oldBound: boolean) {
-        const bound = this.bound
+        const bound = this.isBound
         if (oldBound !== bound) this.emit(bound ? BOUND : UNBOUND)
     }
 
@@ -147,7 +169,7 @@ export default class RoleManager extends JDClient {
     private bindRole(role: RoleBinding) {
         const ret = this.bus
             .services({ ignoreSelf: true, serviceClass: role.serviceClass })
-            .filter(s => !this.boundRoles.find(r => r.service === s))
+            .filter(s => !this.roles(true).find(r => r.service === s))
         if (ret.length) {
             let theOne = ret[0]
             if (role.preferredDeviceId) {
@@ -164,7 +186,7 @@ export default class RoleManager extends JDClient {
     }
 
     private bindServices(changed?: boolean) {
-        this.unboundRoles.forEach(binding => {
+        this.roles(false).forEach(binding => {
             if (this.bindRole(binding)) changed = true
         })
         if (changed) this.emit(CHANGE)
@@ -185,5 +207,11 @@ export default class RoleManager extends JDClient {
                 changed = true
             })
         this.bindServices(changed)
+    }
+
+    toString() {
+        return this._roles
+            .map(({ role, service }) => `${role}->${service || "?"}`)
+            .join(",")
     }
 }
