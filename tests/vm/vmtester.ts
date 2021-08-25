@@ -82,7 +82,7 @@ export async function getRoles(
 
     const outputMap: Record<string, JDService> = {}
     program.serverRoles.forEach(role => {
-        outputMap[role.role] = roleMgr.getService(role.role)
+        outputMap[role.role] = roleMgr.service(role.role)
     })
 
     return outputMap
