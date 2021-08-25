@@ -591,6 +591,7 @@ export function printPacket(
     const devname = pkt.friendlyDeviceName
     const service_name = pkt.friendlyServiceName
     const cmdname = pkt.friendlyCommandName
+    const sender = pkt.sender
 
     let pdesc = `${devname}/${service_name}: ${cmdname}; sz=${pkt.size}`
 
@@ -627,6 +628,8 @@ export function printPacket(
             pdesc += "; " + hexDump(d)
         }
     }
+
+    pdesc += `; ${sender}`
 
     return (
         (!isNaN(pkt.timestamp) && opts?.showTime

@@ -4,6 +4,7 @@ import Packet from "./packet"
 import TracePlayer from "./trace/traceplayer"
 import Frame from "./frame"
 import Trace from "./trace/trace"
+import { META_TRACE } from "./constants"
 
 /**
  * Parse a trace text file
@@ -18,8 +19,18 @@ export function parseTrace(contents: string): Trace {
         // parse data
         const m = /^(\d+.?\d*)\s+([a-f0-9]{12,})/i.exec(ln)
         if (!m) {
-            // probably junk data
-            if (packets.length == 0) description.push(ln)
+            // might be a stack trace
+            if (/^\s+at\s/.test(ln)) {
+                const lastPacket = packets[packets.length - 1]
+                if (lastPacket) {
+                    let trace = (lastPacket.meta[META_TRACE] as string) || ""
+                    trace += ln + "\n"
+                    lastPacket.meta[META_TRACE] = trace
+                }
+            } else {
+                // probably junk data
+                if (packets.length == 0) description.push(ln)
+            }
             return
         }
 
