@@ -12,7 +12,6 @@ import JDDevice from "./device"
 import JDService from "./service"
 import { serviceSpecificationFromClassIdentifier } from "./spec"
 import { JDClient } from "./client"
-import { SRV_BUTTON } from "../../jacdac-spec/dist/specconstants"
 
 export interface RoleBinding {
     role: string
@@ -248,6 +247,7 @@ export function trackRoles<
         }))
     )
     const roles = () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const r: Record<keyof TRoles, JDService> = {} as any
         for (const key in bindings) {
             const srv = roleManager.service(key)
