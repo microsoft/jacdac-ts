@@ -104,6 +104,8 @@ export const HF2_EV_JDS_PACKET = 0x800020
 
 export interface HF2_IO {
     onData: (v: Uint8Array) => void
+    onError: (e: Error) => void
+    connectAsync(background: boolean): Promise<Proto>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     log(msg: string, v?: any): void
     disconnectAsync(): Promise<void>

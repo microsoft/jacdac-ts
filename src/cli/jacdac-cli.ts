@@ -18,12 +18,15 @@ import JDBus from "../jdom/bus"
 import { printPacket } from "../jdom/pretty"
 import { parseLogicLog, replayLogicLog } from "../jdom/logparser"
 import { dashify } from "../../jacdac-spec/spectool/jdspec"
+import { createWebSerialTransport } from "../jdom/jacdac-jdom"
+import NodeWebSerialIO from "../jdom/transport/nodewebserialio"
 
 cli.setApp("jacdac", "1.0.6")
 cli.enable("version")
 
 interface OptionsType {
     usb?: boolean
+    serial?: boolean
     packets?: boolean
     dtdl?: boolean
     sdmi?: string
@@ -34,13 +37,14 @@ interface OptionsType {
 }
 
 const options: OptionsType = cli.parse({
-    usb: ["u", "listen to Jacdac over USB", true],
-    packets: ["p", "show/hide all packets", true],
+    usb: ["u", "listen to Jacdac over USB"],
+    serial: ["s", "listen to Jacdac over SERIAL"],
+    packets: ["p", "show/hide all packets"],
     dtdl: [false, "generate DTDL files", "file"],
     sdmi: [false, "generate dynamic DTDL files", "string"],
     devices: ["d", "regular expression filter for devices", "string"],
     services: [false, "regular expression filter for services", "string"],
-    rm: [false, "delete files from output folder", true],
+    rm: [false, "delete files from output folder"],
     parse: ["l", "parse logic analyzer log file", "string"],
 })
 
@@ -81,10 +85,22 @@ if (options.dtdl) {
     run()
 }
 
+function mkTransport() {
+    if (options.serial) {
+        return createWebSerialTransport(
+            () => new NodeWebSerialIO(require("serialport"))
+        )
+    } else if (options.usb) {
+        const opts = createNodeUSBOptions()
+        return createUSBTransport(opts)
+    } else {
+        return null
+    }
+}
+
 // USB
-if (options.usb) {
-    const opts = createNodeUSBOptions()
-    const transport = createUSBTransport(opts)
+const transport = mkTransport()
+if (transport) {
     const bus = new JDBus([transport])
     bus.on(DEVICE_ANNOUNCE, dev => console.debug(`new device ${dev}`))
     if (options.packets) bus.on(PACKET_PROCESS, pkt => console.debug(pkt))

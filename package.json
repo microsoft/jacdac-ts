@@ -54,6 +54,7 @@
     "@typescript-eslint/parser": "^4.29.2",
     "cli": "^1.0.1",
     "colors": "^1.4.0",
+    "concurrently": "^6.2.1",
     "cross-env": "^7.0.3",
     "eslint": "^7.32.0",
     "eslint-plugin-react": "^7.24.0",
@@ -75,13 +76,13 @@
     "rollup-plugin-typescript2": "^0.30.0",
     "rollup-plugin-visualizer": "^5.5.2",
     "semantic-release": "^17.4.5",
+    "serialport": "^9.2.0",
     "shelljs": "^0.8.4",
     "ts-node": "^10.2.1",
+    "typedoc": "^0.21.6",
     "typescript": "^4.3.5",
     "webusb": "^2.2.0",
-    "yargs-parser": "^20.2.9",
-    "typedoc": "^0.21.6",
-    "concurrently": "^6.2.1"
+    "yargs-parser": "^20.2.9"
   },
   "dependencies": {
     "@types/node": "^16.7.1",
