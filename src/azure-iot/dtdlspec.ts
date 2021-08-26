@@ -421,7 +421,7 @@ export function routeToDTMI(route: string) {
     const { parts, version } = parseRoute(route)
     if (parts[0] !== "dtmi") parts.unshift("dtmi")
     if (parts[1] !== DTDL_JACDAC_PATH) parts.splice(1, 0, DTDL_JACDAC_PATH)
-    return `${parts.join(":")}-${version}`
+    return `${parts.join(":")};${version}`
 }
 
 export function serviceRouteToDTDL(route: string) {
