@@ -10,12 +10,10 @@ import {
 import { createUSBTransport } from "../jdom/transport/usb"
 import { createNodeUSBOptions } from "../jdom/transport/nodewebusb"
 import {
-    deviceSpecificationToDTDL,
     routeToDTDL,
     serviceSpecificationsWithDTDL,
     serviceSpecificationToDTDL,
 } from "../azure-iot/dtdlspec"
-import { deviceSpecifications } from "../jdom/spec"
 import JDBus from "../jdom/bus"
 import { printPacket } from "../jdom/pretty"
 import { parseLogicLog, replayLogicLog } from "../jdom/logparser"
@@ -73,24 +71,6 @@ if (options.dtdl) {
                 cli.debug(`${srv.name} => ${fn}`)
                 cli.progress(i / (services.length - 1))
                 const dtdl = serviceSpecificationToDTDL(srv)
-                fs.writeJSONSync(fn, dtdl, { spaces: 2 })
-            })
-        }
-
-        // generate devices
-        {
-            let devices = deviceSpecifications()
-            // filters
-            if (options.devices) {
-                const rx = new RegExp(options.devices, "i")
-                devices = devices.filter(dev => rx.test(dev.name))
-            }
-            cli.info(`${devices.length} devices`)
-            devices.forEach((dev, i) => {
-                const fn = `${dir}/${dashify(dev.name)}.json`
-                cli.debug(`${dev.name} => ${fn}`)
-                cli.progress(i / (devices.length - 1))
-                const dtdl = deviceSpecificationToDTDL(dev)
                 fs.writeJSONSync(fn, dtdl, { spaces: 2 })
             })
         }

@@ -19,7 +19,7 @@ import {
     serviceSpecificationFromClassIdentifier,
     serviceSpecifications,
 } from "../jdom/spec"
-import { arrayConcatMany, uniqueMap } from "../jdom/utils"
+import { arrayConcatMany } from "../jdom/utils"
 import {
     arraySchema,
     DTDLContent,
@@ -387,19 +387,11 @@ export function serviceSpecificationToComponent(
     return dtdl as any
 }
 
-export interface DTDLGenerationOptions {
-    inlineServices?: boolean // generate all services
-}
-
 export function serviceSpecificationDTMI(
     srv: jdspec.ServiceSpec,
     customPath?: string
 ) {
     return toDTMI([customPath || DTDL_SERVICES_PATH, srv.classIdentifier])
-}
-
-export function deviceSpecificationDTMI(dev: jdspec.DeviceSpec) {
-    return toDTMI([DTDL_DEVICES_PATH, dev.id.replace(/-/g, ":")])
 }
 
 export function DTMIToRoute(dtmi: string) {
@@ -477,25 +469,19 @@ export function routeToDTDL(route: string) {
     return handler?.(route)
 }
 
-export function deviceSpecificationToDTDL(
-    dev: jdspec.DeviceSpec,
-    options?: DTDLGenerationOptions
-): any {
+export function deviceClassToDTDL(dev: jdspec.DeviceClassSpec): DTDLInterface {
     const services = dev.services.map(srv =>
         serviceSpecificationFromClassIdentifier(srv)
     )
-    const uniqueServices = uniqueMap(
-        services,
-        srv => srv.classIdentifier.toString(),
-        srv => srv
-    )
-    const schemas = uniqueServices.map(srv => serviceSpecificationToDTDL(srv))
 
-    // allocate names
+    // allocate names and count services
+    const serviceGroups: Record<string, number> = {}
     const names: string[] = []
     services.forEach(srv => {
+        serviceGroups[srv.classIdentifier] =
+            (serviceGroups[srv.classIdentifier] || 0) + 1
         const name = escapeName(srv.shortId || srv.shortName)
-        if (names.indexOf(name) < 0) names.push(name)
+        if (names.indexOf(name) < 0) names.push(name + "0")
         else {
             let count = 2
             while (names.indexOf(name + count) > -1) count++
@@ -503,9 +489,17 @@ export function deviceSpecificationToDTDL(
         }
     })
 
+    // compute id from groups
+    const dtmi = toDTMI([
+        DTDL_DEVICES_PATH,
+        ...Object.keys(serviceGroups).map(
+            cls => `x${parseInt(cls).toString(16)}${serviceGroups[cls]}`
+        ),
+    ])
+
     const dtdl: DTDLInterface = {
         "@type": "Interface",
-        "@id": deviceSpecificationDTMI(dev),
+        "@id": dtmi,
         displayName: escapeDisplayName(dev.name),
         description: toLocalizedString(dev.description),
         contents: services.map((srv, i) =>
@@ -513,6 +507,5 @@ export function deviceSpecificationToDTDL(
         ),
         "@context": DTDL_CONTEXT,
     }
-    if (options?.inlineServices) return [dtdl, ...schemas]
-    else return dtdl
+    return dtdl
 }
