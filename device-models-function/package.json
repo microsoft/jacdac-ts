@@ -10,7 +10,7 @@
     "test": "echo \"No tests yet...\""
   },
   "dependencies": {
-    "jacdac-ts": "1.14.20"
+    "jacdac-ts": "1.14.21"
   },
   "devDependencies": {
     "@azure/functions": "^1.2.3",
