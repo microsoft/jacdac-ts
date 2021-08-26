@@ -126,7 +126,8 @@ export function deviceSpecifications(): jdspec.DeviceSpec[] {
  * @internal
  */
 export function identifierToUrlPath(id: string) {
-    return id?.replace(/-/g, "/")
+    // compiled web site does not like . in path
+    return id?.replace(/-/g, "/").replace(/\./g, "")
 }
 
 /**
