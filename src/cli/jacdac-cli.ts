@@ -2,6 +2,7 @@
 const cli = require("cli")
 const fs = require("fs-extra")
 import {
+    ControlReg,
     DEVICE_ANNOUNCE,
     PACKET_PROCESS,
     PACKET_RECEIVE,
@@ -18,7 +19,12 @@ import JDBus from "../jdom/bus"
 import { printPacket } from "../jdom/pretty"
 import { parseLogicLog, replayLogicLog } from "../jdom/logparser"
 import { dashify } from "../../jacdac-spec/spectool/jdspec"
-import { createWebSerialTransport } from "../jdom/jacdac-jdom"
+import {
+    clone,
+    createWebSerialTransport,
+    JDDevice,
+    SMap,
+} from "../jdom/jacdac-jdom"
 import NodeWebSerialIO from "../jdom/transport/nodewebserialio"
 
 cli.setApp("jacdac", "1.0.6")
@@ -34,6 +40,7 @@ interface OptionsType {
     services?: string
     rm?: boolean
     parse?: string
+    catalog?: boolean
 }
 
 const options: OptionsType = cli.parse({
@@ -46,6 +53,7 @@ const options: OptionsType = cli.parse({
     services: [false, "regular expression filter for services", "string"],
     rm: [false, "delete files from output folder"],
     parse: ["l", "parse logic analyzer log file", "string"],
+    catalog: [false, "generate .json files for device catalog"],
 })
 
 // SDMI
@@ -98,11 +106,55 @@ function mkTransport() {
     }
 }
 
+// Device catalog support
+// A good command to resize images:
+// magick image.jpg -scale 650 -strip -interlace JPEG -define jpeg:dct-method=float -quality 85% image-scaled.jpg
+// this command can be used to auto-rename image files
+// mv -i `ls IMG_* | head -1` `ls -t | head -1 | sed -e 's/\.json/.jpg/'`
+const baseDeviceSpec: jdspec.DeviceSpec = {
+    id: "microsoft-research-",
+    name: "",
+    company: "Microsoft Research",
+    description: "",
+    repo: "https://github.com/microsoft/jacdac-msr-modules",
+    link: "https://github.com/microsoft/jacdac-msr-modules",
+    services: [],
+    productIdentifiers: [],
+}
+
+// for devices that don't expose it
+const deviceDescription: SMap<string> = {
+    "357084e1": "JM Button 10 v1.3",
+    "3f9ca24e": "JM Keyboard Key 46 v1.0",
+    "3a3320ac": "JM Analog Joystick 44 v0.2",
+}
+
+async function writeCatalog(dev: JDDevice) {
+    const ctrl = dev.service(0)
+    const desc = ctrl.register(ControlReg.DeviceDescription)
+    const fwid = ctrl.register(ControlReg.ProductIdentifier)
+    await Promise.all([desc.refresh(), fwid.refresh()])
+    const pid = fwid.uintValue.toString(16)
+    const descString =
+        desc.stringValue || deviceDescription[pid] || "dev-" + pid
+    const id = descString.replace(/[^a-zA-Z0-9\.\-]+/g, "-").toLowerCase()
+    const spec = clone(baseDeviceSpec)
+    spec.id += id
+    spec.name = descString
+    spec.productIdentifiers.push(fwid.uintValue)
+    spec.services = dev.serviceClasses.slice(1)
+    fs.writeFileSync(id.replace(/-/g, "") + ".json", JSON.stringify(spec, null, 4))
+    console.log(spec)
+}
+
 // USB
 const transport = mkTransport()
 if (transport) {
     const bus = new JDBus([transport])
-    bus.on(DEVICE_ANNOUNCE, dev => console.debug(`new device ${dev}`))
+    bus.on(DEVICE_ANNOUNCE, (dev: JDDevice) => {
+        console.debug(`new device ${dev}`)
+        if (options.catalog && !dev.isClient) writeCatalog(dev)
+    })
     if (options.packets) bus.on(PACKET_PROCESS, pkt => console.debug(pkt))
     const run = async () => {
         await bus.connect()
