@@ -11,8 +11,8 @@ import Packet from "../jdom/packet"
 import { jdpack } from "../jdom/pack"
 
 export interface AzureIoTTransport {
-    connect: () => Promise<void>,
-    disconnect: () => Promise<void>,
+    connect: () => Promise<void>
+    disconnect: () => Promise<void>
     sendMessage: (pkt: Packet) => void
 }
 
