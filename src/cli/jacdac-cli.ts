@@ -98,12 +98,10 @@ if (options.dtdl) {
 
 function mkTransport() {
     if (options.serial) {
-        return createWebSerialTransport(
-            () => {
-                console.log(`jacdac: creating serialport transport`)
-                return new NodeWebSerialIO(require("serialport"))
-            }
-        )
+        return createWebSerialTransport(() => {
+            console.log(`jacdac: creating serialport transport`)
+            return new NodeWebSerialIO(require("serialport"))
+        })
     } else if (options.usb) {
         const opts = createNodeUSBOptions()
         return createUSBTransport(opts)
@@ -158,7 +156,7 @@ async function writeCatalog(dev: JDDevice) {
 
 // USB
 const transport = mkTransport()
-if (transport) {
+if (transport || options.ws) {
     console.log(`starting bus...`)
     const bus = new JDBus([transport])
     bus.on(DEVICE_ANNOUNCE, (dev: JDDevice) => {
@@ -167,7 +165,6 @@ if (transport) {
     })
     if (options.ws) {
         const ws = require("ws")
-        const bus = new JDBus()
         const port = options.port || 8080
         const urls = [`http://localhost:${port}/`, `http://127.0.0.1:${port}/`]
         console.log(`starting web socket server`)
