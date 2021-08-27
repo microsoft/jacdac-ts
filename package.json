@@ -82,8 +82,8 @@
     "typedoc": "^0.21.6",
     "typescript": "^4.3.5",
     "webusb": "^2.2.0",
-    "yargs-parser": "^20.2.9",
-    "ws": "^8.2.0"
+    "ws": "^8.2.0",
+    "yargs-parser": "^20.2.9"
   },
   "dependencies": {
     "@types/node": "^16.7.1",

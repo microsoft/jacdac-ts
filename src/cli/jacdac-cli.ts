@@ -99,10 +99,12 @@ if (options.dtdl) {
 
 function mkTransport() {
     if (options.serial) {
+        console.log(`using serial transport`)
         return createWebSerialTransport(
             () => new NodeWebSerialIO(require("serialport"))
         )
     } else if (options.usb) {
+        console.log(`using usb transport`)
         const opts = createNodeUSBOptions()
         return createUSBTransport(opts)
     } else {
@@ -141,7 +143,7 @@ async function writeCatalog(dev: JDDevice) {
     const pid = fwid.uintValue.toString(16)
     const descString =
         desc.stringValue || deviceDescription[pid] || "dev-" + pid
-    const id = descString.replace(/[^a-zA-Z0-9\.\-]+/g, "-").toLowerCase()
+    const id = descString.replace(/[^a-zA-Z0-9.-]+/g, "-").toLowerCase()
     const spec = clone(baseDeviceSpec)
     spec.id += id
     spec.name = descString
