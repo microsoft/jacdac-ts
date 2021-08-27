@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>AzureIoTTransport | Jacdac TypeScript - v1.15.2</title>
+	<title>DeviceTwinSpec | Jacdac TypeScript - v1.15.2</title>
 	<meta name="description" content="Documentation for Jacdac TypeScript - v1.15.2">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -53,10 +53,10 @@
 					<a href="../modules.html">Jacdac TypeScript - v1.15.2</a>
 				</li>
 				<li>
-					<a href="AzureIoTTransport.html">AzureIoTTransport</a>
+					<a href="DeviceTwinSpec.html">DeviceTwinSpec</a>
 				</li>
 			</ul>
-			<h1>Interface AzureIoTTransport</h1>
+			<h1>Interface DeviceTwinSpec</h1>
 		</div>
 	</div>
 </header>
@@ -67,7 +67,7 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">AzureIoTTransport</span>
+						<span class="target">DeviceTwinSpec</span>
 					</li>
 				</ul>
 			</section>
@@ -76,74 +76,47 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Methods</h3>
+							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="AzureIoTTransport.html#connect" class="tsd-kind-icon">connect</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="AzureIoTTransport.html#disconnect" class="tsd-kind-icon">disconnect</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="AzureIoTTransport.html#sendMessage" class="tsd-kind-icon">send<wbr>Message</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="DeviceTwinSpec.html#name" class="tsd-kind-icon">name</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="DeviceTwinSpec.html#registers" class="tsd-kind-icon">registers</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="DeviceTwinSpec.html#serviceClass" class="tsd-kind-icon">service<wbr>Class</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Methods</h2>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-					<a name="connect" class="tsd-anchor"></a>
-					<h3>connect</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-						<li class="tsd-signature tsd-kind-icon">connect<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/223c23e2/src/servers/azureiothubserver.ts#L14">servers/azureiothubserver.ts:14</a></li>
-								</ul>
-							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="name" class="tsd-anchor"></a>
+					<h3>name</h3>
+					<div class="tsd-signature tsd-kind-icon">name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/223c23e2/src/azure-iot/devicetwin.ts#L17">azure-iot/devicetwin.ts:17</a></li>
+						</ul>
+					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-					<a name="disconnect" class="tsd-anchor"></a>
-					<h3>disconnect</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-						<li class="tsd-signature tsd-kind-icon">disconnect<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/223c23e2/src/servers/azureiothubserver.ts#L15">servers/azureiothubserver.ts:15</a></li>
-								</ul>
-							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="registers" class="tsd-anchor"></a>
+					<h3>registers</h3>
+					<div class="tsd-signature tsd-kind-icon">registers<span class="tsd-signature-symbol">:</span> <a href="DeviceTwinRegisterSpec.html" class="tsd-signature-type" data-tsd-kind="Interface">DeviceTwinRegisterSpec</a><span class="tsd-signature-symbol">[]</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/223c23e2/src/azure-iot/devicetwin.ts#L18">azure-iot/devicetwin.ts:18</a></li>
+						</ul>
+					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-					<a name="sendMessage" class="tsd-anchor"></a>
-					<h3>send<wbr>Message</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-						<li class="tsd-signature tsd-kind-icon">send<wbr>Message<span class="tsd-signature-symbol">(</span>pkt<span class="tsd-signature-symbol">: </span><a href="../classes/Packet.html" class="tsd-signature-type" data-tsd-kind="Class">Packet</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/223c23e2/src/servers/azureiothubserver.ts#L16">servers/azureiothubserver.ts:16</a></li>
-								</ul>
-							</aside>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>pkt: <a href="../classes/Packet.html" class="tsd-signature-type" data-tsd-kind="Class">Packet</a></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
-						</li>
-					</ul>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="serviceClass" class="tsd-anchor"></a>
+					<h3>service<wbr>Class</h3>
+					<div class="tsd-signature tsd-kind-icon">service<wbr>Class<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/223c23e2/src/azure-iot/devicetwin.ts#L16">azure-iot/devicetwin.ts:16</a></li>
+						</ul>
+					</aside>
 				</section>
 			</section>
 		</div>
@@ -160,16 +133,16 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface">
-						<a href="AzureIoTTransport.html" class="tsd-kind-icon">Azure<wbr>IoTTransport</a>
+						<a href="DeviceTwinSpec.html" class="tsd-kind-icon">Device<wbr>Twin<wbr>Spec</a>
 						<ul>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="AzureIoTTransport.html#connect" class="tsd-kind-icon">connect</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="DeviceTwinSpec.html#name" class="tsd-kind-icon">name</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="AzureIoTTransport.html#disconnect" class="tsd-kind-icon">disconnect</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="DeviceTwinSpec.html#registers" class="tsd-kind-icon">registers</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="AzureIoTTransport.html#sendMessage" class="tsd-kind-icon">send<wbr>Message</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="DeviceTwinSpec.html#serviceClass" class="tsd-kind-icon">service<wbr>Class</a>
 							</li>
 						</ul>
 					</li>
