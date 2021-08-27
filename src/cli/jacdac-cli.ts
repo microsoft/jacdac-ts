@@ -180,9 +180,9 @@ if (transport || options.ws) {
                 pkt.sender = WEBSOCKET_TRANSPORT
                 bus.processPacket(pkt)
             })
-            const cleanup = bus.subscribe(PACKET_PROCESS, (pkt: Packet) =>
+            const cleanup = bus.subscribe(PACKET_PROCESS, (pkt: Packet) => {
                 ws.send(pkt.toBuffer())
-            )
+            })
             ws.on("close", () => {
                 console.log(`ws: client disconnected`)
                 cleanup?.()
@@ -191,6 +191,7 @@ if (transport || options.ws) {
         wss.on("error", console.error)
     }
     if (options.packets) bus.on(PACKET_PROCESS, pkt => console.debug(pkt))
+    bus.start()
     const run = async () => {
         await bus.connect()
     }

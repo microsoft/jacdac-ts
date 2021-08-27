@@ -733,7 +733,7 @@ export class JDBus extends JDNode {
             }
             d = new JDDevice(this, id, pkt)
             this._devices.push(d)
-            console.debug(`new device ${d.shortId} (${id})`)
+            console.debug(`${id === this.selfDeviceId ? "self" : "new"} device ${d.shortId} (${id})`)
             // stable sort
             this._devices.sort((l, r) => strcmp(l.deviceId, r.deviceId))
             this.emit(DEVICE_CONNECT, d)
