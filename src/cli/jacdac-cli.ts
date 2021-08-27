@@ -59,7 +59,6 @@ const options: OptionsType = cli.parse({
     parse: ["l", "parse logic analyzer log file", "string"],
     catalog: [false, "generate .json files for device catalog"],
 })
-
 // SDMI
 if (options.sdmi) {
     console.log(`sdmi: generate DTDL for ${options.sdmi}`)
@@ -99,12 +98,13 @@ if (options.dtdl) {
 
 function mkTransport() {
     if (options.serial) {
-        console.log(`using serial transport`)
         return createWebSerialTransport(
-            () => new NodeWebSerialIO(require("serialport"))
+            () => {
+                console.log(`jacdac: creating serialport transport`)
+                return new NodeWebSerialIO(require("serialport"))
+            }
         )
     } else if (options.usb) {
-        console.log(`using usb transport`)
         const opts = createNodeUSBOptions()
         return createUSBTransport(opts)
     } else {

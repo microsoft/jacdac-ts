@@ -59,7 +59,7 @@ class WebSerialTransport extends Transport {
 export function createWebSerialTransport(
     mkTransport: () => HF2_IO = () => new WebSerialIO()
 ): Transport {
-    return isWebSerialSupported() && new WebSerialTransport(mkTransport)
+    return new WebSerialTransport(mkTransport)
 }
 
 /**

@@ -83,13 +83,13 @@
     "typescript": "^4.3.5",
     "webusb": "^2.2.0",
     "ws": "^8.2.0",
-    "yargs-parser": "^20.2.9"
+    "yargs-parser": "^20.2.9",
+    "fs-extra": "^10.0.0"
   },
   "dependencies": {
     "@types/node": "^16.7.1",
     "@types/w3c-web-serial": "^1.0.2",
     "@types/w3c-web-usb": "^1.0.5",
-    "@types/web-bluetooth": "^0.0.11",
-    "fs-extra": "^10.0.0"
+    "@types/web-bluetooth": "^0.0.11"
   }
 }
