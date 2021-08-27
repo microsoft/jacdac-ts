@@ -16,19 +16,28 @@ import { parseDeviceId } from "../jdom/spec"
 import { assert } from "../jdom/utils"
 
 export class AzureIoTHubHealthClient extends JDServiceClient {
-    readonly connectionStatusRegister: JDRegister
-    readonly statisticsRegister: JDRegister
+    private readonly hubNameRegister: JDRegister
+    private readonly connectionStatusRegister: JDRegister
+    private readonly statisticsRegister: JDRegister
 
     constructor(service: JDService) {
         super(service)
         assert(service.serviceClass === SRV_AZURE_IOT_HUB_HEALTH)
 
         // tell the bus to refresh these register
+        this.hubNameRegister = this.service.register(
+            AzureIotHubHealthReg.HubName
+        )
         this.connectionStatusRegister = this.service.register(
             AzureIotHubHealthReg.ConnectionStatus
         )
         this.statisticsRegister = this.service.register(
             AzureIotHubHealthReg.Statistics
+        )
+        this.mount(() =>
+            this.hubNameRegister.subscribe(REPORT_UPDATE, () =>
+                this.emit(CHANGE)
+            )
         )
         this.mount(() =>
             this.connectionStatusRegister.subscribe(REPORT_UPDATE, () =>
@@ -51,14 +60,12 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
     }
 
     get hubName() {
-        const reg = this.service.register(AzureIotHubHealthReg.HubName)
-        reg.refresh(true)
-        return reg.stringValue
+        return this.hubNameRegister.stringValue
     }
 
     get connectionStatus(): AzureIotHubHealthConnectionStatus {
         const reg = this.connectionStatusRegister
-        return reg.unpackedValue[0] as AzureIotHubHealthConnectionStatus
+        return reg.unpackedValue?.[0] as AzureIotHubHealthConnectionStatus
     }
 
     get statistics() {
