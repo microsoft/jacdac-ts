@@ -90,6 +90,7 @@
     "@types/w3c-web-usb": "^1.0.5",
     "@types/web-bluetooth": "^0.0.11",
     "fs-extra": "^10.0.0",
+    "mqtt": "^4.2.8",
     "ws": "^8.2.0"
   }
 }

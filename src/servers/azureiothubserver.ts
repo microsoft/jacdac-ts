@@ -10,6 +10,12 @@ import RegisterServer from "../jdom/registerserver"
 import Packet from "../jdom/packet"
 import { jdpack } from "../jdom/pack"
 
+export interface AzureIoTTransport {
+    open: () => void,
+    close: () => void,
+    sendMessage: (pkt: Packet) => void
+}
+
 /**
  * Server creation options for the Azure IoT hub message
  * @category Servers
@@ -18,6 +24,7 @@ import { jdpack } from "../jdom/pack"
 export interface AzureIoTHubServerOptions extends ServerOptions {
     hubName?: string
     deviceId?: string
+    transport?: AzureIoTTransport
 }
 
 /**
@@ -39,6 +46,7 @@ export default class AzureIoTHubServer extends JDServiceServer {
     readonly hubName: RegisterServer<[string]>
     readonly deviceId: RegisterServer<[string]>
     readonly connectionStatus: RegisterServer<[string]>
+    readonly transport: AzureIoTTransport
 
     maxMessages = 10
     readonly deviceToCloudMessages: AzureIoTHubMessage[] = []
@@ -50,7 +58,7 @@ export default class AzureIoTHubServer extends JDServiceServer {
     constructor(options?: AzureIoTHubServerOptions) {
         super(SRV_AZURE_IOT_HUB, options)
         const { hubName = "myhub", deviceId = "mydevice" } = options || {}
-
+        this.transport = options?.transport
         this.hubName = this.addRegister<[string]>(AzureIotHubReg.HubName, [
             hubName,
         ])
@@ -83,11 +91,13 @@ export default class AzureIoTHubServer extends JDServiceServer {
     }
 
     connect() {
+        this.transport?.open()
         this.autoConnect = true
         this.connectionStatus.setValues(["ok"])
     }
 
     disconnect() {
+        this.transport?.close()
         this.autoConnect = false
         this.connectionStatus.setValues([""])
     }
@@ -124,6 +134,6 @@ export default class AzureIoTHubServer extends JDServiceServer {
         while (this.deviceToCloudMessages.length > this.maxMessages)
             this.deviceToCloudMessages.pop()
         this.emit(CHANGE)
-        // todo send report
+        this.transport?.sendMessage(pkt)
     }
 }

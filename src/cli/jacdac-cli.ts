@@ -25,7 +25,6 @@ import JDDevice from "../jdom/device"
 import NodeWebSerialIO from "../jdom/transport/nodewebserialio"
 import packageInfo from "../../package.json"
 import { createWebSerialTransport } from "../jdom/transport/webserial"
-const ws = require("ws")
 import { Packet } from "../jdom/packet"
 
 cli.setApp("jacdac", packageInfo.version)
@@ -171,7 +170,7 @@ if (transport) {
 }
 
 if (options.ws) {
-    // no transport
+    const ws = require("ws")
     const bus = new JDBus()
     const port = options.wsPort || 8080
     const urls = [`http://localhost:${port}/`, `http://127.0.0.1:${port}/`]
