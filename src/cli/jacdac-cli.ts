@@ -160,7 +160,6 @@ if (transport || options.ws) {
     console.log(`starting bus...`)
     const bus = new JDBus([transport])
     bus.on(DEVICE_ANNOUNCE, (dev: JDDevice) => {
-        console.debug(`new device ${dev}`)
         if (options.catalog && !dev.isClient) writeCatalog(dev)
     })
     if (options.ws) {
@@ -178,9 +177,11 @@ if (transport || options.ws) {
                 const data = new Uint8Array(message as ArrayBuffer)
                 const pkt = Packet.fromBinary(data, bus.timestamp)
                 pkt.sender = WEBSOCKET_TRANSPORT
+                console.log(`recv ${printPacket(pkt)}`)
                 bus.processPacket(pkt)
             })
             const cleanup = bus.subscribe(PACKET_PROCESS, (pkt: Packet) => {
+                console.log(`send ${printPacket(pkt)}`)
                 ws.send(pkt.toBuffer())
             })
             ws.on("close", () => {
