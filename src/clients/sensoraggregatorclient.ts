@@ -1,6 +1,7 @@
 import {
     SensorAggregatorReg,
     SensorAggregatorSampleType,
+    SRV_SENSOR_AGGREGATOR,
 } from "../../jacdac-spec/dist/specconstants"
 import { bufferToArray, NumberFormat } from "../jdom/buffer"
 import { JD_SERIAL_MAX_PAYLOAD_SIZE, REPORT_RECEIVE } from "../jdom/constants"
@@ -12,7 +13,7 @@ import {
     isReading,
     serviceSpecificationFromClassIdentifier,
 } from "../jdom/spec"
-import { bufferConcat, bufferConcatMany, fromHex } from "../jdom/utils"
+import { assert, bufferConcat, bufferConcatMany, fromHex } from "../jdom/utils"
 
 export interface SensorAggregatorInputConfig {
     serviceClass: number
@@ -39,6 +40,7 @@ export interface SensorAggregatorStats {
 export class SensorAggregatorClient extends JDServiceClient {
     constructor(service: JDService) {
         super(service)
+        assert(service.serviceClass === SRV_SENSOR_AGGREGATOR)
         this.service.registersUseAcks = true
     }
 

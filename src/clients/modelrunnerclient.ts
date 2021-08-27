@@ -8,7 +8,7 @@ import JDRegister from "../jdom/register"
 import { JDServiceClient } from "../jdom/serviceclient"
 import { serviceSpecificationFromClassIdentifier } from "../jdom/spec"
 import { jdunpack } from "../jdom/pack"
-import { read32, toHex, uint8ArrayToString } from "../jdom/utils"
+import { assert, read32, toHex, uint8ArrayToString } from "../jdom/utils"
 
 /*
     enum SampleType : u8 {
@@ -59,6 +59,7 @@ export function getMLModelFormatName(model: Uint8Array) {
 export class ModelRunnerClient extends JDServiceClient {
     constructor(service: JDService) {
         super(service)
+        assert(service.serviceClass == SRV_MODEL_RUNNER)
         this.service.registersUseAcks = true
     }
 
