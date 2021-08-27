@@ -28,8 +28,8 @@ import packageInfo from "../../package.json"
 import { createWebSerialTransport } from "../jdom/transport/webserial"
 import { Packet } from "../jdom/packet"
 import {
-    serviceSpecificationsWithDeviceTwinSpecification,
-    serviceSpecificationToDeviceTwinSpecification,
+    serviceSpecificationsWithServiceTwinSpecification,
+    serviceSpecificationToServiceTwinSpecification,
 } from "../azure-iot/devicetwin"
 
 cli.setApp("jacdac", packageInfo.version)
@@ -112,7 +112,7 @@ if (options.devicetwin) {
         if (options.rm) fs.emptyDirSync(dir)
         // generate services
         {
-            let services = serviceSpecificationsWithDeviceTwinSpecification()
+            let services = serviceSpecificationsWithServiceTwinSpecification()
             if (options.services) {
                 const rx = new RegExp(options.services, "i")
                 services = services.filter(dev => rx.test(dev.name))
@@ -122,7 +122,7 @@ if (options.devicetwin) {
                 const fn = `${dir}/${dashify(srv.shortName)}.json`
                 cli.debug(`${srv.name} => ${fn}`)
                 cli.progress(i / (services.length - 1))
-                const dtdl = serviceSpecificationToDeviceTwinSpecification(srv)
+                const dtdl = serviceSpecificationToServiceTwinSpecification(srv)
                 fs.writeJSONSync(fn, dtdl, { spaces: 2 })
             })
         }

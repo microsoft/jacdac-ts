@@ -1,10 +1,12 @@
+import { SRV_CONTROL } from "../jdom/constants"
 import {
     isHighLevelRegister,
     isInfrastructure,
+    serviceSpecificationFromClassIdentifier,
     serviceSpecifications,
 } from "../jdom/spec"
 
-export interface DeviceTwinRegisterSpec {
+export interface ServiceTwinRegisterSpec {
     code: number
     name: string
     kind: jdspec.PacketKind
@@ -12,15 +14,15 @@ export interface DeviceTwinRegisterSpec {
     fields: string[]
 }
 
-export interface DeviceTwinSpec {
+export interface ServiceTwinSpec {
     serviceClass: number
     name: string
-    registers: DeviceTwinRegisterSpec[]
+    registers: ServiceTwinRegisterSpec[]
 }
 
-export function serviceSpecificationToDeviceTwinSpecification(
+export function serviceSpecificationToServiceTwinSpecification(
     specification: jdspec.ServiceSpec
-): DeviceTwinSpec {
+): ServiceTwinSpec {
     if (!specification) return undefined
 
     const {
@@ -31,7 +33,7 @@ export function serviceSpecificationToDeviceTwinSpecification(
 
     const registers = packets
         .filter(isHighLevelRegister) // TODO formalize
-        .map<DeviceTwinRegisterSpec>(
+        .map<ServiceTwinRegisterSpec>(
             ({ identifier, name, packFormat, kind, fields }) => ({
                 code: identifier,
                 name,
@@ -40,7 +42,7 @@ export function serviceSpecificationToDeviceTwinSpecification(
                 fields: fields.map(f => f.name),
             })
         )
-    const dspec: DeviceTwinSpec = {
+    const dspec: ServiceTwinSpec = {
         serviceClass,
         name,
         registers,
@@ -48,7 +50,10 @@ export function serviceSpecificationToDeviceTwinSpecification(
     return dspec
 }
 
-export function serviceSpecificationsWithDeviceTwinSpecification() {
-    const specs = serviceSpecifications().filter(srv => !isInfrastructure(srv))
+export function serviceSpecificationsWithServiceTwinSpecification() {
+    const specs = [
+        serviceSpecificationFromClassIdentifier(SRV_CONTROL),
+        ...serviceSpecifications().filter(srv => !isInfrastructure(srv)),
+    ]
     return specs
 }
