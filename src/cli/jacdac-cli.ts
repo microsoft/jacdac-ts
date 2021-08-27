@@ -7,6 +7,7 @@ import {
     PACKET_PROCESS,
     PACKET_RECEIVE,
     PACKET_RECEIVE_ANNOUNCE,
+    PACKET_SEND,
     WEBSOCKET_TRANSPORT,
 } from "../jdom/constants"
 import { createUSBTransport } from "../jdom/transport/usb"
@@ -180,10 +181,13 @@ if (transport || options.ws) {
                 console.log(`recv ${printPacket(pkt)}`)
                 bus.processPacket(pkt)
             })
-            const cleanup = bus.subscribe(PACKET_PROCESS, (pkt: Packet) => {
-                console.log(`send ${printPacket(pkt)}`)
-                ws.send(pkt.toBuffer())
-            })
+            const cleanup = bus.subscribe(
+                [PACKET_PROCESS, PACKET_SEND],
+                (pkt: Packet) => {
+                    console.log(`send ${printPacket(pkt)}`)
+                    ws.send(pkt.toBuffer())
+                }
+            )
             ws.on("close", () => {
                 console.log(`ws: client disconnected`)
                 cleanup?.()
