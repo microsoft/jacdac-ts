@@ -168,33 +168,38 @@ if (transport) {
         await bus.connect()
     }
     run()
+}
 
-    if (options.ws) {
-        const port = options.wsPort || 8080
-        const urls = [`http://localhost:${port}/`, `http://127.0.0.1:${port}/`]
-        console.log(`starting web server`)
-        urls.forEach(url => console.log(`\t${url}`))
-        const wss = new ws.WebSocketServer({ port })
+if (options.ws) {
+    // no transport
+    const bus = new JDBus()
+    const port = options.wsPort || 8080
+    const urls = [`http://localhost:${port}/`, `http://127.0.0.1:${port}/`]
+    console.log(`starting web server`)
+    urls.forEach(url => console.log(`\t${url}`))
+    const wss = new ws.WebSocketServer({ port })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    wss.on("connection", (ws: any) => {
+        console.log(`ws: client connected`)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        wss.on("connection", (ws: any) => {
-            console.log(`ws: client connected`)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ws.on("message", (message: any) => {
-                const data = new Uint8Array(message as ArrayBuffer)
-                const pkt = Packet.fromBinary(data, bus.timestamp)
-                pkt.sender = WEBSOCKET_TRANSPORT
-                bus.processPacket(pkt)
-            })
-            const cleanup = bus.subscribe(PACKET_PROCESS, (pkt: Packet) =>
-                ws.send(pkt.toBuffer())
-            )
-            ws.on("close", () => {
-                console.log(`ws: client disconnected`)
-                cleanup?.()
-            })
+        ws.on("message", (message: any) => {
+            const data = new Uint8Array(message as ArrayBuffer)
+            const pkt = Packet.fromBinary(data, bus.timestamp)
+            pkt.sender = WEBSOCKET_TRANSPORT
+            bus.processPacket(pkt)
         })
-        wss.on("error", console.error)
-    }
+        const cleanup = bus.subscribe(PACKET_PROCESS, (pkt: Packet) =>
+            ws.send(pkt.toBuffer())
+        )
+        ws.on("close", () => {
+            console.log(`ws: client disconnected`)
+            cleanup?.()
+        })
+    })
+    wss.on("error", console.error)
+
+    // start bus
+    bus.start()
 }
 
 // Logic parsing
