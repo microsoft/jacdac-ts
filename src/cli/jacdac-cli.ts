@@ -10,6 +10,7 @@ import {
 } from "../jdom/constants"
 import { createUSBTransport } from "../jdom/transport/usb"
 import { createNodeUSBOptions } from "../jdom/transport/nodewebusb"
+import { clone } from "../jdom/utils"
 import {
     routeToDTDL,
     serviceSpecificationsWithDTDL,
@@ -19,15 +20,12 @@ import JDBus from "../jdom/bus"
 import { printPacket } from "../jdom/pretty"
 import { parseLogicLog, replayLogicLog } from "../jdom/logparser"
 import { dashify } from "../../jacdac-spec/spectool/jdspec"
-import {
-    clone,
-    createWebSerialTransport,
-    JDDevice,
-    SMap,
-} from "../jdom/jacdac-jdom"
+import JDDevice from "../jdom/device"
 import NodeWebSerialIO from "../jdom/transport/nodewebserialio"
+import packageInfo from "../../package.json"
+import { createWebSerialTransport } from "../jdom/transport/webserial"
 
-cli.setApp("jacdac", "1.0.6")
+cli.setApp("jacdac", packageInfo.version)
 cli.enable("version")
 
 interface OptionsType {
@@ -123,7 +121,7 @@ const baseDeviceSpec: jdspec.DeviceSpec = {
 }
 
 // for devices that don't expose it
-const deviceDescription: SMap<string> = {
+const deviceDescription: Record<string, string> = {
     "357084e1": "JM Button 10 v1.3",
     "3f9ca24e": "JM Keyboard Key 46 v1.0",
     "3a3320ac": "JM Analog Joystick 44 v0.2",
@@ -143,7 +141,10 @@ async function writeCatalog(dev: JDDevice) {
     spec.name = descString
     spec.productIdentifiers.push(fwid.uintValue)
     spec.services = dev.serviceClasses.slice(1)
-    fs.writeFileSync(id.replace(/-/g, "") + ".json", JSON.stringify(spec, null, 4))
+    fs.writeFileSync(
+        id.replace(/-/g, "") + ".json",
+        JSON.stringify(spec, null, 4)
+    )
     console.log(spec)
 }
 
