@@ -11,8 +11,8 @@ import Packet from "../jdom/packet"
 import { jdpack } from "../jdom/pack"
 
 export interface AzureIoTTransport {
-    open: () => void,
-    close: () => void,
+    connect: () => Promise<void>,
+    disconnect: () => Promise<void>,
     sendMessage: (pkt: Packet) => void
 }
 
@@ -90,21 +90,21 @@ export default class AzureIoTHubServer extends JDServiceServer {
         return state === "ok"
     }
 
-    connect() {
-        this.transport?.open()
+    async connect() {
+        await this.transport?.connect()
         this.autoConnect = true
         this.connectionStatus.setValues(["ok"])
     }
 
-    disconnect() {
-        this.transport?.close()
+    async disconnect() {
+        await this.transport?.disconnect()
         this.autoConnect = false
         this.connectionStatus.setValues([""])
     }
 
-    emitMessage(body: string) {
+    async emitMessage(body: string) {
         if (!this.connected) {
-            if (this.autoConnect) this.connect()
+            if (this.autoConnect) await this.connect()
             if (!this.connected) return
         }
 
@@ -119,9 +119,9 @@ export default class AzureIoTHubServer extends JDServiceServer {
         this.sendEvent(AzureIotHubEvent.Message, jdpack<[string]>("s", [body]))
     }
 
-    handleSendMessage(pkt: Packet) {
+    async handleSendMessage(pkt: Packet) {
         if (!this.connected) {
-            if (this.autoConnect) this.connect()
+            if (this.autoConnect) await this.connect()
             if (!this.connected) return
         }
 
