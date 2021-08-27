@@ -27,6 +27,10 @@ import NodeWebSerialIO from "../jdom/transport/nodewebserialio"
 import packageInfo from "../../package.json"
 import { createWebSerialTransport } from "../jdom/transport/webserial"
 import { Packet } from "../jdom/packet"
+import {
+    serviceSpecificationsWithDeviceTwinSpecification,
+    serviceSpecificationToDeviceTwinSpecification,
+} from "../azure-iot/devicetwin"
 
 cli.setApp("jacdac", packageInfo.version)
 cli.enable("version")
@@ -39,6 +43,7 @@ interface OptionsType {
     packets?: boolean
     dtdl?: boolean
     sdmi?: string
+    devicetwin?: boolean
     devices?: string
     services?: string
     rm?: boolean
@@ -54,6 +59,7 @@ const options: OptionsType = cli.parse({
     packets: ["p", "show/hide all packets"],
     dtdl: [false, "generate DTDL files", "file"],
     sdmi: [false, "generate dynamic DTDL files", "string"],
+    devicetwin: [false, "generate device twin files", "file"],
     devices: ["d", "regular expression filter for devices", "string"],
     services: [false, "regular expression filter for services", "string"],
     rm: [false, "delete files from output folder"],
@@ -87,6 +93,36 @@ if (options.dtdl) {
                 cli.debug(`${srv.name} => ${fn}`)
                 cli.progress(i / (services.length - 1))
                 const dtdl = serviceSpecificationToDTDL(srv)
+                fs.writeJSONSync(fn, dtdl, { spaces: 2 })
+            })
+        }
+
+        // all done
+        cli.info(`done`)
+    }
+    run()
+}
+
+// DeviceTwin
+if (options.devicetwin) {
+    cli.info(`generating DeviceTwin models`)
+    const run = async () => {
+        const dir = options.devicetwin
+        fs.mkdirpSync(dir)
+        if (options.rm) fs.emptyDirSync(dir)
+        // generate services
+        {
+            let services = serviceSpecificationsWithDeviceTwinSpecification()
+            if (options.services) {
+                const rx = new RegExp(options.services, "i")
+                services = services.filter(dev => rx.test(dev.name))
+            }
+            cli.info(`${services.length} services`)
+            services.forEach((srv, i) => {
+                const fn = `${dir}/${dashify(srv.shortName)}.json`
+                cli.debug(`${srv.name} => ${fn}`)
+                cli.progress(i / (services.length - 1))
+                const dtdl = serviceSpecificationToDeviceTwinSpecification(srv)
                 fs.writeJSONSync(fn, dtdl, { spaces: 2 })
             })
         }
