@@ -1,4 +1,8 @@
-import { isHighLevelRegister, isInfrastructure, serviceSpecifications } from "../jdom/spec"
+import {
+    isHighLevelRegister,
+    isInfrastructure,
+    serviceSpecifications,
+} from "../jdom/spec"
 
 export interface DeviceTwinRegisterSpec {
     code: number
@@ -45,7 +49,6 @@ export function serviceSpecificationToDeviceTwinSpecification(
 }
 
 export function serviceSpecificationsWithDeviceTwinSpecification() {
-    const specs = serviceSpecifications()
-        .filter(srv => !isInfrastructure(srv))
+    const specs = serviceSpecifications().filter(srv => !isInfrastructure(srv))
     return specs
 }
