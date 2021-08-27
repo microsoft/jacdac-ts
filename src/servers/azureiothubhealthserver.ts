@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
     AzureIotHubHealthCmd,
     AzureIotHubHealthConnectionStatus,
@@ -6,6 +7,7 @@ import {
     CHANGE,
     SRV_AZURE_IOT_HUB_HEALTH,
 } from "../jdom/constants"
+import Packet from "../jdom/packet"
 import JDRegisterServer from "../jdom/registerserver"
 import JDServiceServer, { ServerOptions } from "../jdom/serviceserver"
 
