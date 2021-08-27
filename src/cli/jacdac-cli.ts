@@ -178,13 +178,11 @@ if (transport || options.ws) {
                 const data = new Uint8Array(message as ArrayBuffer)
                 const pkt = Packet.fromBinary(data, bus.timestamp)
                 pkt.sender = WEBSOCKET_TRANSPORT
-                console.log(`recv ${printPacket(pkt)}`)
                 bus.processPacket(pkt)
             })
             const cleanup = bus.subscribe(
                 [PACKET_PROCESS, PACKET_SEND],
                 (pkt: Packet) => {
-                    console.log(`send ${printPacket(pkt)}`)
                     ws.send(pkt.toBuffer())
                 }
             )
