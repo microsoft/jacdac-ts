@@ -1,7 +1,7 @@
 import Packet from "../packet"
 import Flags from "../flags"
 import { SERIAL_TRANSPORT, USB_TRANSPORT } from "../constants"
-import JDTransport from "./transport"
+import Transport from "./transport"
 import JDBus from "../bus"
 import Proto from "./proto"
 import WebSerialIO from "./webserialio"
@@ -24,7 +24,7 @@ export function isWebSerialSupported(): boolean {
     }
 }
 
-class WebSerialTransport extends JDTransport {
+class WebSerialTransport extends Transport {
     private hf2: Proto
     constructor(private mkTransport: () => HF2_IO) {
         super(SERIAL_TRANSPORT)
@@ -52,12 +52,20 @@ class WebSerialTransport extends JDTransport {
     }
 }
 
+/**
+ * Creates a transport over a Web Serial connection
+ * @category
+ */
 export function createWebSerialTransport(
     mkTransport: () => HF2_IO = () => new WebSerialIO()
-): JDTransport {
-    return new WebSerialTransport(mkTransport)
+): Transport {
+    return isWebSerialSupported() && new WebSerialTransport(mkTransport)
 }
 
+/**
+ * Creates a bus with a Web Serial connection
+ * @category
+ */
 export function createWebSerialBus() {
     return new JDBus([createWebSerialTransport()])
 }

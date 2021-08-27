@@ -41,8 +41,8 @@
     "builddtdl": "node dist/jacdac-cli.js --dtdl dist/dtdl --rm=on",
     "buildpxt": "cd pxt-jacdac && sh mk.sh",
     "builddocs": "node node_modules/typedoc/bin/typedoc && cp .nojekyll docs",
-    "watch:docs": "node node_modules/typedoc/bin/typedoc --watch",
-    "watch:docsserver": "cd docs && npx live-server --port=8082",
+    "docs:watch": "node node_modules/typedoc/bin/typedoc --watch",
+    "docs:server": "cd docs && npx live-server --port=8082",
     "watch": "node node_modules/concurrently/bin/concurrently.js --kill-others \"npm:watch:*\""
   },
   "devDependencies": {
