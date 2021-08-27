@@ -7,6 +7,7 @@ import {
     PACKET_PROCESS,
     PACKET_RECEIVE,
     PACKET_RECEIVE_ANNOUNCE,
+    WEBSOCKET_TRANSPORT,
 } from "../jdom/constants"
 import { createUSBTransport } from "../jdom/transport/usb"
 import { createNodeUSBOptions } from "../jdom/transport/nodewebusb"
@@ -24,6 +25,8 @@ import JDDevice from "../jdom/device"
 import NodeWebSerialIO from "../jdom/transport/nodewebserialio"
 import packageInfo from "../../package.json"
 import { createWebSerialTransport } from "../jdom/transport/webserial"
+const ws = require("ws")
+import { Packet } from "../jdom/packet"
 
 cli.setApp("jacdac", packageInfo.version)
 cli.enable("version")
@@ -31,6 +34,8 @@ cli.enable("version")
 interface OptionsType {
     usb?: boolean
     serial?: boolean
+    ws?: boolean
+    wsPort?: number
     packets?: boolean
     dtdl?: boolean
     sdmi?: string
@@ -44,6 +49,8 @@ interface OptionsType {
 const options: OptionsType = cli.parse({
     usb: ["u", "listen to Jacdac over USB"],
     serial: ["s", "listen to Jacdac over SERIAL"],
+    ws: [false, "start web socket server"],
+    wsPort: ["port", "specify custom web socket server port", "int"],
     packets: ["p", "show/hide all packets"],
     dtdl: [false, "generate DTDL files", "file"],
     sdmi: [false, "generate dynamic DTDL files", "string"],
@@ -161,6 +168,33 @@ if (transport) {
         await bus.connect()
     }
     run()
+
+    if (options.ws) {
+        const port = options.wsPort || 8080
+        const urls = [`http://localhost:${port}/`, `http://127.0.0.1:${port}/`]
+        console.log(`starting web server`)
+        urls.forEach(url => console.log(`\t${url}`))
+        const wss = new ws.WebSocketServer({ port })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        wss.on("connection", (ws: any) => {
+            console.log(`ws: client connected`)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ws.on("message", (message: any) => {
+                const data = new Uint8Array(message as ArrayBuffer)
+                const pkt = Packet.fromBinary(data, bus.timestamp)
+                pkt.sender = WEBSOCKET_TRANSPORT
+                bus.processPacket(pkt)
+            })
+            const cleanup = bus.subscribe(PACKET_PROCESS, (pkt: Packet) =>
+                ws.send(pkt.toBuffer())
+            )
+            ws.on("close", () => {
+                console.log(`ws: client disconnected`)
+                cleanup?.()
+            })
+        })
+        wss.on("error", console.error)
+    }
 }
 
 // Logic parsing
