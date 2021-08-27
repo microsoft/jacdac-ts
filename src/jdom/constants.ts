@@ -172,6 +172,7 @@ export const USB_TRANSPORT = "USB"
 export const BLUETOOTH_TRANSPORT = "Bluetooth"
 export const SERIAL_TRANSPORT = "Serial"
 export const PACKETIO_TRANSPORT = "packetio"
+export const WEBSOCKET_TRANSPORT = "Web"
 
 export const META_ACK = "ACK"
 export const META_ACK_FAILED = "ACK_FAILED"

@@ -41,8 +41,8 @@
     "builddtdl": "node dist/jacdac-cli.js --dtdl dist/dtdl --rm=on",
     "buildpxt": "cd pxt-jacdac && sh mk.sh",
     "builddocs": "node node_modules/typedoc/bin/typedoc && cp .nojekyll docs",
-    "watch:docs": "node node_modules/typedoc/bin/typedoc --watch",
-    "watch:docsserver": "cd docs && npx live-server --port=8082",
+    "docs:watch": "node node_modules/typedoc/bin/typedoc --watch",
+    "docs:server": "cd docs && npx live-server --port=8082",
     "watch": "node node_modules/concurrently/bin/concurrently.js --kill-others \"npm:watch:*\""
   },
   "devDependencies": {
@@ -82,14 +82,14 @@
     "typedoc": "^0.21.6",
     "typescript": "^4.3.5",
     "webusb": "^2.2.0",
-    "yargs-parser": "^20.2.9"
+    "ws": "^8.2.0",
+    "yargs-parser": "^20.2.9",
+    "fs-extra": "^10.0.0"
   },
   "dependencies": {
     "@types/node": "^16.7.1",
     "@types/w3c-web-serial": "^1.0.2",
     "@types/w3c-web-usb": "^1.0.5",
-    "@types/web-bluetooth": "^0.0.11",
-    "fs-extra": "^10.0.0",
-    "regenerator-runtime": "^0.13.9"
+    "@types/web-bluetooth": "^0.0.11"
   }
 }

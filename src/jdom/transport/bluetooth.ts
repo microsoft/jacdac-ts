@@ -7,14 +7,22 @@ import {
     BLUETOOTH_JACDAC_SERVICE,
     BLUETOOTH_TRANSPORT,
 } from "../constants"
-import JDTransport from "./transport"
+import Transport from "./transport"
 
 const JD_BLE_FIRST_CHUNK_FLAG = 0x80
 
+/**
+ * Indicates with Web Bluetooth transport are enabled
+ * @category Transport
+ */
 export function isWebBluetoothEnabled(): boolean {
     return !!Flags.webBluetooth
 }
 
+/**
+ * Indicates with Web Bluetooth is supported in this environment
+ * @category Transport
+ */
 export function isWebBluetoothSupported(): boolean {
     try {
         return (
@@ -54,7 +62,7 @@ function bleGetDevices(): Promise<BluetoothDevice[]> {
     }
 }
 
-class BluetoothTransport extends JDTransport {
+class BluetoothTransport extends Transport {
     private _device: BluetoothDevice
     private _server: BluetoothRemoteGATTServer
     private _service: BluetoothRemoteGATTService
@@ -214,6 +222,10 @@ class BluetoothTransport extends JDTransport {
     }
 }
 
-export function createBluetoothTransport(): JDTransport {
-    return new BluetoothTransport()
+/**
+ * Creates a transport that uses Web Bluetooth
+ * @category Transport
+ */
+export function createBluetoothTransport(): Transport {
+    return isWebBluetoothSupported() && new BluetoothTransport()
 }

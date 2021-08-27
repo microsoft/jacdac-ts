@@ -70,7 +70,7 @@ import {
 import JDServiceProvider from "./serviceprovider"
 import RealTimeClockServer from "../servers/realtimeclockserver"
 import { SRV_ROLE_MANAGER } from "../../src/jdom/constants"
-import JDTransport from "./transport/transport"
+import Transport from "./transport/transport"
 import { BusStatsMonitor } from "./busstats"
 import RoleManagerClient from "./clients/rolemanagerclient"
 import JDBridge from "./bridge"
@@ -121,7 +121,7 @@ export class JDBus extends JDNode {
      * @internal
      */
     readonly parentOrigin: string
-    private readonly _transports: JDTransport[] = []
+    private readonly _transports: Transport[] = []
     private _bridges: JDBridge[] = []
     private _devices: JDDevice[] = []
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -152,7 +152,7 @@ export class JDBus extends JDNode {
      * @param sendPacket
      * @category Lifecycle
      */
-    constructor(transports?: JDTransport[], options?: BusOptions) {
+    constructor(transports?: Transport[], options?: BusOptions) {
         super()
 
         this.selfDeviceId = options?.deviceId || randomDeviceId()
@@ -160,6 +160,7 @@ export class JDBus extends JDNode {
         this.parentOrigin = options?.parentOrigin || "*"
         this.packetStats = new BusStatsMonitor(this)
 
+        // some transport may be undefined
         transports?.filter(tr => !!tr).map(tr => this.addTransport(tr))
 
         // tell loggers to send data, every now and then
@@ -186,7 +187,7 @@ export class JDBus extends JDNode {
      * Adds a transport to the bus
      * @category Transports and Bridges
      */
-    addTransport(transport: JDTransport) {
+    addTransport(transport: Transport) {
         if (this._transports.indexOf(transport) > -1) return // already added
 
         this._transports.push(transport)
@@ -226,7 +227,7 @@ export class JDBus extends JDNode {
         }
     }
 
-    private preConnect(transport: JDTransport) {
+    private preConnect(transport: Transport) {
         console.debug(`preconnect ${transport.type}`, { transport })
         return Promise.all(
             this._transports
@@ -732,7 +733,7 @@ export class JDBus extends JDNode {
             }
             d = new JDDevice(this, id, pkt)
             this._devices.push(d)
-            console.debug(`new device ${d.shortId} (${id})`)
+            console.debug(`${id === this.selfDeviceId ? "self" : "new"} device ${d.shortId} (${id})`)
             // stable sort
             this._devices.sort((l, r) => strcmp(l.deviceId, r.deviceId))
             this.emit(DEVICE_CONNECT, d)

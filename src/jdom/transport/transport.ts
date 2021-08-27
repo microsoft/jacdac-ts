@@ -18,6 +18,10 @@ import { Observable } from "../observable"
 import Packet from "../packet"
 import { assert, delay } from "../utils"
 
+/**
+ * Connection states for transports
+ * @category Transport
+ */
 export enum ConnectionState {
     Connected = "connected",
     Connecting = "connecting",
@@ -25,7 +29,11 @@ export enum ConnectionState {
     Disconnected = "disconnected",
 }
 
-export interface JDTransportOptions {
+/**
+ * General options for the transports
+ * @category Transport
+ */
+export interface TransportOptions {
     // if no packets is received within the pulse interval, disconnect/reconnect
     checkPulse?: boolean
     connectObservable?: Observable<void>
@@ -34,8 +42,9 @@ export interface JDTransportOptions {
 
 /**
  * A transport marshalls Jacdac packets between a physical device on the TypeScript bus.
+ * @category Transport
  */
-export abstract class JDTransport extends JDEventSource {
+export abstract class Transport extends JDEventSource {
     private _bus: JDBus
     private _checkPulse: boolean
     private _connectionTime: number
@@ -43,7 +52,7 @@ export abstract class JDTransport extends JDEventSource {
     protected disposed = false
     private _cleanups: (() => void)[]
 
-    constructor(readonly type: string, options?: JDTransportOptions) {
+    constructor(readonly type: string, options?: TransportOptions) {
         super()
         this._checkPulse = !!options?.checkPulse
         this._cleanups = [
@@ -323,4 +332,4 @@ export abstract class JDTransport extends JDEventSource {
     }
 }
 
-export default JDTransport
+export default Transport

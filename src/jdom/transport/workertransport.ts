@@ -2,7 +2,7 @@ import { USB_TRANSPORT } from "../constants"
 import EventTargetObservable from "./eventtargetobservable"
 import Flags from "../flags"
 import Packet from "../packet"
-import { JDTransport, JDTransportOptions } from "./transport"
+import { Transport, TransportOptions } from "./transport"
 import {
     TransportConnectMessage,
     TransportMessage,
@@ -11,7 +11,7 @@ import {
 import { isWebUSBEnabled, usbRequestDevice } from "./usb"
 import { USB_FILTERS } from "./usbio"
 
-class WorkerTransport extends JDTransport {
+class WorkerTransport extends Transport {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private pending: {
         [id: string]: {
@@ -27,7 +27,7 @@ class WorkerTransport extends JDTransport {
         public readonly worker: Worker,
         public readonly options: {
             requestDevice: () => Promise<string>
-        } & JDTransportOptions
+        } & TransportOptions
     ) {
         super(type, options)
         this.worker.addEventListener("message", this.handleMessage.bind(this))

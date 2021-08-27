@@ -1,5 +1,8 @@
 import { Observable, Observer } from "../observable"
 
+/**
+ * @internal
+ */
 export class EventTargetObservable<TEvent> implements Observable<TEvent> {
     constructor(
         public readonly element: EventTarget,

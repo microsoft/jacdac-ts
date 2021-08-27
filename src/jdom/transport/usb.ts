@@ -2,7 +2,7 @@ import Packet from "../packet"
 import EventTargetObservable from "./eventtargetobservable"
 import Flags from "../flags"
 import { USB_TRANSPORT } from "../constants"
-import JDTransport from "./transport"
+import Transport from "./transport"
 import JDBus from "../bus"
 import Proto from "./proto"
 import USBIO, { USBOptions } from "./usbio"
@@ -49,7 +49,7 @@ function usbGetDevices(): Promise<USBDevice[]> {
     }
 }
 
-class WebUSBTransport extends JDTransport {
+class WebUSBTransport extends Transport {
     private hf2: Proto
     constructor(public readonly options: USBOptions) {
         super(USB_TRANSPORT, { ...options, checkPulse: true })
@@ -94,7 +94,7 @@ function defaultOptions(): USBOptions {
     )
 }
 
-export function createUSBTransport(options?: USBOptions): JDTransport {
+export function createUSBTransport(options?: USBOptions): Transport {
     if (!options) options = defaultOptions()
     return options && new WebUSBTransport(options)
 }

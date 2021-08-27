@@ -36,6 +36,7 @@ import {
     SRV_LOGGER,
     REPORT_UPDATE,
     SERIAL_TRANSPORT,
+    WEBSOCKET_TRANSPORT,
 } from "./constants"
 import { read32, bufferEq, setAckError, read16 } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
@@ -242,7 +243,8 @@ export class JDDevice extends JDNode {
             this._source === USB_TRANSPORT ||
             this._source === BLUETOOTH_TRANSPORT ||
             this._source === SERIAL_TRANSPORT ||
-            this._source === PACKETIO_TRANSPORT
+            this._source === PACKETIO_TRANSPORT ||
+            this._source === WEBSOCKET_TRANSPORT
         )
     }
 
