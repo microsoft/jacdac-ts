@@ -50,8 +50,8 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
         )
     }
 
-    get hub() {
-        const reg = this.service.register(AzureIotHubHealthReg.Hub)
+    get hubName() {
+        const reg = this.service.register(AzureIotHubHealthReg.HubName)
         reg.refresh(true)
         return reg.stringValue
     }

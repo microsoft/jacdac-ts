@@ -39,7 +39,7 @@ export interface AzureIoTHubMessage {
 }
 
 /**
- * A server implementation of the bit:radio service
+ * A server implementation of Azure IoT Hub service
  * @category Servers
  */
 export default class AzureIoTHubServer extends JDServiceServer {
