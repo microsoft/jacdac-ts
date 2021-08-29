@@ -10,6 +10,9 @@ import RegisterServer from "../jdom/registerserver"
 import Packet from "../jdom/packet"
 import { jdpack } from "../jdom/pack"
 
+/**
+ * @internal
+ */
 export interface AzureIoTTransport {
     connect: () => Promise<void>
     disconnect: () => Promise<void>

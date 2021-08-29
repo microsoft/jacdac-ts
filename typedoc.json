@@ -9,6 +9,7 @@
         "src/jdom/utils.ts",
         "src/jdom/buffer.ts",
         "src/jdom/makecode.ts",
+        "src/azure-iot/*",
         "jacdac-spec/dist/*.ts"
     ],
     "excludePrivate": true,
