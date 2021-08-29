@@ -10,6 +10,7 @@ import {
 import Packet from "../jdom/packet"
 import JDRegisterServer from "../jdom/registerserver"
 import JDServiceServer, { ServerOptions } from "../jdom/serviceserver"
+import { delay } from "../jdom/utils"
 
 /**
  * Server creation options for the Azure IoT hub message
@@ -41,14 +42,9 @@ export default class AzureIoTHubHealthServer extends JDServiceServer {
             this.sendEvent(AzureIotHubHealthEvent.ConnectionStatusChange)
         )
         this.statistics = this.addRegister(AzureIotHubHealthReg.Statistics)
-        this.connectionString = "..."
+        this.connectionString = ""
 
-        this.addCommand(
-            AzureIotHubHealthCmd.Identify,
-            this.handleIdentify.bind(this)
-        )
         this.addCommand(AzureIotHubHealthCmd.Ping, this.handlePing.bind(this))
-        this.addCommand(AzureIotHubHealthCmd.Reset, this.handleReset.bind(this))
         this.addCommand(
             AzureIotHubHealthCmd.Connect,
             this.handleConnect.bind(this)
@@ -59,15 +55,29 @@ export default class AzureIoTHubHealthServer extends JDServiceServer {
         )
     }
 
-    private handleConnect(pkt: Packet) {}
+    private async handleConnect(pkt: Packet) {
+        this.connectionStatus.setValues([
+            AzureIotHubHealthConnectionStatus.Connecting,
+        ])
+        await delay(500)
+        if (!this.connectionString) this.connectionStatus.setValues([401])
+        else
+            this.connectionStatus.setValues([
+                AzureIotHubHealthConnectionStatus.Connected,
+            ])
+    }
 
-    private handleDisconnect(pkt: Packet) {}
+    private async handleDisconnect(pkt: Packet) {
+        this.connectionStatus.setValues([
+            AzureIotHubHealthConnectionStatus.Disconnecting,
+        ])
+        await delay(500)
+        this.connectionStatus.setValues([
+            AzureIotHubHealthConnectionStatus.Disconnected,
+        ])
+    }
 
     private handlePing(pkt: Packet) {}
-
-    private handleIdentify(pkt: Packet) {}
-
-    private handleReset(pkt: Packet) {}
 
     private handleSetConnectionString(pkt: Packet) {}
 }
