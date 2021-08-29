@@ -16,6 +16,7 @@ export abstract class JDServiceMemberNode extends JDNode {
     public readonly service: JDService
     /**
      * Identifier of the event.
+     * @category Specification
      */
     public readonly code: number
 

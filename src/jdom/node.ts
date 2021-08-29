@@ -58,6 +58,7 @@ export abstract class JDNode extends JDEventSource {
 
     /**
      * Gets a databag to store custom information
+     * @category JDOM
      */
     get nodeData() {
         if (!this._nodeData) this._nodeData = {}

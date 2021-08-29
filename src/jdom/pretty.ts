@@ -44,6 +44,9 @@ export enum RegisterType {
     String,
 }
 
+/**
+ * @internal
+ */
 export interface DecodedMember {
     info: jdspec.PacketMember
     value: any
@@ -54,6 +57,9 @@ export interface DecodedMember {
     size: number
 }
 
+/**
+ * @internal
+ */
 export interface DecodedPacket {
     service: jdspec.ServiceSpec
     info: jdspec.PacketInfo

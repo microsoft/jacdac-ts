@@ -15,7 +15,7 @@ import JDService from "./service"
 import { intOfBuffer, uintOfBuffer } from "./buffer"
 import { bufferEq, toHex, fromUTF8, uint8ArrayToString } from "./utils"
 import { DecodedPacket } from "./pretty"
-import { isRegister, isReading } from "./spec"
+import { isRegister } from "./spec"
 import JDField from "./field"
 import JDServiceMemberNode from "./servicemembernode"
 import JDNode from "./node"
@@ -40,10 +40,18 @@ export class JDRegister extends JDServiceMemberNode {
         super(service, code, isRegister)
     }
 
+    /**
+     * Returns ``REGISTER_NODE_NAME``
+     * @category JDOM
+     */
     get nodeKind() {
         return REGISTER_NODE_NAME
     }
 
+    /**
+     * Gets the list of field, if the specification is known
+     * @category JDOM
+     */
     get fields() {
         if (!this._fields)
             this._fields = this.specification?.fields.map(
@@ -52,27 +60,54 @@ export class JDRegister extends JDServiceMemberNode {
         return this._fields.slice()
     }
 
+    /**
+     * Gets the list of fields
+     * @category JDOM
+     */
     get children(): JDNode[] {
         return this.fields
     }
 
+    /**
+     * Timestamp of the last ``register set`` packet
+     * @category Packets
+     */
     get lastSetTimestamp() {
         return this._lastSetTimestamp
     }
 
+    /**
+     * Timestamp of the last ``register get`` packet
+     * @category Packets
+     */
     get lastGetTimestamp() {
         return this._lastGetTimestamp
     }
 
+    /**
+     * Clears the get timestamp
+     * @internal
+     * @category Packets
+     */
     clearGetTimestamp() {
         this._lastGetTimestamp = -Infinity
     }
 
+    /**
+     * Number of attempts to send a ``get`` packet without response
+     * @category Packets
+     */
     get lastGetAttempts() {
         return this._lastGetAttempts
     }
 
-    // send a message to set the register value
+    /**
+     * Send a message to set the register value
+     * @param data packed data
+     * @param autoRefresh immediately send a ``get`` packet
+     * @returns
+     * @category Packets
+     */
     sendSetAsync(data: Uint8Array, autoRefresh?: boolean): Promise<void> {
         const cmd = CMD_SET_REG | this.code
         const pkt = Packet.from(cmd, data)
@@ -85,6 +120,11 @@ export class JDRegister extends JDServiceMemberNode {
         return p
     }
 
+    /**
+     * Requests the value of the register by sending a ``get`` packet
+     * @returns
+     * @category Packets
+     */
     sendGetAsync(): Promise<void> {
         if (this.specification?.kind === "const" && this.data !== undefined)
             return Promise.resolve()
@@ -99,6 +139,13 @@ export class JDRegister extends JDServiceMemberNode {
             })
     }
 
+    /**
+     * Send a message to set the register value
+     * @param fmt data packing format
+     * @param values message to pack and send
+     * @param autoRefresh immediately send a ``get`` packet
+     * @category Packets
+     */
     sendSetPackedAsync(
         fmt: string,
         values: PackedValues,
@@ -107,36 +154,58 @@ export class JDRegister extends JDServiceMemberNode {
         return this.sendSetAsync(jdpack(fmt, values), autoRefresh)
     }
 
-    sendSetIntAsync(value: number, autoRefresh?: boolean): Promise<void> {
-        return this.sendSetPackedAsync("i32", [value >> 0], autoRefresh)
-    }
-
+    /**
+     * Sends a message to set the register value as a bpolean
+     * @param value
+     * @param autoRefresh
+     * @param autoRefresh immediately send a ``get`` packet
+     * @category Packets
+     */
     sendSetBoolAsync(value: boolean, autoRefresh?: boolean): Promise<void> {
         return this.sendSetPackedAsync("u8", [value ? 1 : 0], autoRefresh)
     }
 
+    /**
+     * Sends a message to set the register value as a string
+     * @param value
+     * @param autoRefresh
+     * @param autoRefresh immediately send a ``get`` packet
+     * @category Packets
+     */
     sendSetStringAsync(value: string, autoRefresh?: boolean): Promise<void> {
         return this.sendSetPackedAsync("s", [value || ""], autoRefresh)
     }
 
-    get isReading() {
-        return this.specification && isReading(this.specification)
-    }
-
+    /**
+     * Gets the raw data from the last report packet
+     * @category Data
+     */
     get data() {
         return this._lastReportPkt?.data
     }
 
+    /**
+     * Gets the timestamp when received the last report with data
+     * @category Data
+     */
     get lastDataTimestamp() {
         return this._lastReportPkt?.timestamp
     }
 
+    /**
+     * Get the data from the last report packet, unpacked according to the specification.
+     * @category Data
+     */
     get unpackedValue(): PackedValues {
         const d = this.data
         const fmt = this.specification?.packFormat
         return d && fmt && jdunpack(this.data, fmt)
     }
 
+    /**
+     * Gets the data from the last report packet, unpacked and hydrated into an object.
+     * @category Data
+     */
     get objectValue(): PackedObject {
         const { specification } = this
         return unpackedToObject(
@@ -146,21 +215,37 @@ export class JDRegister extends JDServiceMemberNode {
         )
     }
 
+    /**
+     * Gets the data as a signed integer
+     * @category Data
+     */
     get intValue(): number {
         const d = this.data
         return d && intOfBuffer(d)
     }
 
+    /**
+     * Gets the data as a unsigned integer
+     * @category Data
+     */
     get uintValue(): number {
         const d = this.data
         return d && uintOfBuffer(d)
     }
 
+    /**
+     * Gets the data as a boolean
+     * @category Data
+     */
     get boolValue(): boolean {
         if (this.data === undefined) return undefined
         return !!this.intValue
     }
 
+    /**
+     * Gets the data as a string
+     * @category Data
+     */
     get stringValue(): string {
         const buf = this.data
         if (buf === undefined) return undefined
@@ -175,19 +260,35 @@ export class JDRegister extends JDServiceMemberNode {
         return value
     }
 
+    /**
+     * Gets a pretty printed represention of the data
+     * @category Data
+     */
     get humanValue(): string {
         return this.decoded?.decoded?.map(field => field.humanValue).join(",")
     }
 
+    /**
+     * @internal
+     */
     toString() {
         const d = this.data
         return `${this.id} ${d ? toHex(d) : ""}`
     }
 
+    /**
+     * @internal
+     */
     get decoded(): DecodedPacket {
         return this._lastReportPkt?.decoded
     }
 
+    /**
+     * Refresh the value of the register within a timeout
+     * @param skipIfValue don't refesh if any data if available
+     * @returns
+     * @category Data
+     */
     refresh(skipIfValue?: boolean): Promise<void> {
         // don't refetch consts
         // don't refetch if already data
@@ -223,6 +324,9 @@ export class JDRegister extends JDServiceMemberNode {
         )
     }
 
+    /**
+     * @internal
+     */
     processPacket(pkt: Packet) {
         if (pkt.isRegisterGet) this.processReport(pkt)
         else if (pkt.isRegisterSet) {
@@ -245,6 +349,9 @@ export class JDRegister extends JDServiceMemberNode {
         }
     }
 
+    /**
+     * @internal
+     */
     compareTo(b: JDRegister) {
         return this.code - b.code || this.service.compareTo(b.service)
     }

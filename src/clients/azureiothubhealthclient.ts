@@ -95,22 +95,6 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
         )
     }
 
-    async identify(deviceId: string) {
-        await this.service.sendCmdAsync(
-            AzureIotHubHealthCmd.Identify,
-            parseDeviceId(deviceId),
-            true
-        )
-    }
-
-    async reset(deviceId: string) {
-        await this.service.sendCmdAsync(
-            AzureIotHubHealthCmd.Reset,
-            parseDeviceId(deviceId),
-            true
-        )
-    }
-
     async ping(value: number) {
         const data = jdpack<[number]>("u32", [value])
         await this.service.sendCmdAsync(AzureIotHubHealthCmd.Ping, data, true)
