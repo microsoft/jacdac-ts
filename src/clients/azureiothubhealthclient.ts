@@ -9,10 +9,11 @@ import {
     SRV_AZURE_IOT_HUB_HEALTH,
 } from "../jdom/constants"
 import { jdpack } from "../jdom/pack"
+import Packet from "../jdom/packet"
+import { OutPipe } from "../jdom/pipes"
 import JDRegister from "../jdom/register"
 import JDService from "../jdom/service"
 import { JDServiceClient } from "../jdom/serviceclient"
-import { parseDeviceId } from "../jdom/spec"
 import { assert } from "../jdom/utils"
 
 export class AzureIoTHubHealthClient extends JDServiceClient {
@@ -51,11 +52,13 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
         )
         this.mount(() =>
             this.service
+                .event(AzureIotHubHealthEvent.TwinChange)
+                .on(EVENT, () => this.emit(CHANGE))
+        )
+        this.mount(() =>
+            this.service
                 .event(AzureIotHubHealthEvent.ConnectionStatusChange)
-                .on(EVENT, () => {
-                    this.connectionStatusRegister.refresh()
-                    this.emit(CHANGE)
-                })
+                .on(EVENT, () => this.connectionStatusRegister.refresh())
         )
     }
 
@@ -79,6 +82,9 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
         }
     }
 
+    /**
+     * Sends a connect command to the hub
+     */
     async connect() {
         await this.service.sendCmdAsync(
             AzureIotHubHealthCmd.Connect,
@@ -87,6 +93,9 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
         )
     }
 
+    /**
+     * Sends a disconnect command to the hub
+     */
     async disconnect() {
         await this.service.sendCmdAsync(
             AzureIotHubHealthCmd.Disconnect,
@@ -95,9 +104,40 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
         )
     }
 
+    /**
+     * Sends a ping command with a given value. The Azure IoT Hub will send ping message to the hub with that value in the payload.
+     * @param value
+     */
     async ping(value: number) {
         const data = jdpack<[number]>("u32", [value])
         await this.service.sendCmdAsync(AzureIotHubHealthCmd.Ping, data, true)
+    }
+
+    /**
+     * Queries the service for the current twin content
+     * @returns
+     */
+    async twin() {
+        const [content] = await this.service.receiveWithInPipe<[string]>(
+            AzureIotHubHealthCmd.Twin,
+            "s"
+        )
+        return content?.join()
+    }
+
+    /**
+     * Sends a new connection string to the iot debice
+     * @param connectionString
+     */
+    async setConnectionString(connectionString: string) {
+        const resp = await this.service.sendCmdAwaitResponseAsync(
+            Packet.onlyHeader(AzureIotHubHealthCmd.SetConnectionString)
+        )
+        const [pipePort] = resp.jdunpack<[number]>("u16")
+        if (!pipePort) throw new Error("wrong port " + pipePort)
+        const pipe = new OutPipe(this.service.device, pipePort)
+        const packed = jdpack<[string]>("s", [connectionString || ""])
+        pipe.send(packed)
     }
 }
 export default AzureIoTHubHealthClient
