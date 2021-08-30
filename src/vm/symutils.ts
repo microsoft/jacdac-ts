@@ -1,4 +1,5 @@
 import { VMFunctionDescription } from "./ir"
+import { parseIntFloat } from "../../jacdac-spec/spectool/jdutils"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function exprVisitor(
