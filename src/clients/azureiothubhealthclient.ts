@@ -130,14 +130,12 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
      * @param connectionString
      */
     async setConnectionString(connectionString: string) {
-        const resp = await this.service.sendCmdAwaitResponseAsync(
-            Packet.onlyHeader(AzureIotHubHealthCmd.SetConnectionString)
+        const data = jdpack<[string]>("s", [connectionString || ""])
+        await this.service.sendCmdAsync(
+            AzureIotHubHealthCmd.SetConnectionString,
+            data,
+            true
         )
-        const [pipePort] = resp.jdunpack<[number]>("u16")
-        if (!pipePort) throw new Error("wrong port " + pipePort)
-        const pipe = new OutPipe(this.service.device, pipePort)
-        const packed = jdpack<[string]>("s", [connectionString || ""])
-        pipe.send(packed)
     }
 }
 export default AzureIoTHubHealthClient
