@@ -14,7 +14,7 @@ import {
 import {
     VMChecker,
     SpecSymbolResolver,
-} from "../../jacdac-spec/spectool/jdutils"
+} from "./symutils"
 import { assert } from "../jdom/utils"
 
 export function toIdentifier(id: string) {

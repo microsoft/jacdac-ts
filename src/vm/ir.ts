@@ -63,7 +63,16 @@ export type VMFunctionNames =
     | "onRoleDisconnected"
     | "raiseEvent"
 
-export const VMFunctions: jdtest.TestFunctionDescription[] = [
+type Context = "command" | "expression" | "either"
+
+export interface VMFunctionDescription {
+    id: string
+    args: (string | [string, any])[]
+    prompt: string
+    context: Context
+}
+
+export const VMFunctions: VMFunctionDescription[] = [
     {
         id: "start",
         args: [],
