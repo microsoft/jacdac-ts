@@ -251,7 +251,7 @@ export class VMChecker {
         }
         // check for unsupported expression types
         exprVisitor(null, root, (p, c) => {
-            if (!this.supportedExpression(c.type))
+            if (!this.supportedExpression(c.type as jsep.ExpressionType))
                 this.error(
                     `Expression of type ${c.type} not currently supported`
                 )
