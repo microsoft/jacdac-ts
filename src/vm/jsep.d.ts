@@ -1,3 +1,4 @@
+/*
 // typings from https://github.com/EricSmekens/jsep
 // not in @types
 
@@ -95,3 +96,4 @@ declare namespace jsep {
 
     const version: string
 }
+*/

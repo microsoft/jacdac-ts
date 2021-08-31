@@ -59,7 +59,7 @@
     "eslint": "^7.32.0",
     "eslint-plugin-react": "^7.24.0",
     "heap-js": "^2.1.6",
-    "jsep": "^0.4.0",
+    "jsep": "^1.0.2",
     "lodash.camelcase": "^4.3.0",
     "mem": "^9.0.1",
     "mocha": "^9.1.0",
@@ -89,6 +89,7 @@
   "dependencies": {
     "@types/node": "^16.7.1",
     "@types/w3c-web-serial": "^1.0.2",
+    "@types/jsep": "^1.0.2",
     "@types/w3c-web-usb": "^1.0.5",
     "@types/web-bluetooth": "^0.0.11"
   }
