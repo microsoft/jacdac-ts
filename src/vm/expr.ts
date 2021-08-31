@@ -183,16 +183,16 @@ export class VMExprEvaluator {
             }
 
             case "LogicalExpression": {
-                const le = <jsep.LogicalExpression>e
-                await this.visitExpressionAsync(le.left)
+                const le = <jsep.ConditionalExpression>e
+                await this.visitExpressionAsync(le.consequent)
                 switch (le.operator) {
                     case "||":
                         if (this.tos()) return
-                        else await this.visitExpressionAsync(le.right)
+                        else await this.visitExpressionAsync(le.alternate)
                         return
                     case "&&":
                         if (!this.tos()) return
-                        else await this.visitExpressionAsync(le.right)
+                        else await this.visitExpressionAsync(le.alternate)
                         return
                     default:
                 }
