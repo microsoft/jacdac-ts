@@ -1,3 +1,5 @@
+import jsep from "jsep"
+
 export interface VMError {
     sourceId?: string
     code?: number

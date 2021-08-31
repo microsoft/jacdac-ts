@@ -1,3 +1,4 @@
+import jsep from "jsep"
 import { VMProgram, VMHandler, VMCommand, VMRole } from "./ir"
 import RoleManager from "../jdom/rolemanager"
 import {

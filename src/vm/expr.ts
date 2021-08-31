@@ -1,3 +1,5 @@
+import jsep from "jsep"
+
 export type GetValue = (
     e: jsep.MemberExpression | string,
     reportUpdate: boolean

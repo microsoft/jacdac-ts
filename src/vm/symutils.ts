@@ -1,3 +1,4 @@
+import jsep from "jsep"
 import { VMFunctionDescription } from "./ir"
 import { parseIntFloat } from "../../jacdac-spec/spectool/jdutils"
 
