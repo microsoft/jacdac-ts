@@ -38,20 +38,22 @@ export function serviceSpecificationToServiceTwinSpecification(
 
     const registers = packets
         .filter(isHighLevelRegister) // TODO formalize
-        .map<ServiceTwinRegisterSpec>(
-            reg => {
-                let flags = 0
-                if (reg.kind == "const") flags |= ServiceTwinRegisterFlag.Const
-                if (reg.volatile) flags |= ServiceTwinRegisterFlag.Volatile
-                const r: ServiceTwinRegisterSpec = {
-                    code: reg.identifier,
-                    name: reg.name,
-                    flags,
-                    packf: reg.packFormat,
-                    fields: reg.fields.length > 1 ? reg.fields.map(f => f.name) : undefined,
-                }
-                return r
-            })
+        .map<ServiceTwinRegisterSpec>(reg => {
+            let flags = 0
+            if (reg.kind == "const") flags |= ServiceTwinRegisterFlag.Const
+            if (reg.volatile) flags |= ServiceTwinRegisterFlag.Volatile
+            const r: ServiceTwinRegisterSpec = {
+                code: reg.identifier,
+                name: reg.name,
+                flags,
+                packf: reg.packFormat,
+                fields:
+                    reg.fields.length > 1
+                        ? reg.fields.map(f => f.name)
+                        : undefined,
+            }
+            return r
+        })
     const dspec: ServiceTwinSpec = {
         serviceClass,
         name,
