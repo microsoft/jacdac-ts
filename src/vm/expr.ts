@@ -31,8 +31,7 @@ export function unparse(e: jsep.Expression): string {
                 ? `${unparse(root.object)}[${unparse(root.property)}]`
                 : `${unparse(root.object)}.${unparse(root.property)}`
         }
-        case "BinaryExpression":
-        case "LogicalExpression": {
+        case "BinaryExpression": {
             const be = e as any
             return `(${unparse(be.left)} ${be.operator} ${unparse(be.right)})`
         }
@@ -91,6 +90,19 @@ export class VMExprEvaluator {
 
             case "BinaryExpression": {
                 const be = <jsep.BinaryExpression>e
+                if (be.operator === "&&" || be.operator === "||") {
+                    await this.visitExpressionAsync(be.left)
+                    switch (be.operator) {
+                        case "||":
+                            if (this.tos()) return
+                            else await this.visitExpressionAsync(be.right)
+                            return
+                        case "&&":
+                            if (!this.tos()) return
+                            else await this.visitExpressionAsync(be.right)
+                            return
+                    }
+                }
                 await this.visitExpressionAsync(be.left)
                 await this.visitExpressionAsync(be.right)
                 const right = this.exprStack.pop()
@@ -141,7 +153,6 @@ export class VMExprEvaluator {
                     case "!==":
                         this.exprStack.push(left !== right)
                         return
-
                     case "<":
                         this.exprStack.push(left < right)
                         return
@@ -182,22 +193,6 @@ export class VMExprEvaluator {
                 break
             }
 
-            case "LogicalExpression": {
-                const le = <jsep.ConditionalExpression>e
-                await this.visitExpressionAsync(le.consequent)
-                switch (le.operator) {
-                    case "||":
-                        if (this.tos()) return
-                        else await this.visitExpressionAsync(le.alternate)
-                        return
-                    case "&&":
-                        if (!this.tos()) return
-                        else await this.visitExpressionAsync(le.alternate)
-                        return
-                    default:
-                }
-                break
-            }
             case "MemberExpression": {
                 // for now, we don't support evaluation of obj or prop
                 // of obj.prop
