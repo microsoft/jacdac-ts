@@ -4,15 +4,6 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-
-        {
-            "type": "pwa-node",
-            "name": "cli sdmi",
-            "request": "launch",
-            "skipFiles": ["<node_internals>/**"],
-            "program": "${workspaceFolder}/dist/jacdac-cli.js",
-            "args": ["--sdmi=dtmi/jacdac/devices/x1473a263/x12fc91032-1.json"]
-        },
         {
             "type": "pwa-node",
             "request": "launch",
