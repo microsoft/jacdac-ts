@@ -58,7 +58,7 @@
     "eslint": "^7.32.0",
     "eslint-plugin-react": "^7.24.0",
     "heap-js": "^2.1.6",
-    "jsep": "^0.4.0",
+    "jsep": "^1.0.2",
     "lodash.camelcase": "^4.3.0",
     "mem": "^9.0.1",
     "mocha": "^9.1.0",
