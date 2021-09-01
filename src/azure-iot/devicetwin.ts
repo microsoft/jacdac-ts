@@ -6,7 +6,7 @@ import {
     serviceSpecifications,
 } from "../jdom/spec"
 
-export const enum ServiceTwinRegisterFlag {
+export enum ServiceTwinRegisterFlag {
     Const = 0x0001,
     Volatile = 0x0002,
 }
