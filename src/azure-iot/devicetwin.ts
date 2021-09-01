@@ -6,12 +6,17 @@ import {
     serviceSpecifications,
 } from "../jdom/spec"
 
+export enum ServiceTwinRegisterFlag {
+    Const = 0x0001,
+    Volatile = 0x0002,
+}
+
 export interface ServiceTwinRegisterSpec {
-    code: number
+    code: number // code <= 255 => ro, otherwise rw
     name: string
-    kind: jdspec.PacketKind
-    packFormat: string
-    fields: string[]
+    flags: ServiceTwinRegisterFlag
+    packf: string
+    fields?: string[]
 }
 
 export interface ServiceTwinSpec {
@@ -33,15 +38,22 @@ export function serviceSpecificationToServiceTwinSpecification(
 
     const registers = packets
         .filter(isHighLevelRegister) // TODO formalize
-        .map<ServiceTwinRegisterSpec>(
-            ({ identifier, name, packFormat, kind, fields }) => ({
-                code: identifier,
-                name,
-                kind,
-                packFormat,
-                fields: fields.map(f => f.name),
-            })
-        )
+        .map<ServiceTwinRegisterSpec>(reg => {
+            let flags = 0
+            if (reg.kind == "const") flags |= ServiceTwinRegisterFlag.Const
+            if (reg.volatile) flags |= ServiceTwinRegisterFlag.Volatile
+            const r: ServiceTwinRegisterSpec = {
+                code: reg.identifier,
+                name: reg.name,
+                flags,
+                packf: reg.packFormat,
+                fields:
+                    reg.fields.length > 1
+                        ? reg.fields.map(f => f.name)
+                        : undefined,
+            }
+            return r
+        })
     const dspec: ServiceTwinSpec = {
         serviceClass,
         name,
