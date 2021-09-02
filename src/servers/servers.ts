@@ -78,7 +78,7 @@ import {
     JoystickButtons,
     SRV_HID_KEYBOARD,
     SRV_HID_MOUSE,
-    SRV_AZURE_IOT_HUB,
+    //    SRV_AZURE_IOT_HUB,
     SRV_DIMMER,
     DimmerVariant,
     SRV_AZURE_IOT_HUB_HEALTH,
@@ -122,7 +122,7 @@ import PowerServer from "./powerserver"
 import CapacitiveButtonServer from "./capacitivebuttonserver"
 import HIDKeyboardServer from "./hidkeyboardserver"
 import HIDMouseServer from "./hidmouseserver"
-import AzureIoTHubServer from "./azureiothubserver"
+//import AzureIoTHubServer from "./azureiothubserver"
 import DimmerServer from "./dimmerserver"
 import AzureIoTHubHealthServer from "./azureiothubhealthserver"
 import JDServiceProvider from "../jdom/servers/serviceprovider"
@@ -1357,11 +1357,13 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         serviceClasses: [SRV_HID_MOUSE],
         services: () => [new HIDMouseServer()],
     },
+    /*    
     {
         name: "Azure IoT Hub",
         serviceClasses: [SRV_AZURE_IOT_HUB],
         services: () => [new AzureIoTHubServer()],
     },
+    */
     {
         name: "Azure IoT Hub Health",
         serviceClasses: [SRV_AZURE_IOT_HUB_HEALTH],
