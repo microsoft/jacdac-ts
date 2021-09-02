@@ -2,7 +2,7 @@ import JDBus from "../../src/jdom/bus"
 import { DEVICE_ANNOUNCE } from "../../src/jdom/constants"
 import JDDevice from "../../src/jdom/device"
 import JDService from "../../src/jdom/service"
-import JDServiceProvider from "../../src/jdom/serviceprovider"
+import JDServerServiceProvider from "../../src/jdom/serverserviceprovider"
 import JDServiceServer from "../../src/jdom/serviceserver"
 import { assert } from "../../src/jdom/utils"
 import {
@@ -124,7 +124,7 @@ export class FastForwardTester
         // attach servers to the bus as devices
         const devices = Object.entries(servers).map(([name, server]) => {
             const device = this.bus.addServiceProvider(
-                new JDServiceProvider([server])
+                new JDServerServiceProvider([server])
             )
             return {
                 name: name,

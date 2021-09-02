@@ -11,7 +11,7 @@ import {
     PACKET_SEND,
     REPORT_UPDATE,
 } from "./constants"
-import JDServiceProvider from "./serviceprovider"
+import JDServerServiceProvider from "./serverserviceprovider"
 import JDEventSource from "./eventsource"
 import Packet from "./packet"
 import JDRegisterServer from "./registerserver"
@@ -61,7 +61,7 @@ export interface ServerOptions {
  */
 export class JDServiceServer extends JDEventSource {
     public serviceIndex = -1 // set by device
-    private _device: JDServiceProvider
+    private _device: JDServerServiceProvider
     public readonly specification: jdspec.ServiceSpec
     private readonly _registers: JDRegisterServer<PackedValues>[] = []
     private readonly commands: {
@@ -134,7 +134,7 @@ export class JDServiceServer extends JDEventSource {
         return this._device
     }
 
-    set device(value: JDServiceProvider) {
+    set device(value: JDServerServiceProvider) {
         if (this._device !== value) {
             this._device = value
             this.emit(DEVICE_CHANGE)

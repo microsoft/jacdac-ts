@@ -32,8 +32,9 @@ import {
 import { Mutex, atomic } from "./utils"
 import { assert, SMap } from "../jdom/utils"
 import { JDClient } from "../jdom/client"
-import JDServiceProvider from "../jdom/serviceprovider"
+import JDServerServiceProvider from "../jdom/serverserviceprovider"
 import JDDevice from "../jdom/device"
+import JDServiceProvider from "../jdom/serviceprovider"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type VMTraceContext = any
@@ -559,7 +560,7 @@ export class VMProgramRunner extends JDClient {
     private _breaks: SMap<boolean> = {}
     private _breaksMutex: Mutex
     // providing new services
-    private _provider: JDServiceProvider
+    private _provider: JDServerServiceProvider
     private _device: JDDevice
     private _onCompletionOfExternalRequest: {
         handler: VMHandlerRunner
@@ -599,7 +600,7 @@ export class VMProgramRunner extends JDClient {
         this._sleepMutex = new Mutex()
         // TODO: only try to wake handlers that are waiting on change to reg or event
         this.mount(
-            this._env.subscribe(REGISTER_CHANGE, (reg: string) => {
+            this._env.subscribe(REGISTER_CHANGE, () => {
                 this.waitingToRunning()
             })
         )
@@ -1064,7 +1065,7 @@ export class VMProgramRunner extends JDClient {
     private async startProvider() {
         const servers = this._env.servers()
         if (servers.length) {
-            this._provider = new JDServiceProvider(
+            this._provider = new JDServerServiceProvider(
                 servers.map(s => s.server)
                 // if we create a deviceId, then trouble ensues
                 // as a second device gets spun up later

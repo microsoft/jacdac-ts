@@ -1,12 +1,12 @@
 import JDBus from "../jdom/bus"
 import { JDClient } from "../jdom/client"
 import { JoystickVariant } from "../jdom/constants"
-import JDServiceProvider from "../jdom/serviceprovider"
+import JDServerServiceProvider from "../jdom/serverserviceprovider"
 import JoystickServer, { JOYSTICK_ARCADE_BUTTONS } from "./joystickserver"
 
 export default class GamepadHostManager extends JDClient {
     private providers: {
-        deviceProvider: JDServiceProvider
+        deviceProvider: JDServerServiceProvider
         service: JoystickServer
         timestamp: number
     }[] = []
@@ -102,7 +102,7 @@ export default class GamepadHostManager extends JDClient {
                     variant: JoystickVariant.Gamepad,
                     buttonsAvailable: JOYSTICK_ARCADE_BUTTONS,
                 })
-                const deviceHost = new JDServiceProvider([service])
+                const deviceHost = new JDServerServiceProvider([service])
                 this.bus.addServiceProvider(deviceHost)
                 this.providers[i] = host = {
                     service,
