@@ -41,13 +41,18 @@ export abstract class JDServiceProvider extends JDEventSource {
     }
 
     protected start() {
-        this._bus.on(SELF_ANNOUNCE, this.handleSelfAnnounce)
-        this._bus.on([PACKET_PROCESS, PACKET_SEND], this.handlePacket)
+        if (this._bus) {
+            this._bus.on(SELF_ANNOUNCE, this.handleSelfAnnounce)
+            this._bus.on([PACKET_PROCESS, PACKET_SEND], this.handlePacket)
+        }
     }
 
     protected stop() {
-        this._bus.off(SELF_ANNOUNCE, this.handleSelfAnnounce)
-        this._bus.off([PACKET_PROCESS, PACKET_SEND], this.handlePacket)
+        if (this._bus) {
+            this._bus.off(SELF_ANNOUNCE, this.handleSelfAnnounce)
+            this._bus.off([PACKET_PROCESS, PACKET_SEND], this.handlePacket)
+            this._bus = undefined
+        }
     }
 
     protected handleSelfAnnounce(): void {}
