@@ -14,7 +14,7 @@ import {
 import SensorServer from "../../src/servers/sensorserver"
 import { FastForwardTester } from "../jdom/fastforwardtester"
 import { ServiceTester } from "../../src/tstester/servicewrapper"
-import JDRegisterServer from "../../src/jdom/registerserver"
+import JDRegisterServer from "../../src/jdom/servers/registerserver"
 
 suite("pot to switch adapter", () => {
     const program: VMProgram = JSON.parse(
