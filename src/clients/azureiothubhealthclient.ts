@@ -9,8 +9,6 @@ import {
     SRV_AZURE_IOT_HUB_HEALTH,
 } from "../jdom/constants"
 import { jdpack } from "../jdom/pack"
-import Packet from "../jdom/packet"
-import { OutPipe } from "../jdom/pipes"
 import JDRegister from "../jdom/register"
 import JDService from "../jdom/service"
 import { JDServiceClient } from "../jdom/serviceclient"

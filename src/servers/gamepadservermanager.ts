@@ -1,7 +1,7 @@
 import JDBus from "../jdom/bus"
 import { JDClient } from "../jdom/client"
 import { JoystickVariant } from "../jdom/constants"
-import JDServerServiceProvider from "../jdom/serverserviceprovider"
+import JDServerServiceProvider from "../jdom/servers/serverserviceprovider"
 import JoystickServer, { JOYSTICK_ARCADE_BUTTONS } from "./joystickserver"
 
 export default class GamepadHostManager extends JDClient {
