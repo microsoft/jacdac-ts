@@ -396,7 +396,7 @@ export class VMChecker {
                         `events function expects a list of service events`
                     )
                 else {
-                    (arg as jsep.ArrayExpression).elements.forEach(e =>
+                    ;(arg as jsep.ArrayExpression).elements.forEach(e =>
                         this.resolver.lookupEvent(e)
                     )
                 }

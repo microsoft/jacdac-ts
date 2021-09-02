@@ -12,10 +12,7 @@ import {
     VMProgram,
     VMFunctions,
 } from "./ir"
-import {
-    VMChecker,
-    SpecSymbolResolver,
-} from "./symutils"
+import { VMChecker, SpecSymbolResolver } from "./symutils"
 import { assert } from "../jdom/utils"
 
 export function toIdentifier(id: string) {
