@@ -1,5 +1,7 @@
 import JDBus from "../bus"
+import { PACKET_PROCESS, PACKET_SEND, SELF_ANNOUNCE } from "../constants"
 import JDEventSource from "../eventsource"
+import Packet from "../packet"
 import { shortDeviceId } from "../pretty"
 import { anyRandomUint32 } from "../random"
 import { toHex } from "../utils"
@@ -22,6 +24,8 @@ export abstract class JDServiceProvider extends JDEventSource {
             this.deviceId = toHex(devId)
         }
         this.shortId = shortDeviceId(this.deviceId)
+        this.handleSelfAnnounce = this.handleSelfAnnounce.bind(this)
+        this.handlePacket = this.handlePacket.bind(this)
     }
 
     get bus() {
@@ -30,24 +34,23 @@ export abstract class JDServiceProvider extends JDEventSource {
 
     set bus(value: JDBus) {
         if (value !== this._bus) {
-            this.internalStop()
+            this.stop()
             this._bus = value
-            if (this._bus) this.internalStart()
+            if (this._bus) this.start()
         }
     }
 
-    private internalStart() {
-        if (!this._bus) return
-        this.start()
+    protected start() {
+        this._bus.on(SELF_ANNOUNCE, this.handleSelfAnnounce)
+        this._bus.on([PACKET_PROCESS, PACKET_SEND], this.handlePacket)
     }
 
-    protected abstract start(): void
-
-    private internalStop() {
-        if (!this._bus) return
-        this.stop()
+    protected stop() {
+        this._bus.off(SELF_ANNOUNCE, this.handleSelfAnnounce)
+        this._bus.off([PACKET_PROCESS, PACKET_SEND], this.handlePacket)
     }
 
-    protected abstract stop(): void
+    protected handleSelfAnnounce(): void {}
+    protected abstract handlePacket(pkt: Packet): void
 }
 export default JDServiceProvider

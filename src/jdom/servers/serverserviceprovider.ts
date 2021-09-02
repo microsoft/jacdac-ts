@@ -10,11 +10,8 @@ import {
     ERROR,
     JD_SERVICE_INDEX_CRC_ACK,
     MAX_SERVICES_LENGTH,
-    PACKET_PROCESS,
-    PACKET_SEND,
     REFRESH,
     RESET,
-    SELF_ANNOUNCE,
 } from "../constants"
 import JDServiceProvider from "./serviceprovider"
 
@@ -44,8 +41,6 @@ export class JDServerServiceProvider extends JDServiceProvider {
         this.controlService = new ControlServer(options)
         this._services = []
         this.updateServices(services)
-        this.handleSelfAnnounce = this.handleSelfAnnounce.bind(this)
-        this.handlePacket = this.handlePacket.bind(this)
 
         this.on(REFRESH, this.refreshRegisters.bind(this))
     }
@@ -81,21 +76,17 @@ export class JDServerServiceProvider extends JDServiceProvider {
     }
 
     protected start() {
+        super.start()
         this._packetCount = 0
-        this.bus.on(SELF_ANNOUNCE, this.handleSelfAnnounce)
-        this.bus.on([PACKET_PROCESS, PACKET_SEND], this.handlePacket)
-        console.debug(`start host`)
     }
 
     protected stop() {
         this._delayedPackets = undefined
-        this.bus.off(SELF_ANNOUNCE, this.handleSelfAnnounce)
-        this.bus.off([PACKET_PROCESS, PACKET_SEND], this.handlePacket)
-        console.debug(`stop host`)
-        this.bus = undefined
+        super.stop()
     }
 
-    private handleSelfAnnounce() {
+    protected handleSelfAnnounce() {
+        super.handleSelfAnnounce()
         if (this._restartCounter < 0xf) this._restartCounter++
         // async
         this.controlService.announce()
@@ -191,7 +182,7 @@ export class JDServerServiceProvider extends JDServiceProvider {
         else setTimeout(this.processDelayedPackets.bind(this), 10)
     }
 
-    private handlePacket(pkt: Packet) {
+    protected handlePacket(pkt: Packet) {
         const devIdMatch = pkt.deviceIdentifier == this.deviceId
         if (pkt.requiresAck && devIdMatch) {
             pkt.requiresAck = false // make sure we only do it once
