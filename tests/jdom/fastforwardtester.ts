@@ -2,8 +2,8 @@ import JDBus from "../../src/jdom/bus"
 import { DEVICE_ANNOUNCE } from "../../src/jdom/constants"
 import JDDevice from "../../src/jdom/device"
 import JDService from "../../src/jdom/service"
-import JDServerServiceProvider from "../../src/jdom/serverserviceprovider"
-import JDServiceServer from "../../src/jdom/serviceserver"
+import JDServerServiceProvider from "../../src/jdom/servers/serverserviceprovider"
+import JDServiceServer from "../../src/jdom/servers/serviceserver"
 import { assert } from "../../src/jdom/utils"
 import {
     DebugConsoleUi,
