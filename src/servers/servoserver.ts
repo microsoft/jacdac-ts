@@ -1,6 +1,6 @@
 import { PACKET_DATA_NORMALIZE, ServoReg, SRV_SERVO } from "../jdom/constants"
-import JDRegisterServer from "../jdom/registerserver"
-import JDServiceServer, { ServerOptions } from "../jdom/serviceserver"
+import JDRegisterServer from "../jdom/servers/registerserver"
+import JDServiceServer, { ServerOptions } from "../jdom/servers/serviceserver"
 
 export default class ServoServer extends JDServiceServer {
     readonly angle: JDRegisterServer<[number]>

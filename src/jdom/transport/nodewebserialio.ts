@@ -24,11 +24,20 @@ function toPromise<T>(f: (cb: (err: Error, res: T) => void) => void) {
     )
 }
 
-export default class NodeWebSerialIO implements HF2_IO {
+/**
+ * @internal
+ */
+export class NodeWebSerialIO implements HF2_IO {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private dev: any
     private port: Port
     ready = false
 
+    /**
+     * 
+     * @param SerialPort ``require("serialport")``
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(private SerialPort: any) {}
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -163,3 +172,4 @@ export default class NodeWebSerialIO implements HF2_IO {
         return proto
     }
 }
+export default NodeWebSerialIO

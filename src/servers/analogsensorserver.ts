@@ -1,5 +1,5 @@
 import { SystemReg } from "../jdom/constants"
-import JDRegisterServer from "../jdom/registerserver"
+import JDRegisterServer from "../jdom/servers/registerserver"
 import LevelDetector from "./leveldetector"
 import SensorServer, { SensorServiceOptions } from "./sensorserver"
 

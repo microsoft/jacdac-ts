@@ -1,8 +1,8 @@
 import JDServiceServer from "./serviceserver"
-import { jdpack, jdunpack, PackedSimpleValue, PackedValues } from "./pack"
-import Packet from "./packet"
-import { bufferEq, isSet, pick } from "./utils"
-import JDEventSource from "./eventsource"
+import { jdpack, jdunpack, PackedSimpleValue, PackedValues } from "../pack"
+import Packet from "../packet"
+import { bufferEq, isSet, pick } from "../utils"
+import JDEventSource from "../eventsource"
 import {
     CHANGE,
     CMD_GET_REG,
@@ -10,8 +10,8 @@ import {
     PACKET_INVALID_DATA,
     REGISTER_PRE_GET,
     REPORT_RECEIVE,
-} from "./constants"
-import { isRegister } from "./spec"
+} from "../constants"
+import { isRegister } from "../spec"
 
 function defaultFieldPayload(
     specification: jdspec.PacketMember

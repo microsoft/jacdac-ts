@@ -67,7 +67,7 @@ import {
     SRV_REAL_TIME_CLOCK,
     SystemReg,
 } from "../../src/jdom/constants"
-import JDServiceProvider from "./serviceprovider"
+import JDServiceProvider from "./servers/serviceprovider"
 import RealTimeClockServer from "../servers/realtimeclockserver"
 import { SRV_ROLE_MANAGER } from "../../src/jdom/constants"
 import Transport from "./transport/transport"

@@ -9,23 +9,24 @@ import {
     PACKET_RECEIVE_ANNOUNCE,
     PACKET_SEND,
     WEBSOCKET_TRANSPORT,
-} from "../jdom/constants"
-import { createUSBTransport } from "../jdom/transport/usb"
-import { createNodeUSBOptions } from "../jdom/transport/nodewebusb"
-import { clone } from "../jdom/utils"
-import JDBus from "../jdom/bus"
-import { printPacket } from "../jdom/pretty"
-import { parseLogicLog, replayLogicLog } from "../jdom/logparser"
-import { dashify } from "../../jacdac-spec/spectool/jdspec"
-import JDDevice from "../jdom/device"
-import NodeWebSerialIO from "../jdom/transport/nodewebserialio"
+    createUSBTransport,
+    createNodeUSBOptions,
+    clone,
+    JDBus,
+    printPacket,
+    parseLogicLog,
+    replayLogicLog,
+    dashify,
+    JDDevice,
+    NodeWebSerialIO,
+    createWebSerialTransport,
+    Packet,
+} from "../jdom/jacdac-jdom"
 import packageInfo from "../../package.json"
-import { createWebSerialTransport } from "../jdom/transport/webserial"
-import { Packet } from "../jdom/packet"
 import {
     serviceSpecificationsWithServiceTwinSpecification,
     serviceSpecificationToServiceTwinSpecification,
-} from "../azure-iot/devicetwin"
+} from "../azure-iot/jacdac-azure-iot"
 
 cli.setApp("jacdac", packageInfo.version)
 cli.enable("version")

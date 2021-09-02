@@ -1,10 +1,7 @@
-import JDBus from "./bus"
 import JDServiceServer from "./serviceserver"
-import Packet from "./packet"
-import { shortDeviceId } from "./pretty"
-import { isBufferEmpty, toHex } from "./utils"
+import Packet from "../packet"
+import { isBufferEmpty } from "../utils"
 import ControlServer from "./controlserver"
-import JDEventSource from "./eventsource"
 import {
     CHANGE,
     CMD_EVENT_COUNTER_MASK,
@@ -13,23 +10,17 @@ import {
     ERROR,
     JD_SERVICE_INDEX_CRC_ACK,
     MAX_SERVICES_LENGTH,
-    PACKET_PROCESS,
-    PACKET_SEND,
     REFRESH,
     RESET,
-    SELF_ANNOUNCE,
-} from "./constants"
-import { anyRandomUint32 } from "./random"
+} from "../constants"
+import JDServiceProvider from "./serviceprovider"
 
 /**
  * Implements a device with service servers.
  * @category Servers
  */
-export class JDServiceProvider extends JDEventSource {
-    private _bus: JDBus
+export class JDServerServiceProvider extends JDServiceProvider {
     private _services: JDServiceServer[]
-    public readonly deviceId: string
-    public readonly shortId: string
     public readonly controlService: ControlServer
     private _restartCounter = 0
     private _packetCount = 0
@@ -46,19 +37,10 @@ export class JDServiceProvider extends JDEventSource {
             resetIn?: boolean
         }
     ) {
-        super()
+        super(options?.deviceId)
         this.controlService = new ControlServer(options)
         this._services = []
-        this.deviceId = options?.deviceId
-        if (!this.deviceId) {
-            const devId = anyRandomUint32(8)
-            for (let i = 0; i < 8; ++i) devId[i] &= 0xff
-            this.deviceId = toHex(devId)
-        }
-        this.shortId = shortDeviceId(this.deviceId)
         this.updateServices(services)
-        this.handleSelfAnnounce = this.handleSelfAnnounce.bind(this)
-        this.handlePacket = this.handlePacket.bind(this)
 
         this.on(REFRESH, this.refreshRegisters.bind(this))
     }
@@ -93,38 +75,18 @@ export class JDServiceProvider extends JDEventSource {
         }
     }
 
-    get bus() {
-        return this._bus
-    }
-
-    set bus(value: JDBus) {
-        if (value !== this._bus) {
-            this.stop()
-            this._bus = value
-            if (this._bus) this.start()
-        }
-    }
-
-    private start() {
-        if (!this._bus) return
-
+    protected start() {
+        super.start()
         this._packetCount = 0
-        this._bus.on(SELF_ANNOUNCE, this.handleSelfAnnounce)
-        this._bus.on([PACKET_PROCESS, PACKET_SEND], this.handlePacket)
-        console.debug(`start host`)
     }
 
-    private stop() {
+    protected stop() {
         this._delayedPackets = undefined
-        if (!this._bus) return
-
-        this._bus.off(SELF_ANNOUNCE, this.handleSelfAnnounce)
-        this._bus.off([PACKET_PROCESS, PACKET_SEND], this.handlePacket)
-        console.debug(`stop host`)
-        this._bus = undefined
+        super.stop()
     }
 
-    private handleSelfAnnounce() {
+    protected handleSelfAnnounce() {
+        super.handleSelfAnnounce()
         if (this._restartCounter < 0xf) this._restartCounter++
         // async
         this.controlService.announce()
@@ -174,7 +136,7 @@ export class JDServiceProvider extends JDEventSource {
     }
 
     async sendPacketAsync(pkt: Packet) {
-        if (!this._bus) return Promise.resolve()
+        if (!this.bus) return Promise.resolve()
 
         // qos counter
         this._packetCount++
@@ -220,7 +182,7 @@ export class JDServiceProvider extends JDEventSource {
         else setTimeout(this.processDelayedPackets.bind(this), 10)
     }
 
-    private handlePacket(pkt: Packet) {
+    protected handlePacket(pkt: Packet) {
         const devIdMatch = pkt.deviceIdentifier == this.deviceId
         if (pkt.requiresAck && devIdMatch) {
             pkt.requiresAck = false // make sure we only do it once
@@ -265,4 +227,4 @@ export class JDServiceProvider extends JDEventSource {
         this.emit(RESET)
     }
 }
-export default JDServiceProvider
+export default JDServerServiceProvider

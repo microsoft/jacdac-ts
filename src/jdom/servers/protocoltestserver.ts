@@ -4,10 +4,10 @@ import {
     ProtoTestReg,
     ProtoTestCmd,
     ProtoTestEvent,
-} from "./constants"
-import { jdpack, jdunpack } from "./pack"
-import Packet from "./packet"
-import { OutPipe } from "./pipes"
+} from "../constants"
+import { jdpack, jdunpack } from "../pack"
+import Packet from "../packet"
+import { OutPipe } from "../pipes"
 import JDRegisterServer from "./registerserver"
 import JDServiceServer from "./serviceserver"
 

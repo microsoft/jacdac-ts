@@ -3,21 +3,21 @@ import {
     SystemCmd,
     SystemReg,
     SystemStatusCodes,
-} from "../../jacdac-spec/dist/specconstants"
+} from "../../../jacdac-spec/dist/specconstants"
 import {
     CHANGE,
     DEVICE_CHANGE,
     PACKET_RECEIVE,
     PACKET_SEND,
     REPORT_UPDATE,
-} from "./constants"
-import JDServiceProvider from "./serviceprovider"
-import JDEventSource from "./eventsource"
-import Packet from "./packet"
+} from "../constants"
+import JDServerServiceProvider from "./serverserviceprovider"
+import JDEventSource from "../eventsource"
+import Packet from "../packet"
 import JDRegisterServer from "./registerserver"
-import { isRegister, serviceSpecificationFromClassIdentifier } from "./spec"
-import { PackedValues } from "./pack"
-import JDService from "./service"
+import { isRegister, serviceSpecificationFromClassIdentifier } from "../spec"
+import { PackedValues } from "../pack"
+import JDService from "../service"
 
 const CALIBRATION_DELAY = 5000
 
@@ -61,7 +61,7 @@ export interface ServerOptions {
  */
 export class JDServiceServer extends JDEventSource {
     public serviceIndex = -1 // set by device
-    private _device: JDServiceProvider
+    private _device: JDServerServiceProvider
     public readonly specification: jdspec.ServiceSpec
     private readonly _registers: JDRegisterServer<PackedValues>[] = []
     private readonly commands: {
@@ -134,7 +134,7 @@ export class JDServiceServer extends JDEventSource {
         return this._device
     }
 
-    set device(value: JDServiceProvider) {
+    set device(value: JDServerServiceProvider) {
         if (this._device !== value) {
             this._device = value
             this.emit(DEVICE_CHANGE)

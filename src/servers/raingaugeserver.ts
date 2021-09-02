@@ -1,5 +1,5 @@
 import { CHANGE, RainGaugeReg, SRV_RAIN_GAUGE } from "../jdom/constants"
-import JDRegisterServer from "../jdom/registerserver"
+import JDRegisterServer from "../jdom/servers/registerserver"
 import AnalogSensorServer from "./analogsensorserver"
 
 export default class RainGaugeServer extends AnalogSensorServer {

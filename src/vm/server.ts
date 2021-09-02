@@ -9,7 +9,7 @@ import { atomic } from "./utils"
 import { CHANGE } from "../jdom/constants"
 import Packet from "../jdom/packet"
 import { DecodedPacket } from "../jdom/pretty"
-import JDRegisterServer from "../jdom/registerserver"
+import JDRegisterServer from "../jdom/servers/registerserver"
 import { ExternalRequest } from "./environment"
 import SensorServer from "../servers/sensorserver"
 

@@ -6,7 +6,7 @@ import {
     REFRESH,
     SRV_REAL_TIME_CLOCK,
 } from "../jdom/constants"
-import JDRegisterServer from "../jdom/registerserver"
+import JDRegisterServer from "../jdom/servers/registerserver"
 import JDBus from "../jdom/bus"
 import Packet from "../jdom/packet"
 

@@ -1,6 +1,6 @@
 import { DmxCmd, SRV_DMX } from "../jdom/constants"
 import Packet from "../jdom/packet"
-import JDServiceServer from "../jdom/serviceserver"
+import JDServiceServer from "../jdom/servers/serviceserver"
 import { toHex } from "../jdom/utils"
 
 export default class DMXServer extends JDServiceServer {

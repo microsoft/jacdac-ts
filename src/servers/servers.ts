@@ -83,9 +83,9 @@ import {
     DimmerVariant,
     SRV_AZURE_IOT_HUB_HEALTH,
 } from "../jdom/constants"
-import JDServiceProvider from "../jdom/serviceprovider"
-import ProtocolTestServer from "../jdom/protocoltestserver"
-import JDServiceServer from "../jdom/serviceserver"
+import JDServerServiceProvider from "../jdom/servers/serverserviceprovider"
+import ProtocolTestServer from "../jdom/servers/protocoltestserver"
+import JDServiceServer from "../jdom/servers/serviceserver"
 import ButtonServer from "./buttonserver"
 import BuzzerServer from "./buzzerserver"
 import CharacterScreenServer from "./characterscreenserver"
@@ -125,6 +125,7 @@ import HIDMouseServer from "./hidmouseserver"
 import AzureIoTHubServer from "./azureiothubserver"
 import DimmerServer from "./dimmerserver"
 import AzureIoTHubHealthServer from "./azureiothubhealthserver"
+import JDServiceProvider from "../jdom/servers/serviceprovider"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "indoor",
@@ -287,7 +288,7 @@ export interface ServiceProviderDefinition {
      */
     resetIn?: boolean
     /**
-     * Custom factory to wrap the services into a servie provider
+     * Custom factory to wrap the services into a service provider
      */
     factory?: (services: JDServiceServer[]) => JDServiceProvider
 }
@@ -1332,7 +1333,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         serviceClasses: [SRV_POWER, SRV_HUMIDITY],
         services: () => [new PowerServer(), new HumidityServer()],
         factory: services => {
-            const dev = new JDServiceProvider([services[0]])
+            const dev = new JDServerServiceProvider([services[0]])
             const pwr = dev.service(1) as PowerServer
             pwr.enabled.on(CHANGE, () => {
                 const enabled = !!pwr.enabled.values()[0]
@@ -1390,7 +1391,7 @@ export function addServiceProvider(
     }
     const d =
         definition.factory?.(services) ||
-        new JDServiceProvider(services, options)
+        new JDServerServiceProvider(services, options)
     bus.addServiceProvider(d)
     return d
 }
