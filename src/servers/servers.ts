@@ -83,9 +83,9 @@ import {
     DimmerVariant,
     SRV_AZURE_IOT_HUB_HEALTH,
 } from "../jdom/constants"
-import JDServerServiceProvider from "../jdom/serverserviceprovider"
-import ProtocolTestServer from "../jdom/protocoltestserver"
-import JDServiceServer from "../jdom/serviceserver"
+import JDServerServiceProvider from "../jdom/servers/serverserviceprovider"
+import ProtocolTestServer from "../jdom/servers/protocoltestserver"
+import JDServiceServer from "../jdom/servers/serviceserver"
 import ButtonServer from "./buttonserver"
 import BuzzerServer from "./buzzerserver"
 import CharacterScreenServer from "./characterscreenserver"
@@ -125,7 +125,7 @@ import HIDMouseServer from "./hidmouseserver"
 import AzureIoTHubServer from "./azureiothubserver"
 import DimmerServer from "./dimmerserver"
 import AzureIoTHubHealthServer from "./azureiothubhealthserver"
-import JDServiceProvider from "../jdom/serviceprovider"
+import JDServiceProvider from "../jdom/servers/serviceprovider"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "indoor",

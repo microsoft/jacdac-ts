@@ -1,6 +1,6 @@
 import JDServiceServer from "./serviceserver"
-import Packet from "./packet"
-import { isBufferEmpty } from "./utils"
+import Packet from "../packet"
+import { isBufferEmpty } from "../utils"
 import ControlServer from "./controlserver"
 import {
     CHANGE,
@@ -15,7 +15,7 @@ import {
     REFRESH,
     RESET,
     SELF_ANNOUNCE,
-} from "./constants"
+} from "../constants"
 import JDServiceProvider from "./serviceprovider"
 
 /**

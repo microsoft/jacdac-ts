@@ -36,7 +36,7 @@ import { InPipeReader } from "./pipes"
 import { jdunpack, PackedValues } from "./pack"
 import Flags from "./flags"
 import { isMixinService } from "../../jacdac-spec/spectool/jdutils"
-import JDServiceServer from "./serviceserver"
+import JDServiceServer from "./servers/serviceserver"
 
 /**
  * A Jacdac service client hosting registers, events.

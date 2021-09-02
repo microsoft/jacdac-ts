@@ -5,8 +5,8 @@ import {
     CHANGE,
     SRV_AZURE_IOT_HUB,
 } from "../jdom/constants"
-import JDServiceServer, { ServerOptions } from "../jdom/serviceserver"
-import RegisterServer from "../jdom/registerserver"
+import JDServiceServer, { ServerOptions } from "../jdom/servers/serviceserver"
+import RegisterServer from "../jdom/servers/registerserver"
 import Packet from "../jdom/packet"
 import { jdpack } from "../jdom/pack"
 

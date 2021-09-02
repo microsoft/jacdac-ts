@@ -32,9 +32,9 @@ import {
 import { Mutex, atomic } from "./utils"
 import { assert, SMap } from "../jdom/utils"
 import { JDClient } from "../jdom/client"
-import JDServerServiceProvider from "../jdom/serverserviceprovider"
+import JDServerServiceProvider from "../jdom/servers/serverserviceprovider"
 import JDDevice from "../jdom/device"
-import JDServiceProvider from "../jdom/serviceprovider"
+import JDServiceProvider from "../jdom/servers/serviceprovider"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type VMTraceContext = any

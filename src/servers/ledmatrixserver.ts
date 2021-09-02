@@ -4,8 +4,8 @@ import {
     SensorReg,
     SRV_LED_MATRIX,
 } from "../jdom/constants"
-import JDRegisterServer from "../jdom/registerserver"
-import JDServiceServer from "../jdom/serviceserver"
+import JDRegisterServer from "../jdom/servers/registerserver"
+import JDServiceServer from "../jdom/servers/serviceserver"
 
 export default class LEDMatrixServer extends JDServiceServer {
     readonly leds: JDRegisterServer<[Uint8Array]>

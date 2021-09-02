@@ -6,7 +6,7 @@ import {
     SRV_HID_KEYBOARD,
 } from "../jdom/constants"
 import Packet from "../jdom/packet"
-import JDServiceServer, { ServerOptions } from "../jdom/serviceserver"
+import JDServiceServer, { ServerOptions } from "../jdom/servers/serviceserver"
 import { SMap } from "../jdom/utils"
 
 export default class HIDKeyboardServer extends JDServiceServer {

@@ -7,8 +7,8 @@ import {
     SRV_LED,
 } from "../jdom/constants"
 import Packet from "../jdom/packet"
-import JDRegisterServer from "../jdom/registerserver"
-import JDServiceServer, { ServerOptions } from "../jdom/serviceserver"
+import JDRegisterServer from "../jdom/servers/registerserver"
+import JDServiceServer, { ServerOptions } from "../jdom/servers/serviceserver"
 
 export interface LEDServiceOptions extends ServerOptions {
     ledCount?: number

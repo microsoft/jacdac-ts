@@ -29,8 +29,8 @@ import {
     LIGHT_PROG_SHOW,
 } from "../jdom/lightconstants"
 import Packet from "../jdom/packet"
-import JDRegisterServer from "../jdom/registerserver"
-import JDServiceServer, { ServerOptions } from "../jdom/serviceserver"
+import JDRegisterServer from "../jdom/servers/registerserver"
+import JDServiceServer, { ServerOptions } from "../jdom/servers/serviceserver"
 import { isBufferEmpty } from "../jdom/utils"
 
 const PROG_EOF = 0

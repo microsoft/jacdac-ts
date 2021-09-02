@@ -6,7 +6,7 @@ import {
     SRV_BUTTON,
 } from "../jdom/constants"
 import SensorServer from "./sensorserver"
-import RegisterServer from "../jdom/registerserver"
+import RegisterServer from "../jdom/servers/registerserver"
 import { jdpack } from "../jdom/pack"
 
 /**

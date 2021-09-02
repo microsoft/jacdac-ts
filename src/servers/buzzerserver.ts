@@ -1,8 +1,8 @@
 import { BuzzerCmd, BuzzerReg, SRV_BUZZER } from "../jdom/constants"
 import { jdpack, jdunpack } from "../jdom/pack"
 import Packet from "../jdom/packet"
-import JDRegisterServer from "../jdom/registerserver"
-import JDServiceServer, { ServerOptions } from "../jdom/serviceserver"
+import JDRegisterServer from "../jdom/servers/registerserver"
+import JDServiceServer, { ServerOptions } from "../jdom/servers/serviceserver"
 
 /**
  * @internal

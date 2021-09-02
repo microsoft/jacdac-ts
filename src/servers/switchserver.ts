@@ -4,7 +4,7 @@ import {
     SwitchReg,
     SwitchVariant,
 } from "../jdom/constants"
-import JDRegisterServer from "../jdom/registerserver"
+import JDRegisterServer from "../jdom/servers/registerserver"
 import SensorServer from "./sensorserver"
 
 export default class SwitchServer extends SensorServer<[boolean]> {

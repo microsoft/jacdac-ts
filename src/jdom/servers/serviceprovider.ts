@@ -1,8 +1,8 @@
-import JDBus from "./bus"
-import JDEventSource from "./eventsource"
-import { shortDeviceId } from "./pretty"
-import { anyRandomUint32 } from "./random"
-import { toHex } from "./utils"
+import JDBus from "../bus"
+import JDEventSource from "../eventsource"
+import { shortDeviceId } from "../pretty"
+import { anyRandomUint32 } from "../random"
+import { toHex } from "../utils"
 
 /**
  * Implements a device with service servers.

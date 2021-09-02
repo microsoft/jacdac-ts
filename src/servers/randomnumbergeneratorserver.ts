@@ -4,8 +4,8 @@ import {
     RngVariant,
     SRV_RNG,
 } from "../jdom/constants"
-import JDRegisterServer from "../jdom/registerserver"
-import JDServiceServer from "../jdom/serviceserver"
+import JDRegisterServer from "../jdom/servers/registerserver"
+import JDServiceServer from "../jdom/servers/serviceserver"
 
 export default class RandomNumberGeneratorServer extends JDServiceServer {
     readonly reading: JDRegisterServer<[Uint8Array]>

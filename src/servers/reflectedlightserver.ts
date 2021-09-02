@@ -3,7 +3,7 @@ import {
     ReflectedLightVariant,
     SRV_REFLECTED_LIGHT,
 } from "../jdom/constants"
-import JDRegisterServer from "../jdom/registerserver"
+import JDRegisterServer from "../jdom/servers/registerserver"
 import AnalogSensorServer from "./analogsensorserver"
 
 export default class ReflectedLightServer extends AnalogSensorServer {

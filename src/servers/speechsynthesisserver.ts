@@ -4,8 +4,8 @@ import {
     SRV_SPEECH_SYNTHESIS,
 } from "../jdom/constants"
 import Packet from "../jdom/packet"
-import JDRegisterServer from "../jdom/registerserver"
-import JDServiceServer from "../jdom/serviceserver"
+import JDRegisterServer from "../jdom/servers/registerserver"
+import JDServiceServer from "../jdom/servers/serviceserver"
 
 export default class SpeechSynthesisServer extends JDServiceServer {
     readonly enabled: JDRegisterServer<[boolean]>

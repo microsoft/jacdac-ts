@@ -6,8 +6,8 @@ import {
 import { jdpack } from "../jdom/pack"
 import Packet from "../jdom/packet"
 import { OutPipe } from "../jdom/pipes"
-import JDRegisterServer from "../jdom/registerserver"
-import JDServiceServer from "../jdom/serviceserver"
+import JDRegisterServer from "../jdom/servers/registerserver"
+import JDServiceServer from "../jdom/servers/serviceserver"
 
 /**
  * @internal

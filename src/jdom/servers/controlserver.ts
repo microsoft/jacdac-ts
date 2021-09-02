@@ -5,9 +5,9 @@ import {
     ControlReg,
     IDENTIFY,
     SRV_CONTROL,
-} from "./constants"
-import { jdunpack } from "./pack"
-import Packet from "./packet"
+} from "../constants"
+import { jdunpack } from "../pack"
+import Packet from "../packet"
 import JDRegisterServer from "./registerserver"
 import JDServiceServer from "./serviceserver"
 

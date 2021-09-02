@@ -4,7 +4,7 @@ import {
     JoystickVariant,
     SRV_JOYSTICK,
 } from "../jdom/constants"
-import JDRegisterServer from "../jdom/registerserver"
+import JDRegisterServer from "../jdom/servers/registerserver"
 import SensorServer from "./sensorserver"
 
 /**

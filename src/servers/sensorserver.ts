@@ -1,8 +1,8 @@
 import { SystemReg } from "../../jacdac-spec/dist/specconstants"
 import { CHANGE, READING_SENT, REFRESH, SensorReg } from "../jdom/constants"
 import { PackedValues } from "../jdom/pack"
-import JDRegisterServer from "../jdom/registerserver"
-import JDServiceServer, { ServerOptions } from "../jdom/serviceserver"
+import JDRegisterServer from "../jdom/servers/registerserver"
+import JDServiceServer, { ServerOptions } from "../jdom/servers/serviceserver"
 
 /**
  * Creation options for sensor servers
