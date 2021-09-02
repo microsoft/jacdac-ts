@@ -16,6 +16,7 @@ import { assert } from "../jdom/utils"
 
 export class AzureIoTHubHealthClient extends JDServiceClient {
     private readonly hubNameRegister: JDRegister
+    private readonly hubDeviceIdRegister: JDRegister
     private readonly connectionStatusRegister: JDRegister
     private readonly statisticsRegister: JDRegister
 
@@ -26,6 +27,9 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
         // tell the bus to refresh these register
         this.hubNameRegister = this.service.register(
             AzureIotHubHealthReg.HubName
+        )
+        this.hubDeviceIdRegister = this.service.register(
+            AzureIotHubHealthReg.HubDeviceId
         )
         this.connectionStatusRegister = this.service.register(
             AzureIotHubHealthReg.ConnectionStatus
@@ -50,11 +54,6 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
         )
         this.mount(() =>
             this.service
-                .event(AzureIotHubHealthEvent.TwinChange)
-                .on(EVENT, () => this.emit(CHANGE))
-        )
-        this.mount(() =>
-            this.service
                 .event(AzureIotHubHealthEvent.ConnectionStatusChange)
                 .on(EVENT, () => this.connectionStatusRegister.refresh())
         )
@@ -62,6 +61,10 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
 
     get hubName() {
         return this.hubNameRegister.stringValue
+    }
+
+    get hubDeviceId() {
+        return this.hubDeviceIdRegister.stringValue
     }
 
     get connectionStatus(): AzureIotHubHealthConnectionStatus {
@@ -100,27 +103,6 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
             undefined,
             true
         )
-    }
-
-    /**
-     * Sends a ping command with a given value. The Azure IoT Hub will send ping message to the hub with that value in the payload.
-     * @param value
-     */
-    async ping(value: number) {
-        const data = jdpack<[number]>("u32", [value])
-        await this.service.sendCmdAsync(AzureIotHubHealthCmd.Ping, data, true)
-    }
-
-    /**
-     * Queries the service for the current twin content
-     * @returns
-     */
-    async twin() {
-        const [content] = await this.service.receiveWithInPipe<[string]>(
-            AzureIotHubHealthCmd.Twin,
-            "s"
-        )
-        return content?.join()
     }
 
     /**
