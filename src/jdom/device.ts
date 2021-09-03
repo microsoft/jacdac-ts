@@ -72,10 +72,18 @@ interface AckAwaiter {
  * @category JDOM
  */
 export class DeviceStats extends JDEventSource {
+    // counter
     private _receivedPackets = 0
-    private readonly _data: { received: number; total: number }[] = Array(10)
+    private _restarts = 0
+
+    // horizon
+    private readonly _data: {
+        received: number
+        total: number
+        restarts: number
+    }[] = Array(10)
         .fill(0)
-        .map(() => ({ received: 0, total: 0 }))
+        .map(() => ({ received: 0, total: 0, restarts: 0 }))
     private _dataIndex = 0
 
     /**
@@ -99,26 +107,46 @@ export class DeviceStats extends JDEventSource {
     }
 
     /**
+     * Average restart detected per announce packet
+     */
+    get restarts(): number {
+        const r =
+            this._data.reduce((s, e) => s + e.restarts, 0) /
+                this._data.length || 0
+        return r
+    }
+
+    /**
      * @internal
      */
     processAnnouncement(pkt: Packet) {
         // collect metrics
         const received = this._receivedPackets
         const total = pkt.data[2]
+        const restarts = this._restarts
 
-        this._data[this._dataIndex] = { received, total }
+        this._data[this._dataIndex] = { received, total, restarts }
         this._dataIndex = (this._dataIndex + 1) % this._data.length
 
         // reset counter
         this._receivedPackets = 0
+        this._restarts = 0
         this.emit(CHANGE)
     }
 
     /**
      * @internal
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     processPacket(pkt: Packet) {
         this._receivedPackets++
+    }
+
+    /**
+     * @internal
+     */
+    processRestart() {
+        this._restarts++
     }
 }
 
@@ -185,7 +213,7 @@ export class JDDevice extends JDNode {
      * Quality of service statistics for this device
      * @category Diagnostics
      */
-    readonly packetStats = new DeviceStats()
+    readonly stats = new DeviceStats()
 
     /**
      * Gets a description of the device.
@@ -591,7 +619,7 @@ export class JDDevice extends JDNode {
      * @internal
      */
     processAnnouncement(pkt: Packet) {
-        this.packetStats.processAnnouncement(pkt)
+        this.stats.processAnnouncement(pkt)
 
         let changed = false
         const w0 = this._servicesData
@@ -609,10 +637,7 @@ export class JDDevice extends JDNode {
             (w1 & JD_ADVERTISEMENT_0_COUNTER_MASK) <
                 (w0 & JD_ADVERTISEMENT_0_COUNTER_MASK)
         ) {
-            //console.debug(`${this} restart detected`, {
-            //    new: w1 & JD_ADVERTISEMENT_0_COUNTER_MASK,
-            //    old: w0 & JD_ADVERTISEMENT_0_COUNTER_MASK,
-            //})
+            this.stats.processRestart()
             this.initServices(true)
             this.bus.emit(DEVICE_RESTART, this)
             this.emit(RESTART)
@@ -642,7 +667,7 @@ export class JDDevice extends JDNode {
      * @internal
      */
     processPacket(pkt: Packet) {
-        this.packetStats.processPacket(pkt)
+        this.stats.processPacket(pkt)
         this.lost = false
         this.emit(PACKET_RECEIVE, pkt)
         if (pkt.isReport) this.emit(PACKET_REPORT, pkt)
