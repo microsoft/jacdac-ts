@@ -145,7 +145,7 @@ export class JDBus extends JDNode {
      * Gets an instance that tracks packet statistics
      * @category Diagnostics
      **/
-    public readonly packetStats: BusStatsMonitor
+    public readonly stats: BusStatsMonitor
 
     /**
      * Creates the bus with the given transport
@@ -158,7 +158,7 @@ export class JDBus extends JDNode {
         this.selfDeviceId = options?.deviceId || randomDeviceId()
         this.scheduler = options?.scheduler || new WallClockScheduler()
         this.parentOrigin = options?.parentOrigin || "*"
-        this.packetStats = new BusStatsMonitor(this)
+        this.stats = new BusStatsMonitor(this)
 
         // some transport may be undefined
         transports?.filter(tr => !!tr).map(tr => this.addTransport(tr))
