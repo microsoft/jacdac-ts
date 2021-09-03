@@ -18,7 +18,6 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
     private readonly hubNameRegister: JDRegister
     private readonly hubDeviceIdRegister: JDRegister
     private readonly connectionStatusRegister: JDRegister
-    private readonly statisticsRegister: JDRegister
 
     constructor(service: JDService) {
         super(service)
@@ -34,28 +33,24 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
         this.connectionStatusRegister = this.service.register(
             AzureIotHubHealthReg.ConnectionStatus
         )
-        this.statisticsRegister = this.service.register(
-            AzureIotHubHealthReg.Statistics
-        )
         this.mount(() =>
             this.hubNameRegister.subscribe(REPORT_UPDATE, () =>
                 this.emit(CHANGE)
             )
         )
         this.mount(() =>
-            this.connectionStatusRegister.subscribe(REPORT_UPDATE, () =>
+            this.connectionStatusRegister.subscribe(REPORT_UPDATE, () => {
+                console.debug(`azure iot hub: connection status changed`)
                 this.emit(CHANGE)
-            )
-        )
-        this.mount(() =>
-            this.statisticsRegister.subscribe(REPORT_UPDATE, () =>
-                this.emit(CHANGE)
-            )
+            })
         )
         this.mount(() =>
             this.service
                 .event(AzureIotHubHealthEvent.ConnectionStatusChange)
-                .on(EVENT, () => this.connectionStatusRegister.refresh())
+                .on(EVENT, () => {
+                    console.debug(`azure iot hub: connection status event`)
+                    this.connectionStatusRegister.refresh()
+                })
         )
     }
 
@@ -69,18 +64,10 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
 
     get connectionStatus(): AzureIotHubHealthConnectionStatus {
         const reg = this.connectionStatusRegister
-        return reg.unpackedValue?.[0] as AzureIotHubHealthConnectionStatus
-    }
-
-    get statistics() {
-        const [reading, event, twinReported, twinDesired] =
-            this.statisticsRegister.unpackedValue
-        return {
-            reading,
-            event,
-            twinReported,
-            twinDesired,
-        }
+        const status = reg
+            .unpackedValue?.[0] as AzureIotHubHealthConnectionStatus
+        if (status === undefined) reg.refresh()
+        return status
     }
 
     /**
