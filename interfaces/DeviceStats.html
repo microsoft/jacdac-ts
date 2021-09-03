@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>ServiceFilter | Jacdac TypeScript - v1.16.3</title>
+	<title>DeviceStats | Jacdac TypeScript - v1.16.3</title>
 	<meta name="description" content="Documentation for Jacdac TypeScript - v1.16.3">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -53,28 +53,21 @@
 					<a href="../modules.html">Jacdac TypeScript - v1.16.3</a>
 				</li>
 				<li>
-					<a href="ServiceFilter.html">ServiceFilter</a>
+					<a href="DeviceStats.html">DeviceStats</a>
 				</li>
 			</ul>
-			<h1>Interface ServiceFilter</h1>
+			<h1>Interface DeviceStats</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
-			<section class="tsd-panel tsd-comment">
-				<div class="tsd-comment tsd-typography">
-					<div class="lead">
-						<p>A service filter</p>
-					</div>
-				</div>
-			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">ServiceFilter</span>
+						<span class="target">DeviceStats</span>
 					</li>
 				</ul>
 			</section>
@@ -85,11 +78,8 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="ServiceFilter.html#mixins" class="tsd-kind-icon">mixins</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="ServiceFilter.html#serviceClass" class="tsd-kind-icon">service<wbr>Class</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="ServiceFilter.html#serviceIndex" class="tsd-kind-icon">service<wbr>Index</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="ServiceFilter.html#serviceName" class="tsd-kind-icon">service<wbr>Name</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="ServiceFilter.html#specification" class="tsd-kind-icon">specification</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="DeviceStats.html#dropped" class="tsd-kind-icon">dropped</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="DeviceStats.html#restarts" class="tsd-kind-icon">restarts</a></li>
 							</ul>
 						</section>
 					</div>
@@ -98,79 +88,24 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="mixins" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> mixins</h3>
-					<div class="tsd-signature tsd-kind-icon">mixins<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<a name="dropped" class="tsd-anchor"></a>
+					<h3>dropped</h3>
+					<div class="tsd-signature tsd-kind-icon">dropped<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/8abd4a99/src/jdom/filters/servicefilter.ts#L25">src/jdom/filters/servicefilter.ts:25</a></li>
+							<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/8abd4a99/src/jdom/device.ts#L71">src/jdom/device.ts:71</a></li>
 						</ul>
 					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>Match or excludes mixin services</p>
-						</div>
-					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="serviceClass" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> service<wbr>Class</h3>
-					<div class="tsd-signature tsd-kind-icon">service<wbr>Class<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<a name="restarts" class="tsd-anchor"></a>
+					<h3>restarts</h3>
+					<div class="tsd-signature tsd-kind-icon">restarts<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/8abd4a99/src/jdom/filters/servicefilter.ts#L17">src/jdom/filters/servicefilter.ts:17</a></li>
+							<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/8abd4a99/src/jdom/device.ts#L72">src/jdom/device.ts:72</a></li>
 						</ul>
 					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>Match services with the given service class</p>
-						</div>
-					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="serviceIndex" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> service<wbr>Index</h3>
-					<div class="tsd-signature tsd-kind-icon">service<wbr>Index<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/8abd4a99/src/jdom/filters/servicefilter.ts#L9">src/jdom/filters/servicefilter.ts:9</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>Match services at the given service index</p>
-						</div>
-					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="serviceName" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> service<wbr>Name</h3>
-					<div class="tsd-signature tsd-kind-icon">service<wbr>Name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/8abd4a99/src/jdom/filters/servicefilter.ts#L13">src/jdom/filters/servicefilter.ts:13</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>Match services with the given name</p>
-						</div>
-					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="specification" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> specification</h3>
-					<div class="tsd-signature tsd-kind-icon">specification<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/8abd4a99/src/jdom/filters/servicefilter.ts#L21">src/jdom/filters/servicefilter.ts:21</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>Match services which have a known specifications</p>
-						</div>
-					</div>
 				</section>
 			</section>
 		</div>
@@ -187,22 +122,13 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface">
-						<a href="ServiceFilter.html" class="tsd-kind-icon">Service<wbr>Filter</a>
+						<a href="DeviceStats.html" class="tsd-kind-icon">Device<wbr>Stats</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="ServiceFilter.html#mixins" class="tsd-kind-icon">mixins</a>
+								<a href="DeviceStats.html#dropped" class="tsd-kind-icon">dropped</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="ServiceFilter.html#serviceClass" class="tsd-kind-icon">service<wbr>Class</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="ServiceFilter.html#serviceIndex" class="tsd-kind-icon">service<wbr>Index</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="ServiceFilter.html#serviceName" class="tsd-kind-icon">service<wbr>Name</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="ServiceFilter.html#specification" class="tsd-kind-icon">specification</a>
+								<a href="DeviceStats.html#restarts" class="tsd-kind-icon">restarts</a>
 							</li>
 						</ul>
 					</li>
