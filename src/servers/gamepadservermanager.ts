@@ -102,7 +102,9 @@ export default class GamepadHostManager extends JDClient {
                     variant: JoystickVariant.Gamepad,
                     buttonsAvailable: JOYSTICK_ARCADE_BUTTONS,
                 })
-                const deviceHost = new JDServerServiceProvider("gamepad", [service])
+                const deviceHost = new JDServerServiceProvider("gamepad", [
+                    service,
+                ])
                 this.bus.addServiceProvider(deviceHost)
                 this.providers[i] = host = {
                     service,
