@@ -562,7 +562,7 @@ export function tryParseMemberValue(
  * @returns
  * @category Specification
  */
-export function parseDeviceId(id: string) {
+export function parseDeviceId(id: string): Uint8Array {
     if (!id) return undefined
     id = id.replace(/\s/g, "")
     if (id.length != 16 || !/^[a-f0-9]+$/i.test(id)) return undefined

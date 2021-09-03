@@ -31,13 +31,14 @@ export class JDServerServiceProvider extends JDServiceProvider {
     }[]
 
     constructor(
+        template: string,
         services: JDServiceServer[],
         options?: {
             deviceId?: string
             resetIn?: boolean
         }
     ) {
-        super(options?.deviceId)
+        super(template, options?.deviceId)
         this.controlService = new ControlServer(options)
         this._services = []
         this.updateServices(services)

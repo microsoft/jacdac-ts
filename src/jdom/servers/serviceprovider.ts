@@ -12,11 +12,13 @@ import { toHex } from "../utils"
  */
 export abstract class JDServiceProvider extends JDEventSource {
     private _bus: JDBus
+    public readonly template: string
     public readonly deviceId: string
     public readonly shortId: string
 
-    constructor(deviceId?: string) {
+    constructor(template: string, deviceId?: string) {
         super()
+        this.template = template
         this.deviceId = deviceId
         if (!this.deviceId) {
             const devId = anyRandomUint32(8)

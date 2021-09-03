@@ -109,7 +109,7 @@ import SpeechSynthesisServer from "./speechsynthesisserver"
 import SwitchServer from "./switchserver"
 import TrafficLightServer from "./trafficlightserver"
 import LEDServer from "./ledserver"
-import { fromHex } from "../jdom/utils"
+import { fromHex, hash, stringToUint8Array, toFullHex } from "../jdom/utils"
 import SoundPlayerServer, { SoundPlayerSound } from "./soundplayerserver"
 import AnalogSensorServer, {
     AnalogSensorServerOptions,
@@ -1333,7 +1333,9 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         serviceClasses: [SRV_POWER, SRV_HUMIDITY],
         services: () => [new PowerServer(), new HumidityServer()],
         factory: services => {
-            const dev = new JDServerServiceProvider([services[0]])
+            const dev = new JDServerServiceProvider("power+humidity", [
+                services[0],
+            ])
             const pwr = dev.service(1) as PowerServer
             pwr.enabled.on(CHANGE, () => {
                 const enabled = !!pwr.enabled.values()[0]
@@ -1379,6 +1381,14 @@ export default function serviceProviderDefinitions() {
     return _providerDefinitions.slice(0)
 }
 
+function stableSimulatorDeviceId(bus: JDBus, template: string): string {
+    const others = bus.serviceProviders().filter(sp => sp.template === template)
+    const word0 = hash(stringToUint8Array(template + others.length), 32)
+    const word1 = hash(stringToUint8Array(template + others.length + 1), 32)
+    const id = toFullHex([word0, word1])
+    return id.slice(2)
+}
+
 /**
  * Instantiates a new service provider instance and adds it to the bus
  * @category Servers
@@ -1388,12 +1398,14 @@ export function addServiceProvider(
     definition: ServiceProviderDefinition
 ) {
     const services = definition.services()
+    const deviceId = stableSimulatorDeviceId(bus, definition.name)
     const options = {
         resetIn: definition.resetIn,
+        deviceId,
     }
     const d =
         definition.factory?.(services) ||
-        new JDServerServiceProvider(services, options)
+        new JDServerServiceProvider(definition.name, services, options)
     bus.addServiceProvider(d)
     return d
 }
