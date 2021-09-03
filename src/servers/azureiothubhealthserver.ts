@@ -38,7 +38,6 @@ export default class AzureIoTHubHealthServer extends JDServiceServer {
     readonly connectionStatus: JDRegisterServer<
         [AzureIotHubHealthConnectionStatus]
     >
-    readonly statistics: JDRegisterServer<[number, number, number, number]>
     connectionString: string
 
     constructor(options?: ServerOptions) {
@@ -55,7 +54,6 @@ export default class AzureIoTHubHealthServer extends JDServiceServer {
         this.connectionStatus.on(CHANGE, () =>
             this.sendEvent(AzureIotHubHealthEvent.ConnectionStatusChange)
         )
-        this.statistics = this.addRegister(AzureIotHubHealthReg.Statistics)
         this.connectionString = ""
 
         this.addCommand(
