@@ -67,11 +67,16 @@ interface AckAwaiter {
     errCb: () => void
 }
 
+export interface DeviceStats {
+    dropped: number
+    restarts: number
+}
+
 /**
  * Collects packet statistics about the device
  * @category JDOM
  */
-export class DeviceStats extends JDEventSource {
+export class DeviceStatsMonitor extends JDEventSource {
     // counter
     private _receivedPackets = 0
     private _restarts = 0
@@ -81,7 +86,7 @@ export class DeviceStats extends JDEventSource {
         received: number
         total: number
         restarts: number
-    }[] = Array(10)
+    }[] = Array(0xf << 2)
         .fill(0)
         .map(() => ({ received: 0, total: 0, restarts: 0 }))
     private _dataIndex = 0
@@ -107,13 +112,19 @@ export class DeviceStats extends JDEventSource {
     }
 
     /**
-     * Average restart detected per announce packet
+     * Number of restarts within the last 64 announce packets
      */
     get restarts(): number {
-        const r =
-            this._data.reduce((s, e) => s + e.restarts, 0) /
-                this._data.length || 0
+        const r = this._data.reduce((s, e) => s + e.restarts, 0)
         return r
+    }
+
+    /**
+     * Gets the current stats
+     */
+    get current(): DeviceStats {
+        const { dropped, restarts } = this
+        return { dropped, restarts }
     }
 
     /**
@@ -147,6 +158,7 @@ export class DeviceStats extends JDEventSource {
      */
     processRestart() {
         this._restarts++
+        this.emit(CHANGE)
     }
 }
 
@@ -213,7 +225,7 @@ export class JDDevice extends JDNode {
      * Quality of service statistics for this device
      * @category Diagnostics
      */
-    readonly stats = new DeviceStats()
+    readonly stats = new DeviceStatsMonitor()
 
     /**
      * Gets a description of the device.
@@ -637,6 +649,7 @@ export class JDDevice extends JDNode {
             (w1 & JD_ADVERTISEMENT_0_COUNTER_MASK) <
                 (w0 & JD_ADVERTISEMENT_0_COUNTER_MASK)
         ) {
+            console.debug(`device ${this.shortId} restarted`)
             this.stats.processRestart()
             this.initServices(true)
             this.bus.emit(DEVICE_RESTART, this)
