@@ -124,7 +124,7 @@ export class FastForwardTester
         // attach servers to the bus as devices
         const devices = Object.entries(servers).map(([name, server]) => {
             const device = this.bus.addServiceProvider(
-                new JDServerServiceProvider([server])
+                new JDServerServiceProvider("fastforward", [server])
             )
             return {
                 name: name,

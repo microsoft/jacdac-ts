@@ -1066,6 +1066,7 @@ export class VMProgramRunner extends JDClient {
         const servers = this._env.servers()
         if (servers.length) {
             this._provider = new JDServerServiceProvider(
+                "vm",
                 servers.map(s => s.server)
                 // if we create a deviceId, then trouble ensues
                 // as a second device gets spun up later
