@@ -166,7 +166,6 @@ export function isInfrastructure(spec: jdspec.ServiceSpec) {
             SRV_CONTROL,
             SRV_ROLE_MANAGER,
             SRV_LOGGER,
-            SRV_POWER,
             SRV_SETTINGS,
             SRV_BOOTLOADER,
             SRV_PROTO_TEST,
