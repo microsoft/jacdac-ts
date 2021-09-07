@@ -8,10 +8,21 @@ export interface BusStats {
     announce: number
     acks: number
     bytes: number
+
+    devices: number
+    simulators: number
+    transport?: string
+}
+
+interface Stats {
+    packets: number
+    announce: number
+    acks: number
+    bytes: number
 }
 
 export class BusStatsMonitor extends JDEventSource {
-    private readonly _prev: BusStats[] = Array(4)
+    private readonly _prev: Stats[] = Array(4)
         .fill(0)
         .map(() => ({
             packets: 0,
@@ -20,7 +31,7 @@ export class BusStatsMonitor extends JDEventSource {
             bytes: 0,
         }))
     private _previ = 0
-    private _temp: BusStats = {
+    private _temp: Stats = {
         packets: 0,
         announce: 0,
         acks: 0,
@@ -30,7 +41,7 @@ export class BusStatsMonitor extends JDEventSource {
     /**
      * @internal
      */
-    constructor(bus: JDBus) {
+    constructor(private readonly bus: JDBus) {
         super()
         bus.on(PACKET_SEND, this.handlePacketSend.bind(this))
         bus.on(PACKET_PROCESS, this.handlePacketProcess.bind(this))
@@ -41,7 +52,7 @@ export class BusStatsMonitor extends JDEventSource {
      * Computes the current packet statistics of the bus
      */
     get current(): BusStats {
-        const r: BusStats = {
+        const r: Stats = {
             packets: 0,
             announce: 0,
             acks: 0,
@@ -61,7 +72,14 @@ export class BusStatsMonitor extends JDEventSource {
         r.announce /= n2
         r.acks /= n2
         r.bytes /= n2
-        return r
+        return {
+            devices: this.bus.devices({ ignoreSelf: true }).length,
+            simulators: this.bus.serviceProviders().length,
+            transport: this.bus.transports.find(
+                transport => transport.connected
+            )?.type,
+            ...r,
+        }
     }
 
     private accumulate(pkt: Packet) {

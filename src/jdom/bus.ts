@@ -49,6 +49,7 @@ import {
     RESET_IN_TIME_US,
     REFRESH_REGISTER_POLL,
     META_TRACE,
+    DEVICE_CLEAN,
 } from "./constants"
 import { serviceClass } from "./pretty"
 import JDNode from "./node"
@@ -802,6 +803,7 @@ export class JDBus extends JDNode {
     }
 
     private gcDevices() {
+        this.emit(DEVICE_CLEAN)
         if (this.devicesFrozen) {
             console.debug("devices frozen")
             return
