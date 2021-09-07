@@ -105,7 +105,7 @@ export abstract class Transport extends JDEventSource {
                     : undefined
             this._lastReceivedTime = undefined
             this.emit(CONNECTION_STATE, this._connectionState)
-            this.bus.emit(CONNECTION_STATE)
+            this.bus.emit(CONNECTION_STATE, this)
             switch (this._connectionState) {
                 case ConnectionState.Connected:
                     this.emit(CONNECT)
