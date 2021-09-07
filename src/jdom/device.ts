@@ -38,7 +38,7 @@ import {
     SERIAL_TRANSPORT,
     WEBSOCKET_TRANSPORT,
 } from "./constants"
-import { read32, bufferEq, setAckError, read16 } from "./utils"
+import { read32, bufferEq, setAckError, read16, toHex } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
 import JDBus from "./bus"
 import JDService from "./service"
@@ -49,6 +49,7 @@ import { FirmwareInfo } from "./flashing"
 import LEDController from "./ledcontroller"
 import JDEventSource from "./eventsource"
 import { ServiceFilter } from "./filters/servicefilter"
+import { anyRandomUint32, randomDeviceId } from "./random"
 
 /**
  * Pipe information
@@ -188,6 +189,7 @@ export class JDDevice extends JDNode {
      */
     lastServiceUpdate: number
     private _shortId: string
+    private _anonymizedId: string
     private _services: JDService[]
     private _ports: Record<string, PipeInfo>
     private _firmwareInfo: FirmwareInfo
@@ -205,6 +207,14 @@ export class JDDevice extends JDNode {
      * @category Control
      */
     public readonly deviceId: string
+
+    /**
+     * Gets a random device id for the lifetime of this object.
+     */
+    public get anonymizedDeviceId() {
+        if (!this._anonymizedId) this._anonymizedId = randomDeviceId()
+        return this._anonymizedId
+    }
 
     /**
      * @internal

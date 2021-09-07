@@ -3,8 +3,7 @@ import { PACKET_PROCESS, PACKET_SEND, SELF_ANNOUNCE } from "../constants"
 import JDEventSource from "../eventsource"
 import Packet from "../packet"
 import { shortDeviceId } from "../pretty"
-import { anyRandomUint32 } from "../random"
-import { toHex } from "../utils"
+import { randomDeviceId } from "../random"
 
 /**
  * Implements a device with service servers.
@@ -20,11 +19,7 @@ export abstract class JDServiceProvider extends JDEventSource {
         super()
         this.template = template
         this.deviceId = deviceId
-        if (!this.deviceId) {
-            const devId = anyRandomUint32(8)
-            for (let i = 0; i < 8; ++i) devId[i] &= 0xff
-            this.deviceId = toHex(devId)
-        }
+        if (!this.deviceId) this.deviceId = randomDeviceId()
         this.shortId = shortDeviceId(this.deviceId)
         this.handleSelfAnnounce = this.handleSelfAnnounce.bind(this)
         this.handlePacket = this.handlePacket.bind(this)
