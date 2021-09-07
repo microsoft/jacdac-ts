@@ -700,7 +700,7 @@ export class JDDevice extends JDNode {
     }
 
     /**
-     * Gets a controller for the status light, if any
+     * Gets a controller for the status light. Returns undefined if the device does not support a status light.
      * @category Control
      */
     get statusLight(): LEDController {
