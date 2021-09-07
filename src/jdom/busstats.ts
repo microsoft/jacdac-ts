@@ -85,6 +85,7 @@ export class BusStatsMonitor extends JDEventSource {
     private accumulate(pkt: Packet) {
         this._temp.packets++
         this._temp.bytes += (pkt.header?.length || 0) + (pkt.data?.length || 0)
+        if (pkt.isAnnounce) this._temp.announce++
         if (pkt.isCRCAck) this._temp.acks++
     }
 
