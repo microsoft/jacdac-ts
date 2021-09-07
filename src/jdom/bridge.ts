@@ -10,7 +10,7 @@ import { randomDeviceId } from "./random"
  */
 export abstract class JDBridge extends JDClient {
     private _bus: JDBus
-    readonly bridgeId = randomDeviceId()
+    readonly bridgeId = `bridge-` + randomDeviceId()
     packetSent = 0
     packetProcessed = 0
 
