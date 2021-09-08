@@ -1075,7 +1075,7 @@ export class JDBus extends JDNode {
                     // compute if half aged
                     if (samplesAge > midSamplesAge) {
                         //console.debug({ samplesAge, midSamplesAge, interval })
-                        samplesRegister.sendSetPackedAsync("u8", [0xff])
+                        samplesRegister.sendSetPackedAsync([0xff])
                     }
                 }
 

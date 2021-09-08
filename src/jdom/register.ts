@@ -141,16 +141,16 @@ export class JDRegister extends JDServiceMemberNode {
 
     /**
      * Send a message to set the register value
-     * @param fmt data packing format
      * @param values message to pack and send
      * @param autoRefresh immediately send a ``get`` packet
      * @category Packets
      */
     sendSetPackedAsync(
-        fmt: string,
         values: PackedValues,
         autoRefresh?: boolean
     ): Promise<void> {
+        const fmt = this.specification?.packFormat
+        if (!fmt) throw new Error("unknown register data format")
         return this.sendSetAsync(jdpack(fmt, values), autoRefresh)
     }
 
@@ -162,7 +162,7 @@ export class JDRegister extends JDServiceMemberNode {
      * @category Packets
      */
     sendSetBoolAsync(value: boolean, autoRefresh?: boolean): Promise<void> {
-        return this.sendSetPackedAsync("u8", [value ? 1 : 0], autoRefresh)
+        return this.sendSetPackedAsync([value ? 1 : 0], autoRefresh)
     }
 
     /**
@@ -173,7 +173,7 @@ export class JDRegister extends JDServiceMemberNode {
      * @category Packets
      */
     sendSetStringAsync(value: string, autoRefresh?: boolean): Promise<void> {
-        return this.sendSetPackedAsync("s", [value || ""], autoRefresh)
+        return this.sendSetPackedAsync([value || ""], autoRefresh)
     }
 
     /**

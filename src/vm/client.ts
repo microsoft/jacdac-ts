@@ -63,11 +63,7 @@ export class VMServiceClient extends JDServiceClient {
     }
 
     private async writeRegAsync(jdreg: JDRegister, values: atomic[]) {
-        await jdreg?.sendSetPackedAsync(
-            jdreg.specification?.packFormat,
-            values,
-            true
-        )
+        await jdreg?.sendSetPackedAsync(values, true)
     }
 
     private async setEnabled() {

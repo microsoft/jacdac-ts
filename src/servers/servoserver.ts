@@ -1,9 +1,15 @@
-import { PACKET_DATA_NORMALIZE, ServoReg, SRV_SERVO } from "../jdom/constants"
+import {
+    CHANGE,
+    PACKET_DATA_NORMALIZE,
+    ServoReg,
+    SRV_SERVO,
+} from "../jdom/constants"
 import JDRegisterServer from "../jdom/servers/registerserver"
 import JDServiceServer, { ServerOptions } from "../jdom/servers/serviceserver"
 
 export default class ServoServer extends JDServiceServer {
     readonly angle: JDRegisterServer<[number]>
+    readonly currentAngle: JDRegisterServer<[number]>
     readonly offset: JDRegisterServer<[number]>
     readonly enabled: JDRegisterServer<[boolean]>
     readonly minAngle: JDRegisterServer<[number]>
@@ -28,6 +34,9 @@ export default class ServoServer extends JDServiceServer {
         } = options || {}
 
         this.angle = this.addRegister<[number]>(ServoReg.Angle, [0])
+        this.currentAngle = this.addRegister<[number]>(ServoReg.CurrentAngle, [
+            0,
+        ])
         this.enabled = this.addRegister<[boolean]>(ServoReg.Enabled, [false])
         this.minAngle = this.addRegister<[number]>(
             ServoReg.MinAngle,
@@ -55,5 +64,8 @@ export default class ServoServer extends JDServiceServer {
             if (maxAngle !== undefined) angle = Math.min(maxAngle, angle)
             values[0] = angle
         })
+        this.angle.on(CHANGE, () =>
+            this.currentAngle.setValues(this.angle.values())
+        )
     }
 }
