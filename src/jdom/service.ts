@@ -33,7 +33,7 @@ import {
 } from "../../jacdac-spec/dist/specconstants"
 import { JDServiceClient } from "./serviceclient"
 import { InPipeReader } from "./pipes"
-import { jdunpack, PackedValues } from "./pack"
+import { jdpack, jdunpack, PackedValues } from "./pack"
 import Flags from "./flags"
 import { isMixinService } from "../../jacdac-spec/spectool/jdutils"
 import JDServiceServer from "./servers/serviceserver"
@@ -409,6 +409,23 @@ export class JDService extends JDNode {
     sendCmdAsync(cmd: number, data?: Uint8Array, ack?: boolean) {
         const pkt = data ? Packet.from(cmd, data) : Packet.onlyHeader(cmd)
         return this.sendPacketAsync(pkt, ack)
+    }
+
+    /**
+     * Packs values and sends command to the service server
+     * @param cmd packet to send
+     * @param values unpacked values, layed as specified
+     * @param ack acknolegment required
+     * @category Packets
+     */
+    sendCmdPackedAsync(cmd: number, values?: PackedValues, ack?: boolean) {
+        const spec = this.specification.packets.find(
+            pkt => pkt.kind === "command" && pkt.identifier === cmd
+        )
+        const packFormat = spec?.packFormat
+        if (!packFormat) throw new Error("Unknown packing format")
+        const data = values ? jdpack(packFormat, values) : undefined
+        return this.sendCmdAsync(cmd, data, ack)
     }
 
     /**
