@@ -267,7 +267,9 @@ export function decodeMember(
         description:
             member.name +
             ":" +
-            (humanValue.indexOf("\n") >= 0
+            (!humanValue
+                ? "?"
+                : humanValue.indexOf("\n") >= 0
                 ? "\n" + humanValue.replace(/^/gm, "      ")
                 : " " + humanValue),
         info: member,
