@@ -479,15 +479,23 @@ function decodePipe(pkt: Packet): DecodedPacket {
 }
 
 export function decodePacketData(pkt: Packet): DecodedPacket {
-    if (pkt.device && pkt.isPipe) {
-        const info = decodePipe(pkt)
-        if (info) return info
+    try {
+        if (pkt.device && pkt.isPipe) {
+            const info = decodePipe(pkt)
+            if (info) return info
+        }
+
+        const srv_class = pkt?.serviceClass
+        const service = serviceSpecificationFromClassIdentifier(srv_class)
+        return decodePacket(service, pkt)
+    } catch (error) {
+        console.error(error, {
+            error,
+            pkt,
+            data: toHex(pkt.data),
+        })
+        throw error
     }
-
-    const srv_class = pkt?.serviceClass
-    const service = serviceSpecificationFromClassIdentifier(srv_class)
-
-    return decodePacket(service, pkt)
 }
 
 function reverseLookup(map: Record<string, number>, n: number) {
