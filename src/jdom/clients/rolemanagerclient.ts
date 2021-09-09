@@ -141,7 +141,13 @@ export class RoleManagerClient extends JDServiceClient {
                     [Uint8Array, number, number, string]
                 >(buf, "b[8] u32 u8 s")
                 const deviceId = toHex(devidbuf)
-                roles.push({ deviceId, serviceClass, serviceIndex, name })
+                const role: Role = {
+                    deviceId,
+                    serviceClass,
+                    serviceIndex,
+                    name,
+                }
+                roles.push(role)
             }
             // store result if changed
             if (JSON.stringify(roles) !== previousRolesHash) {

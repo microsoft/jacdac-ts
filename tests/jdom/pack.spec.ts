@@ -1,9 +1,18 @@
+import { fail } from "assert"
 import { describe, it } from "mocha"
 import { jdpack, jdunpack } from "../../src/jdom/pack"
-import { bufferEq, stringToBuffer } from "../../src/jdom/utils"
+import { bufferEq, fromHex, stringToBuffer, toHex } from "../../src/jdom/utils"
 
 describe("jdpack", () => {
-    function testOne(fmt: string, data0: any[], maxError?: number) {
+    function testOne(
+        fmt: string,
+        data0: any[],
+        options: {
+            expectedPayload?: string
+            maxError?: number
+        } = {}
+    ) {
+        const { maxError, expectedPayload } = options
         function checksame(a: any, b: any) {
             function fail(msg: string): never {
                 const err = `jdpack test error: ${msg} (at ${fmt}; a=${JSON.stringify(
@@ -33,13 +42,23 @@ describe("jdpack", () => {
                 Math.abs((a as number) - (b as number)) < maxError
             )
                 return
-
             fail("not the same")
         }
         it(fmt, () => {
             const buf = jdpack(fmt, data0)
             const data1 = jdunpack(buf, fmt)
+
+            const bufHex = toHex(buf)
+
             //console.log(fmt, data0, data1, toHex(buf))
+            console.log(
+                `${JSON.stringify(data0)}->${fmt}->${bufHex}->${JSON.stringify(
+                    data1
+                )}`
+            )
+            if (expectedPayload !== undefined && expectedPayload !== bufHex)
+                fail(`payload ${bufHex}, exected ${expectedPayload}`)
+
             checksame(data0, data1)
         })
     }
@@ -75,10 +94,15 @@ describe("jdpack", () => {
     testOne("u16 z[]", [42, ["foo", "bar", "bz"]])
 
     const err = 1e-4
-    testOne("u0.16", [0], err)
-    testOne("u0.16", [0.42], err)
-    testOne("u0.16", [1], err)
-    testOne("i1.15", [0], err)
-    testOne("i1.15", [1], err)
-    testOne("i1.15", [-1], err)
+    testOne("u0.16", [0], { maxError: err })
+    testOne("u0.16", [0.42], { maxError: err })
+    testOne("u0.16", [1], { maxError: err })
+    testOne("i1.15", [0], { maxError: err })
+    testOne("i1.15", [1], { maxError: err })
+    testOne("i1.15", [-1], { maxError: err })
+    testOne(
+        "b[8] u32 u8 s",
+        [fromHex(`a1b2c3d4e5f6a7b8`), 0x12345678, 0x42, "barbaz"],
+        { expectedPayload: "a1b2c3d4e5f6a7b8785634124262617262617a" }
+    )
 })
