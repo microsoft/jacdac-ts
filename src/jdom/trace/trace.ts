@@ -88,11 +88,14 @@ export class Trace {
 
     /**
      * Gets a text-rendered view of the trace
+     * @param length maximum number of elements
      * @returns text where each line is a packet
      */
-    serializeToText() {
+    serializeToText(length?: number) {
         const start = this.packets[0]?.timestamp || 0
-        const text = this.packets.map(pkt => {
+        let pkts = this.packets
+        if (length > 0) pkts = pkts.slice(-length)
+        const text = pkts.map(pkt => {
             let t = `${roundWithPrecision(pkt.timestamp - start, 3)}\t${toHex(
                 pkt.toBuffer()
             )}\t${printPacket(pkt, {}).replace(/\r?\n/g, " ")}`
