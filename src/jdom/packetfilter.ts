@@ -41,6 +41,7 @@ export interface PacketFilterProps {
     collapseAck?: boolean
     collapsePipes?: boolean
     collapseGets?: boolean
+    errors?: boolean
 }
 
 /**
@@ -91,6 +92,7 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
     let collapseAck = true
     let collapsePipes = true
     let collapseGets = true
+    let errors: boolean = undefined
     let selfDevice: boolean = undefined
     text.split(/\s+/g).forEach(part => {
         const [, prefix, , value] =
@@ -126,6 +128,9 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
             case "ri":
             case "resetin":
                 resetIn = parseBoolean(value)
+                break
+            case "errors":
+                errors = parseBoolean(value)
                 break
             case "min-priority":
             case "minpri":
@@ -245,6 +250,7 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
         collapsePipes,
         collapseGets,
         port,
+        errors,
     }
     const filter = compileFilter(props)
     return {
@@ -283,6 +289,7 @@ function compileFilter(props: PacketFilterProps) {
         after,
         pipes,
         port,
+        errors,
     } = props
 
     const filters: CompiledPacketFilter[] = []
@@ -364,6 +371,9 @@ function compileFilter(props: PacketFilterProps) {
             const fwid = pkt.device?.productIdentifier
             return fwid === undefined || productIdentifiers.indexOf(fwid) > -1
         })
+
+    if (errors !== undefined)
+        filters.push(pkt => !!pkt.decoded?.error === errors)
 
     const filter: CompiledPacketFilter = (pkt: Packet) =>
         filters.every(filter => filter(pkt))
