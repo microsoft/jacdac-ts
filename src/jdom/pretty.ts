@@ -246,7 +246,8 @@ export function decodeMember(
             // don't show so much digits
             let v = scaledValue
             if (member.unit) v = roundWithPrecision(v, 3)
-            humanValue = v + prettyUnit(member.unit)
+            humanValue = "" + v
+            if (member.unit) humanValue += prettyUnit(member.unit)
         } else {
             humanValue = scaledValue + ""
             if (
