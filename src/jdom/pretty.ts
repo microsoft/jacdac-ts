@@ -371,7 +371,7 @@ function decodeRegister(
 
     const decoded = decodeMembers(service, regInfo, pkt)
 
-    if (Flags.diagnostics && regInfo.packFormat && pkt.data.length) {
+    if (regInfo.packFormat && pkt.data.length) {
         try {
             const recoded: string = toHex(
                 jdpack(
