@@ -34,6 +34,8 @@ import {
     JD_SERVICE_INDEX_CTRL,
 } from "./constants"
 import { SystemCmd, SystemReg } from "../../jacdac-spec/dist/specconstants"
+import { jdpack, jdunpack } from "./pack"
+import Flags from "./flags"
 
 /** @internal */
 export enum RegisterType {
@@ -65,6 +67,7 @@ export interface DecodedPacket {
     info: jdspec.PacketInfo
     decoded: DecodedMember[]
     description: string
+    error?: string
 }
 
 export function prettyUnit(u: jdspec.Unit): string {
@@ -360,12 +363,31 @@ function decodeRegister(
 
     if (isSet == isGet) return null
 
+    let error = ""
     const addr = pkt.serviceCommand & CMD_REG_MASK
     const regInfo =
         service?.packets.find(p => isRegister(p) && p.identifier == addr) ||
         syntheticPktInfo("rw", addr)
 
     const decoded = decodeMembers(service, regInfo, pkt)
+
+    if (Flags.diagnostics && regInfo.packFormat && pkt.data.length) {
+        try {
+            const recoded: string = toHex(
+                jdpack(
+                    regInfo.packFormat,
+                    jdunpack(pkt.data, regInfo.packFormat)
+                )
+            )
+            if (recoded !== undefined && recoded !== toHex(pkt.data)) {
+                error = `invalid data packing, ${toHex(
+                    pkt.data
+                )} recoded to ${recoded}`
+            }
+        } catch (e) {
+            error = `invalid data packing, ${e.message}`
+        }
+    }
 
     let description = ""
     if (decoded.length == 0) description = regInfo.name
@@ -381,6 +403,7 @@ function decodeRegister(
         info: regInfo,
         decoded,
         description,
+        error,
     }
 }
 
