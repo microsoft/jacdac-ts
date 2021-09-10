@@ -50,6 +50,8 @@ import {
     REFRESH_REGISTER_POLL,
     META_TRACE,
     DEVICE_CLEAN,
+    REGISTER_POLL_REPORT_VOLATILE_MAX_INTERVAL,
+    REGISTER_POLL_REPORT_VOLATILE_INTERVAL,
 } from "./constants"
 import { serviceClass } from "./pretty"
 import JDNode from "./node"
@@ -1083,13 +1085,20 @@ export class JDBus extends JDNode {
                 if (noDataYet && age > 1000) register.sendGetAsync()
             } // regular register, ping if data is old
             else {
-                const expiration = Math.min(
-                    REGISTER_POLL_REPORT_MAX_INTERVAL,
-                    (noDataYet
-                        ? REGISTER_POLL_FIRST_REPORT_INTERVAL
-                        : REGISTER_POLL_REPORT_INTERVAL) *
-                        (1 << backoff)
-                )
+                const volatile = !!specification?.volatile
+                const expiration = volatile
+                    ? Math.min(
+                          REGISTER_POLL_REPORT_VOLATILE_MAX_INTERVAL,
+                          REGISTER_POLL_REPORT_VOLATILE_INTERVAL *
+                              (1 << backoff)
+                      )
+                    : Math.min(
+                          REGISTER_POLL_REPORT_MAX_INTERVAL,
+                          (noDataYet
+                              ? REGISTER_POLL_FIRST_REPORT_INTERVAL
+                              : REGISTER_POLL_REPORT_INTERVAL) *
+                              (1 << backoff)
+                      )
                 if (age > expiration) {
                     //console.log(`bus: poll ${register.id}`, register, age, backoff, expiration)
                     register.sendGetAsync()
