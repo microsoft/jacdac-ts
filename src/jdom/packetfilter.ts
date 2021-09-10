@@ -299,16 +299,16 @@ function compileFilter(props: PacketFilterProps) {
     if (repeatedAnnounce !== undefined)
         filters.push(
             pkt =>
-                !pkt.isAnnounce || pkt.isRepeatedAnnounce === repeatedAnnounce
+                (!pkt.isAnnounce || pkt.isRepeatedAnnounce) === repeatedAnnounce
         )
-    if (resetIn === false)
+    if (resetIn !== undefined)
         filters.push(
             pkt =>
-                !(
+                !!(
                     pkt.isRegisterSet &&
                     pkt.serviceClass === SRV_CONTROL &&
                     pkt.registerIdentifier === ControlReg.ResetIn
-                )
+                ) === resetIn
         )
     if (minPriority !== undefined)
         filters.push(
