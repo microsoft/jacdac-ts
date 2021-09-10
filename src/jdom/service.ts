@@ -484,6 +484,8 @@ export class JDService extends JDNode {
             const id = pkt.registerIdentifier
             const reg = this.register(id)
             if (reg) reg.processPacket(pkt)
+        } else if (pkt.isCommand) {
+            this.invalidateRegisterValues(pkt)
         }
     }
 
