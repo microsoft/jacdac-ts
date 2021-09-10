@@ -105,4 +105,8 @@ describe("jdpack", () => {
         [fromHex(`a1b2c3d4e5f6a7b8`), 0x12345678, 0x42, "barbaz"],
         { expectedPayload: "a1b2c3d4e5f6a7b8785634124262617262617a" }
     )
+
+    testOne("i16.16", [0.1], { maxError: err })
+    testOne("i16.16", [1], { maxError: err })
+    testOne("i16.16", [Math.PI], { maxError: err })
 })
