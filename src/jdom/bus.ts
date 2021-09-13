@@ -1038,26 +1038,35 @@ export class JDBus extends JDNode {
                 const intervalRegister = service.register(
                     SensorReg.StreamingInterval
                 )
-                let interval = intervalRegister?.intValue
+                let interval = intervalRegister?.uintValue
                 // no interval data
                 if (interval === undefined) {
                     // use preferred interval data or default to 50
-                    const preferredInterval = service.register(
+                    const preferredIntervalRegister = service.register(
                         SensorReg.StreamingPreferredInterval
                     )
-                    interval = preferredInterval?.intValue
+                    const preferredInterval =
+                        preferredIntervalRegister?.uintValue
+                    interval = preferredInterval
                     // if no interval, poll interval value
-                    if (
-                        interval === undefined &&
-                        intervalRegister &&
-                        intervalRegister.lastGetTimestamp - this.timestamp >
-                            REGISTER_POLL_STREAMING_INTERVAL
-                    ) {
+                    if (interval === undefined) {
                         // all async
-                        if (!intervalRegister.data)
+                        if (
+                            intervalRegister &&
+                            !intervalRegister.data &&
+                            this.timestamp - intervalRegister.lastGetTimestamp >
+                                REGISTER_POLL_STREAMING_INTERVAL
+                        )
                             intervalRegister.sendGetAsync()
-                        if (!preferredInterval.data)
-                            preferredInterval.sendGetAsync()
+
+                        if (
+                            preferredIntervalRegister &&
+                            !preferredIntervalRegister.data &&
+                            this.timestamp -
+                                preferredIntervalRegister.lastGetTimestamp >
+                                REGISTER_POLL_STREAMING_INTERVAL
+                        )
+                            preferredIntervalRegister.sendGetAsync()
                     }
                 }
                 // still no interval data use from spec or default
@@ -1065,20 +1074,17 @@ export class JDBus extends JDNode {
                     interval =
                         specification.preferredInterval ||
                         STREAMING_DEFAULT_INTERVAL
-                const samplesRegister = service.register(
+                const streamingSamplesRegister = service.register(
                     SensorReg.StreamingSamples
                 )
-                const samplesLastSetTimesamp = samplesRegister?.lastSetTimestamp
-                if (samplesLastSetTimesamp !== undefined) {
-                    const samplesAge =
-                        this.timestamp - samplesRegister.lastSetTimestamp
-                    // need to figure out when we asked for streaming
-                    const midSamplesAge = (interval * 0xff) / 2
-                    // compute if half aged
-                    if (samplesAge > midSamplesAge) {
-                        //console.debug({ samplesAge, midSamplesAge, interval })
-                        samplesRegister.sendSetPackedAsync([0xff])
-                    }
+                const streamingSamplesAge =
+                    this.timestamp - streamingSamplesRegister.lastSetTimestamp
+                // need to figure out when we asked for streaming
+                const midSamplesAge = (interval * 0xff) >> 1
+                // compute if half aged
+                if (streamingSamplesAge > midSamplesAge) {
+                    //console.debug({ samplesAge, midSamplesAge, interval })
+                    streamingSamplesRegister.sendSetPackedAsync([0xff])
                 }
 
                 // first query, get data asap once per second
