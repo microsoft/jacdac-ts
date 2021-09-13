@@ -3,8 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Trace | Jacdac TypeScript - v1.16.16</title>
-	<meta name="description" content="Documentation for Jacdac TypeScript - v1.16.16">
+	<title>Trace | Jacdac TypeScript - v1.16.17</title>
+	<meta name="description" content="Documentation for Jacdac TypeScript - v1.16.17">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
 	<script async src="../assets/js/search.js" id="search-script"></script>
@@ -23,7 +23,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="../index.html" class="title">Jacdac TypeScript - v1.16.16</a>
+					<a href="../index.html" class="title">Jacdac TypeScript - v1.16.17</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -50,7 +50,7 @@
 		<div class="container">
 			<ul class="tsd-breadcrumb">
 				<li>
-					<a href="../modules.html">Jacdac TypeScript - v1.16.16</a>
+					<a href="../modules.html">Jacdac TypeScript - v1.16.17</a>
 				</li>
 				<li>
 					<a href="Trace.html">Trace</a>
@@ -92,6 +92,7 @@
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="Trace.html#description" class="tsd-kind-icon">description</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="Trace.html#maxLength" class="tsd-kind-icon">max<wbr>Length</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="Trace.html#packets" class="tsd-kind-icon">packets</a></li>
 							</ul>
 						</section>
@@ -120,13 +121,13 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Trace<span class="tsd-signature-symbol">(</span>packets<span class="tsd-signature-symbol">?: </span><a href="Packet.html" class="tsd-signature-type" data-tsd-kind="Class">Packet</a><span class="tsd-signature-symbol">[]</span>, description<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="Trace.html" class="tsd-signature-type" data-tsd-kind="Class">Trace</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Trace<span class="tsd-signature-symbol">(</span>packets<span class="tsd-signature-symbol">?: </span><a href="Packet.html" class="tsd-signature-type" data-tsd-kind="Class">Packet</a><span class="tsd-signature-symbol">[]</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-symbol">{ </span>description<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>maxLength<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="Trace.html" class="tsd-signature-type" data-tsd-kind="Class">Trace</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/fa33e2f3/src/jdom/trace/trace.ts#L39">src/jdom/trace/trace.ts:39</a></li>
+									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/f058b005/src/jdom/trace/trace.ts#L41">src/jdom/trace/trace.ts:41</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -145,12 +146,15 @@
 									</div>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> description: <span class="tsd-signature-type">string</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<div class="lead">
-											<p>description of the trace</p>
-										</div>
-									</div>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-symbol">{ </span>description<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>maxLength<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> }</span></h5>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter">
+											<h5><span class="tsd-flag ts-flagOptional">Optional</span> description<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span></h5>
+										</li>
+										<li class="tsd-parameter">
+											<h5><span class="tsd-flag ts-flagOptional">Optional</span> max<wbr>Length<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span></h5>
+										</li>
+									</ul>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="Trace.html" class="tsd-signature-type" data-tsd-kind="Class">Trace</a></h4>
@@ -162,9 +166,22 @@
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
 					<a name="description" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> description</h3>
+					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> description</h3>
 					<div class="tsd-signature tsd-kind-icon">description<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/f058b005/src/jdom/trace/trace.ts#L35">src/jdom/trace/trace.ts:35</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="maxLength" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> max<wbr>Length</h3>
+					<div class="tsd-signature tsd-kind-icon">max<wbr>Length<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/f058b005/src/jdom/trace/trace.ts#L34">src/jdom/trace/trace.ts:34</a></li>
+						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
@@ -187,7 +204,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/fa33e2f3/src/jdom/trace/trace.ts#L51">src/jdom/trace/trace.ts:51</a></li>
+									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/f058b005/src/jdom/trace/trace.ts#L62">src/jdom/trace/trace.ts:62</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -209,7 +226,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/fa33e2f3/src/jdom/trace/trace.ts#L69">src/jdom/trace/trace.ts:69</a></li>
+									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/f058b005/src/jdom/trace/trace.ts#L80">src/jdom/trace/trace.ts:80</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -231,7 +248,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/fa33e2f3/src/jdom/trace/trace.ts#L44">src/jdom/trace/trace.ts:44</a></li>
+									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/f058b005/src/jdom/trace/trace.ts#L55">src/jdom/trace/trace.ts:55</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -253,7 +270,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/fa33e2f3/src/jdom/trace/trace.ts#L62">src/jdom/trace/trace.ts:62</a></li>
+									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/f058b005/src/jdom/trace/trace.ts#L73">src/jdom/trace/trace.ts:73</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -272,13 +289,13 @@
 					<a name="addPacket" class="tsd-anchor"></a>
 					<h3>add<wbr>Packet</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">add<wbr>Packet<span class="tsd-signature-symbol">(</span>packet<span class="tsd-signature-symbol">: </span><a href="Packet.html" class="tsd-signature-type" data-tsd-kind="Class">Packet</a>, maxLength<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">add<wbr>Packet<span class="tsd-signature-symbol">(</span>packet<span class="tsd-signature-symbol">: </span><a href="Packet.html" class="tsd-signature-type" data-tsd-kind="Class">Packet</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/fa33e2f3/src/jdom/trace/trace.ts#L78">src/jdom/trace/trace.ts:78</a></li>
+									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/f058b005/src/jdom/trace/trace.ts#L89">src/jdom/trace/trace.ts:89</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -292,12 +309,6 @@
 									<h5>packet: <a href="Packet.html" class="tsd-signature-type" data-tsd-kind="Class">Packet</a></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>packet to add</p>
-									</div>
-								</li>
-								<li>
-									<h5>maxLength: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = -1</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>If positive, prunes older packets when the length reaches maxLength</p>
 									</div>
 								</li>
 							</ul>
@@ -315,7 +326,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/fa33e2f3/src/jdom/trace/trace.ts#L94">src/jdom/trace/trace.ts:94</a></li>
+									<li>Defined in <a href="https://github.com/microsoft/jacdac-ts/blob/f058b005/src/jdom/trace/trace.ts#L105">src/jdom/trace/trace.ts:105</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -359,6 +370,9 @@
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="Trace.html#description" class="tsd-kind-icon">description</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="Trace.html#maxLength" class="tsd-kind-icon">max<wbr>Length</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="Trace.html#packets" class="tsd-kind-icon">packets</a>
