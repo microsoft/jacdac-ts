@@ -44,11 +44,17 @@ export default [
         cjs: false,
         tsconfig: "src/worker/tsconfig.json",
     },
-].map(({ libraryName, dir, external, watch, tsconfig, cjs }) => {
+].map(({ libraryName, dir, external, watch, tsconfig, cjs, umd }) => {
     return {
         input: dir ? `src/${dir}/${libraryName}.ts` : `src/${libraryName}.ts`,
         output: [
             { file: `dist/${libraryName}.js`, format: "es", sourcemap: true },
+            umd && {
+                file: `dist/${libraryName}.umd.js`,
+                format: "umd",
+                sourcemap: true,
+                name: "jacdac"
+            },
             cjs && {
                 file: `dist/${libraryName}.cjs.js`,
                 format: "cjs",
