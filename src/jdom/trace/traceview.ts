@@ -13,7 +13,7 @@ import {
 import Packet from "../packet"
 import { PacketFilter, parsePacketFilter } from "../packetfilter"
 import Trace from "./trace"
-import { throttle } from "../utils"
+import { throttle, toHex } from "../utils"
 
 const FILTERED_TRACE_MAX_ITEMS = 100
 const DUPLICATE_PACKET_MERGE_HORIZON_MAX_DISTANCE = 10
@@ -24,7 +24,17 @@ const DUPLICATE_PACKET_MERGE_HORIZON_MAX_TIME = 5000
  * @category Trace
  */
 export interface TracePacketProps {
+    /**
+     * Unique key used for React lists
+     */
     key: string
+    /**
+     * Identifier to match packets together
+     */
+    hash: string
+    /**
+     * The packet
+     */
     packet: Packet
     count?: number
 }
@@ -178,28 +188,29 @@ export class TraceView extends JDClient {
         }
     }
 
-    private addFilteredPacket(pkt: Packet) {
-        if (pkt.meta[this.id]) return
-        pkt.meta[this.id] = true
+    private addFilteredPacket(packet: Packet) {
+        if (packet.meta[this.id]) return
+        packet.meta[this.id] = true
 
         // resolve packet device for pretty name
-        if (!pkt.isMultiCommand && !pkt.device)
-            pkt.device = this.bus.device(pkt.deviceIdentifier, false, pkt)
+        if (!packet.isMultiCommand && !packet.device)
+            packet.device = this.bus.device(
+                packet.deviceIdentifier,
+                false,
+                packet
+            )
 
         // keep in filtered view
         let filtered = true
-
-        // detect duplicate at the tail of the packets
-        let key = ""
+        const hash = toHex(packet.toBuffer())
         if (this._packetFilter?.props.grouping) {
-            key = pkt.toString()
             const old = this._filteredPackets
                 .slice(0, DUPLICATE_PACKET_MERGE_HORIZON_MAX_DISTANCE)
                 .find(
                     p =>
-                        pkt.timestamp - p.packet.timestamp <
+                        packet.timestamp - p.packet.timestamp <
                             DUPLICATE_PACKET_MERGE_HORIZON_MAX_TIME &&
-                        p.key === key
+                        p.hash === hash
                 )
             if (old) {
                 old.count++
@@ -208,10 +219,10 @@ export class TraceView extends JDClient {
         }
 
         // collapse acks
-        if (pkt.isCRCAck) {
+        if (packet.isCRCAck) {
             const pkts = this.trace.packets
-            const crc = pkt.serviceCommand
-            const did = pkt.deviceIdentifier
+            const crc = packet.serviceCommand
+            const did = packet.deviceIdentifier
             const m = Math.max(0, pkts.length - TRACE_FILTER_HORIZON) // max scan 100 packets back
             for (let i = pkts.length - 1; i >= m; i--) {
                 const old = pkts[i]
@@ -220,18 +231,18 @@ export class TraceView extends JDClient {
                     old.deviceIdentifier === did &&
                     old.crc === crc
                 ) {
-                    old.meta[META_ACK] = pkt
+                    old.meta[META_ACK] = packet
                     if (this._packetFilter?.props.collapseAck) filtered = false
                     break
                 }
             }
         }
         // report coming back
-        if (pkt.isRegisterGet && pkt.isReport && !pkt.meta[META_GET]) {
+        if (packet.isRegisterGet && packet.isReport && !packet.meta[META_GET]) {
             const pkts = this.trace.packets
-            const did = pkt.deviceIdentifier
-            const si = pkt.serviceIndex
-            const rid = pkt.registerIdentifier
+            const did = packet.deviceIdentifier
+            const si = packet.serviceIndex
+            const rid = packet.registerIdentifier
             const m = Math.max(0, pkts.length - TRACE_FILTER_HORIZON) // max scan 100 packets back
             for (let i = pkts.length - 1; i >= m; i--) {
                 const old = pkts[i]
@@ -243,7 +254,7 @@ export class TraceView extends JDClient {
                     old.registerIdentifier === rid
                 ) {
                     // response from a get command
-                    pkt.meta[META_GET] = old
+                    packet.meta[META_GET] = old
                     if (this._packetFilter?.props.collapseGets) {
                         // remove old
                         this._filteredPackets.splice(i, 1)
@@ -256,19 +267,19 @@ export class TraceView extends JDClient {
         // collapse pipes
         if (
             this._packetFilter?.props.collapsePipes &&
-            pkt.isPipe &&
-            pkt.isCommand
+            packet.isPipe &&
+            packet.isCommand
         ) {
             const pkts = this._filteredPackets
             const m = Math.min(pkts.length, TRACE_FILTER_HORIZON) // max scan 100 packets back
-            const port = pkt.pipePort
-            const did = pkt.deviceIdentifier
+            const port = packet.pipePort
+            const did = packet.deviceIdentifier
             for (let i = 0; i < m; ++i) {
                 const old = pkts[i].packet
                 if (old.deviceIdentifier === did && old.pipePort === port) {
                     let pipePackets = old.meta[META_PIPE] as Packet[]
                     if (!pipePackets) pipePackets = old.meta[META_PIPE] = []
-                    pipePackets[pkt.pipeCount] = pkt
+                    pipePackets[packet.pipeCount] = packet
                     filtered = false
                     break
                 }
@@ -276,9 +287,11 @@ export class TraceView extends JDClient {
         }
 
         if (filtered) {
+            const key = packet.timestamp + hash
             this._filteredPackets.unshift({
                 key,
-                packet: pkt,
+                hash,
+                packet,
                 count: 1,
             })
         }
