@@ -799,8 +799,10 @@ export class JDDevice extends JDNode {
     private initAcks() {
         if (this._ackAwaiting) return
 
+        let drops = 0
+        let resends = 0
         this._ackAwaiting = []
-        this.on(PACKET_REPORT, (rep: Packet) => {
+        const cleanUp = this.subscribe(PACKET_REPORT, (rep: Packet) => {
             if (rep.serviceIndex != JD_SERVICE_INDEX_CRC_ACK) return
             let numdone = 0
             for (const aa of this._ackAwaiting) {
@@ -820,25 +822,43 @@ export class JDDevice extends JDNode {
             for (const aa of this._ackAwaiting) {
                 if (aa.pkt) {
                     if (--aa.retriesLeft < 0) {
+                        drops++
                         aa.pkt.meta[META_ACK_FAILED] = true
                         aa.pkt = null
                         aa.errCb()
                         numdrop++
+                        console.debug(
+                            `ack: ${this.shortId} drop ${aa.pkt} (${drops} drops, ${resends} resends)`
+                        )
                     } else {
+                        resends++
                         aa.pkt.sendCmdAsync(this)
+                        console.debug(
+                            `ack: ${this.shortId} resend ${aa.pkt} (${drops} drops, ${resends} resends)`
+                        )
                     }
                 }
             }
             if (numdrop)
                 this._ackAwaiting = this._ackAwaiting.filter(aa => !!aa.pkt)
-            setTimeout(
-                resend,
-                Math.random() * (ACK_MAX_DELAY - ACK_MIN_DELAY) + ACK_MIN_DELAY
+
+            console.debug(
+                `ack: ${this.shortId} awaits ${this._ackAwaiting.length}`
             )
+            if (this._ackAwaiting.length > 0) {
+                this.bus.scheduler.setTimeout(
+                    resend,
+                    Math.random() * (ACK_MAX_DELAY - ACK_MIN_DELAY) +
+                        ACK_MIN_DELAY
+                )
+            } else {
+                this._ackAwaiting = undefined
+                cleanUp()
+            }
         }
 
         // start loop
-        setTimeout(resend, 40)
+        this.bus.scheduler.setTimeout(resend, 40)
     }
 
     /**
