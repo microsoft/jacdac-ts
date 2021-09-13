@@ -50,6 +50,7 @@ import LEDController from "./ledcontroller"
 import JDEventSource from "./eventsource"
 import { ServiceFilter } from "./filters/servicefilter"
 import { anyRandomUint32, randomDeviceId } from "./random"
+import Flags from "./flags"
 
 /**
  * Pipe information
@@ -827,24 +828,27 @@ export class JDDevice extends JDNode {
                         aa.pkt = null
                         aa.errCb()
                         numdrop++
-                        console.debug(
-                            `ack: ${this.shortId} drop ${aa.pkt} (${drops} drops, ${resends} resends)`
-                        )
+                        if (Flags.diagnostics)
+                            console.debug(
+                                `ack: ${this.shortId} drop ${aa.pkt} (${drops} drops, ${resends} resends)`
+                            )
                     } else {
                         resends++
                         aa.pkt.sendCmdAsync(this)
-                        console.debug(
-                            `ack: ${this.shortId} resend ${aa.pkt} (${drops} drops, ${resends} resends)`
-                        )
+                        if (Flags.diagnostics)
+                            console.debug(
+                                `ack: ${this.shortId} resend ${aa.pkt} (${drops} drops, ${resends} resends)`
+                            )
                     }
                 }
             }
             if (numdrop)
                 this._ackAwaiting = this._ackAwaiting.filter(aa => !!aa.pkt)
 
-            console.debug(
-                `ack: ${this.shortId} awaits ${this._ackAwaiting.length}`
-            )
+            if (Flags.diagnostics)
+                console.debug(
+                    `ack: ${this.shortId} awaits ${this._ackAwaiting.length}`
+                )
             if (this._ackAwaiting.length > 0) {
                 this.bus.scheduler.setTimeout(
                     resend,
