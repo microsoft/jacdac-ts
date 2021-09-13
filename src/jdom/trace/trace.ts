@@ -31,12 +31,23 @@ export function cleanStack(text: string) {
  * @category Trace
  */
 export class Trace {
+    readonly maxLength: number
+    readonly description: string
     /**
      * Constructs a new empty trace or from an existing list of packets
      * @param packets list of packets
      * @param description description of the trace
      */
-    constructor(public packets: Packet[] = [], public description?: string) {}
+    constructor(
+        public packets: Packet[] = [],
+        options?: {
+            description?: string
+            maxLength?: number
+        }
+    ) {
+        this.description = options?.description
+        this.maxLength = options?.maxLength
+    }
 
     /**
      * Number of packets in trace
@@ -75,14 +86,14 @@ export class Trace {
      * @param packet packet to add
      * @param maxLength If positive, prunes older packets when the length reaches maxLength
      */
-    addPacket(packet: Packet, maxLength = -1) {
+    addPacket(packet: Packet) {
         this.packets.push(packet)
         if (
-            maxLength > 0 &&
-            this.packets.length > maxLength * TRACE_OVERSHOOT
+            this.maxLength > 0 &&
+            this.packets.length > this.maxLength * TRACE_OVERSHOOT
         ) {
             // 10% overshoot of max
-            this.packets = this.packets.slice(-maxLength)
+            this.packets = this.packets.slice(-this.maxLength)
         }
     }
 

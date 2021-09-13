@@ -39,7 +39,10 @@ export function parseTrace(contents: string): Trace {
         // add to array
         packets.push(Packet.fromBinary(data, timestamp))
     })
-    if (packets.length) return new Trace(packets, description.join("\n").trim())
+    if (packets.length)
+        return new Trace(packets, {
+            description: description.join("\n").trim(),
+        })
     else return undefined
 }
 

@@ -29,7 +29,7 @@ export class TraceRecorder extends JDClient {
             [PACKET_PROCESS, PACKET_SEND],
             this.handlePacket
         )
-        this._trace = new Trace()
+        this._trace = new Trace([], { maxLength: this.maxRecordingLength })
         this.emit(START)
         this.emit(CHANGE)
     }
@@ -57,7 +57,7 @@ export class TraceRecorder extends JDClient {
 
     private handlePacket(pkt: Packet) {
         // record packets in traces
-        this._trace.addPacket(pkt, this.maxRecordingLength)
+        this._trace.addPacket(pkt)
         // notify that this packet has been processed
         this.emit(PACKET_PROCESS, pkt)
     }

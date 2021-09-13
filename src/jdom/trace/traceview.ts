@@ -15,6 +15,7 @@ import { PacketFilter, parsePacketFilter } from "../packetfilter"
 import Trace from "./trace"
 import { throttle, toHex } from "../utils"
 
+const TRACE_MAX_ITEMS = 1000
 const FILTERED_TRACE_MAX_ITEMS = 100
 const DUPLICATE_PACKET_MERGE_HORIZON_MAX_DISTANCE = 10
 const DUPLICATE_PACKET_MERGE_HORIZON_MAX_TIME = 5000
@@ -47,7 +48,7 @@ export class TraceView extends JDClient {
     private id = "v" + Math.random()
     private _maxFilteredLength = FILTERED_TRACE_MAX_ITEMS
 
-    private _paused = false
+    private _paused = true
     private _trace: Trace
     private _filter: string
     private _packetFilter: PacketFilter = undefined
@@ -61,7 +62,7 @@ export class TraceView extends JDClient {
         throttleDelay = 200
     ) {
         super()
-        this._trace = new Trace()
+        this._trace = new Trace([], { maxLength: TRACE_MAX_ITEMS })
         this.handlePacket = this.handlePacket.bind(this)
         this.handleFilterUpdate = this.handleFilterUpdate.bind(this)
 
@@ -146,7 +147,7 @@ export class TraceView extends JDClient {
     }
 
     clear() {
-        this.trace = new Trace()
+        this.trace = new Trace([], { maxLength: TRACE_MAX_ITEMS })
         this._filteredPackets = []
         this.setFilteredPackets()
         this.emit(CHANGE)
@@ -177,11 +178,12 @@ export class TraceView extends JDClient {
     }
 
     private handlePacket(pkt: Packet) {
-        // remember package
-        this.trace.addPacket(pkt)
+        if (this._paused) return
 
+        // remember packet
+        this.trace.addPacket(pkt)
         // add packet to live list
-        if (!this.paused && this._packetFilter?.filter(pkt)) {
+        if (this._packetFilter?.filter(pkt)) {
             this.addFilteredPacket(pkt)
             // debounced notification of changes
             this.notifyPacketsChanged()
