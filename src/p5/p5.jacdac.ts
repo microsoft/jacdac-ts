@@ -26,16 +26,16 @@ bus.on(DEVICE_ANNOUNCE, (dev: JDDevice) =>
 /**
  * Tries to connect to a jacdac device. Must be called from a button handler
  */
-export function connect() {
-    bus.disconnect()
-    bus.connect()
+export async function connect() {
+    await bus.disconnect()
+    await bus.connect()
 }
 
 /**
  * Disconnects the bus from any connected device
  */
-export function disconnect() {
-    bus.disconnect()
+export async function disconnect() {
+    await bus.disconnect()
 }
 
 /**
