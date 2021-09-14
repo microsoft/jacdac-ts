@@ -27,7 +27,7 @@ export default [
         dir: "p5",
         watch: "src/p5/**",
         external: ["jacdac"],
-        iife: true,
+        web: true,
     },
     { libraryName: "jacdac-tstester", dir: "tstester", external: ["jacdac"] },
     {
@@ -51,14 +51,15 @@ export default [
         cjs: false,
         tsconfig: "src/worker/tsconfig.json",
     },
-].map(({ libraryName, dir, external, watch, tsconfig, cjs, umd, iife }) => {
+].map(({ libraryName, dir, external, watch, tsconfig, cjs, umd, web }) => {
     return {
         input: dir ? `src/${dir}/${libraryName}.ts` : `src/${libraryName}.ts`,
         output: [
             {
                 file: `dist/${libraryName}.js`,
-                format: iife ? "iife" : "es",
+                format: web ? "umd" : "es",
                 sourcemap: true,
+                name: "jacdac",
             },
             umd && {
                 file: `dist/${libraryName}.umd.js`,
