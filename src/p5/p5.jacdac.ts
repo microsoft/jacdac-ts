@@ -1,4 +1,8 @@
-import { DEVICE_ANNOUNCE, REPORT_UPDATE } from "../jdom/constants"
+import {
+    CONNECTION_STATE,
+    DEVICE_ANNOUNCE,
+    REPORT_UPDATE,
+} from "../jdom/constants"
 import { JDDevice } from "../jdom/device"
 import { isSensor, serviceSpecifications } from "../jdom/spec"
 import { createAnyUSBBus } from "../jdom/transport/webserial"
@@ -36,6 +40,22 @@ export async function connect() {
  */
 export async function disconnect() {
     await bus.disconnect()
+}
+
+/**
+ * Creates a Jacdac connect button
+ * @returns button instance
+ */
+export function createConnectButton() {
+    const btn = p5.createButton("Jacdac connect")
+    btn.position(4, 4)
+    btn.mousePressed(connect)
+    bus.on(CONNECTION_STATE, () =>
+        bus.connected
+            ? btn.html(`Jacdac connected`)
+            : btn.html(`Jacdac connect`)
+    )
+    return btn
 }
 
 /**
