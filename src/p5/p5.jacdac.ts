@@ -81,7 +81,9 @@ function updateSensors() {
                     const spec = reg.specification
                     const n = spec.fields.length
                     const values = reg.unpackedValue || Array(n).fill(0)
-                    return spec.fields.length === 1 ? values[0] : values
+                    return spec.fields.length === 1
+                        ? values[0]
+                        : reg.objectValue
                 })
         )
     )
