@@ -47,14 +47,13 @@ export async function disconnect() {
  * @returns button instance
  */
 export function createConnectButton() {
-    const btn = p5.createButton("Jacdac connect")
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const createButton = (window as any).createButton
+    const btn = createButton(p5, "Jacdac connect")
     btn.position(4, 4)
     btn.mousePressed(connect)
-    bus.on(CONNECTION_STATE, () =>
-        bus.connected
-            ? btn.html(`Jacdac connected`)
-            : btn.html(`Jacdac connect`)
-    )
+    bus.on(CONNECTION_STATE, () => (bus.connected ? btn.hide() : btn.show()))
+    if (bus.connected) btn.hide()
     return btn
 }
 
