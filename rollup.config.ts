@@ -22,6 +22,13 @@ export default [
         external: ["jacdac"],
         cjs: true,
     },
+    {
+        libraryName: "p5.jacdac",
+        dir: "p5",
+        watch: "src/p5/**",
+        external: ["jacdac"],
+        umd: true,
+    },
     { libraryName: "jacdac-tstester", dir: "tstester", external: ["jacdac"] },
     {
         libraryName: "jacdac-embed",
@@ -53,7 +60,7 @@ export default [
                 file: `dist/${libraryName}.umd.js`,
                 format: "umd",
                 sourcemap: true,
-                name: "jacdac"
+                name: "jacdac",
             },
             cjs && {
                 file: `dist/${libraryName}.cjs.js`,
