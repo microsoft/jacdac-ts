@@ -27,6 +27,7 @@ bus.on(DEVICE_ANNOUNCE, (dev: JDDevice) =>
  * Tries to connect to a jacdac device. Must be called from a button handler
  */
 export function connect() {
+    bus.disconnect()
     bus.connect()
 }
 
@@ -50,10 +51,13 @@ function updateSensors() {
             sensorSpecs,
             srv => srv.camelName,
             srv =>
-                bus
-                    .services({ serviceClass: srv.classIdentifier })
-                    .map(srv => srv.readingRegister.unpackedValue || [])
-                    .map(values => (values.length === 1 ? values[0] : values))
+                bus.services({ serviceClass: srv.classIdentifier }).map(srv => {
+                    const reg = srv.readingRegister
+                    const spec = reg.specification
+                    const n = spec.fields.length
+                    const values = reg.unpackedValue || Array(n).fill(0)
+                    return spec.fields.length === 1 ? values[0] : values
+                })
         )
     )
 }
