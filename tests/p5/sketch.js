@@ -10,4 +10,18 @@ function draw() {
     const [r = 0, g = 0, b = 0] = potentiometer
     // rescale 0..1 to 0..255 to repaint background
     background(r * 255, g * 255, b * 255)
+
+    // move points for an accelerometer
+    const { accelerometer } = jacdac.sensors
+    // the acceleration is stored as a ``{ x: .., y: ..., z: ... }`` object
+    for(const acceleration of accelerometer) {
+        const { x: ax = 0, y: ay = 0, z: az = 0 } = acceleration
+
+        // map g (gravities) to 100..300 on canvas
+        const x = map(ax, -1, 1, 100, 300)
+        const y = map(ay, -1, 1, 100, 300)
+        const d = map(az, -1, 1, 5, 50)
+        stroke('white')
+        circle(x, y, d)
+    }
 }
