@@ -1,11 +1,5 @@
 function setup() {
     createCanvas(400, 400)
-    // connection to a USB/serial device must be initiated by the user (button click)
-    // the browser remembers the connection and it should automatically
-    // reconnect when refreshing the page
-    jacdac.createConnectButton()
-//    connect = createButton("connect")
-//    connect.mousePressed(jacdac.connect)
 }
 
 function draw() {

@@ -42,19 +42,25 @@ export async function disconnect() {
     await bus.disconnect()
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let connectBtn: any
 /**
- * Creates a Jacdac connect button
- * @returns button instance
+ * Creates a Jacdac "connect" button that dissapears when connected.
+ * @returns
  */
 export function createConnectButton() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const createButton = (window as any).createButton
-    const btn = createButton(p5, "Jacdac connect")
-    btn.position(4, 4)
-    btn.mousePressed(connect)
-    bus.on(CONNECTION_STATE, () => (bus.connected ? btn.hide() : btn.show()))
-    if (bus.connected) btn.hide()
-    return btn
+    if (!connectBtn) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const createButton = (window as any).createButton
+        connectBtn = createButton("Jacdac connect")
+        connectBtn.position(4, 4)
+        connectBtn.mousePressed(connect)
+        bus.on(CONNECTION_STATE, () =>
+            bus.connected ? connectBtn.hide() : connectBtn.show()
+        )
+        if (bus.connected) connectBtn.hide()
+    }
+    return connectBtn
 }
 
 /**
@@ -82,6 +88,8 @@ function updateSensors() {
 }
 updateSensors()
 
+// always show connect button if needed
+p5.prototype.registerMethod("pre", createConnectButton)
 // update sensors state before every render
 p5.prototype.registerMethod("pre", updateSensors)
 // try connecting to known device when loading
