@@ -9,7 +9,9 @@ import { toMap } from "../jdom/utils"
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare let p5: any
 
-const sensorSpecs = serviceSpecifications().filter(isSensor)
+const sensorSpecs = serviceSpecifications().filter(
+    srv => !srv.shortName.startsWith("_") && isSensor(srv)
+)
 
 /**
  * The Jacdac bus
@@ -50,7 +52,7 @@ function updateSensors() {
             srv =>
                 bus
                     .services({ serviceClass: srv.classIdentifier })
-                    .map(srv => srv.readingRegister.unpackedValue)
+                    .map(srv => srv.readingRegister.unpackedValue || [])
                     .map(values => (values.length === 1 ? values[0] : values))
         )
     )
@@ -59,3 +61,5 @@ updateSensors()
 
 // update sensors state before every render
 p5.prototype.registerMethod("pre", updateSensors)
+// try connecting to known device when loading
+p5.prototype.registerMethod("init", () => bus.connect(true))

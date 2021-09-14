@@ -13,3 +13,4 @@ temp
 package-lock.json
 stats.html
 docs
+tests/p5/libraries
