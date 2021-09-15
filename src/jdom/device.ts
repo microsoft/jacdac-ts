@@ -571,7 +571,7 @@ export class JDDevice extends JDNode {
             const ctrl = this._services?.[0]
             const codes = [ControlReg.ProductIdentifier]
             codes.forEach(code =>
-                ctrl.register(code).once(REPORT_UPDATE, () => this.emit(CHANGE))
+                ctrl.register(code).once(REPORT_UPDATE, () => this.emitPropagated(CHANGE))
             )
         }
     }

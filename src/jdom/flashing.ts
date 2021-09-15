@@ -23,6 +23,7 @@ import {
 import { jdpack, jdunpack } from "./pack"
 import { BootloaderError } from "./constants"
 import { prettySize } from "./pretty"
+import { deviceSpecificationFromProductIdentifier } from "./spec"
 
 const BL_SUBPAGE_SIZE = 208
 const BL_RETRIES = 15
@@ -490,7 +491,9 @@ async function scanCore(
             d.bootloaderProductIdentifier = d.productIdentifier
         if (!d.productIdentifier)
             d.productIdentifier = d.bootloaderProductIdentifier
-        if (!d.productIdentifier) return false
+        // ensure in catalog
+        if (!deviceSpecificationFromProductIdentifier(d.productIdentifier))
+            return false
         return true
     })
     // store info in objects
