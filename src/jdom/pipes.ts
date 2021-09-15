@@ -151,12 +151,12 @@ export class InPipe extends JDClient {
         if (!pkt.isPipe) return
         if (pkt.pipePort !== this._port) return
         if (
-            (pkt.serviceCommand & PIPE_COUNTER_MASK) ==
+            (pkt.serviceOpcode & PIPE_COUNTER_MASK) ==
             (this._count & PIPE_COUNTER_MASK)
         ) {
             this._count++
             this.emit(DATA, pkt)
-            if (pkt.serviceCommand & PIPE_CLOSE_MASK) {
+            if (pkt.serviceOpcode & PIPE_CLOSE_MASK) {
                 this.close()
             }
         }
@@ -180,7 +180,7 @@ export class InPipeReader extends InPipe {
         super(bus)
         this.mount(
             this.subscribe(DATA, (pkt: Packet) => {
-                if (pkt.serviceCommand & PIPE_METADATA_MASK) this.meta.push(pkt)
+                if (pkt.serviceOpcode & PIPE_METADATA_MASK) this.meta.push(pkt)
                 else this.output.push(pkt)
             })
         )

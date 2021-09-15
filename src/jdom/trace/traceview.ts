@@ -223,7 +223,7 @@ export class TraceView extends JDClient {
         // collapse acks
         if (packet.isCRCAck) {
             const pkts = this.trace.packets
-            const crc = packet.serviceCommand
+            const crc = packet.serviceOpcode
             const did = packet.deviceIdentifier
             const m = Math.max(0, pkts.length - TRACE_FILTER_HORIZON) // max scan 100 packets back
             for (let i = pkts.length - 1; i >= m; i--) {

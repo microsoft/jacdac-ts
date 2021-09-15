@@ -92,7 +92,7 @@ class FlashClient {
     }
 
     private handlePacket(pkt: Packet) {
-        if (pkt.serviceCommand == BootloaderCmd.PageData) this.lastStatus = pkt
+        if (pkt.serviceOpcode == BootloaderCmd.PageData) this.lastStatus = pkt
     }
 
     private start() {
@@ -519,7 +519,7 @@ async function scanCore(
         // (eg when the user set the recovery mode toggle)
         if (
             p.serviceIndex == 1 &&
-            p.serviceCommand == CMD_ADVERTISEMENT_DATA &&
+            p.serviceOpcode == CMD_ADVERTISEMENT_DATA &&
             p.getNumber(NumberFormat.UInt32LE, 0) == SRV_BOOTLOADER
         ) {
             dev.bootloaderProductIdentifier = p.getNumber(
@@ -539,9 +539,9 @@ async function scanCore(
         if (
             !makeFlashers &&
             p.serviceIndex == 0 &&
-            p.serviceCommand & CMD_GET_REG
+            p.serviceOpcode & CMD_GET_REG
         ) {
-            const reg = p.serviceCommand & CMD_REG_MASK
+            const reg = p.serviceOpcode & CMD_REG_MASK
             if (reg == ControlReg.BootloaderProductIdentifier)
                 dev.bootloaderProductIdentifier = p.uintData
             else if (reg == ControlReg.ProductIdentifier)

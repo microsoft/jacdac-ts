@@ -865,12 +865,12 @@ export class JDBus extends JDNode {
         } else {
             pkt.device.lastSeen = pkt.timestamp
             if (pkt.serviceIndex == JD_SERVICE_INDEX_CTRL) {
-                if (pkt.serviceCommand == CMD_ADVERTISEMENT_DATA) {
+                if (pkt.serviceOpcode == CMD_ADVERTISEMENT_DATA) {
                     isAnnounce = true
                     pkt.device.processAnnouncement(pkt)
                 } else if (
                     pkt.isMultiCommand &&
-                    pkt.serviceCommand == (CMD_SET_REG | ControlReg.ResetIn)
+                    pkt.serviceOpcode == (CMD_SET_REG | ControlReg.ResetIn)
                 ) {
                     // someone else is doing reset in
                     this._lastResetInTime = this.timestamp

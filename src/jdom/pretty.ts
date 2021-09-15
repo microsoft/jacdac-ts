@@ -365,7 +365,7 @@ function decodeRegister(
     if (isSet == isGet) return null
 
     let error = ""
-    const addr = pkt.serviceCommand & CMD_REG_MASK
+    const addr = pkt.serviceOpcode & CMD_REG_MASK
     const regInfo =
         service?.packets.find(p => isRegister(p) && p.identifier == addr) ||
         syntheticPktInfo("rw", addr)
@@ -437,8 +437,8 @@ function decodeCommand(
     const kind = pkt.isCommand ? "command" : "report"
     const cmdInfo =
         service?.packets.find(
-            p => p.kind == kind && p.identifier == pkt.serviceCommand
-        ) || syntheticPktInfo(kind, pkt.serviceCommand)
+            p => p.kind == kind && p.identifier == pkt.serviceOpcode
+        ) || syntheticPktInfo(kind, pkt.serviceOpcode)
 
     const decoded = decodeMembers(service, cmdInfo, pkt)
     const description =
@@ -463,7 +463,7 @@ function decodePacket(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket {
 }
 
 function decodePipe(pkt: Packet): DecodedPacket {
-    const cmd = pkt.serviceCommand
+    const cmd = pkt.serviceOpcode
     const pinfo = pkt.device.port(cmd >> PIPE_PORT_SHIFT)
     if (!pinfo.pipeType) return null
 
@@ -644,7 +644,7 @@ export function printPacket(
     if (
         pkt.device &&
         pkt.serviceIndex == JD_SERVICE_INDEX_CTRL &&
-        pkt.serviceCommand == CMD_ADVERTISEMENT_DATA
+        pkt.serviceOpcode == CMD_ADVERTISEMENT_DATA
     ) {
         if (pkt.device.lastServiceUpdate < pkt.timestamp) {
             if (opts.skipRepeatedAnnounce) return ""

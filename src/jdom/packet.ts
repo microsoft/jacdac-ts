@@ -90,7 +90,7 @@ export class Packet {
         const p = new Packet()
         p._header = new Uint8Array(JD_SERIAL_HEADER_SIZE)
         p.data = data
-        p.serviceCommand = service_command
+        p.serviceOpcode = service_command
         return p
     }
 
@@ -160,41 +160,41 @@ export class Packet {
         return read16(this._header, 0)
     }
 
-    get serviceCommand(): number {
+    get serviceOpcode(): number {
         return read16(this._header, 14)
     }
-    set serviceCommand(cmd: number) {
+    set serviceOpcode(cmd: number) {
         write16(this._header, 14, cmd)
         this._decoded = undefined
     }
 
     get isRegisterSet() {
-        return this.serviceCommand >> 12 == CMD_SET_REG >> 12
+        return this.serviceOpcode >> 12 == CMD_SET_REG >> 12
     }
 
     get isRegisterGet() {
-        return this.serviceCommand >> 12 == CMD_GET_REG >> 12
+        return this.serviceOpcode >> 12 == CMD_GET_REG >> 12
     }
 
     // TODO rename to registerCode
     get registerIdentifier() {
         if (!this.isRegisterGet && !this.isRegisterSet) return undefined
-        return this.serviceCommand & CMD_REG_MASK
+        return this.serviceOpcode & CMD_REG_MASK
     }
 
     get isEvent() {
-        return (this.serviceCommand & CMD_EVENT_MASK) !== 0
+        return (this.serviceOpcode & CMD_EVENT_MASK) !== 0
     }
 
     get eventCode() {
         return this.isEvent
-            ? this.serviceCommand & CMD_EVENT_CODE_MASK
+            ? this.serviceOpcode & CMD_EVENT_CODE_MASK
             : undefined
     }
 
     get eventCounter() {
         return this.isEvent
-            ? (this.serviceCommand >> CMD_EVENT_COUNTER_POS) &
+            ? (this.serviceOpcode >> CMD_EVENT_COUNTER_POS) &
                   CMD_EVENT_COUNTER_MASK
             : undefined
     }
@@ -208,11 +208,11 @@ export class Packet {
     }
 
     get pipePort() {
-        return this.isPipe && this.serviceCommand >> PIPE_PORT_SHIFT
+        return this.isPipe && this.serviceOpcode >> PIPE_PORT_SHIFT
     }
 
     get pipeCount() {
-        return this.isPipe && this.serviceCommand & PIPE_COUNTER_MASK
+        return this.isPipe && this.serviceOpcode & PIPE_COUNTER_MASK
     }
 
     get data(): Uint8Array {
@@ -269,7 +269,7 @@ export class Packet {
         return (
             this.serviceIndex == JD_SERVICE_INDEX_CTRL &&
             this.isReport &&
-            this.serviceCommand == SystemCmd.Announce
+            this.serviceOpcode == SystemCmd.Announce
         )
     }
 
@@ -337,7 +337,7 @@ export class Packet {
     toString(): string {
         let msg = `${shortDeviceId(this.deviceIdentifier)}/${
             this.serviceIndex
-        }[${this.frameFlags}]: ${this.serviceCommand} sz=${this.size}`
+        }[${this.frameFlags}]: ${this.serviceOpcode} sz=${this.size}`
         if (this.size < 20) msg += ": " + toHex(this.data)
         else msg += ": " + toHex(this.data.slice(0, 20)) + "..."
         return msg
@@ -403,7 +403,7 @@ export class Packet {
         return service_name
     }
     get friendlyCommandName(): string {
-        const cmd = this.serviceCommand
+        const cmd = this.serviceOpcode
         let cmdname: string
         if (this.isCRCAck) {
             cmdname = hexNum(cmd)
@@ -426,7 +426,7 @@ export class Packet {
             const spec = serviceSpecificationFromClassIdentifier(
                 this.serviceClass
             )
-            const code = this.serviceCommand & ~CMD_GET_REG
+            const code = this.serviceOpcode & ~CMD_GET_REG
             const pkt = spec?.packets.find(
                 pkt => pkt.kind === "report" && pkt.identifier === code
             )

@@ -807,7 +807,7 @@ export class JDDevice extends JDNode {
             if (rep.serviceIndex != JD_SERVICE_INDEX_CRC_ACK) return
             let numdone = 0
             for (const aa of this._ackAwaiting) {
-                if (aa.pkt && aa.pkt.crc == rep.serviceCommand) {
+                if (aa.pkt && aa.pkt.crc == rep.serviceOpcode) {
                     //console.log(`ack`, aa.pkt)
                     aa.pkt = null
                     numdone++

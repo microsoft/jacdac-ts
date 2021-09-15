@@ -438,7 +438,7 @@ export class JDService extends JDNode {
         const { bus } = this.device
         return new Promise<Packet>((resolve, reject) => {
             const handleRes = (resp: Packet) => {
-                if (resp.serviceCommand == pkt.serviceCommand) {
+                if (resp.serviceOpcode == pkt.serviceOpcode) {
                     this.off(REPORT_RECEIVE, handleRes)
                     if (resolve) resolve(resp)
                     resolve = null
