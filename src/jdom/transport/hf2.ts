@@ -157,11 +157,11 @@ export class HF2Proto implements Proto {
     }
 
     error(m: string) {
-        return this.io.error(m)
+        return this.io?.error(m)
     }
 
     talkAsync(cmd: number, data?: Uint8Array) {
-        if (!this.io) console.log("rogue hf2 instance")
+        if (!this.io) console.error("rogue hf2 instance")
 
         let len = 8
         if (data) len += data.length
