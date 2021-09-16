@@ -2,7 +2,7 @@ import { BuzzerCmd, BuzzerReg, SRV_BUZZER } from "../jdom/constants"
 import { jdpack, jdunpack } from "../jdom/pack"
 import Packet from "../jdom/packet"
 import JDRegisterServer from "../jdom/servers/registerserver"
-import JDServiceServer, { ServerOptions } from "../jdom/servers/serviceserver"
+import JDServiceServer, { JDServerOptions } from "../jdom/servers/serviceserver"
 
 /**
  * @internal
@@ -36,7 +36,7 @@ export default class BuzzerServer extends JDServiceServer {
 
     static PLAY_TONE = "playTone"
 
-    constructor(options?: ServerOptions) {
+    constructor(options?: JDServerOptions) {
         super(SRV_BUZZER, options)
 
         this.volume = this.addRegister<[number]>(BuzzerReg.Volume, [0.2])

@@ -94,7 +94,7 @@ import JoystickServer, {
     JOYSTICK_ARCADE_BUTTONS,
     JOYSTICK_DPAD_AB_BUTTONS,
 } from "./joystickserver"
-import LEDMatrixServer from "./ledmatrixserver"
+import LEDMatrixServer from "./dotmatrixserver"
 import LedPixelServer from "./ledpixelserver"
 import MatrixKeypadServer from "./matrixkeypadserver"
 import MotorServer from "./motorserver"

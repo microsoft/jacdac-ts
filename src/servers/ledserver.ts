@@ -8,9 +8,9 @@ import {
 } from "../jdom/constants"
 import Packet from "../jdom/packet"
 import JDRegisterServer from "../jdom/servers/registerserver"
-import JDServiceServer, { ServerOptions } from "../jdom/servers/serviceserver"
+import JDServiceServer, { JDServerOptions } from "../jdom/servers/serviceserver"
 
-export interface LEDServiceOptions extends ServerOptions {
+export interface LEDServiceOptions extends JDServerOptions {
     ledCount?: number
     variant?: LedVariant
     luminousIntensity?: number

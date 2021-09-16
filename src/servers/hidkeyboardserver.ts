@@ -6,13 +6,13 @@ import {
     SRV_HID_KEYBOARD,
 } from "../jdom/constants"
 import Packet from "../jdom/packet"
-import JDServiceServer, { ServerOptions } from "../jdom/servers/serviceserver"
+import JDServiceServer, { JDServerOptions } from "../jdom/servers/serviceserver"
 import { SMap } from "../jdom/utils"
 
 export default class HIDKeyboardServer extends JDServiceServer {
     private _lastKey: [number, HidKeyboardModifiers, HidKeyboardAction][]
 
-    constructor(options?: ServerOptions) {
+    constructor(options?: JDServerOptions) {
         super(SRV_HID_KEYBOARD, options)
 
         this.addCommand(HidKeyboardCmd.Clear, this.handleClear.bind(this))

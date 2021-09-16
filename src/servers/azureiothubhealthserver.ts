@@ -9,7 +9,7 @@ import {
 } from "../jdom/constants"
 import Packet from "../jdom/packet"
 import JDRegisterServer from "../jdom/servers/registerserver"
-import JDServiceServer, { ServerOptions } from "../jdom/servers/serviceserver"
+import JDServiceServer, { JDServerOptions } from "../jdom/servers/serviceserver"
 import { delay } from "../jdom/utils"
 
 function splitPair(kv: string): string[] {
@@ -40,7 +40,7 @@ export default class AzureIoTHubHealthServer extends JDServiceServer {
     >
     connectionString: string
 
-    constructor(options?: ServerOptions) {
+    constructor(options?: JDServerOptions) {
         super(SRV_AZURE_IOT_HUB_HEALTH, options)
 
         this.hubName = this.addRegister(AzureIotHubHealthReg.HubName, [""])

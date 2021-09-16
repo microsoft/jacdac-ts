@@ -30,7 +30,7 @@ import {
 } from "../jdom/lightconstants"
 import Packet from "../jdom/packet"
 import JDRegisterServer from "../jdom/servers/registerserver"
-import JDServiceServer, { ServerOptions } from "../jdom/servers/serviceserver"
+import JDServiceServer, { JDServerOptions } from "../jdom/servers/serviceserver"
 import { isBufferEmpty } from "../jdom/utils"
 
 const PROG_EOF = 0
@@ -146,7 +146,7 @@ export default class LedPixelServer extends JDServiceServer {
             numColumns?: number
             maxPixels?: number
             maxPower?: number
-        } & ServerOptions
+        } & JDServerOptions
     ) {
         super(SRV_LED_PIXEL, options)
 

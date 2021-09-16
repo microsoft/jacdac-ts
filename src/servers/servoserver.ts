@@ -5,7 +5,7 @@ import {
     SRV_SERVO,
 } from "../jdom/constants"
 import JDRegisterServer from "../jdom/servers/registerserver"
-import JDServiceServer, { ServerOptions } from "../jdom/servers/serviceserver"
+import JDServiceServer, { JDServerOptions } from "../jdom/servers/serviceserver"
 
 export default class ServoServer extends JDServiceServer {
     readonly angle: JDRegisterServer<[number]>
@@ -23,7 +23,7 @@ export default class ServoServer extends JDServiceServer {
             maxAngle?: number
             responseSpeed?: number
             stallTorque?: number
-        } & ServerOptions
+        } & JDServerOptions
     ) {
         super(SRV_SERVO, options)
         const {

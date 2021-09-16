@@ -25,7 +25,7 @@ const CALIBRATION_DELAY = 5000
  * Server instiation options
  * @category Servers
  */
-export interface ServerOptions {
+export interface JDServerOptions {
     /**
      * Service instance name
      */
@@ -72,7 +72,7 @@ export class JDServiceServer extends JDEventSource {
     private _twin: JDService
     private _twinCleanup: (() => void)[]
 
-    constructor(public readonly serviceClass: number, options?: ServerOptions) {
+    constructor(public readonly serviceClass: number, options?: JDServerOptions) {
         super()
         const {
             instanceName,

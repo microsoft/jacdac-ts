@@ -8,7 +8,7 @@ import {
     VerifiedTelemetryStatus,
 } from "../jdom/constants"
 import JDRegisterServer from "../jdom/servers/registerserver"
-import JDServiceServer, { ServerOptions } from "../jdom/servers/serviceserver"
+import JDServiceServer, { JDServerOptions } from "../jdom/servers/serviceserver"
 
 export default class VerifiedTelemetryServer extends JDServiceServer {
     readonly telemetryStatus: JDRegisterServer<[VerifiedTelemetryStatus]>
@@ -22,7 +22,7 @@ export default class VerifiedTelemetryServer extends JDServiceServer {
         options?: {
             fingerprintType?: VerifiedTelemetryFingerprintType
             telemetryStatusInterval?: number
-        } & ServerOptions
+        } & JDServerOptions
     ) {
         super(SRV_VERIFIED_TELEMETRY, options)
 

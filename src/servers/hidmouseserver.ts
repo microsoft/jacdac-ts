@@ -6,7 +6,7 @@ import {
     SRV_HID_MOUSE,
 } from "../jdom/constants"
 import Packet from "../jdom/packet"
-import JDServiceServer, { ServerOptions } from "../jdom/servers/serviceserver"
+import JDServiceServer, { JDServerOptions } from "../jdom/servers/serviceserver"
 
 /**
  * @internal
@@ -25,7 +25,7 @@ export function renderHidMouseButtons(buttons: HidMouseButton) {
 export default class HIDMouseServer extends JDServiceServer {
     private _lastCommand: string
 
-    constructor(options?: ServerOptions) {
+    constructor(options?: JDServerOptions) {
         super(SRV_HID_MOUSE, options)
 
         this.addCommand(HidMouseCmd.Move, this.handleMove.bind(this))
