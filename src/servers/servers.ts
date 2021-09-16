@@ -639,10 +639,10 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         ],
     },
     {
-        name: "Braille matrix (2x3)",
+        name: "Braille matrix (8x4)",
         serviceClasses: [SRV_DOT_MATRIX],
         services: () => [
-            new DotMatrixServer(2, 3, {
+            new DotMatrixServer(8, 4, {
                 variant: DotMatrixVariant.Braille,
             }),
         ],
