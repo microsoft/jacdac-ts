@@ -643,7 +643,6 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         serviceClasses: [SRV_DOT_MATRIX],
         services: () => [
             new DotMatrixServer(2, 3, {
-                brightness: 128,
                 variant: DotMatrixVariant.Braille,
             }),
         ],
