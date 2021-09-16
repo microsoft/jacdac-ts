@@ -35,8 +35,10 @@ export default class DotMatrixServer extends JDServiceServer {
         this.rows.skipBoundaryCheck = true
         this.rows.skipErrorInjection = true
 
-        // 20fps
-        this.addRegister<[number]>(SensorReg.StreamingPreferredInterval, [50])
+        if (variant === DotMatrixVariant.LED)
+            this.addRegister<[number]>(SensorReg.StreamingPreferredInterval, [
+                50,
+            ])
 
         this.rows.on(CHANGE, this.updateDotsBuffer.bind(this))
         this.columns.on(CHANGE, this.updateDotsBuffer.bind(this))
