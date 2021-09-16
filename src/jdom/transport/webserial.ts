@@ -5,7 +5,6 @@ import Transport from "./transport"
 import JDBus from "../bus"
 import Proto from "./proto"
 import WebSerialIO from "./webserialio"
-import { createUSBTransport } from "./usb"
 import { HF2_IO } from "./hf2"
 
 export function isWebSerialEnabled(): boolean {
@@ -59,7 +58,7 @@ class WebSerialTransport extends Transport {
 export function createWebSerialTransport(
     mkTransport: () => HF2_IO = () => new WebSerialIO()
 ): Transport {
-    return new WebSerialTransport(mkTransport)
+    return isWebSerialSupported() && new WebSerialTransport(mkTransport)
 }
 
 /**
@@ -68,8 +67,4 @@ export function createWebSerialTransport(
  */
 export function createWebSerialBus() {
     return new JDBus([createWebSerialTransport()])
-}
-
-export function createAnyUSBBus() {
-    return new JDBus([createUSBTransport(), createWebSerialTransport()])
 }

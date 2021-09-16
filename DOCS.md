@@ -25,8 +25,8 @@ yarn add jacdac-ts
 then import components as needed using ES6 import syntax
 
 ```javascript
-import { createUSBBus } from "jacdac-ts"
-const jd = createUSBBus()
+import { createBus } from "jacdac-ts"
+const jd = createBus()
 ```
 
 ### CDN / UMD
