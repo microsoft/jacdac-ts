@@ -24,7 +24,7 @@ export default class DotMatrixServer extends JDServiceServer {
         }
     ) {
         super(SRV_DOT_MATRIX)
-        const { brightness, variant } = options
+        const { brightness, variant } = options || {}
         this.dots = this.addRegister(DotMatrixReg.Dots, [new Uint8Array(0)])
         this.rows = this.addRegister(DotMatrixReg.Rows, [rows])
         this.columns = this.addRegister(DotMatrixReg.Columns, [columns])

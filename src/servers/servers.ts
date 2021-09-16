@@ -82,6 +82,7 @@ import {
     SRV_DIMMER,
     DimmerVariant,
     SRV_AZURE_IOT_HUB_HEALTH,
+    DotMatrixVariant,
 } from "../jdom/constants"
 import JDServerServiceProvider from "../jdom/servers/serverserviceprovider"
 import ProtocolTestServer from "../jdom/servers/protocoltestserver"
@@ -610,22 +611,42 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     {
         name: "LED matrix (5x5 micro:bit)",
         serviceClasses: [SRV_DOT_MATRIX],
-        services: () => [new DotMatrixServer(5, 5)],
+        services: () => [
+            new DotMatrixServer(5, 5, {
+                brightness: 128,
+                variant: DotMatrixVariant.LED,
+            }),
+        ],
     },
     {
         name: "LED matrix (8x8)",
         serviceClasses: [SRV_DOT_MATRIX],
-        services: () => [new DotMatrixServer(8, 8)],
+        services: () => [
+            new DotMatrixServer(8, 8, {
+                brightness: 128,
+                variant: DotMatrixVariant.LED,
+            }),
+        ],
     },
     {
         name: "LED matrix (11x7)",
         serviceClasses: [SRV_DOT_MATRIX],
-        services: () => [new DotMatrixServer(11, 7)],
+        services: () => [
+            new DotMatrixServer(11, 7, {
+                brightness: 128,
+                variant: DotMatrixVariant.LED,
+            }),
+        ],
     },
     {
         name: "Braille matrix (2x3)",
         serviceClasses: [SRV_DOT_MATRIX],
-        services: () => [new DotMatrixServer(2, 3)],
+        services: () => [
+            new DotMatrixServer(2, 3, {
+                brightness: 128,
+                variant: DotMatrixVariant.Braille,
+            }),
+        ],
     },
     {
         name: "LED pixel ring 10",
