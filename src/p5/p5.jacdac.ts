@@ -5,7 +5,7 @@ import {
 } from "../jdom/constants"
 import { JDDevice } from "../jdom/device"
 import { isSensor, serviceSpecifications } from "../jdom/spec"
-import { createAnyUSBBus } from "../jdom/transport/webserial"
+import { createWebBus } from "../jdom/transport/createbus"
 import { toMap } from "../jdom/utils"
 
 // p5 registration
@@ -20,7 +20,7 @@ const sensorSpecs = serviceSpecifications().filter(
 /**
  * The Jacdac bus
  */
-export const bus = createAnyUSBBus()
+export const bus = createWebBus()
 
 // ensure that the bus queries those services
 bus.on(DEVICE_ANNOUNCE, (dev: JDDevice) =>
