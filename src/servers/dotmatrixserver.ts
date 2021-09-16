@@ -8,7 +8,7 @@ import {
 import JDRegisterServer from "../jdom/servers/registerserver"
 import JDServiceServer from "../jdom/servers/serviceserver"
 
-export default class LEDMatrixServer extends JDServiceServer {
+export default class DotMatrixServer extends JDServiceServer {
     readonly dots: JDRegisterServer<[Uint8Array]>
     readonly rows: JDRegisterServer<[number]>
     readonly columns: JDRegisterServer<[number]>

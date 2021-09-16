@@ -61,7 +61,7 @@ import {
     SRV_PULSE_OXIMETER,
     SRV_WEIGHT_SCALE,
     WeightScaleVariant,
-    SRV_LED_MATRIX,
+    SRV_DOT_MATRIX,
     SRV_RNG,
     SRV_COMPASS,
     SRV_THERMOCOUPLE,
@@ -94,7 +94,7 @@ import JoystickServer, {
     JOYSTICK_ARCADE_BUTTONS,
     JOYSTICK_DPAD_AB_BUTTONS,
 } from "./joystickserver"
-import LEDMatrixServer from "./dotmatrixserver"
+import DotMatrixServer from "./dotmatrixserver"
 import LedPixelServer from "./ledpixelserver"
 import MatrixKeypadServer from "./matrixkeypadserver"
 import MotorServer from "./motorserver"
@@ -609,18 +609,23 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     },
     {
         name: "LED matrix (5x5 micro:bit)",
-        serviceClasses: [SRV_LED_MATRIX],
-        services: () => [new LEDMatrixServer(5, 5)],
+        serviceClasses: [SRV_DOT_MATRIX],
+        services: () => [new DotMatrixServer(5, 5)],
     },
     {
         name: "LED matrix (8x8)",
-        serviceClasses: [SRV_LED_MATRIX],
-        services: () => [new LEDMatrixServer(8, 8)],
+        serviceClasses: [SRV_DOT_MATRIX],
+        services: () => [new DotMatrixServer(8, 8)],
     },
     {
         name: "LED matrix (11x7)",
-        serviceClasses: [SRV_LED_MATRIX],
-        services: () => [new LEDMatrixServer(11, 7)],
+        serviceClasses: [SRV_DOT_MATRIX],
+        services: () => [new DotMatrixServer(11, 7)],
+    },
+    {
+        name: "Braille matrix (2x3)",
+        serviceClasses: [SRV_DOT_MATRIX],
+        services: () => [new DotMatrixServer(2, 3)],
     },
     {
         name: "LED pixel ring 10",
@@ -1304,7 +1309,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     {
         name: "micro:bit v2",
         serviceClasses: [
-            SRV_LED_MATRIX,
+            SRV_DOT_MATRIX,
             SRV_BUTTON,
             SRV_ACCELEROMETER,
             SRV_SOUND_LEVEL,
@@ -1313,7 +1318,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
             SRV_SOUND_PLAYER,
         ],
         services: () => [
-            new LEDMatrixServer(5, 5),
+            new DotMatrixServer(5, 5),
             new ButtonServer("A"),
             new ButtonServer("B"),
             new SensorServer<[number, number, number]>(SRV_ACCELEROMETER, {
