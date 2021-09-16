@@ -491,10 +491,7 @@ async function scanCore(
             d.bootloaderProductIdentifier = d.productIdentifier
         if (!d.productIdentifier)
             d.productIdentifier = d.bootloaderProductIdentifier
-        // ensure in catalog
-        if (!deviceSpecificationFromProductIdentifier(d.productIdentifier))
-            return false
-        return true
+        return !!d.productIdentifier
     })
     // store info in objects
     devs.forEach(info => {
