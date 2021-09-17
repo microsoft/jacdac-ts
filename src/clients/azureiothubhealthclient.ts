@@ -40,7 +40,6 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
         )
         this.mount(() =>
             this.connectionStatusRegister.subscribe(REPORT_UPDATE, () => {
-                console.debug(`azure iot hub: connection status changed`)
                 this.emit(CHANGE)
             })
         )
@@ -48,7 +47,6 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
             this.service
                 .event(AzureIotHubHealthEvent.ConnectionStatusChange)
                 .on(EVENT, () => {
-                    console.debug(`azure iot hub: connection status event`)
                     this.connectionStatusRegister.refresh()
                 })
         )

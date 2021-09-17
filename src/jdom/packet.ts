@@ -11,6 +11,7 @@ import {
     write32,
     hexNum,
     bufferToString,
+    assert,
 } from "./utils"
 import {
     JD_FRAME_FLAG_COMMAND,
@@ -153,6 +154,7 @@ export class Packet {
 
     get serviceClass(): number {
         if (this.isMultiCommand) return read32(this._header, 4)
+        assert(!!this.device)
         return this.device?.serviceClassAt(this.serviceIndex)
     }
 

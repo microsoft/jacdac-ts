@@ -5,7 +5,6 @@ import Packet from "./packet"
 
 export interface BusStats {
     packets: number
-    invalid: number
     announce: number
     acks: number
     bytes: number
@@ -17,7 +16,6 @@ export interface BusStats {
 
 interface Stats {
     packets: number
-    invalid: number
     announce: number
     acks: number
     bytes: number
@@ -28,7 +26,6 @@ export class BusStatsMonitor extends JDEventSource {
         .fill(0)
         .map(() => ({
             packets: 0,
-            invalid: 0,
             announce: 0,
             acks: 0,
             bytes: 0,
@@ -36,7 +33,6 @@ export class BusStatsMonitor extends JDEventSource {
     private _previ = 0
     private _temp: Stats = {
         packets: 0,
-        invalid: 0,
         announce: 0,
         acks: 0,
         bytes: 0,
@@ -58,7 +54,6 @@ export class BusStatsMonitor extends JDEventSource {
     get current(): BusStats {
         const r: Stats = {
             packets: 0,
-            invalid: 0,
             announce: 0,
             acks: 0,
             bytes: 0,
@@ -67,7 +62,6 @@ export class BusStatsMonitor extends JDEventSource {
         for (let i = 0; i < this._prev.length; ++i) {
             const p = this._prev[i]
             r.packets += p.packets
-            r.invalid += p.invalid
             r.announce += p.announce
             r.acks += p.acks
             r.bytes += p.bytes
@@ -75,7 +69,6 @@ export class BusStatsMonitor extends JDEventSource {
         // announce every 500ms
         const n2 = n / 2
         r.packets /= n2
-        r.invalid /= n2
         r.announce /= n2
         r.acks /= n2
         r.bytes /= n2
@@ -94,7 +87,6 @@ export class BusStatsMonitor extends JDEventSource {
         this._temp.bytes += (pkt.header?.length || 0) + (pkt.data?.length || 0)
         if (pkt.isAnnounce) this._temp.announce++
         if (pkt.isCRCAck) this._temp.acks++
-        if (pkt.decoded?.error) this._temp.invalid++
     }
 
     private handleSelfAnnounce() {
@@ -104,7 +96,6 @@ export class BusStatsMonitor extends JDEventSource {
         this._previ = (this._previ + 1) % this._prev.length
         this._temp = {
             packets: 0,
-            invalid: 0,
             announce: 0,
             acks: 0,
             bytes: 0,

@@ -366,9 +366,15 @@ function decodeRegister(
 
     let error = ""
     const addr = pkt.serviceCommand & CMD_REG_MASK
-    const regInfo =
-        service?.packets.find(p => isRegister(p) && p.identifier == addr) ||
-        syntheticPktInfo("rw", addr)
+    let regInfo = service?.packets.find(
+        p => isRegister(p) && p.identifier == addr
+    )
+    if (!regInfo) {
+        regInfo = syntheticPktInfo("rw", addr)
+        error = `unable to decode register in ${
+            service?.name || hexNum(pkt.serviceClass) || "???"
+        }`
+    }
 
     const decoded = decodeMembers(service, regInfo, pkt)
 
@@ -455,11 +461,11 @@ function decodeCommand(
 }
 
 function decodePacket(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket {
-    return (
+    const decoded =
         decodeRegister(service, pkt) ||
         decodeEvent(service, pkt) ||
         decodeCommand(service, pkt)
-    )
+    return decoded
 }
 
 function decodePipe(pkt: Packet): DecodedPacket {
@@ -511,8 +517,16 @@ export function decodePacketData(pkt: Packet): DecodedPacket {
             if (info) return info
         }
 
-        const srv_class = pkt?.serviceClass
-        const service = serviceSpecificationFromClassIdentifier(srv_class)
+        const serviceClass = pkt.serviceClass
+        if (isNaN(serviceClass))
+            console.error(`unkown serviceClass`, {
+                pkt,
+                serviceClass,
+            })
+
+        const service = serviceSpecificationFromClassIdentifier(serviceClass)
+        if (!service && serviceClass)
+            console.debug(`unkown packet`, { pkt, srv_class: serviceClass })
         return decodePacket(service, pkt)
     } catch (error) {
         console.error(error, {

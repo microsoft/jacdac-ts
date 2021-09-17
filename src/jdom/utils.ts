@@ -282,6 +282,7 @@ export interface MutableArrayLike<T> {
 }
 
 export function hexNum(n: number): string {
+    if (isNaN(n)) return undefined
     if (n < 0) return "-" + hexNum(-n)
     return "0x" + n.toString(16)
 }

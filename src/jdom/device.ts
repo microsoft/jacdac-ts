@@ -662,7 +662,6 @@ export class JDDevice extends JDNode {
             (w1 & JD_ADVERTISEMENT_0_COUNTER_MASK) <
                 (w0 & JD_ADVERTISEMENT_0_COUNTER_MASK)
         ) {
-            console.debug(`device ${this.shortId} restarted`)
             this.stats.processRestart()
             this.initServices(true)
             this.bus.emit(DEVICE_RESTART, this)
