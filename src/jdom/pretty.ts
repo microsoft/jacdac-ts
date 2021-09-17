@@ -371,9 +371,7 @@ function decodeRegister(
     )
     if (!regInfo) {
         regInfo = syntheticPktInfo("rw", addr)
-        error = `unable to decode register in ${
-            service?.name || hexNum(pkt.serviceClass) || "???"
-        }`
+        error = `unable to decode register`
     }
 
     const decoded = decodeMembers(service, regInfo, pkt)

@@ -845,8 +845,17 @@ export class JDBus extends JDNode {
     processPacket(pkt: Packet) {
         if (!pkt.isMultiCommand && !pkt.device) {
             pkt.device = this.device(pkt.deviceIdentifier, false, pkt)
-            // check if devices are frozen
-            if (!pkt.device) return
+            // the device id is unknown dropping
+            if (!pkt.device) {
+                if (Flags.diagnostics)
+                    console.debug(
+                        `unknown pkt device ${pkt.deviceIdentifier}`,
+                        {
+                            pkt,
+                        }
+                    )
+                return
+            }
         }
         this.emit(PACKET_PRE_PROCESS, pkt)
         let isAnnounce = false
