@@ -1,10 +1,12 @@
 import {
     CONNECTION_STATE,
     DEVICE_ANNOUNCE,
+    EVENT,
     REPORT_UPDATE,
 } from "../jdom/constants"
 import { JDDevice } from "../jdom/device"
-import { isSensor, serviceSpecifications } from "../jdom/spec"
+import JDEvent from "../jdom/event"
+import { isEvent, isSensor, serviceSpecifications } from "../jdom/spec"
 import { createWebBus } from "../jdom/transport/createbus"
 import { toMap } from "../jdom/utils"
 
@@ -13,9 +15,10 @@ import { toMap } from "../jdom/utils"
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare let p5: any
 
-const sensorSpecs = serviceSpecifications().filter(
+const serviceSpecs = serviceSpecifications().filter(
     srv => !srv.shortName.startsWith("_") && isSensor(srv)
 )
+const sensorSpecs = serviceSpecs.filter(srv => isSensor(srv))
 
 /**
  * The Jacdac bus
@@ -64,11 +67,10 @@ export function createConnectButton() {
 }
 
 /**
- * An object with all sensor values recorded by Jacdac
+ * An snapshot of the all sensor values observed by Jacdac
+ * @category p5js
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const sensors: any = {}
-
+export const sensors: Record<string, number[] | Record<string, number>[]> = {}
 function updateSensors() {
     Object.assign(
         sensors,
@@ -76,17 +78,48 @@ function updateSensors() {
             sensorSpecs,
             srv => srv.camelName,
             srv =>
-                bus.services({ serviceClass: srv.classIdentifier }).map(srv => {
-                    const reg = srv.readingRegister
-                    const spec = reg.specification
-                    return spec.fields.length === 1
-                        ? reg.unpackedValue?.[0] || 0
-                        : reg.objectValue || {}
-                })
+                bus
+                    .services({
+                        serviceClass: srv.classIdentifier,
+                        ignoreSelf: true,
+                        announced: true,
+                    })
+                    .map(srv => {
+                        const reg = srv.readingRegister
+                        const spec = reg.specification
+                        return spec.fields.length === 1
+                            ? reg.unpackedValue?.[0] || 0
+                            : reg.objectValue || {}
+                    })
         )
     )
 }
 updateSensors()
+
+/**
+ * Registration for each available event in Jacdac
+ * @category p5js
+ */
+export const events: Record<
+    string,
+    Record<string, (handler: (event: JDEvent) => void) => void>
+> = toMap(
+    serviceSpecs,
+    spec => spec.camelName,
+    spec =>
+        toMap(
+            spec.packets.filter(pkt => isEvent(pkt)),
+            pkt => pkt.name,
+            pkt => (handler: (event: JDEvent) => void) =>
+                bus.on(EVENT, (ev: JDEvent) => {
+                    if (
+                        ev.service.serviceClass === spec.classIdentifier &&
+                        ev.code === pkt.identifier
+                    )
+                        handler(ev)
+                })
+        )
+)
 
 // always show connect button if needed
 p5.prototype.registerMethod("pre", createConnectButton)

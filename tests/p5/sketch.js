@@ -1,5 +1,11 @@
+let counter = 0
 function setup() {
     createCanvas(400, 400)
+    textAlign(CENTER, CENTER)
+    textSize(64)
+
+    // use jacdac.events to register events
+    jacdac.events.button.down(() => counter ++)
 }
 
 function draw() {
@@ -24,4 +30,8 @@ function draw() {
         stroke('white')
         circle(x, y, d)
     }
+
+    // show button counter
+    fill('white')
+    text(counter, 200, 200)
 }
