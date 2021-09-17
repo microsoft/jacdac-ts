@@ -57,11 +57,7 @@ export default class DotMatrixServer extends JDServiceServer {
         const n = rows * columnspadded
 
         if (this.dots.data?.length !== n) {
-            // skip serialization
             this.dots.data = new Uint8Array(n)
-
-            // testing
-            this.dots.data.fill(0x01 | 0x04 | 0x10 | 0x40)
             this.dots.emit(CHANGE)
         }
     }
