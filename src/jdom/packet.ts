@@ -113,6 +113,7 @@ export class Packet {
     set deviceIdentifier(id: string) {
         const idb = fromHex(id)
         if (idb.length != 8) throwError("Invalid id")
+        if (this.isMultiCommand) throwError("Invalid multicast")
         this._header.set(idb, 4)
         this._decoded = undefined
     }

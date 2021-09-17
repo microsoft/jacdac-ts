@@ -516,15 +516,7 @@ export function decodePacketData(pkt: Packet): DecodedPacket {
         }
 
         const serviceClass = pkt.serviceClass
-        if (isNaN(serviceClass))
-            console.error(`unkown serviceClass`, {
-                pkt,
-                serviceClass,
-            })
-
         const service = serviceSpecificationFromClassIdentifier(serviceClass)
-        if (!service && serviceClass)
-            console.debug(`unkown packet`, { pkt, srv_class: serviceClass })
         return decodePacket(service, pkt)
     } catch (error) {
         console.error(error, {
