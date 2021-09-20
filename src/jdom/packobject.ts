@@ -29,11 +29,20 @@ export function unpackedToObject(
         const prettyName = name === "_" && defaultName ? defaultName : name
 
         if (startRepeats) {
-            const repeatData = data.slice(i)
             const repeatFields = fields.slice(i)
-            r["repeat"] = repeatData.map(rdata =>
-                unpackedToObject(rdata, repeatFields)
-            )
+            console.log({ value, repeatFields, data })
+            r["repeat"] = value.map((rdata: PackedValues) => {
+                const r: PackedObject = {}
+                for (let i = 0; i < repeatFields.length; ++i) {
+                    const field = fields[i]
+                    const value = rdata[i]
+                    const { name } = field
+                    const prettyName =
+                        name === "_" && defaultName ? defaultName : name
+                    r[prettyName] = value
+                }
+                return r
+            })
             break
         } else r[prettyName] = value
     }
