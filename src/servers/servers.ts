@@ -83,6 +83,8 @@ import {
     DimmerVariant,
     SRV_AZURE_IOT_HUB_HEALTH,
     DotMatrixVariant,
+    FlexVariant,
+    SRV_FLEX,
 } from "../jdom/constants"
 import JDServerServiceProvider from "../jdom/servers/serverserviceprovider"
 import ProtocolTestServer from "../jdom/servers/protocoltestserver"
@@ -981,6 +983,16 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         services: () => [
             new AnalogSensorServer(SRV_POTENTIOMETER, {
                 variant: PotentiometerVariant.Rotary,
+                readingValues: [0.5],
+            }),
+        ],
+    },
+    {
+        name: "flex sensor (2.2 inch)",
+        serviceClasses: [SRV_FLEX],
+        services: () => [
+            new AnalogSensorServer(SRV_FLEX, {
+                variant: FlexVariant.Linear22Inch,
                 readingValues: [0.5],
             }),
         ],
