@@ -129,6 +129,7 @@ import HIDMouseServer from "./hidmouseserver"
 import DimmerServer from "./dimmerserver"
 import AzureIoTHubHealthServer from "./azureiothubhealthserver"
 import JDServiceProvider from "../jdom/servers/serviceprovider"
+import VibrationMotor from "./vibrationmotor"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "indoor",
@@ -1219,6 +1220,11 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         ],
     },
     {
+        name: "vibration motor",
+        serviceClasses: [SRV_VIBRATION_MOTOR],
+        services: () => [new VibrationMotor()],
+    },
+    {
         name: "water level",
         serviceClasses: [SRV_WATER_LEVEL],
         services: () => [
@@ -1287,11 +1293,6 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
             new AnalogSensorServer(SRV_WIND_DIRECTION, windDirectionOptions),
             new RainGaugeServer(),
         ],
-    },
-    {
-        name: "vibration motor",
-        serviceClasses: [SRV_VIBRATION_MOTOR],
-        services: () => [new JDServiceServer(SRV_VIBRATION_MOTOR)],
     },
     {
         name: "chassis (motor x 2 + sonar + light)",

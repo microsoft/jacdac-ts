@@ -203,7 +203,7 @@ class RadioPacket {
  * @category Servers
  */
 export default class BitRadioServer extends JDServiceServer {
-    readonly enabled: JDRegisterServer<[number]>
+    readonly enabled: JDRegisterServer<[boolean]>
     readonly group: JDRegisterServer<[number]>
     readonly transmissionPower: JDRegisterServer<[number]>
     readonly frequencyBand: JDRegisterServer<[number]>
@@ -211,7 +211,7 @@ export default class BitRadioServer extends JDServiceServer {
     constructor() {
         super(SRV_BIT_RADIO)
 
-        this.enabled = this.addRegister<[number]>(BitRadioReg.Enabled, [0])
+        this.enabled = this.addRegister<[boolean]>(BitRadioReg.Enabled, [false])
         this.group = this.addRegister<[number]>(BitRadioReg.Group, [1])
         this.transmissionPower = this.addRegister<[number]>(
             BitRadioReg.TransmissionPower,
