@@ -938,6 +938,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         services: () => [
             new JDServiceServer(SRV_RELAY, {
                 intensityValues: [false],
+                isActive: values => !!values?.[0],
                 variant: RelayVariant.Electromechanical,
                 registerValues: [
                     {
@@ -958,6 +959,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
                     () =>
                         new JDServiceServer(SRV_RELAY, {
                             intensityValues: [false],
+                            isActive: values => !!values?.[0],
                             variant: RelayVariant.SolidState,
                             registerValues: [
                                 {

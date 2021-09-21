@@ -1,6 +1,7 @@
 import {
     BaseEvent,
     SystemCmd,
+    SystemEvent,
     SystemReg,
     SystemStatusCodes,
 } from "../../../jacdac-spec/dist/specconstants"
@@ -43,6 +44,10 @@ export interface JDServerOptions {
      */
     intensityValues?: PackedValues
     /**
+     * Emit active/inactive events based on the intensity register
+     */
+    isActive?: (intensity: PackedValues) => boolean
+    /**
      * Initial value for the ``variant`` register
      */
     variant?: number
@@ -72,7 +77,10 @@ export class JDServiceServer extends JDEventSource {
     private _twin: JDService
     private _twinCleanup: (() => void)[]
 
-    constructor(public readonly serviceClass: number, options?: JDServerOptions) {
+    constructor(
+        public readonly serviceClass: number,
+        options?: JDServerOptions
+    ) {
         super()
         const {
             instanceName,
@@ -80,6 +88,7 @@ export class JDServiceServer extends JDEventSource {
             valueValues,
             intensityValues,
             registerValues,
+            isActive,
         } = options || {}
 
         this.specification = serviceSpecificationFromClassIdentifier(
@@ -91,8 +100,22 @@ export class JDServiceServer extends JDEventSource {
             [SystemStatusCodes.Ready, 0]
         )
         if (valueValues) this.addRegister(SystemReg.Value, valueValues)
-        if (intensityValues)
-            this.addRegister(SystemReg.Intensity, intensityValues)
+        if (intensityValues) {
+            const intensity = this.addRegister(
+                SystemReg.Intensity,
+                intensityValues
+            )
+            if (isActive)
+                intensity.on(CHANGE, () => {
+                    const ev = isActive(intensity.values())
+                    if (ev !== undefined)
+                        this.sendEvent(
+                            isActive(intensity.values())
+                                ? SystemEvent.Active
+                                : SystemEvent.Inactive
+                        )
+                })
+        }
         if (variant) this.addRegister<[number]>(SystemReg.Variant, [variant])
         this.instanceName = this.addRegister<[string]>(SystemReg.InstanceName, [
             instanceName || "",
