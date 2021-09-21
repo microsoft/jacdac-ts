@@ -38,7 +38,7 @@ import {
     SERIAL_TRANSPORT,
     WEBSOCKET_TRANSPORT,
 } from "./constants"
-import { read32, bufferEq, setAckError, read16, toHex } from "./utils"
+import { read32, bufferEq, setAckError, read16 } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
 import JDBus from "./bus"
 import JDService from "./service"
@@ -49,7 +49,7 @@ import { FirmwareInfo } from "./flashing"
 import LEDController from "./ledcontroller"
 import JDEventSource from "./eventsource"
 import { ServiceFilter } from "./filters/servicefilter"
-import { anyRandomUint32, randomDeviceId } from "./random"
+import { randomDeviceId } from "./random"
 import Flags from "./flags"
 
 /**
