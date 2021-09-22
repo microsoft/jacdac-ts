@@ -133,6 +133,7 @@ export class DeviceStatsMonitor extends JDEventSource {
      * @internal
      */
     processAnnouncement(pkt: Packet) {
+        const { current: oldCurrent } = this
         // collect metrics
         const received = this._receivedPackets
         const total = pkt.data[2]
@@ -144,7 +145,13 @@ export class DeviceStatsMonitor extends JDEventSource {
         // reset counter
         this._receivedPackets = 0
         this._restarts = 0
-        this.emit(CHANGE)
+
+        const { current } = this
+        if (
+            oldCurrent.dropped !== current.dropped ||
+            oldCurrent.restarts !== current.restarts
+        )
+            this.emit(CHANGE)
     }
 
     /**
@@ -160,7 +167,6 @@ export class DeviceStatsMonitor extends JDEventSource {
      */
     processRestart() {
         this._restarts++
-        this.emit(CHANGE)
     }
 }
 
