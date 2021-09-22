@@ -33,7 +33,7 @@ import {
     CMD_ADVERTISEMENT_DATA,
     JD_SERVICE_INDEX_CTRL,
 } from "./constants"
-import { SystemCmd, SystemReg } from "../../jacdac-spec/dist/specconstants"
+import { SystemOpcode, SystemReg } from "../../jacdac-spec/dist/specconstants"
 import { jdpack, jdunpack } from "./pack"
 import Flags from "./flags"
 
@@ -575,7 +575,7 @@ export function commandName(n: number, serviceClass?: number): string {
         )
     }
 
-    let r = SystemCmd[n]?.toLowerCase()
+    let r = SystemOpcode[n]?.toLowerCase()
     if (r === undefined) {
         const serviceSpec =
             serviceSpecificationFromClassIdentifier(serviceClass)

@@ -1,6 +1,6 @@
 import {
     BaseEvent,
-    SystemCmd,
+    SystemOpcode,
     SystemReg,
     SystemStatusCodes,
 } from "../../../jacdac-spec/dist/specconstants"
@@ -114,11 +114,11 @@ export class JDServiceServer extends JDEventSource {
             this.specification.packets.find(
                 pkt =>
                     pkt.kind === "command" &&
-                    pkt.identifier === SystemCmd.Calibrate
+                    pkt.identifier === SystemOpcode.Calibrate
             )
         ) {
             this.addCommand(
-                SystemCmd.Calibrate,
+                SystemOpcode.Calibrate,
                 this.handleCalibrate.bind(this)
             )
             this.statusCode.setValues(

@@ -45,7 +45,7 @@ import {
     serviceName,
     shortDeviceId,
 } from "./pretty"
-import { SystemCmd } from "../../jacdac-spec/dist/specconstants"
+import { SystemOpcode } from "../../jacdac-spec/dist/specconstants"
 import { jdpack, jdunpack, PackedValues } from "./pack"
 import { serviceSpecificationFromClassIdentifier } from "./spec"
 
@@ -269,7 +269,7 @@ export class Packet {
         return (
             this.serviceIndex == JD_SERVICE_INDEX_CTRL &&
             this.isReport &&
-            this.serviceOpcode == SystemCmd.Announce
+            this.serviceOpcode == SystemOpcode.Announce
         )
     }
 
