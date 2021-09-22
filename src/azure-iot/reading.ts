@@ -18,6 +18,6 @@ export type EncodedDeviceReading = Record<string, EncodedServiceReading>
  * {device short id}_{device id} --> service readings
  */
 export type EncodedBusReading = {
-    readings: Record<string, EncodedDeviceReading>,
+    readings: Record<string, EncodedDeviceReading>
     deviceTime: number
 }
