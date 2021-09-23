@@ -1,9 +1,11 @@
 import {
     JoystickButtons,
+    JoystickEvent,
     JoystickReg,
     JoystickVariant,
     SRV_JOYSTICK,
 } from "../jdom/constants"
+import { jdpack } from "../jdom/pack"
 import JDRegisterServer from "../jdom/servers/registerserver"
 import SensorServer from "./sensorserver"
 
@@ -106,6 +108,7 @@ export default class JoystickServer extends SensorServer<
     }
 
     private updateDirection(buttons: JoystickButtons, x: number, y: number) {
+        const [oldButtons] = this.reading.values()
         if (this.isDigital) {
             x =
                 buttons & JoystickButtons.Left
@@ -129,6 +132,12 @@ export default class JoystickServer extends SensorServer<
             else buttons &= ~(JoystickButtons.Up | JoystickButtons.Down)
         }
         this.reading.setValues([buttons, x, y])
+
+        if (buttons !== oldButtons)
+            this.sendEvent(
+                JoystickEvent.ButtonsChanged,
+                jdpack<[number]>("u32", [buttons])
+            )
     }
 
     /**
