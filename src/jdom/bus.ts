@@ -966,7 +966,7 @@ export class JDBus extends JDNode {
         return Promise.all([
             this.sendAnnounce(),
             this.sendResetIn(),
-            this.pingLoggers(),
+            this.sendPingLoggers(),
         ]).then(() => {})
     }
 
@@ -1000,7 +1000,25 @@ export class JDBus extends JDNode {
         await rst.sendAsMultiCommandAsync(this, SRV_CONTROL)
     }
 
-    private async pingLoggers() {
+    public async sendStopStreaming(): Promise<void> {
+        console.debug(`bus: stop streaming`)
+        const readingRegisters = this.services({
+            announced: true,
+            ignoreSelf: true,
+        })
+            .map(
+                srv =>
+                    srv.readingRegister &&
+                    srv.register(SensorReg.StreamingSamples)
+            )
+            .filter(reg => !!reg)
+
+        await Promise.all(
+            readingRegisters.map(reg => reg.sendSetPackedAsync([0]))
+        )
+    }
+
+    private async sendPingLoggers() {
         if (
             this._minLoggerPriority < LoggerPriority.Silent &&
             this.timestamp - this._lastPingLoggerTime > PING_LOGGERS_POLL &&

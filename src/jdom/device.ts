@@ -477,6 +477,7 @@ export class JDDevice extends JDNode {
             this.emit(CHANGE)
             this.bus.emit(DEVICE_CHANGE, this)
             this.bus.emit(CHANGE)
+            if (this._flashing) this.bus.sendStopStreaming()
         }
     }
 
