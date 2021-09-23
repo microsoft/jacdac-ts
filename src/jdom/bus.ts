@@ -983,15 +983,14 @@ export class JDBus extends JDNode {
         await pkt.sendReportAsync(this.selfDevice)
     }
 
+    get lastResetInTime() {
+        return this._lastResetInTime
+    }
+
     private async sendResetIn() {
         // don't send reset if already received
         // or no devices
-        if (
-            this._lastResetInTime - this.timestamp < RESET_IN_TIME_US / 5 ||
-            !this.devices({ ignoreSelf: true }).length
-        )
-            return
-
+        if (!this.devices({ ignoreSelf: true }).length) return
         this._lastResetInTime = this.timestamp
         const rst = Packet.jdpacked<[number]>(
             CMD_SET_REG | ControlReg.ResetIn,
