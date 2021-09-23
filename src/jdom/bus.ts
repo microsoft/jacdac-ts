@@ -53,6 +53,7 @@ import {
     REGISTER_POLL_REPORT_VOLATILE_MAX_INTERVAL,
     REGISTER_POLL_REPORT_VOLATILE_INTERVAL,
     SRV_INFRASTRUCTURE,
+    CONNECTION_STATE,
 } from "./constants"
 import { serviceClass } from "./pretty"
 import JDNode from "./node"
@@ -74,7 +75,7 @@ import {
 import JDServiceProvider from "./servers/serviceprovider"
 import RealTimeClockServer from "../servers/realtimeclockserver"
 import { SRV_ROLE_MANAGER } from "../../src/jdom/constants"
-import Transport from "./transport/transport"
+import Transport, { ConnectionState } from "./transport/transport"
 import { BusStatsMonitor } from "./busstats"
 import RoleManagerClient from "./clients/rolemanagerclient"
 import JDBridge from "./bridge"
@@ -175,8 +176,62 @@ export class JDBus extends JDNode {
         // grab the default role manager
         this.on(DEVICE_CHANGE, this.handleRoleManager.bind(this))
 
+        // handle multiple windows
+        this.configureBroadcastChannel()
+
         // start all timers
         this.start()
+    }
+
+    private configureBroadcastChannel() {
+        if (typeof BroadcastChannel === "undefined") return
+
+        // the purpose of this code is to orchestrate
+        // interactions with multiple tabs and windows
+
+        const channel = new BroadcastChannel("jacdac")
+        // update other windows with connection status
+        this.on(CONNECTION_STATE, () => {
+            channel.postMessage({
+                id: this.selfDevice.shortId,
+                event: CONNECTION_STATE,
+                transports: this._transports.map(tr => ({
+                    type: tr.type,
+                    connectionState: tr.connectionState,
+                })),
+            })
+        })
+        // handle connection from other tabs
+        channel.addEventListener(
+            "message",
+            (
+                msg: MessageEvent<{
+                    id: string
+                    event: string
+                    transports: { type: string; connectionState: string }[]
+                }>
+            ) => {
+                const { data } = msg
+                const { id, event, transports } = data
+                switch (event) {
+                    case CONNECTION_STATE: {
+                        console.debug(`broadcast received ${id} ${event}`)
+                        // if any other window is trying to connect, disconnect
+                        transports
+                            .filter(
+                                tr =>
+                                    tr.connectionState ===
+                                    ConnectionState.Connecting
+                            )
+                            .forEach(ctr => {
+                                this.transports
+                                    .filter(tr => tr.type === ctr.type)
+                                    .forEach(tr => tr.disconnect())
+                            })
+                    }
+                }
+            }
+        )
     }
 
     /**
