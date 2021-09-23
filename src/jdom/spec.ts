@@ -14,7 +14,7 @@ import {
     SRV_SETTINGS,
     SRV_BOOTLOADER,
     SRV_LOGGER,
-    SRV_POWER,
+    SRV_INFRASTRUCTURE,
     SRV_PROTO_TEST,
 } from "./constants"
 
@@ -169,6 +169,7 @@ export function isInfrastructure(spec: jdspec.ServiceSpec) {
             SRV_SETTINGS,
             SRV_BOOTLOADER,
             SRV_PROTO_TEST,
+            SRV_INFRASTRUCTURE,
         ].indexOf(spec.classIdentifier) > -1 ||
             spec.shortId[0] === "_")
     )

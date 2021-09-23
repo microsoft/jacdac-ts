@@ -52,6 +52,7 @@ import {
     DEVICE_CLEAN,
     REGISTER_POLL_REPORT_VOLATILE_MAX_INTERVAL,
     REGISTER_POLL_REPORT_VOLATILE_INTERVAL,
+    SRV_INFRASTRUCTURE,
 } from "./constants"
 import { serviceClass } from "./pretty"
 import JDNode from "./node"
@@ -917,9 +918,11 @@ export class JDBus extends JDNode {
     private async sendAnnounce() {
         // we do not support any services (at least yet)
         if (this._restartCounter < 0xf) this._restartCounter++
-        const pkt = Packet.jdpacked<[number]>(CMD_ADVERTISEMENT_DATA, "u32", [
-            this._restartCounter | 0x100,
-        ])
+        const pkt = Packet.jdpacked<[number, number[][]]>(
+            CMD_ADVERTISEMENT_DATA,
+            "u32 r: u32",
+            [this._restartCounter | 0x100, [[SRV_INFRASTRUCTURE]]]
+        )
         pkt.serviceIndex = JD_SERVICE_INDEX_CTRL
         pkt.deviceIdentifier = this.selfDeviceId
         await pkt.sendReportAsync(this.selfDevice)
