@@ -215,7 +215,7 @@ export class JDBus extends JDNode {
                 const { id, event, transports } = data
                 switch (event) {
                     case CONNECTION_STATE: {
-                        console.debug(`broadcast received ${id} ${event}`)
+                        console.debug(`bus ${id}: ${event}`)
                         // if any other window is trying to connect, disconnect
                         transports
                             .filter(
