@@ -489,6 +489,16 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         ],
     },
     {
+        name: "flex sensor (2.2 inch)",
+        serviceClasses: [SRV_FLEX],
+        services: () => [
+            new AnalogSensorServer(SRV_FLEX, {
+                variant: FlexVariant.Linear22Inch,
+                readingValues: [0.5],
+            }),
+        ],
+    },
+    {
         name: "gyroscope",
         serviceClasses: [SRV_GYROSCOPE],
         services: () => [
@@ -986,16 +996,6 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         services: () => [
             new AnalogSensorServer(SRV_POTENTIOMETER, {
                 variant: PotentiometerVariant.Rotary,
-                readingValues: [0.5],
-            }),
-        ],
-    },
-    {
-        name: "flex sensor (2.2 inch)",
-        serviceClasses: [SRV_FLEX],
-        services: () => [
-            new AnalogSensorServer(SRV_FLEX, {
-                variant: FlexVariant.Linear22Inch,
                 readingValues: [0.5],
             }),
         ],
