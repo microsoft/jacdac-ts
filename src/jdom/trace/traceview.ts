@@ -48,12 +48,13 @@ export class TraceView extends JDClient {
     private id = "v" + Math.random()
     private _maxFilteredLength = FILTERED_TRACE_MAX_ITEMS
 
-    private _paused = true
+    private _paused = false
     private _trace: Trace
     private _filter: string
     private _packetFilter: PacketFilter = undefined
     private _filteredPackets: TracePacketProps[] = []
 
+    public silent = false
     private notifyPacketsChanged: () => void
 
     constructor(
@@ -67,7 +68,8 @@ export class TraceView extends JDClient {
         this.handleFilterUpdate = this.handleFilterUpdate.bind(this)
 
         this.notifyPacketsChanged = throttle(() => {
-            this.setFilteredPackets()
+            if (!this.silent)
+                this.setFilteredPackets()
         }, throttleDelay)
 
         this.mount(
@@ -174,7 +176,7 @@ export class TraceView extends JDClient {
             }
         }
         this._filteredPackets = this._filteredPackets.reverse()
-        this.notifyPacketsChanged()
+        this.notifyPacketsChanged?.()
     }
 
     private handlePacket(pkt: Packet) {
@@ -182,11 +184,12 @@ export class TraceView extends JDClient {
 
         // remember packet
         this.trace.addPacket(pkt)
+
         // add packet to live list
         if (this._packetFilter?.filter(pkt)) {
             this.addFilteredPacket(pkt)
             // debounced notification of changes
-            this.notifyPacketsChanged()
+            this.notifyPacketsChanged?.()
         }
     }
 
