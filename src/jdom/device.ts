@@ -37,6 +37,7 @@ import {
     REPORT_UPDATE,
     SERIAL_TRANSPORT,
     WEBSOCKET_TRANSPORT,
+    DEVICE_PRODUCT_IDENTIFY,
 } from "./constants"
 import { read32, bufferEq, setAckError, read16 } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
@@ -576,11 +577,12 @@ export class JDDevice extends JDNode {
 
             // listen for specific registers
             const ctrl = this._services?.[0]
-            const codes = [ControlReg.ProductIdentifier]
-            codes.forEach(code =>
-                ctrl
-                    .register(code)
-                    .once(REPORT_UPDATE, () => this.emitPropagated(CHANGE))
+            ctrl.register(ControlReg.ProductIdentifier).once(
+                REPORT_UPDATE,
+                () => {
+                    this.emitPropagated(DEVICE_PRODUCT_IDENTIFY)
+                    this.emitPropagated(CHANGE)
+                }
             )
         }
     }
