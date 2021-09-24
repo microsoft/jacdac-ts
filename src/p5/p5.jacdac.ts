@@ -20,11 +20,7 @@ declare let p5: any
  * The Jacdac bus
  */
 export const bus = createWebBus()
-
-// ensure that the bus queries those services
-bus.on(DEVICE_ANNOUNCE, (dev: JDDevice) =>
-    dev.services().map(srv => srv.readingRegister?.on(REPORT_UPDATE, () => {}))
-)
+bus.streaming = true
 
 /**
  * Tries to connect to a jacdac device. Must be called from a button handler

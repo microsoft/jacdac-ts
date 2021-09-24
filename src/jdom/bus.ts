@@ -150,6 +150,7 @@ export class JDBus extends JDNode {
     private _firmwareBlobs: FirmwareBlob[]
     private _gcDevicesFrozen = 0
     private _serviceProviders: JDServiceProvider[] = []
+    private _streaming = false
 
     /**
      * Gets an instance that tracks packet statistics
@@ -617,6 +618,20 @@ ${dev
      */
     get timestamp(): number {
         return this.scheduler.timestamp
+    }
+
+    /**
+     * Indicates if the bus should force all sensors to stream
+     */
+    get streaming(): boolean {
+        return this._streaming
+    }
+
+    /**
+     * Sets automatic streaming on and off
+     */
+    set streaming(value: boolean) {
+        this._streaming = value
     }
 
     /**
@@ -1122,6 +1137,10 @@ ${dev
                             // someone is listening for reports
                             .filter(
                                 reg =>
+                                    // automatic streaming
+                                    (this._streaming &&
+                                        reg.code === SystemReg.Reading) ||
+                                    // listening for updates
                                     reg.listenerCount(REPORT_RECEIVE) > 0 ||
                                     reg.listenerCount(REPORT_UPDATE) > 0
                             )
