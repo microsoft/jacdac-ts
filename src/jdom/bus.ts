@@ -537,9 +537,13 @@ export class JDBus extends JDNode {
      * @returns
      */
     describe() {
-        return this.devices({ ignoreSelf: true })
-            .map(
-                dev => `device: 
+        return `
+transport:
+${this._transports.map(tr => `  ${tr.type}: ${tr.connectionState}`).join("\n")}
+
+${this.devices({ ignoreSelf: true })
+    .map(
+        dev => `device: 
   id: ${dev.shortId} (${dev.id})
   product: ${
       deviceSpecificationFromProductIdentifier(dev.productIdentifier)?.id || "?"
@@ -552,8 +556,8 @@ ${dev
     .map(srv => `    ${srv.name} (${srv.serviceClass.toString(16)})`)
     .join("\n")}
 `
-            )
-            .join("\n")
+    )
+    .join("\n")}`
     }
 
     /**
