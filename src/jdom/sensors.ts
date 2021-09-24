@@ -4,6 +4,10 @@ import { toMap } from "./utils"
 
 let _sensorSpecs: jdspec.ServiceSpec[]
 
+/**
+ * Gets the list of sensor specifications available
+ * @returns
+ */
 export function sensorSpecifications() {
     if (!_sensorSpecs) {
         _sensorSpecs = serviceSpecifications().filter(
@@ -13,6 +17,11 @@ export function sensorSpecifications() {
     return _sensorSpecs
 }
 
+/**
+ * Collects and flattens all sensor data into a serializable object
+ * @param bus
+ * @returns
+ */
 export function snapshotSensors(
     bus: JDBus
 ): Record<string, number[] | Record<string, number>[]> {
