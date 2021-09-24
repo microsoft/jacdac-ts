@@ -546,8 +546,13 @@ ${this.devices({ ignoreSelf: true })
         dev => `device: 
   id: ${dev.shortId} (${dev.id})
   product: ${
-      deviceSpecificationFromProductIdentifier(dev.productIdentifier)?.id || "?"
-  } (${dev.productIdentifier?.toString(16) || "..."})
+      dev.productIdentifier
+          ? `${
+                deviceSpecificationFromProductIdentifier(dev.productIdentifier)
+                    ?.id || "?"
+            } (${dev.productIdentifier?.toString(16)})`
+          : ""
+  }
   firmware_version: ${dev.firmwareVersion || ""}
   services:
 ${dev
