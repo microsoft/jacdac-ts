@@ -584,6 +584,10 @@ export class JDDevice extends JDNode {
                     this.emitPropagated(CHANGE)
                 }
             )
+            ctrl.register(ControlReg.FirmwareVersion).once(
+                REPORT_UPDATE,
+                () => {}
+            )
         }
     }
 
@@ -804,6 +808,17 @@ export class JDDevice extends JDNode {
         )
         const v = fwIdRegister?.uintValue
         if (fwIdRegister && v === undefined) fwIdRegister?.refresh(true)
+        return v
+    }
+
+    /**
+     * Returns the firmware version synchronously. If needed, tries to refresh the value in the background.
+     * @category Control
+     */
+    get firmwareVersion(): string {
+        const reg = this.service(0)?.register(ControlReg.FirmwareVersion)
+        const v = reg?.stringValue
+        if (reg && v === undefined) reg?.refresh(true)
         return v
     }
 

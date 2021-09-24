@@ -63,7 +63,12 @@ import {
     sendStayInBootloaderCommand,
 } from "./flashing"
 import JDService from "./service"
-import { isConstRegister, isReading, isSensor } from "./spec"
+import {
+    deviceSpecificationFromProductIdentifier,
+    isConstRegister,
+    isReading,
+    isSensor,
+} from "./spec"
 import {
     LoggerPriority,
     LoggerReg,
@@ -525,6 +530,30 @@ export class JDBus extends JDNode {
                 .map(tr => tr.type)
                 .join(", ") || ""
         }`
+    }
+
+    /**
+     * Gets a detailled description of the devices and services connected to the bus
+     * @returns
+     */
+    describe() {
+        return this.devices({ ignoreSelf: true })
+            .map(
+                dev => `device: 
+  id: ${dev.shortId} (${dev.id})
+  product: ${
+      deviceSpecificationFromProductIdentifier(dev.productIdentifier)?.id || "?"
+  } (${dev.productIdentifier?.toString(16) || "..."})
+  firmware_version: ${dev.firmwareVersion || ""}
+  services:
+${dev
+    .services()
+    .slice(1)
+    .map(srv => `    ${srv.name} (${srv.serviceClass.toString(16)})`)
+    .join("\n")}
+`
+            )
+            .join("\n")
     }
 
     /**
