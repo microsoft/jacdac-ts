@@ -6,7 +6,8 @@ import {
 } from "../jdom/constants"
 import { JDDevice } from "../jdom/device"
 import JDEvent from "../jdom/event"
-import { isEvent, isSensor, serviceSpecifications } from "../jdom/spec"
+import { sensorSpecifications, snapshotSensors } from "../jdom/sensors"
+import { isEvent } from "../jdom/spec"
 import { createWebBus } from "../jdom/transport/createbus"
 import { toMap } from "../jdom/utils"
 
@@ -14,11 +15,6 @@ import { toMap } from "../jdom/utils"
 // https://github.com/processing/p5.js/blob/main/contributor_docs/creating_libraries.md#use-registermethod-to-register-functions-with-p5-that-should-be-called-at-various-times
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare let p5: any
-
-const serviceSpecs = serviceSpecifications().filter(
-    srv => !srv.shortName.startsWith("_") && isSensor(srv)
-)
-const sensorSpecs = serviceSpecs.filter(srv => isSensor(srv))
 
 /**
  * The Jacdac bus
@@ -72,27 +68,7 @@ export function createConnectButton() {
  */
 export const sensors: Record<string, number[] | Record<string, number>[]> = {}
 function updateSensors() {
-    Object.assign(
-        sensors,
-        toMap(
-            sensorSpecs,
-            srv => srv.camelName,
-            srv =>
-                bus
-                    .services({
-                        serviceClass: srv.classIdentifier,
-                        ignoreSelf: true,
-                        announced: true,
-                    })
-                    .map(srv => {
-                        const reg = srv.readingRegister
-                        const spec = reg.specification
-                        return spec.fields.length === 1
-                            ? reg.unpackedValue?.[0] || 0
-                            : reg.objectValue || {}
-                    })
-        )
-    )
+    Object.assign(sensors, snapshotSensors(bus))
 }
 updateSensors()
 
@@ -104,7 +80,7 @@ export const events: Record<
     string,
     Record<string, (handler: (event: JDEvent) => void) => void>
 > = toMap(
-    serviceSpecs,
+    sensorSpecifications(),
     spec => spec.camelName,
     spec =>
         toMap(
