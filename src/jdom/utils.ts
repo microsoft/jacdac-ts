@@ -565,8 +565,11 @@ export function toMap<T, V>(
 ): SMap<V> {
     const m: SMap<V> = {}
     if (a)
-        for (let i = 0; i < a.length; ++i)
-            m[keyConverter(a[i], i)] = valueConverter(a[i], i)
+        for (let i = 0; i < a.length; ++i) {
+            const key = keyConverter(a[i], i)
+            if (key === undefined || key === null) continue
+            m[key] = valueConverter(a[i], i)
+        }
     return m
 }
 
