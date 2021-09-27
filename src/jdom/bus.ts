@@ -543,7 +543,7 @@ export class JDBus extends JDNode {
 transport:
 ${this._transports.map(tr => `  ${tr.type}: ${tr.connectionState}`).join("\n")}
 
-${this.devices({ ignoreSelf: true })
+${this.devices({ ignoreInfrastructure: true })
     .map(
         dev => `device: 
   id: ${dev.shortId} (${dev.id})
@@ -732,8 +732,12 @@ ${dev
 
         let r = this._devices.slice(0)
         if (sc > -1) r = r.filter(s => s.hasService(sc))
-        if (options?.ignoreSelf)
-            r = r.filter(s => s.deviceId !== this.selfDeviceId)
+        if (options?.ignoreInfrastructure)
+            r = r.filter(
+                s =>
+                    s.deviceId !== this.selfDeviceId &&
+                    s.serviceClasses.indexOf(SRV_INFRASTRUCTURE) < 0
+            )
         if (options?.announced) r = r.filter(s => s.announced)
         if (options?.ignoreSimulators)
             r = r.filter(r => !this.findServiceProvider(r.deviceId))
@@ -1044,7 +1048,7 @@ ${dev
     private async sendResetIn() {
         // don't send reset if already received
         // or no devices
-        if (!this.devices({ ignoreSelf: true }).length) return
+        if (!this.devices({ ignoreInfrastructure: true }).length) return
         this._lastResetInTime = this.timestamp
         const rst = Packet.jdpacked<[number]>(
             CMD_SET_REG | ControlReg.ResetIn,
@@ -1058,7 +1062,7 @@ ${dev
         console.debug(`bus: stop streaming`)
         const readingRegisters = this.services({
             announced: true,
-            ignoreSelf: true,
+            ignoreInfrastructure: true,
         })
             .map(
                 srv =>
@@ -1076,8 +1080,10 @@ ${dev
         if (
             this._minLoggerPriority < LoggerPriority.Silent &&
             this.timestamp - this._lastPingLoggerTime > PING_LOGGERS_POLL &&
-            this.devices({ ignoreSelf: true, serviceClass: SRV_LOGGER })
-                .length > 0
+            this.devices({
+                ignoreInfrastructure: true,
+                serviceClass: SRV_LOGGER,
+            }).length > 0
         ) {
             this._lastPingLoggerTime = this.timestamp
             const pkt = Packet.jdpacked<[LoggerPriority]>(

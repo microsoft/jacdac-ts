@@ -32,7 +32,7 @@ export function snapshotSensors(
             bus
                 .services({
                     serviceClass: srv.classIdentifier,
-                    ignoreSelf: true,
+                    ignoreInfrastructure: true,
                     announced: true,
                 })
                 .map(srv => {

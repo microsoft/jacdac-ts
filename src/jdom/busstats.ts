@@ -73,7 +73,7 @@ export class BusStatsMonitor extends JDEventSource {
         r.acks /= n2
         r.bytes /= n2
         return {
-            devices: this.bus.devices({ ignoreSelf: true }).length,
+            devices: this.bus.devices({ ignoreInfrastructure: true }).length,
             simulators: this.bus.serviceProviders().length,
             transport: this.bus.transports.find(
                 transport => transport.connected

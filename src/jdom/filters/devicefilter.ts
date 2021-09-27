@@ -12,9 +12,9 @@ export interface DeviceFilter {
      */
     serviceClass?: number
     /**
-     * Excludes the self device created by the bus
+     * Excludes the infrastructure devices
      */
-    ignoreSelf?: boolean
+    ignoreInfrastructure?: boolean
     /**
      * Matches devices that have already announced their services
      */

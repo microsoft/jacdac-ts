@@ -3,6 +3,7 @@ import { createUSBTransport } from "./usb"
 import { createWebSerialTransport } from "./webserial"
 import { createBluetoothTransport } from "./bluetooth"
 import { USBOptions } from "./usbio"
+import createIFrameBridge from "../bridges/iframebridge"
 
 /**
  * Creates a Jacdac bus using WebUSB, WebSerial or WebBluetooth
@@ -10,10 +11,18 @@ import { USBOptions } from "./usbio"
  * @returns
  * @category Transport
  */
-export function createWebBus(options?: { usbOptions?: USBOptions }) {
-    return new JDBus([
-        createUSBTransport(options?.usbOptions),
+export function createWebBus(options?: {
+    usbOptions?: USBOptions
+    iframeTargetOrigin?: string
+}) {
+    const { usbOptions, iframeTargetOrigin } = options || {}
+    const bus = new JDBus([
+        usbOptions !== null && createUSBTransport(usbOptions),
         createWebSerialTransport(),
         createBluetoothTransport(),
     ])
+    const iframeBridge =
+        iframeTargetOrigin !== null && createIFrameBridge(iframeTargetOrigin)
+    if (iframeBridge) iframeBridge.bus = bus
+    return bus
 }
