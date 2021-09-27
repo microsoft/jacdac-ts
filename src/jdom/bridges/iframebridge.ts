@@ -14,7 +14,6 @@ class IFrameBridge extends JDBridge {
 
     private handleMessage(msg: MessageEvent) {
         const { data } = msg
-        console.debug(data)
         if (data.channel === "jacdac" && data.type === "messagepacket") {
             const payload: Uint8Array = data.data
             this.receivePacket(payload)
@@ -29,7 +28,6 @@ class IFrameBridge extends JDBridge {
             sender: this.bridgeId,
             broadcast: true,
         }
-        console.debug(msg)
         window.parent.postMessage(msg, this.targetOrigin)
     }
 }

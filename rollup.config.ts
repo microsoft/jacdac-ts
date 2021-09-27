@@ -25,7 +25,7 @@ export default [
     {
         libraryName: "p5.jacdac",
         dir: "p5",
-        watch: "src/p5/**",
+        watch: "src/jdom/**;src/p5/**",
         external: ["jacdac"],
         web: true,
     },

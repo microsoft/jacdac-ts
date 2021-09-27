@@ -1,10 +1,4 @@
-import {
-    CONNECTION_STATE,
-    DEVICE_ANNOUNCE,
-    EVENT,
-    REPORT_UPDATE,
-} from "../jdom/constants"
-import { JDDevice } from "../jdom/device"
+import { CONNECTION_STATE, EVENT } from "../jdom/constants"
 import JDEvent from "../jdom/event"
 import { sensorSpecifications, snapshotSensors } from "../jdom/sensors"
 import { isEvent } from "../jdom/spec"
