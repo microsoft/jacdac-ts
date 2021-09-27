@@ -107,7 +107,7 @@ export function deviceSpecificationsForService(
 ): jdspec.DeviceSpec[] {
     if (isNaN(serviceClass)) return undefined
     return _deviceRegistry.filter(
-        spec => spec.services.indexOf(serviceClass) > -1
+        spec => spec.services?.indexOf(serviceClass) > -1
     )
 }
 
