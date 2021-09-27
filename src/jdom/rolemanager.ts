@@ -167,7 +167,7 @@ export class RoleManager extends JDClient {
     // TODO: need to respect other (unbound) role's preferredDeviceId
     private bindRole(role: RoleBinding) {
         const ret = this.bus
-            .services({ ignoreSelf: true, serviceClass: role.serviceClass })
+            .services({ ignoreInfrastructure: true, serviceClass: role.serviceClass })
             .filter(s => !this.roles(true).find(r => r.service === s))
         if (ret.length) {
             let theOne = ret[0]
