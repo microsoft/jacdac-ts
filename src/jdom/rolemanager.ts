@@ -225,7 +225,7 @@ export default RoleManager
  * @returns A unsubscribe callback to cleanup handlers
  * @category Roles
  */
-export function trackRoles<
+export function startRoles<
     TRoles extends Record<
         string,
         { serviceClass: number; preferredDeviceId?: string }
