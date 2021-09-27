@@ -273,6 +273,7 @@ export class JDBus extends JDNode {
      * @param bridge
      * @returns callback to remove bridge
      * @category Transports and Bridges
+     * @internal
      */
     addBridge(bridge: JDBridge): () => void {
         if (this._bridges.indexOf(bridge) < 0) {
