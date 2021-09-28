@@ -57,7 +57,7 @@ export function createConnectButton() {
 }
 
 /**
- * Show a debug button to enter split mode
+ * Call this function in `setup` to show a debug button to enter split mode.
  */
 export function debug() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
