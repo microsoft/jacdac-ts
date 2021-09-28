@@ -1084,7 +1084,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         services: () => [new SettingsServer()],
     },
     {
-        name: "slider",
+        name: "slider (potentiometer)",
         serviceClasses: [SRV_POTENTIOMETER],
         services: () => [
             new AnalogSensorServer(SRV_POTENTIOMETER, {
