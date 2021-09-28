@@ -546,13 +546,13 @@ ${this._transports.map(tr => `  ${tr.type}: ${tr.connectionState}`).join("\n")}
 ${this.devices({ ignoreInfrastructure: true })
     .map(
         dev => `device: 
-  id: ${dev.shortId} (${dev.id})
+  id: ${dev.shortId} (0x${dev.deviceId})
   product: ${
       dev.productIdentifier
           ? `${
                 deviceSpecificationFromProductIdentifier(dev.productIdentifier)
                     ?.id || "?"
-            } (${dev.productIdentifier?.toString(16)})`
+            } (0x${dev.productIdentifier?.toString(16)})`
           : ""
   }
   firmware_version: ${dev.firmwareVersion || ""}
@@ -560,7 +560,7 @@ ${this.devices({ ignoreInfrastructure: true })
 ${dev
     .services()
     .slice(1)
-    .map(srv => `    ${srv.name} (${srv.serviceClass.toString(16)})`)
+    .map(srv => `    ${srv.name} (0x${srv.serviceClass.toString(16)})`)
     .join("\n")}
 `
     )
