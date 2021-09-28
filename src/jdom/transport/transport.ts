@@ -97,7 +97,7 @@ export abstract class Transport extends JDEventSource {
 
     private setConnectionState(state: ConnectionState) {
         if (this._connectionState !== state) {
-            console.debug(`${this._connectionState} -> ${state}`)
+            //console.debug(`${this._connectionState} -> ${state}`)
             this._connectionState = state
             this._connectionTime =
                 state === ConnectionState.Connected
