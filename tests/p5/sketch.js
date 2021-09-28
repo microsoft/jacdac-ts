@@ -1,11 +1,12 @@
 let counter = 0
 function setup() {
     createCanvas(400, 400)
+    jacdac.debug()
     textAlign(CENTER, CENTER)
     textSize(64)
 
     // use jacdac.events to register events
-    jacdac.events.button.down(() => counter ++)
+    jacdac.events.button.down(() => counter++)
 }
 
 function draw() {
@@ -20,18 +21,18 @@ function draw() {
     // move points for an accelerometer
     const { accelerometer } = jacdac.sensors
     // the acceleration is stored as a ``{ x: .., y: ..., z: ... }`` object
-    for(const acceleration of accelerometer) {
+    for (const acceleration of accelerometer) {
         const { x: ax = 0, y: ay = 0, z: az = 0 } = acceleration
 
         // map g (gravities) to 100..300 on canvas
         const x = map(ax, -1, 1, 100, 300)
         const y = map(ay, -1, 1, 100, 300)
         const d = map(az, -1, 1, 5, 50)
-        stroke('white')
+        stroke("white")
         circle(x, y, d)
     }
 
     // show button counter
-    fill('white')
+    fill("white")
     text(counter, 200, 200)
 }

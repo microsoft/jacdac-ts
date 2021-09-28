@@ -1,7 +1,7 @@
 import JDBus from "../bus"
-import { createUSBTransport } from "./usb"
-import { createWebSerialTransport } from "./webserial"
-import { createBluetoothTransport } from "./bluetooth"
+import { createUSBTransport, isWebUSBSupported } from "./usb"
+import { createWebSerialTransport, isWebSerialSupported } from "./webserial"
+import { createBluetoothTransport, isWebBluetoothSupported } from "./bluetooth"
 import { USBOptions } from "./usbio"
 import createIFrameBridge from "../bridges/iframebridge"
 
@@ -25,4 +25,17 @@ export function createWebBus(options?: {
         iframeTargetOrigin !== null && createIFrameBridge(iframeTargetOrigin)
     if (iframeBridge) iframeBridge.bus = bus
     return bus
+}
+
+/**
+ * Indicates if any of the USB/Serial/Bluetooth transports is supported
+ * @returns 
+ * @category Transport
+ */
+export function isWebTransportSupported() {
+    return (
+        isWebUSBSupported() ||
+        isWebSerialSupported() ||
+        isWebBluetoothSupported()
+    )
 }

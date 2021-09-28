@@ -1,8 +1,12 @@
+import { startDevTools } from "../jdom/bridges/iframebridge"
 import { CONNECTION_STATE, EVENT } from "../jdom/constants"
 import JDEvent from "../jdom/event"
 import { sensorSpecifications, snapshotSensors } from "../jdom/sensors"
 import { isEvent } from "../jdom/spec"
-import { createWebBus } from "../jdom/transport/createbus"
+import {
+    createWebBus,
+    isWebTransportSupported,
+} from "../jdom/transport/createbus"
 import { toMap } from "../jdom/utils"
 
 // p5 registration
@@ -38,7 +42,7 @@ let connectBtn: any
  * @returns
  */
 export function createConnectButton() {
-    if (!connectBtn) {
+    if (!connectBtn && isWebTransportSupported()) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const createButton = (window as any).createButton
         connectBtn = createButton("Jacdac connect")
@@ -50,6 +54,17 @@ export function createConnectButton() {
         if (bus.connected) connectBtn.hide()
     }
     return connectBtn
+}
+
+/**
+ * Show a debug button to enter split mode
+ */
+export function debug() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const createButton = (window as any).createButton
+    const debugBtn = createButton("debug")
+    debugBtn.position(116, 4)
+    debugBtn.mousePressed(startDevTools)
 }
 
 /**
