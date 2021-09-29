@@ -107,7 +107,7 @@ export default class JoystickServer extends SensorServer<
         this.updateDirection(newButtons, x, y)
     }
 
-    private updateDirection(buttons: JoystickButtons, x: number, y: number) {
+    updateDirection(buttons: JoystickButtons, x: number, y: number) {
         const [oldButtons] = this.reading.values()
         if (this.isDigital) {
             x =
@@ -133,11 +133,12 @@ export default class JoystickServer extends SensorServer<
         }
         this.reading.setValues([buttons, x, y])
 
-        if (buttons !== oldButtons)
+        if (buttons !== oldButtons) {
             this.sendEvent(
                 JoystickEvent.ButtonsChanged,
                 jdpack<[number]>("u32", [buttons])
             )
+        }
     }
 
     /**
