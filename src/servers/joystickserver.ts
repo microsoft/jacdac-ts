@@ -98,16 +98,51 @@ export default class JoystickServer extends SensorServer<
     async down(buttons: JoystickButtons) {
         const [currentButtons, x, y] = this.reading.values()
         const newButtons = currentButtons | buttons
-        this.updateDirection(newButtons, x, y)
+        await this.updateReading(newButtons, x, y)
     }
 
     async up(buttons: JoystickButtons) {
         const [currentButtons, x, y] = this.reading.values()
         const newButtons = currentButtons & ~buttons
-        this.updateDirection(newButtons, x, y)
+        await this.updateReading(newButtons, x, y)
     }
 
-    updateDirection(buttons: JoystickButtons, x: number, y: number) {
+    async updateDirection(x: number, y: number) {
+        const [button] = this.reading.values()
+        await this.updateReading(button, x, y)
+    }
+
+    /**
+     * Read the state of a browser gamepad and apply it to the sensor
+     * @param gamepad
+     */
+    async update(gamepad: Gamepad) {
+        const { buttons, axes } = gamepad
+        const [buttonsAvailable] = this.buttonsAvailable.values()
+
+        let newButtons: JoystickButtons = 0
+        for (const [b, id] of standardGamepadMapping) {
+            if ((b & buttonsAvailable) == b && !!buttons[id].pressed) {
+                newButtons |= b
+            }
+        }
+
+        let newX = 0,
+            newY = 0
+        if (!this.isDigital) {
+            const [axeLeftRight, axeUpDown] = axes
+            newX = axeLeftRight
+            newY = axeUpDown
+        }
+
+        await this.updateReading(newButtons, newX, newY)
+    }
+
+    private async updateReading(
+        buttons: JoystickButtons,
+        x: number,
+        y: number
+    ) {
         const [oldButtons] = this.reading.values()
         if (this.isDigital) {
             x =
@@ -134,36 +169,10 @@ export default class JoystickServer extends SensorServer<
         this.reading.setValues([buttons, x, y])
 
         if (buttons !== oldButtons) {
-            this.sendEvent(
+            await this.sendEvent(
                 JoystickEvent.ButtonsChanged,
                 jdpack<[number]>("u32", [buttons])
             )
         }
-    }
-
-    /**
-     * Read the state of a browser gamepad and apply it to the sensor
-     * @param gamepad
-     */
-    update(gamepad: Gamepad) {
-        const { buttons, axes } = gamepad
-        const [buttonsAvailable] = this.buttonsAvailable.values()
-
-        let newButtons: JoystickButtons = 0
-        for (const [b, id] of standardGamepadMapping) {
-            if ((b & buttonsAvailable) == b && !!buttons[id].pressed) {
-                newButtons |= b
-            }
-        }
-
-        let newX = 0,
-            newY = 0
-        if (!this.isDigital) {
-            const [axeLeftRight, axeUpDown] = axes
-            newX = axeLeftRight
-            newY = axeUpDown
-        }
-
-        this.updateDirection(newButtons, newX, newY)
     }
 }
