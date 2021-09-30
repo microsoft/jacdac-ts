@@ -125,6 +125,10 @@ const deviceDescription: Record<string, string> = {
     "357084e1": "JM Button 10 v1.3",
     "3f9ca24e": "JM Keyboard Key 46 v1.0",
     "3a3320ac": "JM Analog Joystick 44 v0.2",
+    "36b4f47c": "JM Single RGB LED 42 v0.1",
+    "36550513": "JM Keyboard Key 46 v1.1",
+    "3e700a4b": "JM Button Terminal 62 v0.1",
+    "357512db": "JM Ambient Light 55 v0.1",
 }
 
 async function writeCatalog(dev: JDDevice) {
@@ -142,7 +146,7 @@ async function writeCatalog(dev: JDDevice) {
     spec.productIdentifiers.push(fwid.uintValue)
     spec.services = dev.serviceClasses.slice(1)
     fs.writeFileSync(
-        id.replace(/-/g, "") + ".json",
+        id.replace(/[-.]/g, "") + ".json",
         JSON.stringify(spec, null, 4)
     )
     console.log(spec)
