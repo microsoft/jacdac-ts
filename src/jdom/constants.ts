@@ -36,6 +36,7 @@ export const JD_SERVICE_INDEX_MASK = 0x3f
 export const JD_SERVICE_INDEX_INV_MASK = 0xc0
 export const JD_SERVICE_INDEX_CRC_ACK = 0x3f
 export const JD_SERVICE_INDEX_PIPE = 0x3e
+export const JD_SERVICE_INDEX_MAX_NORMAL = 0x30
 export const JD_SERVICE_INDEX_CTRL = 0x00
 
 // the COMMAND flag signifies that the device_identifier is the recipent
