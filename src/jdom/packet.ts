@@ -100,7 +100,11 @@ export class Packet {
     }
 
     toBuffer() {
-        return bufferConcat(this._header, this._data)
+        // compute correct framing and CRC
+        const res = bufferConcat(this._header, this._data)
+        res[2] = this._data.length
+        write16(res, 0, crc(res.slice(2)))
+        return res
     }
 
     get header() {
@@ -292,7 +296,10 @@ export class Packet {
     }
 
     clone() {
-        const pkt = Packet.fromBinary(this.toBuffer(), this.timestamp)
+        const pkt = new Packet()
+        pkt._header = this._header.slice()
+        pkt._data = this._data.slice()
+        pkt.timestamp = this.timestamp
         return pkt
     }
 
@@ -346,11 +353,13 @@ export class Packet {
     }
 
     sendCoreAsync(bus: JDBus) {
-        this._header[2] = this.size + 4
-        // Here we're sending this packet as the only one in a frame, therefore we need to compute CRC
+        const buf = this.toBuffer()
+        // Here we're sending this packet as the only one in a frame, therefore we need to compute CRC (which toBuffer() does)
         // There's no crc computation function on Packet, since it should be typically only applied to full frames.
         // The crc field reads the CRC from the frame (which is useful eg for acks).
-        write16(this._header, 0, crc(this.toBuffer().slice(2)))
+        this._header[0] = buf[0]
+        this._header[1] = buf[1]
+        this._header[2] = buf[2]
         return bus.sendPacketAsync(this)
     }
 
