@@ -790,18 +790,7 @@ ${dev
 
         const i = this._serviceProviders.indexOf(provider)
         if (i > -1) {
-            // remove device as well
-            const devi = this._devices.findIndex(
-                d => d.deviceId === provider.deviceId
-            )
-            if (devi > -1) {
-                const dev = this._devices[devi]
-                this._devices.splice(devi, 1)
-                dev.disconnect()
-                this.emit(DEVICE_DISCONNECT, dev)
-                this.emit(DEVICE_CHANGE, dev)
-            }
-
+            this.removeDevice(provider.deviceId)
             // remove host
             this._serviceProviders.splice(i, 1)
             provider.bus = undefined
@@ -809,6 +798,23 @@ ${dev
 
             // removed host
             this.emit(CHANGE)
+        }
+    }
+
+    /**
+     * Remove a device client by identifier
+     * @param deviceId
+     * @category Devices
+     */
+    removeDevice(deviceId: string) {
+        // remove device as well
+        const devi = this._devices.findIndex(d => d.deviceId === deviceId)
+        if (devi > -1) {
+            const dev = this._devices[devi]
+            this._devices.splice(devi, 1)
+            dev.disconnect()
+            this.emit(DEVICE_DISCONNECT, dev)
+            this.emit(DEVICE_CHANGE, dev)
         }
     }
 
