@@ -199,9 +199,7 @@ export class JDServerServiceProvider extends JDServiceProvider {
             for (const h of this._services) {
                 if (h.serviceClass == multiCommandClass) {
                     // pretend it's directly addressed to us
-                    const npkt = pkt.clone()
-                    npkt.deviceIdentifier = this.deviceId
-                    npkt.serviceIndex = h.serviceIndex
+                    const npkt = pkt.cloneForDevice(this.deviceId, h.serviceIndex)
                     h.handlePacket(npkt)
                 }
             }

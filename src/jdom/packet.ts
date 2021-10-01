@@ -11,7 +11,6 @@ import {
     write32,
     hexNum,
     bufferToString,
-    assert,
 } from "./utils"
 import {
     JD_FRAME_FLAG_COMMAND,
@@ -293,6 +292,19 @@ export class Packet {
 
     clone() {
         const pkt = Packet.fromBinary(this.toBuffer(), this.timestamp)
+        return pkt
+    }
+
+    cloneForDevice(deviceId: string, serviceIndex: number) {
+        const idb = fromHex(deviceId)
+        if (idb.length != 8) throwError("Invalid id")
+        if (!this.isMultiCommand) throwError("Must be multi command")
+
+        const pkt = Packet.fromBinary(this.toBuffer(), this.timestamp)
+        pkt.frameFlags &= ~JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS
+        pkt._header.set(idb, 4)
+        pkt._decoded = undefined
+        pkt.serviceIndex = serviceIndex
         return pkt
     }
 
