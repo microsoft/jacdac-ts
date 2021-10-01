@@ -14,6 +14,7 @@ export interface SensorServiceOptions<TReading extends PackedValues>
     readingValues?: TReading
     readingError?: TReading
     streamingInterval?: number
+    preferredStreamingInterval?: number
 }
 
 export default class SensorServer<
@@ -32,7 +33,12 @@ export default class SensorServer<
         options?: SensorServiceOptions<TReading>
     ) {
         super(serviceClass, options)
-        const { readingValues, streamingInterval, readingError } = options || {}
+        const {
+            readingValues,
+            streamingInterval,
+            preferredStreamingInterval,
+            readingError,
+        } = options || {}
 
         this.reading = this.addRegister<TReading>(
             SystemReg.Reading,
@@ -41,13 +47,14 @@ export default class SensorServer<
         this.streamingSamples = this.addRegister<[number]>(
             SensorReg.StreamingSamples
         )
-        this.streamingInterval = this.addRegister<[number]>(
-            SensorReg.StreamingInterval,
-            [streamingInterval || 50]
-        )
         if (streamingInterval !== undefined)
+            this.streamingInterval = this.addRegister<[number]>(
+                SensorReg.StreamingInterval,
+                [streamingInterval]
+            )
+        if (preferredStreamingInterval !== undefined)
             this.addRegister<[number]>(SensorReg.StreamingPreferredInterval, [
-                streamingInterval,
+                preferredStreamingInterval,
             ])
         if (readingError !== undefined) {
             this.readingError = this.addRegister<TReading>(
