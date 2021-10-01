@@ -1,5 +1,5 @@
 import JDBus from "../../src/jdom/bus"
-import { DEVICE_ANNOUNCE } from "../../src/jdom/constants"
+import { DEVICE_ANNOUNCE, ERROR } from "../../src/jdom/constants"
 import JDDevice from "../../src/jdom/device"
 import JDService from "../../src/jdom/service"
 import JDServerServiceProvider from "../../src/jdom/servers/serverserviceprovider"
@@ -48,12 +48,16 @@ export async function withTestBus(
     test: (bus: FastForwardTester) => Promise<void>
 ) {
     const tester = new FastForwardTester()
+    let error: unknown
+    tester.bus.on(ERROR, e => (error = e))
     tester.start()
     try {
         await test(tester)
     } finally {
         tester.stop()
     }
+
+    if (error) throw error
 }
 
 // A bus test wrapper that uses the fast-forward bus and provides test helper functions
