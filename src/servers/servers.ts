@@ -344,6 +344,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         services: () => [
             new SensorServer<[number, number, number]>(SRV_ACCELEROMETER, {
                 readingValues: [0.5, 0.5, -(1 - (0.5 * 0.5 + 0.5 * 0.5))],
+                preferredStreamingInterval: 20,
             }),
         ],
     },
@@ -434,6 +435,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         services: () => [
             new SensorServer<[number, number, number]>(SRV_COLOR, {
                 readingValues: [0.5, 0, 0.5],
+                preferredStreamingInterval: 1000,
             }),
         ],
     },
