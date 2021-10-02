@@ -418,7 +418,11 @@ export class JDService extends JDNode {
      * @param ack acknolegment required
      * @category Packets
      */
-    sendCmdPackedAsync(cmd: number, values?: PackedValues, ack?: boolean) {
+    sendCmdPackedAsync<TValues extends PackedValues>(
+        cmd: number,
+        values?: TValues,
+        ack?: boolean
+    ) {
         const spec = this.specification.packets.find(
             pkt => pkt.kind === "command" && pkt.identifier === cmd
         )
