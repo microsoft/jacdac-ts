@@ -166,6 +166,7 @@ const medicalThermometerOptions: AnalogSensorServerOptions = {
 const barometerOptions: AnalogSensorServerOptions = {
     instanceName: "pressure",
     readingValues: [1013],
+    readingError: [0.4],
 }
 const sonarOptions: AnalogSensorServerOptions = {
     variant: DistanceVariant.Ultrasonic,
