@@ -154,6 +154,11 @@ export class JDBus extends JDNode {
     private _unsubscribeBroadcastChannel: () => void
 
     /**
+     * Do not send any packet on the bus
+     */
+    public passive: boolean
+
+    /**
      * Gets an instance that tracks packet statistics
      * @category Diagnostics
      **/
@@ -733,6 +738,10 @@ ${dev
         packet.timestamp = this.timestamp
         if (Flags.trace) packet.meta[META_TRACE] = stack()
         this.emit(PACKET_SEND, packet)
+
+        // special debug mode to avoid dashboard interfere with packets
+        // will generate fails for acks
+        if (this.passive) return
 
         await Promise.all(
             this._transports.map(transport => transport.sendPacketAsync(packet))
