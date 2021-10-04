@@ -315,20 +315,13 @@ export abstract class Transport extends JDEventSource {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     protected errorHandler(context: string, exception: any) {
-        const receivedAnything = this._lastReceivedTime !== undefined
-        //const code = errorCode(exception)
         this.emit(ERROR, { context, exception })
         this.bus.emit(ERROR, { transport: this, context, exception })
         this.emit(CHANGE)
 
+        // when a microbit flash is initiated via file download, the device will
+        // stop responding. we should not try to reconnect while this is the case
         this.disconnect(true)
-            // retry connect
-            .then(() => {
-                if (receivedAnything) {
-                    console.debug(`${this.type}: reconnect after error`)
-                    this.connect(true)
-                }
-            })
     }
 
     dispose() {
