@@ -1440,6 +1440,7 @@ export function addServiceProvider(
     definition: ServiceProviderDefinition
 ) {
     const services = definition.services()
+    services.forEach(srv => srv.lock())
     const deviceId = stableSimulatorDeviceId(bus, definition.name)
     const options = {
         resetIn: definition.resetIn,

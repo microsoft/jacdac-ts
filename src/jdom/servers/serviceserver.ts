@@ -76,6 +76,7 @@ export class JDServiceServer extends JDEventSource {
     readonly instanceName: JDRegisterServer<[string]>
     private _twin: JDService
     private _twinCleanup: (() => void)[]
+    private _locked = false
 
     constructor(
         public readonly serviceClass: number,
@@ -234,7 +235,7 @@ export class JDServiceServer extends JDEventSource {
         let reg = this._registers.find(
             r => r.identifier === identifier
         ) as JDRegisterServer<TValues>
-        if (!reg) {
+        if (!reg && !this._locked) {
             // make sure this register is supported
             if (
                 !this.specification.packets.find(
@@ -252,7 +253,15 @@ export class JDServiceServer extends JDEventSource {
         this.registers.forEach(reg => reg.reset())
     }
 
+    /**
+     * Locks the current set of registers
+     */
+    public lock() {
+        this._locked = true
+    }
+
     protected addCommand(identifier: number, handler: (pkt: Packet) => void) {
+        if (this._locked) console.error(`adding command to locked service`)
         this.commands[identifier] = handler
     }
 
