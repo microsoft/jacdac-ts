@@ -87,7 +87,7 @@ export default class SensorServer<
         if (interval === undefined)
             interval = this.preferredStreamingInterval?.values()?.[0]
         if (interval === undefined)
-            interval = this.streamingInterval.specification.preferredInterval
+            interval = this.reading.specification.preferredInterval
         if (interval === undefined) interval = STREAMING_DEFAULT_INTERVAL
 
         const now = this.device.bus.timestamp
