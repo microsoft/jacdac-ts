@@ -173,11 +173,11 @@ export const PING_LOGGERS_POLL = 2400
 export const ROLE_MANAGER_POLL = 1500
 export const REFRESH_REGISTER_POLL = 50
 
-export const USB_TRANSPORT = "USB"
-export const BLUETOOTH_TRANSPORT = "Bluetooth"
-export const SERIAL_TRANSPORT = "Serial"
+export const USB_TRANSPORT = "usb"
+export const BLUETOOTH_TRANSPORT = "bluetooth"
+export const SERIAL_TRANSPORT = "serial"
 export const PACKETIO_TRANSPORT = "packetio"
-export const WEBSOCKET_TRANSPORT = "Web"
+export const WEBSOCKET_TRANSPORT = "web"
 
 export const META_ACK = "ACK"
 export const META_ACK_FAILED = "ACK_FAILED"

@@ -116,8 +116,13 @@ export function deviceSpecificationsForService(
  * @returns
  * @category Specification
  */
-export function deviceSpecifications(): jdspec.DeviceSpec[] {
-    return _deviceRegistry.slice(0)
+export function deviceSpecifications(options?: {
+    includeDeprecated?: boolean
+}): jdspec.DeviceSpec[] {
+    const { includeDeprecated } = options || {}
+    let r = _deviceRegistry.slice(0)
+    if (!includeDeprecated) r = r.filter(d => d.status !== "deprecated")
+    return r
 }
 
 /**
