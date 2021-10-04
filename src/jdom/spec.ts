@@ -118,10 +118,12 @@ export function deviceSpecificationsForService(
  */
 export function deviceSpecifications(options?: {
     includeDeprecated?: boolean
+    includeExperimental?: boolean
 }): jdspec.DeviceSpec[] {
-    const { includeDeprecated } = options || {}
+    const { includeDeprecated, includeExperimental } = options || {}
     let r = _deviceRegistry.slice(0)
     if (!includeDeprecated) r = r.filter(d => d.status !== "deprecated")
+    if (!includeExperimental) r = r.filter(d => d.status !== "experimental")
     return r
 }
 
