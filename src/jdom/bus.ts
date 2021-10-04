@@ -229,9 +229,9 @@ export class JDBus extends JDNode {
             switch (event) {
                 case "visibilitychange": {
                     // automatically disconnect if another pane becomes live
-                    console.debug(
-                        `broadcast ${id}: ${event} ${visibilityState}`
-                    )
+                    //console.debug(
+                    //   `broadcast ${id}: ${event} ${visibilityState}`
+                    //)
                     if (visibilityState === "visible") await this.disconnect()
                     else {
                         // let other window disconnect
@@ -241,7 +241,7 @@ export class JDBus extends JDNode {
                     break
                 }
                 case CONNECTION_STATE: {
-                    console.debug(`broadcast ${id}: ${event}`, transports)
+                    //console.debug(`broadcast ${id}: ${event}`, transports)
                     // if any other window is trying to connect, disconnect
                     transports
                         .filter(
