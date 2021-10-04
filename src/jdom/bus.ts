@@ -269,6 +269,9 @@ export class JDBus extends JDNode {
             channel.removeEventListener("message", handleBroadcastMessage)
             channel.close()
         }
+
+        // notify other pages
+        handleVisibilityChange()
     }
 
     /**
