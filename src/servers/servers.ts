@@ -1381,7 +1381,10 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     {
         name: "power + humidity",
         serviceClasses: [SRV_POWER, SRV_HUMIDITY],
-        services: () => [new PowerServer(), new HumidityServer()],
+        services: () => [
+            new PowerServer(),
+            new AnalogSensorServer(SRV_HUMIDITY, outdoorHumidityOptions),
+        ],
         factory: services => {
             const dev = new JDServerServiceProvider("power+humidity", [
                 services[0],
