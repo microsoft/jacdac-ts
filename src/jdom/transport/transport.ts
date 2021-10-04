@@ -60,7 +60,13 @@ export abstract class Transport extends JDEventSource {
                 next: async () => {
                     if (this.bus?.disconnected) {
                         await delay(TRANSPORT_CONNECT_RETRY_DELAY)
-                        if (this.bus?.disconnected) this.connect(true)
+                        if (this.bus?.disconnected) {
+                            if (
+                                typeof document !== "undefined" &&
+                                document.visibilityState === "visible"
+                            )
+                                this.connect(true)
+                        }
                     }
                 },
             })?.unsubscribe,

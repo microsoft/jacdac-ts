@@ -151,6 +151,7 @@ export class JDBus extends JDNode {
     private _gcDevicesFrozen = 0
     private _serviceProviders: JDServiceProvider[] = []
     private _streaming = false
+    private _unsubscribeBroadcastChannel: () => void
 
     /**
      * Gets an instance that tracks packet statistics
@@ -182,9 +183,6 @@ export class JDBus extends JDNode {
         // grab the default role manager
         this.on(DEVICE_CHANGE, this.handleRoleManager.bind(this))
 
-        // handle multiple windows
-        this.configureBroadcastChannel()
-
         // start all timers
         this.start()
     }
@@ -194,10 +192,8 @@ export class JDBus extends JDNode {
 
         // the purpose of this code is to orchestrate
         // interactions with multiple tabs and windows
-
         const channel = new BroadcastChannel("jacdac")
-        // update other windows with connection status
-        this.on(CONNECTION_STATE, () => {
+        const postConnectionState = () => {
             channel.postMessage({
                 id: this.selfDevice.shortId,
                 event: CONNECTION_STATE,
@@ -206,38 +202,73 @@ export class JDBus extends JDNode {
                     connectionState: tr.connectionState,
                 })),
             })
-        })
-        // handle connection from other tabs
-        channel.addEventListener(
-            "message",
-            (
-                msg: MessageEvent<{
-                    id: string
-                    event: string
-                    transports: { type: string; connectionState: string }[]
-                }>
-            ) => {
-                const { data } = msg
-                const { id, event, transports } = data
-                switch (event) {
-                    case CONNECTION_STATE: {
-                        console.debug(`bus ${id}: ${event}`)
-                        // if any other window is trying to connect, disconnect
-                        transports
-                            .filter(
-                                tr =>
-                                    tr.connectionState ===
-                                    ConnectionState.Connecting
-                            )
-                            .forEach(ctr => {
-                                this.transports
-                                    .filter(tr => tr.type === ctr.type)
-                                    .forEach(tr => tr.disconnect())
-                            })
+        }
+        // update other windows with connection status
+        const unsubConnectionState = this.subscribe(
+            CONNECTION_STATE,
+            postConnectionState
+        )
+        const handleVisibilityChange = () => {
+            // tell other windows, we are visible or not
+            channel.postMessage({
+                id: this.selfDevice.shortId,
+                event: "visibilitychange",
+                visibilityState: document.visibilityState,
+            })
+        }
+        const handleBroadcastMessage = async (
+            msg: MessageEvent<{
+                id: string
+                event: string
+                visibilityState?: VisibilityState
+                transports: { type: string; connectionState: string }[]
+            }>
+        ) => {
+            const { data } = msg
+            const { id, event, transports, visibilityState } = data
+            switch (event) {
+                case "visibilitychange": {
+                    // automatically disconnect if another pane becomes live
+                    console.debug(
+                        `broadcast ${id}: ${event} ${visibilityState}`
+                    )
+                    if (visibilityState === "visible") await this.disconnect()
+                    else {
+                        // let other window disconnect
+                        await this.delay(2000)
+                        await this.connect(true)
                     }
+                    break
+                }
+                case CONNECTION_STATE: {
+                    console.debug(`broadcast ${id}: ${event}`, transports)
+                    // if any other window is trying to connect, disconnect
+                    transports
+                        .filter(
+                            tr =>
+                                tr.connectionState ===
+                                ConnectionState.Connecting
+                        )
+                        .forEach(ctr => {
+                            this.transports
+                                .filter(tr => tr.type === ctr.type)
+                                .forEach(tr => tr.disconnect())
+                        })
                 }
             }
-        )
+        }
+
+        channel.addEventListener("message", handleBroadcastMessage, false)
+        document.addEventListener("visibilitychange", handleVisibilityChange)
+        this._unsubscribeBroadcastChannel = () => {
+            unsubConnectionState()
+            document.removeEventListener(
+                "visibilitychange",
+                handleVisibilityChange
+            )
+            channel.removeEventListener("message", handleBroadcastMessage)
+            channel.close()
+        }
     }
 
     /**
@@ -335,6 +366,7 @@ export class JDBus extends JDNode {
      * @category Lifecycle
      */
     start() {
+        this.configureBroadcastChannel()
         if (!this._announceInterval)
             this._announceInterval = this.scheduler.setInterval(
                 () => this.emit(SELF_ANNOUNCE),
@@ -354,6 +386,10 @@ export class JDBus extends JDNode {
      */
     async stop() {
         await this.disconnect()
+        if (this._unsubscribeBroadcastChannel) {
+            this._unsubscribeBroadcastChannel()
+            this._unsubscribeBroadcastChannel = undefined
+        }
         if (this._announceInterval) {
             this.scheduler.clearInterval(this._announceInterval)
             this._announceInterval = undefined
