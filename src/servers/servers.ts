@@ -92,7 +92,6 @@ import JDServiceServer from "../jdom/servers/serviceserver"
 import ButtonServer from "./buttonserver"
 import BuzzerServer from "./buzzerserver"
 import CharacterScreenServer from "./characterscreenserver"
-import HumidityServer from "./humidityserver"
 import JoystickServer, {
     JOYSTICK_ARCADE_BUTTONS,
     JOYSTICK_DPAD_AB_BUTTONS,
@@ -141,13 +140,19 @@ const indoorThermometerOptions: AnalogSensorServerOptions = {
     variant: ThermometerVariant.Indoor,
 }
 const outdoorThermometerOptions: AnalogSensorServerOptions = {
-    instanceName: "outdoor",
+    instanceName: "temperature",
     readingValues: [21.5],
-    streamingInterval: 1000,
+    streamingInterval: 60000,
     minReading: -40,
     maxReading: 120,
     readingError: [0.25],
     variant: ThermometerVariant.Outdoor,
+}
+const outdoorHumidityOptions: AnalogSensorServerOptions = {
+    instanceName: "humidity",
+    streamingInterval: 60000,
+    readingValues: [40],
+    readingError: [0.1],
 }
 const medicalThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "medical",
@@ -486,7 +491,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         serviceClasses: [SRV_E_CO2, SRV_HUMIDITY, SRV_THERMOMETER],
         services: () => [
             new AnalogSensorServer(SRV_E_CO2, CO2Options),
-            new HumidityServer({ instanceName: "humidity" }),
+            new AnalogSensorServer(SRV_HUMIDITY, outdoorHumidityOptions),
             new AnalogSensorServer(SRV_THERMOMETER, indoorThermometerOptions),
         ],
     },
@@ -523,14 +528,16 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     {
         name: "humidity",
         serviceClasses: [SRV_HUMIDITY],
-        services: () => [new HumidityServer()],
+        services: () => [
+            new AnalogSensorServer(SRV_HUMIDITY, outdoorHumidityOptions),
+        ],
     },
     {
         name: "humidity + temperature",
         serviceClasses: [SRV_HUMIDITY, SRV_THERMOMETER],
         services: () => [
             new AnalogSensorServer(SRV_THERMOMETER, outdoorThermometerOptions),
-            new HumidityServer({ instanceName: "humidity" }),
+            new AnalogSensorServer(SRV_HUMIDITY, outdoorHumidityOptions),
         ],
     },
     {
@@ -538,7 +545,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         serviceClasses: [SRV_HUMIDITY, SRV_THERMOMETER, SRV_BAROMETER],
         services: () => [
             new AnalogSensorServer(SRV_THERMOMETER, outdoorThermometerOptions),
-            new HumidityServer({ instanceName: "humidity" }),
+            new AnalogSensorServer(SRV_HUMIDITY, outdoorHumidityOptions),
             new AnalogSensorServer(SRV_BAROMETER, barometerOptions),
         ],
     },
