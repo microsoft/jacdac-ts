@@ -46,7 +46,6 @@ export default class SensorServer<
             preferredStreamingInterval,
             readingError,
         } = options || {}
-
         this.reading = this.addRegister<TReading>(
             SystemReg.Reading,
             readingValues
@@ -54,11 +53,15 @@ export default class SensorServer<
         this.streamingSamples = this.addRegister<[number]>(
             SensorReg.StreamingSamples
         )
-        if (streamingInterval !== undefined)
-            this.streamingInterval = this.addRegister<[number]>(
-                SensorReg.StreamingInterval,
-                [streamingInterval]
-            )
+        this.streamingInterval = this.addRegister<[number]>(
+            SensorReg.StreamingInterval,
+            [
+                streamingInterval ||
+                    preferredStreamingInterval ||
+                    this.reading.specification.preferredInterval ||
+                    STREAMING_DEFAULT_INTERVAL,
+            ]
+        )
         if (preferredStreamingInterval !== undefined)
             this.preferredStreamingInterval = this.addRegister<[number]>(
                 SensorReg.StreamingPreferredInterval,
