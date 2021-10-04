@@ -1,5 +1,11 @@
 import { SystemReg } from "../../jacdac-spec/dist/specconstants"
-import { CHANGE, READING_SENT, REFRESH, SensorReg } from "../jdom/constants"
+import {
+    CHANGE,
+    READING_SENT,
+    REFRESH,
+    SensorReg,
+    STREAMING_DEFAULT_INTERVAL,
+} from "../jdom/constants"
 import { PackedValues } from "../jdom/pack"
 import JDRegisterServer from "../jdom/servers/registerserver"
 import JDServiceServer, { JDServerOptions } from "../jdom/servers/serviceserver"
@@ -14,6 +20,7 @@ export interface SensorServiceOptions<TReading extends PackedValues>
     readingValues?: TReading
     readingError?: TReading
     streamingInterval?: number
+    preferredStreamingInterval?: number
 }
 
 export default class SensorServer<
@@ -23,6 +30,7 @@ export default class SensorServer<
     readonly readingError: JDRegisterServer<TReading>
     readonly streamingSamples: JDRegisterServer<[number]>
     readonly streamingInterval: JDRegisterServer<[number]>
+    readonly preferredStreamingInterval: JDRegisterServer<[number]>
 
     private lastStream = 0
     private lastErrorReadingChanged = false
@@ -32,8 +40,12 @@ export default class SensorServer<
         options?: SensorServiceOptions<TReading>
     ) {
         super(serviceClass, options)
-        const { readingValues, streamingInterval, readingError } = options || {}
-
+        const {
+            readingValues,
+            streamingInterval,
+            preferredStreamingInterval,
+            readingError,
+        } = options || {}
         this.reading = this.addRegister<TReading>(
             SystemReg.Reading,
             readingValues
@@ -43,12 +55,18 @@ export default class SensorServer<
         )
         this.streamingInterval = this.addRegister<[number]>(
             SensorReg.StreamingInterval,
-            [streamingInterval || 50]
+            [
+                streamingInterval ||
+                    preferredStreamingInterval ||
+                    this.reading.specification.preferredInterval ||
+                    STREAMING_DEFAULT_INTERVAL,
+            ]
         )
-        if (streamingInterval !== undefined)
-            this.addRegister<[number]>(SensorReg.StreamingPreferredInterval, [
-                streamingInterval,
-            ])
+        if (preferredStreamingInterval !== undefined)
+            this.preferredStreamingInterval = this.addRegister<[number]>(
+                SensorReg.StreamingPreferredInterval,
+                [preferredStreamingInterval]
+            )
         if (readingError !== undefined) {
             this.readingError = this.addRegister<TReading>(
                 SystemReg.ReadingError,
@@ -68,10 +86,13 @@ export default class SensorServer<
         const [samples] = this.streamingSamples.values()
         if (samples <= 0 || !this.reading.data) return
         // is it time to stream?
-        let [interval] = this.streamingInterval.values()
+        let interval = this.streamingInterval?.values()?.[0]
         if (interval === undefined)
-            // use spec info is needed
-            interval = this.streamingInterval.specification.preferredInterval
+            interval = this.preferredStreamingInterval?.values()?.[0]
+        if (interval === undefined)
+            interval = this.reading.specification.preferredInterval
+        if (interval === undefined) interval = STREAMING_DEFAULT_INTERVAL
+
         const now = this.device.bus.timestamp
         if (now - this.lastStream > interval) {
             // let's stream a value!

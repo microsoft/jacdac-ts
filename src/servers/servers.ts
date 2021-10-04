@@ -92,7 +92,6 @@ import JDServiceServer from "../jdom/servers/serviceserver"
 import ButtonServer from "./buttonserver"
 import BuzzerServer from "./buzzerserver"
 import CharacterScreenServer from "./characterscreenserver"
-import HumidityServer from "./humidityserver"
 import JoystickServer, {
     JOYSTICK_ARCADE_BUTTONS,
     JOYSTICK_DPAD_AB_BUTTONS,
@@ -141,13 +140,19 @@ const indoorThermometerOptions: AnalogSensorServerOptions = {
     variant: ThermometerVariant.Indoor,
 }
 const outdoorThermometerOptions: AnalogSensorServerOptions = {
-    instanceName: "outdoor",
+    instanceName: "temperature",
     readingValues: [21.5],
-    streamingInterval: 1000,
+    streamingInterval: 60000,
     minReading: -40,
     maxReading: 120,
     readingError: [0.25],
     variant: ThermometerVariant.Outdoor,
+}
+const outdoorHumidityOptions: AnalogSensorServerOptions = {
+    instanceName: "humidity",
+    streamingInterval: 60000,
+    readingValues: [40],
+    readingError: [0.1],
 }
 const medicalThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "medical",
@@ -161,6 +166,7 @@ const medicalThermometerOptions: AnalogSensorServerOptions = {
 const barometerOptions: AnalogSensorServerOptions = {
     instanceName: "pressure",
     readingValues: [1013],
+    readingError: [0.4],
 }
 const sonarOptions: AnalogSensorServerOptions = {
     variant: DistanceVariant.Ultrasonic,
@@ -344,6 +350,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         services: () => [
             new SensorServer<[number, number, number]>(SRV_ACCELEROMETER, {
                 readingValues: [0.5, 0.5, -(1 - (0.5 * 0.5 + 0.5 * 0.5))],
+                preferredStreamingInterval: 20,
             }),
         ],
     },
@@ -434,6 +441,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         services: () => [
             new SensorServer<[number, number, number]>(SRV_COLOR, {
                 readingValues: [0.5, 0, 0.5],
+                preferredStreamingInterval: 1000,
             }),
         ],
     },
@@ -484,7 +492,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         serviceClasses: [SRV_E_CO2, SRV_HUMIDITY, SRV_THERMOMETER],
         services: () => [
             new AnalogSensorServer(SRV_E_CO2, CO2Options),
-            new HumidityServer({ instanceName: "humidity" }),
+            new AnalogSensorServer(SRV_HUMIDITY, outdoorHumidityOptions),
             new AnalogSensorServer(SRV_THERMOMETER, indoorThermometerOptions),
         ],
     },
@@ -521,14 +529,16 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     {
         name: "humidity",
         serviceClasses: [SRV_HUMIDITY],
-        services: () => [new HumidityServer()],
+        services: () => [
+            new AnalogSensorServer(SRV_HUMIDITY, outdoorHumidityOptions),
+        ],
     },
     {
         name: "humidity + temperature",
         serviceClasses: [SRV_HUMIDITY, SRV_THERMOMETER],
         services: () => [
             new AnalogSensorServer(SRV_THERMOMETER, outdoorThermometerOptions),
-            new HumidityServer({ instanceName: "humidity" }),
+            new AnalogSensorServer(SRV_HUMIDITY, outdoorHumidityOptions),
         ],
     },
     {
@@ -536,7 +546,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         serviceClasses: [SRV_HUMIDITY, SRV_THERMOMETER, SRV_BAROMETER],
         services: () => [
             new AnalogSensorServer(SRV_THERMOMETER, outdoorThermometerOptions),
-            new HumidityServer({ instanceName: "humidity" }),
+            new AnalogSensorServer(SRV_HUMIDITY, outdoorHumidityOptions),
             new AnalogSensorServer(SRV_BAROMETER, barometerOptions),
         ],
     },
@@ -1371,7 +1381,10 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     {
         name: "power + humidity",
         serviceClasses: [SRV_POWER, SRV_HUMIDITY],
-        services: () => [new PowerServer(), new HumidityServer()],
+        services: () => [
+            new PowerServer(),
+            new AnalogSensorServer(SRV_HUMIDITY, outdoorHumidityOptions),
+        ],
         factory: services => {
             const dev = new JDServerServiceProvider("power+humidity", [
                 services[0],
@@ -1438,6 +1451,7 @@ export function addServiceProvider(
     definition: ServiceProviderDefinition
 ) {
     const services = definition.services()
+    services.forEach(srv => srv.lock())
     const deviceId = stableSimulatorDeviceId(bus, definition.name)
     const options = {
         resetIn: definition.resetIn,
