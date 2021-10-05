@@ -894,7 +894,8 @@ export class JDDevice extends JDNode {
      * @internal
      */
     sendPktWithAck(pkt: Packet) {
-        pkt.requiresAck = true
+        // no acks possible when bus is passive
+        pkt.requiresAck = !this.bus.passive
         this.initAcks()
         return new Promise<void>((resolve, reject) => {
             const ack = {

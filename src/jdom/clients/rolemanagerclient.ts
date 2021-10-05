@@ -101,10 +101,8 @@ export class RoleManagerClient extends JDServiceClient {
         if (
             this._needRefresh &&
             this.bus.timestamp - this._lastRefreshAttempt > ROLE_MANAGER_POLL
-        ) {
-            console.debug("self announce refresh")
+        )
             this.startRefreshRoles()
-        }
     }
 
     get roles() {

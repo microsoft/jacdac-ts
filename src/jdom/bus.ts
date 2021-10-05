@@ -152,11 +152,7 @@ export class JDBus extends JDNode {
     private _serviceProviders: JDServiceProvider[] = []
     private _streaming = false
     private _unsubscribeBroadcastChannel: () => void
-
-    /**
-     * Do not send any packet on the bus
-     */
-    public passive: boolean
+    private _passive = false
 
     /**
      * Gets an instance that tracks packet statistics
@@ -332,8 +328,22 @@ export class JDBus extends JDNode {
         }
     }
 
+    /**
+     * Do not send any packet on the bus
+     */
+    get passive(): boolean {
+        return this._passive
+    }
+
+    set passive(value: boolean) {
+        if (value !== this._passive) {
+            this._passive = value
+            this.emit(CHANGE)
+        }
+    }
+
     private preConnect(transport: Transport) {
-        console.debug(`preconnect ${transport.type}`, { transport })
+        //console.debug(`preconnect ${transport.type}`, { transport })
         return Promise.all(
             this._transports
                 .filter(t => t !== transport)
@@ -376,10 +386,9 @@ export class JDBus extends JDNode {
     start() {
         this.configureBroadcastChannel()
         if (!this._announceInterval)
-            this._announceInterval = this.scheduler.setInterval(
-                () => this.emit(SELF_ANNOUNCE),
-                499
-            )
+            this._announceInterval = this.scheduler.setInterval(() => {
+                if (!this.passive) this.emit(SELF_ANNOUNCE)
+            }, 499)
         this.backgroundRefreshRegisters = true
         if (!this._gcInterval)
             this._gcInterval = this.scheduler.setInterval(
@@ -737,11 +746,12 @@ ${dev
     async sendPacketAsync(packet: Packet) {
         packet.timestamp = this.timestamp
         if (Flags.trace) packet.meta[META_TRACE] = stack()
-        this.emit(PACKET_SEND, packet)
 
         // special debug mode to avoid dashboard interfere with packets
         // will generate fails for acks
         if (this.passive) return
+
+        this.emit(PACKET_SEND, packet)
 
         await Promise.all(
             this._transports.map(transport => transport.sendPacketAsync(packet))
