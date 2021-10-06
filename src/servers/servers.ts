@@ -85,6 +85,7 @@ import {
     DotMatrixVariant,
     FlexVariant,
     SRV_FLEX,
+    SRV_WIFI,
 } from "../jdom/constants"
 import JDServerServiceProvider from "../jdom/servers/serverserviceprovider"
 import ProtocolTestServer from "../jdom/servers/protocoltestserver"
@@ -129,6 +130,7 @@ import DimmerServer from "./dimmerserver"
 import AzureIoTHubHealthServer from "./azureiothubhealthserver"
 import JDServiceProvider from "../jdom/servers/serviceprovider"
 import VibrationMotor from "./vibrationmotor"
+import WifiServer from "./wifiserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "indoor",
@@ -1419,6 +1421,11 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         services: () => [new AzureIoTHubServer()],
     },
     */
+    {
+        name: "Wifi (virtual)",
+        serviceClasses: [SRV_WIFI],
+        services: () => [new WifiServer()],
+    },
     {
         name: "Azure IoT Hub Health",
         serviceClasses: [SRV_AZURE_IOT_HUB_HEALTH],
