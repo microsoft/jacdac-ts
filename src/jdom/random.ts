@@ -22,6 +22,13 @@ export function randomUInt(max: number) {
     return arr[0] % max
 }
 
+export function randomBytes(n: number) {
+    const buf = anyRandomUint32(n)
+    const r = new Uint8Array(buf.length)
+    for (let i = 0; i < n; ++i) r[i] = buf[i] & 0xff
+    return r
+}
+
 export function randomDeviceId() {
     const devId = anyRandomUint32(8)
     for (let i = 0; i < 8; ++i) devId[i] &= 0xff
