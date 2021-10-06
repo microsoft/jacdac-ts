@@ -1422,7 +1422,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     },
     */
     {
-        name: "Wifi (virtual)",
+        name: "WiFi (virtual)",
         serviceClasses: [SRV_WIFI],
         services: () => [new WifiServer()],
     },

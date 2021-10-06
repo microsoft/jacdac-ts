@@ -92,7 +92,7 @@ export class WifiServer extends JDServiceServer {
 
     private scan() {
         this._lastScanResults = [
-            Math.random() > 0.05 && {
+            {
                 ssid: "HOME",
                 bssid: new Uint8Array(0),
                 rssi: -42,
