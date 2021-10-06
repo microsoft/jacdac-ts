@@ -223,11 +223,13 @@ export class WifiServer extends JDServiceServer {
             )
         }
         network.password = password
+        this.sendEvent(WifiEvent.NetworksChanged)
     }
 
     private handleForgetAllNetworks() {
         this._knownNetworks = []
         this.disconnect()
+        this.sendEvent(WifiEvent.NetworksChanged)
     }
 
     private handleForgetNetwork(pkt: Packet) {
@@ -237,6 +239,7 @@ export class WifiServer extends JDServiceServer {
         )
         const [currentSsid] = this.ssid.values()
         if (ssid === currentSsid) this.disconnect()
+        this.sendEvent(WifiEvent.NetworksChanged)
     }
 
     private handleSetNetworkPriority(pkt: Packet) {
@@ -245,6 +248,7 @@ export class WifiServer extends JDServiceServer {
             network => network.ssid === ssid
         )
         if (network) network.priority = priority
+        this.sendEvent(WifiEvent.NetworksChanged)
     }
 }
 export default WifiServer
