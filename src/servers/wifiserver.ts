@@ -1,10 +1,4 @@
-import {
-    CHANGE,
-    SRV_WIFI,
-    WifiAPFlags,
-    WifiCmd,
-    WifiReg,
-} from "../jdom/constants"
+import { SRV_WIFI, WifiAPFlags, WifiCmd, WifiReg } from "../jdom/constants"
 import { jdpack } from "../jdom/pack"
 import { Packet } from "../jdom/packet"
 import { OutPipe } from "../jdom/pipes"
@@ -32,7 +26,14 @@ export class WifiServer extends JDServiceServer {
         flags: WifiAPFlags
         priority: number
         password: string
-    }[] = []
+    }[] = [
+        {
+            ssid: "HOME",
+            password: "home",
+            priority: 0,
+            flags: WifiAPFlags.WPS | WifiAPFlags.IEEE_802_11B,
+        },
+    ]
 
     constructor() {
         super(SRV_WIFI, { intensityValues: [true] })
@@ -158,7 +159,6 @@ export class WifiServer extends JDServiceServer {
 
     private handleForgetAllNetworks() {
         this._knownNetworks = []
-        this.emit(CHANGE)
     }
 
     private handleForgetNetwork(pkt: Packet) {
@@ -166,7 +166,6 @@ export class WifiServer extends JDServiceServer {
         this._knownNetworks = this._knownNetworks.filter(
             network => network.ssid !== ssid
         )
-        this.emit(CHANGE)
     }
 
     private handleSetNetworkPriority(pkt: Packet) {
