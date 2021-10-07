@@ -83,10 +83,10 @@ export class JDService extends JDNode {
         statusCodeChanged.on(CHANGE, () => {
             // todo update status code with event payload
             const { data } = statusCodeChanged
-            console.log("status code changed", { data })
-            // request data
+            console.debug(`${this}: status code changed event`, { data })
+            // schedule data update
             const statusCode = this.register(BaseReg.StatusCode)
-            statusCode?.sendGetAsync()
+            statusCode?.clearGetTimestamp()
         })
     }
 
