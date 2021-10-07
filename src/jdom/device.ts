@@ -807,12 +807,26 @@ export class JDDevice extends JDNode {
      * @category Control
      */
     get productIdentifier(): number {
-        const fwIdRegister = this.service(0)?.register(
-            ControlReg.ProductIdentifier
-        )
-        const v = fwIdRegister?.uintValue
-        if (fwIdRegister && v === undefined) fwIdRegister?.refresh(true)
+        const reg = this.service(0)?.register(ControlReg.ProductIdentifier)
+        const v = reg?.uintValue
+        if (reg && v === undefined) reg?.refresh(true)
         return v
+    }
+
+    /**
+     * Gets the elapsed time since boot in milli-seconds
+     * @category Control
+     */
+    get uptime(): number {
+        const reg = this.service(0)?.register(ControlReg.Uptime)
+        const v = reg?.unpackedValue?.[0]
+        if (reg && v === undefined) reg?.refresh(true)
+        let uptime: number = undefined
+        if (v !== undefined) {
+            // compute offset
+            uptime = v / 1000 + this.bus.timestamp - reg.lastDataTimestamp
+        }
+        return uptime
     }
 
     /**
