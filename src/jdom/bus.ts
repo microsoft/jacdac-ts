@@ -59,7 +59,6 @@ import { serviceClass } from "./pretty"
 import JDNode from "./node"
 import {
     FirmwareBlob,
-    scanFirmwares,
     sendStayInBootloaderCommand,
 } from "./flashing"
 import JDService from "./service"
@@ -926,36 +925,6 @@ ${dev
             this.emit(CHANGE)
         }
         return d
-    }
-
-    private _debouncedScanFirmwares: () => void
-    /**
-     * Enables or disables automatically scanning and resolving firmware updates
-     * @param enabled true to scan firmware in the background
-     * @category Firmware
-     */
-    setBackgroundFirmwareScans(enabled: boolean) {
-        const isSSR = typeof window === "undefined"
-        if (isSSR) enabled = false
-
-        if (enabled) {
-            if (!this._debouncedScanFirmwares) {
-                this._debouncedScanFirmwares = debounceAsync(async () => {
-                    if (this._transports.some(tr => tr.connected)) {
-                        console.info(`scanning firmwares`)
-                        await scanFirmwares(this)
-                    }
-                }, SCAN_FIRMWARE_INTERVAL)
-                this.on(DEVICE_ANNOUNCE, this._debouncedScanFirmwares)
-            }
-        } else {
-            if (this._debouncedScanFirmwares) {
-                console.debug(`disabling background firmware scans`)
-                const d = this._debouncedScanFirmwares
-                this._debouncedScanFirmwares = undefined
-                this.off(DEVICE_ANNOUNCE, d)
-            }
-        }
     }
 
     /**

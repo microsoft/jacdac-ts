@@ -450,71 +450,12 @@ export async function parseFirmwareFile(
     return uf2Blobs
 }
 
-async function scanCore(
-    bus: JDBus,
-    numTries: number,
-    makeFlashers: boolean,
-    recovery = false
-) {
-    const devices: Record<string, FirmwareInfo> = {}
+async function createFlashers(bus: JDBus) {
     const flashers: FlashClient[] = []
-    try {
-        bus.on(PACKET_REPORT, handlePkt)
-        for (let i = 0; i < numTries; ++i) {
-            // ask all CTRL services for bootloader info
-            if (!makeFlashers) {
-                for (const reg of [
-                    ControlReg.BootloaderProductIdentifier,
-                    ControlReg.ProductIdentifier,
-                    ControlReg.FirmwareVersion,
-                    ControlReg.DeviceDescription,
-                ]) {
-                    const pkt = Packet.onlyHeader(CMD_GET_REG | reg)
-                    await pkt.sendAsMultiCommandAsync(bus, SRV_CONTROL)
-                    await bus.delay(10)
-                }
-            }
+    const numTries = 10
+    const tryDelay = 10
 
-            if (recovery) {
-                // also ask BL services if any
-                const bl_announce = Packet.onlyHeader(CMD_ADVERTISEMENT_DATA)
-                await bl_announce.sendAsMultiCommandAsync(bus, SRV_BOOTLOADER)
-            }
-
-            await bus.delay(10)
-        }
-    } finally {
-        bus.off(PACKET_REPORT, handlePkt)
-    }
-    const devs = Object.values(devices).filter(d => {
-        if (!d.bootloaderProductIdentifier)
-            d.bootloaderProductIdentifier = d.productIdentifier
-        if (!d.productIdentifier)
-            d.productIdentifier = d.bootloaderProductIdentifier
-        return !!d.productIdentifier
-    })
-    // store info in objects
-    devs.forEach(info => {
-        const dev = bus.device(info.deviceId, true)
-        if (dev) dev.firmwareInfo = info
-    })
-    return {
-        devs,
-        flashers,
-    }
-
-    function handlePkt(p: Packet) {
-        let dev = devices[p.deviceIdentifier]
-        if (!dev) {
-            dev = devices[p.deviceIdentifier] = {
-                deviceId: p.deviceIdentifier,
-                productIdentifier: null,
-                version: null,
-                name: null,
-                bootloaderProductIdentifier: null,
-            }
-        }
-
+    const handlePkt = (p: Packet) => {
         // note that we may get this even if recovery==false due to someone else asking
         // (eg when the user set the recovery mode toggle)
         if (
@@ -522,52 +463,25 @@ async function scanCore(
             p.serviceCommand == CMD_ADVERTISEMENT_DATA &&
             p.getNumber(NumberFormat.UInt32LE, 0) == SRV_BOOTLOADER
         ) {
-            dev.bootloaderProductIdentifier = p.getNumber(
-                NumberFormat.UInt32LE,
-                12
-            )
-            if (makeFlashers) {
-                if (
-                    !flashers.find(f => f.device.deviceId == p.deviceIdentifier)
-                ) {
-                    log(`new flasher`)
-                    flashers.push(new FlashClient(bus, p))
-                }
+            if (!flashers.find(f => f.device.deviceId == p.deviceIdentifier)) {
+                log(`new flasher`)
+                flashers.push(new FlashClient(bus, p))
             }
         }
-
-        if (
-            !makeFlashers &&
-            p.serviceIndex == 0 &&
-            p.serviceCommand & CMD_GET_REG
-        ) {
-            const reg = p.serviceCommand & CMD_REG_MASK
-            if (reg == ControlReg.BootloaderProductIdentifier)
-                dev.bootloaderProductIdentifier = p.uintData
-            else if (reg == ControlReg.ProductIdentifier)
-                dev.productIdentifier = p.uintData
-            else if (reg == ControlReg.DeviceDescription)
-                dev.name = bufferToString(p.data)
-            else if (reg == ControlReg.FirmwareVersion)
-                dev.version = bufferToString(p.data)
-        }
     }
-}
 
-/**
- * Scan bus for device with an available firmware update
- * @param bus
- * @param timeout
- * @returns
- * @category Firmware
- */
-export async function scanFirmwares(
-    bus: JDBus,
-    timeout = 300
-): Promise<FirmwareInfo[]> {
-    const devs = (await scanCore(bus, (timeout / 50) >> 0, false)).devs
-    devs.sort((a, b) => strcmp(a.deviceId, b.deviceId))
-    return devs
+    try {
+        bus.on(PACKET_REPORT, handlePkt)
+        for (let i = 0; i < numTries; ++i) {
+            // also ask BL services if any
+            const bl_announce = Packet.onlyHeader(CMD_ADVERTISEMENT_DATA)
+            await bl_announce.sendAsMultiCommandAsync(bus, SRV_BOOTLOADER)
+            await bus.delay(tryDelay)
+        }
+    } finally {
+        bus.off(PACKET_REPORT, handlePkt)
+    }
+    return flashers
 }
 
 /**
@@ -611,18 +525,18 @@ export async function flashFirmwareBlob(
         log(`resetting ${device}`)
         await device.sendCtrlCommand(ControlCmd.Reset)
     }
-    const allFlashers = (await scanCore(bus, 10, true, true)).flashers
+    const allFlashers = await createFlashers(bus)
     const flashers = allFlashers.filter(
         f => !!ignoreFirmwareCheck || f.dev_class == blob.productIdentifier
     )
-    console.log({ allFlashers, flashers })
-    if (!flashers.length) throw new Error("no devices to flash")
-    if (flashers.length != updateCandidates.length) {
-        console.log(flashers, blob)
-        throw new Error(
+    if (!flashers.length) {
+        log(`no devices to flash`)
+        return
+    }
+    if (flashers.length != updateCandidates.length)
+        console.error(
             `expected ${updateCandidates.length} flashers, got ${flashers.length}`
         )
-    }
     flashers[0].classClients = flashers
     log(`flashing ${blob.name}`)
     await flashers[0].flashFirmwareBlob(blob, progress)

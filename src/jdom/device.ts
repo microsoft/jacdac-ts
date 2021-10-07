@@ -12,7 +12,6 @@ import {
     PACKET_RECEIVE,
     PACKET_REPORT,
     PACKET_EVENT,
-    FIRMWARE_INFO,
     DEVICE_FIRMWARE_INFO,
     ControlCmd,
     DEVICE_NODE_NAME,
@@ -37,8 +36,6 @@ import {
     REPORT_UPDATE,
     SERIAL_TRANSPORT,
     WEBSOCKET_TRANSPORT,
-    DEVICE_PRODUCT_IDENTIFY,
-    DEVICE_FIRMWARE_IDENTIFY,
     DEVICE_PACKET_ANNOUNCE,
 } from "./constants"
 import { read32, bufferEq, setAckError, read16 } from "./utils"
@@ -214,7 +211,6 @@ export class JDDevice extends JDNode {
     private _anonymizedId: string
     private _services: JDService[]
     private _ports: Record<string, PipeInfo>
-    private _firmwareInfo: FirmwareInfo
     private _ackAwaiting: AckAwaiter[]
     private _flashing = false
     private _identifying: boolean
@@ -424,24 +420,48 @@ export class JDDevice extends JDNode {
      * Gets the firmware information if any.
      * @category Firmware
      */
-    get firmwareInfo() {
-        return this._firmwareInfo
+    get firmwareInfo(): FirmwareInfo {
+        const ctrl = this.service(0)
+
+        const deviceId = this.deviceId
+        const name = ctrl?.register(ControlReg.DeviceDescription)?.stringValue
+        const version = this.firmwareVersion
+        const productIdentifier = ctrl?.register(
+            ControlReg.ProductIdentifier
+        )?.uintValue
+        const bootloaderProductIdentifier = ctrl?.register(
+            ControlReg.BootloaderProductIdentifier
+        )?.uintValue
+        const ready =
+            version &&
+            (productIdentifier !== undefined ||
+                bootloaderProductIdentifier !== undefined)
+
+        return ready
+            ? {
+                  deviceId,
+                  name,
+                  version,
+                  productIdentifier,
+                  bootloaderProductIdentifier,
+              }
+            : undefined
     }
 
-    /**
-     * Sets the firmware information.
-     * @category Firmware
-     */
-    set firmwareInfo(info: FirmwareInfo) {
-        const changed =
-            JSON.stringify(this._firmwareInfo) !== JSON.stringify(info)
-        if (changed) {
-            this._firmwareInfo = info
-            this.bus.emit(DEVICE_FIRMWARE_INFO, this)
-            this.emit(FIRMWARE_INFO)
-            this.bus.emit(DEVICE_CHANGE, this)
-            this.emit(CHANGE)
-        }
+    refreshFirmwareInfo() {
+        // listen for specific registers
+        const ctrl = this._services?.[0]
+        const firmwareRegs = [
+            (ControlReg.ProductIdentifier,
+            ControlReg.FirmwareVersion,
+            ControlReg.BootloaderProductIdentifier),
+        ]
+        firmwareRegs.forEach(reg =>
+            ctrl.register(reg).once(REPORT_UPDATE, () => {
+                this.emitPropagated(DEVICE_FIRMWARE_INFO)
+                this.emitPropagated(CHANGE)
+            })
+        )
     }
 
     /**
@@ -588,23 +608,7 @@ export class JDDevice extends JDNode {
             for (let i = 0; i < n; ++i) s.push(new JDService(this, i))
             this._services = s
             this.lastServiceUpdate = this.bus.timestamp
-
-            // listen for specific registers
-            const ctrl = this._services?.[0]
-            ctrl.register(ControlReg.ProductIdentifier).once(
-                REPORT_UPDATE,
-                () => {
-                    this.emitPropagated(DEVICE_PRODUCT_IDENTIFY)
-                    this.emitPropagated(CHANGE)
-                }
-            )
-            ctrl.register(ControlReg.FirmwareVersion).once(
-                REPORT_UPDATE,
-                () => {
-                    this.emitPropagated(DEVICE_FIRMWARE_IDENTIFY)
-                    this.emitPropagated(CHANGE)
-                }
-            )
+            this.refreshFirmwareInfo()
         }
     }
 
