@@ -109,6 +109,7 @@ export const DEVICE_CHANGE = "deviceChange"
 export const DEVICE_FIRMWARE_INFO = "firmwareInfo"
 export const DEVICE_CLEAN = "deviceClean"
 export const DEVICE_PRODUCT_IDENTIFY = "deviceProductIdentify"
+export const DEVICE_FIRMWARE_IDENTIFY = "deviceFirmwareIdentify"
 export const SELF_ANNOUNCE = "selfAnnounce"
 
 export const PACKET_SEND = "packetSend"

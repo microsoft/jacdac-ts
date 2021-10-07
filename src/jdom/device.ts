@@ -38,6 +38,7 @@ import {
     SERIAL_TRANSPORT,
     WEBSOCKET_TRANSPORT,
     DEVICE_PRODUCT_IDENTIFY,
+    DEVICE_FIRMWARE_IDENTIFY,
 } from "./constants"
 import { read32, bufferEq, setAckError, read16 } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
@@ -586,7 +587,10 @@ export class JDDevice extends JDNode {
             )
             ctrl.register(ControlReg.FirmwareVersion).once(
                 REPORT_UPDATE,
-                () => {}
+                () => {
+                    this.emitPropagated(DEVICE_FIRMWARE_IDENTIFY)
+                    this.emitPropagated(CHANGE)
+                }
             )
         }
     }
