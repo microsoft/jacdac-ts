@@ -39,6 +39,7 @@ import {
     WEBSOCKET_TRANSPORT,
     DEVICE_PRODUCT_IDENTIFY,
     DEVICE_FIRMWARE_IDENTIFY,
+    DEVICE_PACKET_ANNOUNCE,
 } from "./constants"
 import { read32, bufferEq, setAckError, read16 } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
@@ -74,6 +75,7 @@ interface AckAwaiter {
 export interface DeviceStats {
     dropped: number
     restarts: number
+    announce: number
 }
 
 /**
@@ -84,6 +86,7 @@ export class DeviceStatsMonitor extends JDEventSource {
     // counter
     private _receivedPackets = 0
     private _restarts = 0
+    private _announce = 0
 
     // horizon
     private readonly _data: {
@@ -100,6 +103,13 @@ export class DeviceStatsMonitor extends JDEventSource {
      */
     constructor() {
         super()
+    }
+
+    /**
+     * Number of announce packets received by the device
+     **/
+    get announce() {
+        return this._announce
     }
 
     /**
@@ -127,14 +137,16 @@ export class DeviceStatsMonitor extends JDEventSource {
      * Gets the current stats
      */
     get current(): DeviceStats {
-        const { dropped, restarts } = this
-        return { dropped, restarts }
+        const { dropped, restarts, announce } = this
+        return { dropped, restarts, announce }
     }
 
     /**
      * @internal
      */
     processAnnouncement(pkt: Packet) {
+        this._announce++
+
         const { current: oldCurrent } = this
         // collect metrics
         const received = this._receivedPackets
@@ -169,6 +181,7 @@ export class DeviceStatsMonitor extends JDEventSource {
      */
     processRestart() {
         this._restarts++
+        this._announce = 0
     }
 }
 
@@ -695,6 +708,7 @@ export class JDDevice extends JDNode {
         }
 
         // notify that we've received an announce packet
+        this.bus.emit(DEVICE_PACKET_ANNOUNCE, this)
         this.emit(PACKET_ANNOUNCE)
 
         // notify of any changes
