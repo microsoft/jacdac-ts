@@ -24,10 +24,5 @@ export class Flags {
      * Enables/disables WebBLE
      */
     static webBluetooth = false
-
-    /**
-     * Use local storage and indexeddb to store data
-     */
-    static storage = false
 }
 export default Flags
