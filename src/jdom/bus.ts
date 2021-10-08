@@ -57,10 +57,7 @@ import {
 } from "./constants"
 import { serviceClass } from "./pretty"
 import JDNode from "./node"
-import {
-    FirmwareBlob,
-    sendStayInBootloaderCommand,
-} from "./flashing"
+import { FirmwareBlob, sendStayInBootloaderCommand } from "./flashing"
 import JDService from "./service"
 import {
     deviceSpecificationFromProductIdentifier,
@@ -109,8 +106,6 @@ export interface BusOptions {
      */
     parentOrigin?: string
 }
-
-const SCAN_FIRMWARE_INTERVAL = 30000
 
 /**
  * A Jacdac bus manager. This instance maintains the list of devices on the bus.
