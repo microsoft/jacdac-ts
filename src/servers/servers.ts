@@ -129,7 +129,7 @@ import HIDMouseServer from "./hidmouseserver"
 import DimmerServer from "./dimmerserver"
 import AzureIoTHubHealthServer from "./azureiothubhealthserver"
 import JDServiceProvider from "../jdom/servers/serviceprovider"
-import VibrationMotor from "./vibrationmotor"
+import VibrationMotor from "./vibrationmotorserver"
 import WifiServer from "./wifiserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
