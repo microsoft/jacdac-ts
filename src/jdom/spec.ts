@@ -21,6 +21,7 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _serviceSpecifications: jdspec.ServiceSpec[] =
     serviceSpecificationData as any
+let _serviceSpecificationMap: Record<number, jdspec.ServiceSpec> = undefined
 let _customServiceSpecifications: Record<string, jdspec.ServiceSpec> = {}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const _deviceRegistry: jdspec.DeviceSpec[] = deviceRegistryData as any
@@ -32,6 +33,7 @@ const _deviceRegistry: jdspec.DeviceSpec[] = deviceRegistryData as any
  */
 export function loadServiceSpecifications(specs: jdspec.ServiceSpec[]) {
     _serviceSpecifications = specs?.slice(0) || []
+    _serviceSpecificationMap = undefined
 }
 
 /**
@@ -40,8 +42,10 @@ export function loadServiceSpecifications(specs: jdspec.ServiceSpec[]) {
  * @category Specification
  */
 export function addCustomServiceSpecification(service: jdspec.ServiceSpec) {
-    if (service && service.classIdentifier)
+    if (service && service.classIdentifier) {
         _customServiceSpecifications[service.classIdentifier] = service
+        _serviceSpecificationMap = undefined
+    }
 }
 
 /**
@@ -50,6 +54,7 @@ export function addCustomServiceSpecification(service: jdspec.ServiceSpec) {
  */
 export function clearCustomServiceSpecifications() {
     _customServiceSpecifications = {}
+    _serviceSpecificationMap = undefined
 }
 
 /**
@@ -208,11 +213,20 @@ export function serviceSpecificationFromClassIdentifier(
     classIdentifier: number
 ): jdspec.ServiceSpec {
     if (isNaN(classIdentifier)) return undefined
-    return (
+    // try lookup cache
+    let srv = _serviceSpecificationMap?.[classIdentifier]
+    if (srv) return srv
+
+    // resolve
+    srv =
         _serviceSpecifications.find(
             s => s.classIdentifier === classIdentifier
         ) || _customServiceSpecifications[classIdentifier]
-    )
+    if (srv) {
+        if (!_serviceSpecificationMap) _serviceSpecificationMap = {}
+        _serviceSpecificationMap[classIdentifier] = srv
+    }
+    return srv
 }
 
 /**
