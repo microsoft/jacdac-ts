@@ -609,7 +609,9 @@ ${dev
     .slice(1)
     .map(srv =>
         [
-            `    ${srv.name} (0x${srv.serviceClass.toString(16)})`,
+            `    ${
+                srv.specification?.shortName || srv.name
+            } (0x${srv.serviceClass.toString(16)})`,
             ...srv
                 .registers()
                 .filter(reg => !!reg.data)
