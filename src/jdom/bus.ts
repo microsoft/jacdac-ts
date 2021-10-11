@@ -1,6 +1,6 @@
 import Packet from "./packet"
 import JDDevice from "./device"
-import { debounceAsync, strcmp, arrayConcatMany } from "./utils"
+import { strcmp, arrayConcatMany, toHex } from "./utils"
 import {
     JD_SERVICE_INDEX_CTRL,
     CMD_ADVERTISEMENT_DATA,
@@ -220,7 +220,7 @@ export class JDBus extends JDNode {
             }>
         ) => {
             const { data } = msg
-            const { id, event, transports, visibilityState } = data
+            const { event, transports, visibilityState } = data
             switch (event) {
                 case "visibilitychange": {
                     // automatically disconnect if another pane becomes live
@@ -607,7 +607,21 @@ ${this.devices({ ignoreInfrastructure: true })
 ${dev
     .services()
     .slice(1)
-    .map(srv => `    ${srv.name} (0x${srv.serviceClass.toString(16)})`)
+    .map(srv =>
+        [
+            `    ${srv.name} (0x${srv.serviceClass.toString(16)})`,
+            ...srv
+                .registers()
+                .filter(reg => !!reg.data)
+                .map(
+                    reg =>
+                        `        ${reg.specification?.kind || "reg"} ${
+                            reg.name
+                        }: ${reg.humanValue} (${toHex(reg.data)})`
+                ),
+            ...srv.events.map(ev => `        event ${ev.name}: ${ev.count}`),
+        ].join("\n")
+    )
     .join("\n")}
 `
     )
