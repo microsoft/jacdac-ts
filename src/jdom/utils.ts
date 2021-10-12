@@ -441,7 +441,7 @@ export function signal(): Signal {
 }
 
 export function readBlobToUint8Array(blob: Blob): Promise<Uint8Array> {
-    if (blob.arrayBuffer) {
+    if (blob?.arrayBuffer) {
         return blob.arrayBuffer().then(data => new Uint8Array(data))
     }
 
