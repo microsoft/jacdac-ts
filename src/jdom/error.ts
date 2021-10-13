@@ -1,4 +1,4 @@
-import { JACDAC_ERROR } from "./constants"
+import { ERROR_TRANSPORT_DEVICE_LOCKED, JACDAC_ERROR } from "./constants"
 
 /**
  * Common Jacdac error type
@@ -18,6 +18,14 @@ export default JDError
  * @returns
  * @category Runtime
  */
-export function errorCode(e: JDError): string {
-    return e.name === JACDAC_ERROR ? (e as JDError)?.jacdacName : undefined
+export function errorCode(e: Error): string {
+    const jacdacCode =
+        e.name === JACDAC_ERROR ? (e as JDError)?.jacdacName : undefined
+    if (jacdacCode) return jacdacCode
+
+    const deviceLocked =
+        e.name == "NetworkError" && /unable to claim interface/i.test(e.message)
+    if (deviceLocked) return ERROR_TRANSPORT_DEVICE_LOCKED
+
+    return undefined
 }
