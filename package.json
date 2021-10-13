@@ -75,15 +75,17 @@
     "rollup-plugin-typescript2": "^0.30.0",
     "rollup-plugin-visualizer": "^5.5.2",
     "semantic-release": "^18.0.0",
-    "serialport": "^9.2.4",
     "shelljs": "^0.8.4",
     "ts-node": "^10.2.1",
     "typedoc": "^0.22.5",
     "typescript": "^4.4.3",
-    "webusb": "^2.2.0",
     "ws": "^8.2.3",
     "yargs-parser": "^20.2.9",
     "fs-extra": "^10.0.0"
+  },
+  "optionalDependencies": {
+    "serialport": "^9.2.4",
+    "webusb": "^2.2.0"
   },
   "dependencies": {
     "@types/node": "^16.10.3",
