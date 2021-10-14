@@ -1121,6 +1121,8 @@ ${dev
             [
                 this._restartCounter |
                     (this._client ? ControlAnnounceFlags.IsClient : 0) |
+                    ControlAnnounceFlags.SupportsBroadcast |
+                    ControlAnnounceFlags.SupportsFrames |
                     ControlAnnounceFlags.SupportsACK,
                 [[SRV_INFRASTRUCTURE]],
             ]
