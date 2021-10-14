@@ -451,6 +451,19 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         ],
     },
     {
+        name: "character screen (Braille, 16x1)",
+        serviceClasses: [SRV_CHARACTER_SCREEN],
+        services: () => [
+            new CharacterScreenServer({
+                message: "hi",
+                columns: 16,
+                rows: 1,
+                variant: CharacterScreenVariant.Braille,
+                textDirection: CharacterScreenTextDirection.LeftToRight,
+            }),
+        ],
+    },
+    {
         name: "color",
         serviceClasses: [SRV_COLOR],
         services: () => [
