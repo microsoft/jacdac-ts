@@ -865,7 +865,7 @@ export class JDDevice extends JDNode {
         let resends = 0
         this._ackAwaiting = []
         const cleanUp = this.subscribe(PACKET_REPORT, (rep: Packet) => {
-            if (rep.serviceIndex != JD_SERVICE_INDEX_CRC_ACK) return
+            if (!rep.isCRCAck) return
             let numdone = 0
             for (const aa of this._ackAwaiting) {
                 if (aa.pkt && aa.pkt.crc == rep.serviceCommand) {
