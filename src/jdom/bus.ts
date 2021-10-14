@@ -171,20 +171,17 @@ export class JDBus extends JDNode {
     constructor(transports?: Transport[], options?: BusOptions) {
         super()
 
-        const {
-            deviceId = randomDeviceId(),
-            scheduler = new WallClockScheduler(),
-            parentOrigin = "*",
-            client = false,
-        } = options || {}
-        this.selfDeviceId = deviceId
-        this.scheduler = scheduler
-        this.parentOrigin = parentOrigin
-        this._client = client
+        const { deviceId, scheduler, parentOrigin, client } = options || {}
+        this.selfDeviceId = deviceId || randomDeviceId()
+        this.scheduler = scheduler || new WallClockScheduler()
+        this.parentOrigin = parentOrigin || "*"
+        this._client = !!client
         this.stats = new BusStatsMonitor(this)
 
         // some transport may be undefined
         transports?.filter(tr => !!tr).map(tr => this.addTransport(tr))
+
+        console.debug(`bus`, { bus: this })
 
         // tell loggers to send data, every now and then
         // send resetin packets
