@@ -181,8 +181,6 @@ export class JDBus extends JDNode {
         // some transport may be undefined
         transports?.filter(tr => !!tr).map(tr => this.addTransport(tr))
 
-        console.debug(`bus`, { bus: this })
-
         // tell loggers to send data, every now and then
         // send resetin packets
         this.on(SELF_ANNOUNCE, this.handleSelfAnnounce.bind(this))
