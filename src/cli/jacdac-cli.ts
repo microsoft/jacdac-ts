@@ -200,15 +200,15 @@ if (transport || options.ws) {
 
 // Logic parsing
 if (options.parse) {
-    const jd = new JDBus([], { client: false })
+    const bus = new JDBus([], { client: false })
     const opts = {
         skipRepeatedAnnounce: false,
         showTime: true,
     }
-    jd.on(PACKET_RECEIVE, pkt => console.log(printPacket(pkt, opts)))
-    jd.on(PACKET_RECEIVE_ANNOUNCE, pkt => console.log(printPacket(pkt, opts)))
+    bus.on(PACKET_RECEIVE, pkt => console.log(printPacket(pkt, opts)))
+    bus.on(PACKET_RECEIVE_ANNOUNCE, pkt => console.log(printPacket(pkt, opts)))
 
     const text = fs.readFileSync(options.parse, "utf8")
-    replayLogicLog(jd, parseLogicLog(text), Number.POSITIVE_INFINITY)
+    replayLogicLog(bus, parseLogicLog(text), Number.POSITIVE_INFINITY)
     setTimeout(() => process.exit(0), 500)
 }

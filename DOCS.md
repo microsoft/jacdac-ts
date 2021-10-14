@@ -26,7 +26,7 @@ then import components as needed using ES6 import syntax
 
 ```javascript
 import { createWebBus } from "jacdac-ts"
-const jd = createWebBus()
+const bus = createWebBus()
 ```
 
 ### CDN / UMD

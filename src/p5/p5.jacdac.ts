@@ -17,7 +17,7 @@ declare let p5: any
 /**
  * The Jacdac bus
  */
-export const bus = createWebBus()
+export const bus = createWebBus({ client: true })
 bus.streaming = true
 
 /**
@@ -39,7 +39,7 @@ export async function disconnect() {
 let connectBtn: any
 /**
  * Creates a Jacdac "connect" button that dissapears when connected.
- * @returns
+ * @returns a button element
  */
 export function createConnectButton() {
     if (!connectBtn && isWebTransportSupported()) {
