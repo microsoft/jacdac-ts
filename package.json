@@ -1,6 +1,6 @@
 {
   "name": "jacdac-ts",
-  "version": "1.18.15",
+  "version": "1.18.16",
   "description": "",
   "keywords": [],
   "main": "dist/jacdac.js",
@@ -92,5 +92,5 @@
     "@types/w3c-web-serial": "^1.0.2",
     "@types/w3c-web-usb": "^1.0.5",
     "@types/web-bluetooth": "^0.0.11"
-  } 
+  }
 }
