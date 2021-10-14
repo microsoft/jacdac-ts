@@ -81,7 +81,11 @@ import { BusStatsMonitor } from "./busstats"
 import RoleManagerClient from "./clients/rolemanagerclient"
 import JDBridge from "./bridge"
 import { randomDeviceId } from "./random"
-import { ControlReg, SRV_CONTROL } from "../../jacdac-spec/dist/specconstants"
+import {
+    ControlAnnounceFlags,
+    ControlReg,
+    SRV_CONTROL,
+} from "../../jacdac-spec/dist/specconstants"
 import Scheduler, { WallClockScheduler } from "./scheduler"
 import ServiceFilter from "./filters/servicefilter"
 import DeviceFilter from "./filters/devicefilter"
@@ -105,6 +109,10 @@ export interface BusOptions {
      * Parent domain origin to handle iframe messages
      */
     parentOrigin?: string
+    /**
+     * enable bus acting as a client
+     */
+    client?: boolean
 }
 
 /**
@@ -147,6 +155,7 @@ export class JDBus extends JDNode {
     private _streaming = false
     private _unsubscribeBroadcastChannel: () => void
     private _passive = false
+    private _client = false
 
     /**
      * Gets an instance that tracks packet statistics
@@ -162,9 +171,16 @@ export class JDBus extends JDNode {
     constructor(transports?: Transport[], options?: BusOptions) {
         super()
 
-        this.selfDeviceId = options?.deviceId || randomDeviceId()
-        this.scheduler = options?.scheduler || new WallClockScheduler()
-        this.parentOrigin = options?.parentOrigin || "*"
+        const {
+            deviceId = randomDeviceId(),
+            scheduler = new WallClockScheduler(),
+            parentOrigin = "*",
+            client = false,
+        } = options || {}
+        this.selfDeviceId = deviceId
+        this.scheduler = scheduler
+        this.parentOrigin = parentOrigin
+        this._client = client
         this.stats = new BusStatsMonitor(this)
 
         // some transport may be undefined
@@ -270,6 +286,25 @@ export class JDBus extends JDNode {
     }
 
     /**
+     * Indicates that this bus acts as a client device
+     * @category Lifecycle
+     */
+    get client() {
+        return this._client
+    }
+
+    /**
+     * Sets the client state
+     * @category Lifecycle
+     */
+    set client(value: boolean) {
+        if (!!value !== this._client) {
+            this._client = !!value
+            this.emit(CHANGE)
+        }
+    }
+
+    /**
      * Gets the list of transports registers with the bus
      * @category Transports and Bridges
      */
@@ -324,11 +359,16 @@ export class JDBus extends JDNode {
 
     /**
      * Do not send any packet on the bus
+     * @category Lifecycle
      */
     get passive(): boolean {
         return this._passive
     }
 
+    /**
+     * Sets the passive state. A passive bus does not send any packets.
+     * @category Lifecycle
+     */
     set passive(value: boolean) {
         if (value !== this._passive) {
             this._passive = value
@@ -584,6 +624,7 @@ export class JDBus extends JDNode {
     /**
      * Gets a detailled description of the devices and services connected to the bus
      * @returns
+     * @internal
      */
     describe() {
         return `
@@ -686,6 +727,7 @@ ${dev
 
     /**
      * Indicates if the bus should force all sensors to stream
+     * @category Lifecycle
      */
     get streaming(): boolean {
         return this._streaming
@@ -693,6 +735,7 @@ ${dev
 
     /**
      * Sets automatic streaming on and off
+     * @category Lifecycle
      */
     set streaming(value: boolean) {
         this._streaming = value
@@ -1078,7 +1121,12 @@ ${dev
         const pkt = Packet.jdpacked<[number, number[][]]>(
             CMD_ADVERTISEMENT_DATA,
             "u32 r: u32",
-            [this._restartCounter | 0x100, [[SRV_INFRASTRUCTURE]]]
+            [
+                this._restartCounter |
+                    (this._client ? ControlAnnounceFlags.IsClient : 0) |
+                    ControlAnnounceFlags.SupportsACK,
+                [[SRV_INFRASTRUCTURE]],
+            ]
         )
         pkt.serviceIndex = JD_SERVICE_INDEX_CTRL
         pkt.deviceIdentifier = this.selfDeviceId

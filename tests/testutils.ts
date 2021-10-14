@@ -18,7 +18,7 @@ export function loadSpecifications() {
 
 export function mkBus() {
     loadSpecifications()
-    return new JDBus([], {})
+    return new JDBus([], { client: false })
 }
 
 loadSpecifications()

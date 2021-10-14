@@ -2,7 +2,7 @@ import Packet from "../packet"
 import Flags from "../flags"
 import { SERIAL_TRANSPORT, USB_TRANSPORT } from "../constants"
 import Transport from "./transport"
-import JDBus from "../bus"
+import JDBus, { BusOptions } from "../bus"
 import Proto from "./proto"
 import WebSerialIO from "./webserialio"
 import { HF2_IO } from "./hf2"
@@ -65,6 +65,6 @@ export function createWebSerialTransport(
  * Creates a bus with a Web Serial connection
  * @category
  */
-export function createWebSerialBus() {
-    return new JDBus([createWebSerialTransport()])
+export function createWebSerialBus(options?: BusOptions) {
+    return new JDBus([createWebSerialTransport()], options)
 }

@@ -156,7 +156,7 @@ async function writeCatalog(dev: JDDevice) {
 const transport = mkTransport()
 if (transport || options.ws) {
     console.log(`starting bus...`)
-    const bus = new JDBus([transport])
+    const bus = new JDBus([transport], { client: false })
     bus.on(DEVICE_ANNOUNCE, (dev: JDDevice) => {
         if (options.catalog && !dev.isClient) writeCatalog(dev)
     })
@@ -200,7 +200,7 @@ if (transport || options.ws) {
 
 // Logic parsing
 if (options.parse) {
-    const jd = new JDBus([])
+    const jd = new JDBus([], { client: false })
     const opts = {
         skipRepeatedAnnounce: false,
         showTime: true,

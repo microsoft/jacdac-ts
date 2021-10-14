@@ -3,7 +3,7 @@ import EventTargetObservable from "./eventtargetobservable"
 import Flags from "../flags"
 import { USB_TRANSPORT } from "../constants"
 import Transport from "./transport"
-import JDBus from "../bus"
+import JDBus, { BusOptions } from "../bus"
 import Proto from "./proto"
 import USBIO, { USBOptions } from "./usbio"
 
@@ -99,6 +99,6 @@ export function createUSBTransport(options?: USBOptions): Transport {
     return options && new WebUSBTransport(options)
 }
 
-export function createUSBBus(options?: USBOptions) {
-    return new JDBus([createUSBTransport(options)])
+export function createUSBBus(usbOptions?: USBOptions, options?: BusOptions) {
+    return new JDBus([createUSBTransport(usbOptions)], options)
 }

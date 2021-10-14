@@ -77,6 +77,7 @@ export class FastForwardTester
         super(
             new JDBus([], {
                 scheduler: new FastForwardScheduler(),
+                client: false,
             })
         )
         loadSpecifications() // TODO this reimplements mkBus
