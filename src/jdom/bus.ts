@@ -106,7 +106,7 @@ export interface BusOptions {
      */
     scheduler?: Scheduler
     /**
-     * Parent domain origin to handle iframe messages
+     * Parent domain origin to handle iframe messages. Defaults to "*".
      */
     parentOrigin?: string
     /**
