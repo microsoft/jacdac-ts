@@ -561,14 +561,17 @@ export function uniqueMap<T, U>(
 export function toMap<T, V>(
     a: T[],
     keyConverter: (value: T, index: number) => string,
-    valueConverter: (value: T, index: number) => V
+    valueConverter: (value: T, index: number) => V,
+    ignoreMissingValues?: boolean
 ): SMap<V> {
     const m: SMap<V> = {}
     if (a)
         for (let i = 0; i < a.length; ++i) {
             const key = keyConverter(a[i], i)
             if (key === undefined || key === null) continue
-            m[key] = valueConverter(a[i], i)
+            const v = valueConverter(a[i], i)
+            if (ignoreMissingValues && (v === undefined || v === null)) continue
+            m[key] = v
         }
     return m
 }

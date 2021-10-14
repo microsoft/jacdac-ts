@@ -23,13 +23,14 @@ export function sensorSpecifications() {
  * @returns
  */
 export function snapshotSensors(
-    bus: JDBus
+    bus: JDBus,
+    sparse?: boolean
 ): Record<string, number[] | Record<string, number>[]> {
-    return toMap(
+    const r = toMap(
         sensorSpecifications(),
         srv => srv.camelName,
-        srv =>
-            bus
+        srv => {
+            const r = bus
                 .services({
                     serviceClass: srv.classIdentifier,
                     ignoreInfrastructure: true,
@@ -42,5 +43,9 @@ export function snapshotSensors(
                         ? reg.unpackedValue?.[0] || 0
                         : reg.objectValue || {}
                 })
+            return sparse && !r.length ? undefined : r
+        },
+        sparse
     )
+    return r
 }
