@@ -175,11 +175,17 @@ export class Packet {
     }
 
     get isRegisterSet() {
-        return this.serviceCommand >> 12 == CMD_SET_REG >> 12
+        return (
+            this.serviceIndex <= JD_SERVICE_INDEX_MAX_NORMAL &&
+            this.serviceCommand >> 12 == CMD_SET_REG >> 12
+        )
     }
 
     get isRegisterGet() {
-        return this.serviceCommand >> 12 == CMD_GET_REG >> 12
+        return (
+            this.serviceIndex <= JD_SERVICE_INDEX_MAX_NORMAL &&
+            this.serviceCommand >> 12 == CMD_GET_REG >> 12
+        )
     }
 
     // TODO rename to registerCode

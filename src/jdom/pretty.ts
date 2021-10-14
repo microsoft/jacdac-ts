@@ -362,7 +362,7 @@ function decodeRegister(
     const isSet = pkt.isRegisterSet
     const isGet = pkt.isRegisterGet
 
-    if (isSet == isGet) return null
+    if (!isSet && !isGet) return null
 
     let error = ""
     const addr = pkt.serviceCommand & CMD_REG_MASK
@@ -458,8 +458,19 @@ function decodeCommand(
     }
 }
 
+function decodeCRCack(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket {
+    if (!pkt.isReport || !pkt.isCRCAck) return null
+    return {
+        service,
+        info: syntheticPktInfo("report", pkt.serviceCommand),
+        decoded: [],
+        description: "CRC-ACK " + hexNum(pkt.serviceCommand),
+    }
+}
+
 function decodePacket(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket {
     const decoded =
+        decodeCRCack(service, pkt) ||
         decodeRegister(service, pkt) ||
         decodeEvent(service, pkt) ||
         decodeCommand(service, pkt)
