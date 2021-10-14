@@ -87,7 +87,14 @@ export class Trace {
      * @param maxLength If positive, prunes older packets when the length reaches maxLength
      */
     addPacket(packet: Packet) {
-        this.packets.push(packet)
+        // packets are mutable (eg., timestamp is updated on each send), so we take a copy
+        const copy = packet.clone()
+        copy.sender = packet.sender
+        copy.device = packet.device
+        // TODO need to copy 'meta' as well?
+        this.packets.push(copy)
+
+        // limit trace size
         if (
             this.maxLength > 0 &&
             this.packets.length > this.maxLength * TRACE_OVERSHOOT
