@@ -37,6 +37,7 @@ import {
     SERIAL_TRANSPORT,
     WEBSOCKET_TRANSPORT,
     DEVICE_PACKET_ANNOUNCE,
+    SRV_PROXY,
 } from "./constants"
 import { read32, bufferEq, setAckError, read16 } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
@@ -856,6 +857,13 @@ export class JDDevice extends JDNode {
         const v = reg?.stringValue
         if (reg && v === undefined) reg?.refresh(true)
         return v
+    }
+
+    /**
+     * Indicates if the device is in proxy mode
+     */
+    get proxy() {
+        return this.serviceClasses.indexOf(SRV_PROXY) > -1
     }
 
     private initAcks() {
