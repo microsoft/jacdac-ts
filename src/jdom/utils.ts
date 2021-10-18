@@ -251,11 +251,13 @@ export function toFullHex(n: number[]) {
     )
 }
 
-export function toHex(bytes: ArrayLike<number>) {
+export function toHex(bytes: ArrayLike<number>, sep?: string) {
     if (!bytes) return undefined
     let r = ""
-    for (let i = 0; i < bytes.length; ++i)
+    for (let i = 0; i < bytes.length; ++i) {
+        if (sep && i > 0) r += sep
         r += ("0" + bytes[i].toString(16)).slice(-2)
+    }
     return r
 }
 
