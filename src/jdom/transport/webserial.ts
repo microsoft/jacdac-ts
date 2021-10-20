@@ -2,10 +2,11 @@ import Packet from "../packet"
 import Flags from "../flags"
 import { SERIAL_TRANSPORT, USB_TRANSPORT } from "../constants"
 import Transport from "./transport"
-import JDBus, { BusOptions } from "../bus"
 import Proto from "./proto"
 import WebSerialIO from "./webserialio"
 import { HF2_IO } from "./hf2"
+import { Observable } from "../observable"
+import EventTargetObservable from "./eventtargetobservable"
 
 export function isWebSerialEnabled(): boolean {
     return !!Flags.webSerial
@@ -23,10 +24,18 @@ export function isWebSerialSupported(): boolean {
     }
 }
 
-class WebSerialTransport extends Transport {
+export interface WebSerialOptions {
+    mkTransport: () => HF2_IO
+    connectObservable?: Observable<void>
+    disconnectObservable?: Observable<void>
+}
+
+export class WebSerialTransport extends Transport {
+    private mkTransport: () => HF2_IO
     private hf2: Proto
-    constructor(private mkTransport: () => HF2_IO) {
-        super(SERIAL_TRANSPORT)
+    constructor(options: WebSerialOptions) {
+        super(SERIAL_TRANSPORT, { ...options })
+        this.mkTransport = options.mkTransport
     }
 
     protected async transportConnectAsync(background: boolean) {
@@ -53,18 +62,22 @@ class WebSerialTransport extends Transport {
 
 /**
  * Creates a transport over a Web Serial connection
- * @category
+ * @category Transport
  */
-export function createWebSerialTransport(
-    mkTransport: () => HF2_IO = () => new WebSerialIO()
-): Transport {
-    return isWebSerialSupported() && new WebSerialTransport(mkTransport)
-}
+export function createWebSerialTransport(): Transport {
+    if (!isWebSerialSupported()) return undefined
 
-/**
- * Creates a bus with a Web Serial connection
- * @category
- */
-export function createWebSerialBus(options?: BusOptions) {
-    return new JDBus([createWebSerialTransport()], options)
+    const connectObservable = new EventTargetObservable(
+        navigator.serial,
+        "connect"
+    )
+    const disconnectObservable = new EventTargetObservable(
+        navigator.serial,
+        "disconnect"
+    )
+    return new WebSerialTransport({
+        mkTransport: () => new WebSerialIO(),
+        connectObservable,
+        disconnectObservable,
+    })
 }

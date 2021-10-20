@@ -4,6 +4,8 @@ import { assert, bufferConcat, delay, throwError } from "../utils"
 import Flags from "../flags"
 import JDError, { errorCode } from "../error"
 import { WEB_SERIAL_FILTERS } from "./webserialio"
+import { WebSerialTransport } from "./webserial"
+import Transport from "./transport"
 
 interface Port {
     path: string
@@ -27,14 +29,14 @@ function toPromise<T>(f: (cb: (err: Error, res: T) => void) => void) {
 /**
  * @internal
  */
-export class NodeWebSerialIO implements HF2_IO {
+class NodeWebSerialIO implements HF2_IO {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private dev: any
     private port: Port
     ready = false
 
     /**
-     * 
+     *
      * @param SerialPort ``require("serialport")``
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -172,4 +174,15 @@ export class NodeWebSerialIO implements HF2_IO {
         return proto
     }
 }
-export default NodeWebSerialIO
+
+/**
+ * Creates a transport over a Web Serial connection
+ * @param SerialPort the serialport node package
+ * @category Transport
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function createNodeWebSerialTransport(SerialPort: any): Transport {
+    return new WebSerialTransport({
+        mkTransport: () => new NodeWebSerialIO(SerialPort),
+    })
+}

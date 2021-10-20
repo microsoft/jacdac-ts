@@ -18,9 +18,8 @@ import {
     replayLogicLog,
     dashify,
     JDDevice,
-    NodeWebSerialIO,
-    createWebSerialTransport,
     Packet,
+    createNodeWebSerialTransport,
 } from "../jdom/jacdac-jdom"
 import packageInfo from "../../package.json"
 import {
@@ -92,10 +91,7 @@ if (options.devicetwin) {
 
 function mkTransport() {
     if (options.serial) {
-        return createWebSerialTransport(() => {
-            console.log(`jacdac: creating serialport transport`)
-            return new NodeWebSerialIO(require("serialport"))
-        })
+        return createNodeWebSerialTransport(require("serialport"))
     } else if (options.usb) {
         const opts = createNodeUSBOptions()
         return createUSBTransport(opts)
