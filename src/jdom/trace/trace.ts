@@ -26,6 +26,15 @@ export function cleanStack(text: string) {
         .replace(/https:\/\/microsoft\.github\.io\/jacdac-docs/g, "")
 }
 
+export function serializeToTrace(pkt: Packet, start: number) {
+    let t = `${roundWithPrecision(pkt.timestamp - start, 3)}\t${toHex(
+        pkt.toBuffer()
+    )}\t${printPacket(pkt, {}).replace(/\r?\n/g, " ")}`
+    const trace = pkt.meta[META_TRACE] as string
+    if (trace) t += "\n" + cleanStack(trace)
+    return t
+}
+
 /**
  * A sequence of packets.
  * @category Trace
@@ -113,14 +122,7 @@ export class Trace {
         const start = this.packets[0]?.timestamp || 0
         let pkts = this.packets
         if (length > 0) pkts = pkts.slice(-length)
-        const text = pkts.map(pkt => {
-            let t = `${roundWithPrecision(pkt.timestamp - start, 3)}\t${toHex(
-                pkt.toBuffer()
-            )}\t${printPacket(pkt, {}).replace(/\r?\n/g, " ")}`
-            const trace = pkt.meta[META_TRACE] as string
-            if (trace) t += "\n" + cleanStack(trace)
-            return t
-        })
+        const text = pkts.map(pkt => serializeToTrace(pkt, start))
         if (this.description) {
             text.unshift(this.description)
             text.unshift("")

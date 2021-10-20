@@ -21,6 +21,7 @@ import {
     Packet,
     createNodeWebSerialTransport,
     Transport,
+    serializeToTrace,
 } from "../jdom/jacdac-jdom"
 import packageInfo from "../../package.json"
 import {
@@ -198,7 +199,7 @@ if (transports?.length || options.ws) {
                 skipRepeatedAnnounce: true,
                 skipResetIn: true,
             })
-            if (str) console.debug(str)
+            if (str) console.debug(serializeToTrace(pkt, 0))
         })
     bus.streaming = !!options.streaming
     bus.start()
