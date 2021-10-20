@@ -4,12 +4,16 @@ import { assert, bufferConcat, delay, throwError } from "../utils"
 import Flags from "../flags"
 import JDError, { errorCode } from "../error"
 
+const usbVendorIds = [
+    0x303a, // espressif
+]
+export function matchFilter(port: SerialPort) {
+    const info = port?.getInfo()
+    const usbVendorId = info?.usbVendorId
+    return usbVendorId !== undefined && usbVendorIds.indexOf(usbVendorId) > -1
+}
 export const WEB_SERIAL_FILTERS = {
-    filters: [
-        {
-            usbVendorId: 0x303a, // espressif
-        },
-    ],
+    filters: usbVendorIds.map(usbVendorId => ({ usbVendorId })),
 }
 
 export default class WebSerialIO implements HF2_IO {
@@ -157,16 +161,19 @@ export default class WebSerialIO implements HF2_IO {
     private async tryReconnectAsync() {
         try {
             const ports = await navigator.serial.getPorts()
-            this.dev = ports[0]
+            const filtered = ports.filter(matchFilter)
+            this.dev = filtered[0]
         } catch (e) {
             console.log(e)
             this.dev = undefined
         }
     }
 
-    private async requestDeviceAsync() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private async requestDeviceAsync(deviceId?: string) {
         try {
             this.dev = await navigator.serial.requestPort(WEB_SERIAL_FILTERS)
+            // TODO: deviceid
         } catch (e) {
             console.log(e)
             this.dev = undefined
@@ -175,7 +182,7 @@ export default class WebSerialIO implements HF2_IO {
 
     async connectAsync(background: boolean, deviceId?: string) {
         await this.tryReconnectAsync()
-        if (!this.dev && !background) await this.requestDeviceAsync()
+        if (!this.dev && !background) await this.requestDeviceAsync(deviceId)
         // background call and no device, just give up for now
         if (!this.dev && background) throwError("device not paired", true)
 
