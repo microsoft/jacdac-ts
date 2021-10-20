@@ -1,6 +1,12 @@
 import { HF2Proto, HF2_IO } from "./hf2"
 import Proto from "./proto"
-import { assert, bufferConcat, delay, throwError } from "../utils"
+import {
+    assert,
+    bufferConcat,
+    delay,
+    isCancelError,
+    throwError,
+} from "../utils"
 import Flags from "../flags"
 import JDError, { errorCode } from "../error"
 
@@ -60,7 +66,7 @@ export default class WebSerialIO implements HF2_IO {
         return this.cancelStreams()
             .catch(e => {
                 // just ignore errors closing, most likely device just disconnected
-                console.debug(e)
+                if (!isCancelError(e)) console.debug(e)
             })
             .then(() => {
                 this.clearDev()
@@ -167,7 +173,7 @@ export default class WebSerialIO implements HF2_IO {
             const filtered = ports.filter(matchFilter)
             this.dev = filtered[0]
         } catch (e) {
-            console.log(e)
+            if (!isCancelError(e)) console.debug(e)
             this.dev = undefined
         }
     }
@@ -178,7 +184,7 @@ export default class WebSerialIO implements HF2_IO {
             this.dev = await navigator.serial.requestPort(WEB_SERIAL_FILTERS)
             // TODO: deviceid
         } catch (e) {
-            console.log(e)
+            if (!isCancelError(e)) console.debug(e)
             this.dev = undefined
         }
     }
@@ -196,7 +202,7 @@ export default class WebSerialIO implements HF2_IO {
         try {
             await proto.postConnectAsync()
         } catch (e) {
-            console.debug(e)
+            if (!isCancelError(e)) console.debug(e)
             await proto.disconnectAsync()
             throw e
         }
@@ -204,7 +210,7 @@ export default class WebSerialIO implements HF2_IO {
     }
 
     private async openDeviceAsync() {
-        if (!this.dev) throwError("device not found")
+        if (!this.dev) throwError("device not found", true)
 
         await this.dev.open({
             baudRate: 115200, // not really

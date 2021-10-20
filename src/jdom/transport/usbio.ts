@@ -6,7 +6,7 @@ import {
 } from "./microbit"
 import { Observable } from "../observable"
 import Proto from "./proto"
-import { assert, delay, throwError } from "../utils"
+import { assert, delay, isCancelError, throwError } from "../utils"
 import Flags from "../flags"
 import JDError, { errorCode } from "../error"
 
@@ -84,7 +84,7 @@ export default class USBIO implements HF2_IO {
             .close()
             .catch(e => {
                 // just ignore errors closing, most likely device just disconnected
-                console.debug(e)
+                if (!isCancelError(e)) console.debug(e)
             })
             .then(() => {
                 this.clearDev()
@@ -230,7 +230,7 @@ export default class USBIO implements HF2_IO {
                 ? devices.find(dev => dev.serialNumber === deviceId)
                 : devices[0]
         } catch (e) {
-            console.log(e)
+            if (!isCancelError(e)) console.debug(e)
             this.dev = undefined
         }
     }
@@ -239,7 +239,7 @@ export default class USBIO implements HF2_IO {
         try {
             this.dev = await this.options.requestDevice(USB_FILTERS)
         } catch (e) {
-            console.log(e)
+            if (!isCancelError(e)) console.debug(e)
             this.dev = undefined
         }
     }
@@ -257,7 +257,7 @@ export default class USBIO implements HF2_IO {
         try {
             await proto.postConnectAsync()
         } catch (e) {
-            console.debug(e)
+            if (!isCancelError(e)) console.debug(e)
             await proto.disconnectAsync()
             throw e
         }

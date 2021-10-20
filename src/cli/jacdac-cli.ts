@@ -189,7 +189,15 @@ if (transports?.length || options.ws) {
         })
         wss.on("error", console.error)
     }
-    if (options.packets) bus.on(PACKET_PROCESS, pkt => console.debug(pkt))
+    if (options.packets)
+        bus.on(PACKET_PROCESS, (pkt: Packet) =>
+            console.debug(
+                printPacket(pkt, {
+                    showTime: true,
+                    skipRepeatedAnnounce: true,
+                }).replace(/\s*$/, "")
+            )
+        )
     bus.start()
     const run = async () => {
         await bus.connect()

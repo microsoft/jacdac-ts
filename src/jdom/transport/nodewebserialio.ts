@@ -1,13 +1,18 @@
 import { HF2Proto, HF2_IO } from "./hf2"
 import Proto from "./proto"
-import { assert, bufferConcat, delay, throwError } from "../utils"
+import {
+    assert,
+    bufferConcat,
+    delay,
+    isCancelError,
+    throwError,
+} from "../utils"
 import Flags from "../flags"
 import JDError, { errorCode } from "../error"
 import { matchVendorId } from "./webserialio"
 import { WebSerialTransport } from "./webserial"
 import Transport from "./transport"
 import { Observable, Observer } from "../observable"
-import JDEventSource from "../eventsource"
 
 const SCAN_INTERVAL = 2500
 
@@ -87,7 +92,7 @@ class NodeWebSerialIO implements HF2_IO {
         return this.cancelStreams()
             .catch(e => {
                 // just ignore errors closing, most likely device just disconnected
-                console.debug(e)
+                if (!isCancelError(e)) console.debug(e)
             })
             .then(() => {
                 this.clearDev()
@@ -129,6 +134,7 @@ class NodeWebSerialIO implements HF2_IO {
             const ports = await listPorts(this.SerialPort)
             this.port = ports?.[0]
             if (this.port) {
+                console.debug(`serial: found ${this.port.serialNumber}`)
                 await toPromise(cb => {
                     this.dev = new this.SerialPort(
                         this.port.path,
@@ -158,7 +164,7 @@ class NodeWebSerialIO implements HF2_IO {
                 })
             }
         } catch (e) {
-            console.log(e)
+            if (!isCancelError(e)) console.debug(e)
             this.dev = undefined
             this.port = undefined
         }
@@ -168,12 +174,13 @@ class NodeWebSerialIO implements HF2_IO {
         await this.tryReconnectAsync(deviceId)
         if (!this.dev && background)
             throwError("can't find suitable device", true)
-
+        if (!this.dev) throwError("device not found", true)
+        console.log(`serial: found ${this.devInfo()}`)
         const proto = this.mkProto()
         try {
             await proto.postConnectAsync()
         } catch (e) {
-            console.debug(e)
+            if (!isCancelError(e)) console.debug(e)
             await proto.disconnectAsync()
             throw e
         }

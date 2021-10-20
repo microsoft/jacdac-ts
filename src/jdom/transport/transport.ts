@@ -317,7 +317,7 @@ export abstract class Transport extends JDEventSource {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     protected errorHandler(context: string, exception: any) {
         this.emit(ERROR, { context, exception })
-        this.bus.emit(ERROR, { transport: this, context, exception })
+        this.bus.emit(ERROR, { transport: this.type, context, exception })
         this.emit(CHANGE)
 
         // when a microbit flash is initiated via file download, the device will
