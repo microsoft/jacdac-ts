@@ -7,6 +7,7 @@ import { matchVendorId } from "./webserialio"
 import { WebSerialTransport } from "./webserial"
 import Transport from "./transport"
 import { Observable, Observer } from "../observable"
+import JDEventSource from "../eventsource"
 
 const SCAN_INTERVAL = 2500
 
@@ -200,7 +201,7 @@ class ListPortObservable implements Observable<void> {
                 )
 
             knownPortIds = portIds
-            if (added) handler()
+            if (added.length) handler()
         }, SCAN_INTERVAL)
         return {
             unsubscribe: () => clearInterval(interval),
