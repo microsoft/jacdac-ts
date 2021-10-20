@@ -3,9 +3,12 @@ import Proto from "./proto"
 import { assert, bufferConcat, delay, throwError } from "../utils"
 import Flags from "../flags"
 import JDError, { errorCode } from "../error"
-import { WEB_SERIAL_FILTERS } from "./webserialio"
+import { matchVendorId } from "./webserialio"
 import { WebSerialTransport } from "./webserial"
 import Transport from "./transport"
+import { Observable, Observer } from "../observable"
+
+const SCAN_INTERVAL = 2500
 
 interface Port {
     path: string
@@ -23,6 +26,15 @@ function toPromise<T>(f: (cb: (err: Error, res: T) => void) => void) {
             if (err) reject(err)
             else resolve(result)
         })
+    )
+}
+
+async function listPorts(serialPort: any) {
+    const ports: Port[] = await serialPort.list()
+    return ports.filter(
+        p =>
+            /^PX/.test(p.serialNumber) ||
+            matchVendorId(parseInt(p.vendorId, 16))
     )
 }
 
@@ -108,20 +120,13 @@ class NodeWebSerialIO implements HF2_IO {
         return toPromise<void>(cb => this.dev.write(pkt, undefined, cb))
     }
 
-    private async tryReconnectAsync() {
+    private async tryReconnectAsync(deviceId?: string) {
         try {
             this.dev = undefined
             this.port = undefined
 
-            const ports: Port[] = await this.SerialPort.list()
-            this.port = ports.filter(
-                p =>
-                    /^PX/.test(p.serialNumber) ||
-                    WEB_SERIAL_FILTERS.filters.some(
-                        f => f.usbVendorId == parseInt(p.vendorId, 16)
-                    )
-            )[0]
-
+            const ports = await listPorts(this.SerialPort)
+            this.port = ports?.[0]
             if (this.port) {
                 await toPromise(cb => {
                     this.dev = new this.SerialPort(
@@ -159,7 +164,7 @@ class NodeWebSerialIO implements HF2_IO {
     }
 
     async connectAsync(background: boolean, deviceId?: string) {
-        await this.tryReconnectAsync()
+        await this.tryReconnectAsync(deviceId)
         if (!this.dev && background)
             throwError("can't find suitable device", true)
 
@@ -175,6 +180,36 @@ class NodeWebSerialIO implements HF2_IO {
     }
 }
 
+class ListPortObservable implements Observable<void> {
+    constructor(readonly SerialPort: any) {}
+
+    subscribe(observer: Observer<void>): { unsubscribe: () => void } {
+        const handler = () => !!observer.next && observer.next()
+
+        let knownPortIds: string[] = []
+        const interval = setInterval(async () => {
+            const ports: Port[] = await listPorts(this.SerialPort)
+            const portIds = ports.map(port => port.serialNumber || port.path)
+            const added = portIds.some(id => knownPortIds.indexOf(id) < 0)
+            const removed = knownPortIds.some(id => portIds.indexOf(id) < 0)
+            if (added || removed)
+                console.log(
+                    `detected serial port change: ${added ? "added" : ""} ${
+                        removed ? "removed" : ""
+                    }`,
+                    portIds,
+                    knownPortIds
+                )
+
+            knownPortIds = portIds
+            if (added) handler()
+        }, SCAN_INTERVAL)
+        return {
+            unsubscribe: () => clearInterval(interval),
+        }
+    }
+}
+
 /**
  * Creates a transport over a Web Serial connection
  * @param SerialPort the serialport node package
@@ -182,7 +217,9 @@ class NodeWebSerialIO implements HF2_IO {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createNodeWebSerialTransport(SerialPort: any): Transport {
+    const connectObservable = new ListPortObservable(SerialPort)
     return new WebSerialTransport({
         mkTransport: () => new NodeWebSerialIO(SerialPort),
+        connectObservable,
     })
 }

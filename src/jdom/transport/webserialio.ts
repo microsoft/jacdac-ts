@@ -7,10 +7,13 @@ import JDError, { errorCode } from "../error"
 const usbVendorIds = [
     0x303a, // espressif
 ]
+export function matchVendorId(id: number) {
+    return !isNaN(id) && usbVendorIds.indexOf(id) > -1
+}
 export function matchFilter(port: SerialPort) {
     const info = port?.getInfo()
     const usbVendorId = info?.usbVendorId
-    return usbVendorId !== undefined && usbVendorIds.indexOf(usbVendorId) > -1
+    return matchVendorId(usbVendorId)
 }
 export const WEB_SERIAL_FILTERS = {
     filters: usbVendorIds.map(usbVendorId => ({ usbVendorId })),
