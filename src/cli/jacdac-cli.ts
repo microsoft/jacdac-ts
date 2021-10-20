@@ -20,6 +20,7 @@ import {
     JDDevice,
     Packet,
     createNodeWebSerialTransport,
+    Transport,
 } from "../jdom/jacdac-jdom"
 import packageInfo from "../../package.json"
 import {
@@ -89,15 +90,17 @@ if (options.devicetwin) {
     run()
 }
 
-function mkTransport() {
-    if (options.serial) {
-        return createNodeWebSerialTransport(require("serialport"))
-    } else if (options.usb) {
-        const opts = createNodeUSBOptions()
-        return createUSBTransport(opts)
-    } else {
-        return null
+function mkTransports(): Transport[] {
+    const transports: Transport[] = []
+    if (options.usb) {
+        console.debug(`adding USB transport`)
+        transports.push(createUSBTransport(createNodeUSBOptions()))
     }
+    if (options.serial) {
+        console.debug(`adding serial transport`)
+        transports.push(createNodeWebSerialTransport(require("serialport")))
+    }
+    return transports
 }
 
 // Device catalog support
@@ -149,10 +152,10 @@ async function writeCatalog(dev: JDDevice) {
 }
 
 // USB
-const transport = mkTransport()
-if (transport || options.ws) {
+const transports = mkTransports()
+if (transports?.length || options.ws) {
     console.log(`starting bus...`)
-    const bus = new JDBus([transport], { client: false })
+    const bus = new JDBus(transports, { client: false })
     bus.on(DEVICE_ANNOUNCE, (dev: JDDevice) => {
         if (options.catalog && !dev.isClient) writeCatalog(dev)
     })

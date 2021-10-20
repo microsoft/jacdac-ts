@@ -57,14 +57,14 @@ class NodeWebSerialIO implements HF2_IO {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onData = (v: Uint8Array) => {}
     onError = (e: Error) => {
-        console.warn(`usb error: ${errorCode(e) || ""} ${e ? e.stack : e}`)
+        console.warn(`serial error: ${errorCode(e) || ""} ${e ? e.stack : e}`)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     log(msg: string, v?: any) {
         if (Flags.diagnostics) {
-            if (v != undefined) console.debug("usb: " + msg, v)
-            else console.debug("usb: " + msg)
+            if (v != undefined) console.debug("serial: " + msg, v)
+            else console.debug("serial: " + msg)
         }
     }
 
@@ -190,15 +190,13 @@ class ListPortObservable implements Observable<void> {
         const interval = setInterval(async () => {
             const ports: Port[] = await listPorts(this.SerialPort)
             const portIds = ports.map(port => port.serialNumber || port.path)
-            const added = portIds.some(id => knownPortIds.indexOf(id) < 0)
-            const removed = knownPortIds.some(id => portIds.indexOf(id) < 0)
-            if (added || removed)
+            const added = portIds.filter(id => knownPortIds.indexOf(id) < 0)
+            const removed = knownPortIds.filter(id => portIds.indexOf(id) < 0)
+            if (added.length || removed.length)
                 console.log(
-                    `detected serial port change: ${added ? "added" : ""} ${
-                        removed ? "removed" : ""
-                    }`,
-                    portIds,
-                    knownPortIds
+                    `detected serial port change + ${added.join(
+                        ", "
+                    )} - ${removed.join(", ")}`
                 )
 
             knownPortIds = portIds
