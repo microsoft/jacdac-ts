@@ -34,6 +34,7 @@ cli.enable("version")
 interface OptionsType {
     usb?: boolean
     serial?: boolean
+    streaming?: boolean
     ws?: boolean
     port?: number
     packets?: boolean
@@ -46,6 +47,7 @@ interface OptionsType {
 }
 
 const options: OptionsType = cli.parse({
+    streaming: [false, "ask all sensors to stream data"],
     usb: ["u", "listen to Jacdac over USB"],
     serial: ["s", "listen to Jacdac over SERIAL"],
     ws: [false, "start web socket server"],
@@ -190,14 +192,15 @@ if (transports?.length || options.ws) {
         wss.on("error", console.error)
     }
     if (options.packets)
-        bus.on(PACKET_PROCESS, (pkt: Packet) =>
-            console.debug(
-                printPacket(pkt, {
-                    showTime: true,
-                    skipRepeatedAnnounce: true,
-                }).replace(/\s*$/, "")
-            )
-        )
+        bus.on(PACKET_PROCESS, (pkt: Packet) => {
+            const str = printPacket(pkt, {
+                showTime: true,
+                skipRepeatedAnnounce: true,
+                skipResetIn: true,
+            })
+            if (str) console.debug(str)
+        })
+    bus.streaming = !!options.streaming
     bus.start()
     const run = async () => {
         await bus.connect()

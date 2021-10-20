@@ -33,9 +33,12 @@ import {
     CMD_ADVERTISEMENT_DATA,
     JD_SERVICE_INDEX_CTRL,
 } from "./constants"
-import { SystemCmd, SystemReg } from "../../jacdac-spec/dist/specconstants"
+import {
+    ControlReg,
+    SystemCmd,
+    SystemReg,
+} from "../../jacdac-spec/dist/specconstants"
 import { jdpack, jdunpack } from "./pack"
-import Flags from "./flags"
 
 /** @internal */
 export enum RegisterType {
@@ -608,6 +611,7 @@ function num2str(n: number) {
 export interface PrintPacketOptions {
     showTime?: boolean
     skipRepeatedAnnounce?: boolean
+    skipResetIn?: boolean
 }
 
 export function toAscii(d: ArrayLike<number>) {
@@ -647,6 +651,13 @@ export function printPacket(
     const service_name = pkt.friendlyServiceName
     const cmdname = pkt.friendlyCommandName
     const sender = pkt.sender
+
+    if (
+        opts.skipResetIn &&
+        pkt.serviceIndex === JD_SERVICE_INDEX_CTRL &&
+        pkt.serviceCommand === (CMD_SET_REG | ControlReg.ResetIn)
+    )
+        return ""
 
     let pdesc = `${devname}/${service_name}: ${cmdname}; sz=${pkt.size}`
 
