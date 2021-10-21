@@ -290,6 +290,8 @@ export class HF2Proto implements Proto {
     private async checkMode() {
         // first check that we are not talking to a bootloader
         const info = await this.talkAsync(HF2_CMD_BININFO)
+        if (!info) throwError("device disconnected")
+
         const mode = read32(info, 0)
         this.io.log(`mode ${mode}`)
         if (mode == HF2_MODE_USERSPACE) {
