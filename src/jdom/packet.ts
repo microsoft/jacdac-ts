@@ -475,12 +475,12 @@ function frameToPackets(frame: Uint8Array, timestamp: number) {
     const size = frame[2] || 0
     if (frame.length < size + 12) {
         warn(
-            `${timestamp}ms: got only ${frame.length} bytes; expecting ${
+            `${timestamp | 0}ms: got only ${frame.length} bytes; expecting ${
                 size + 12
             }`
         )
     } else if (size < 4) {
-        warn(`${timestamp}ms: empty packet`)
+        warn(`${timestamp | 0}ms: empty packet`)
     } else {
         const computed = crc(frame.slice(2, size + 12))
         const actual = read16(frame, 0)
@@ -491,7 +491,7 @@ function frameToPackets(frame: Uint8Array, timestamp: number) {
 
         const res: Packet[] = []
         if (frame.length != 12 + frame[2])
-            warn(`${timestamp}ms: unexpected packet len: ${frame.length}`)
+            warn(`${timestamp | 0}ms: unexpected packet len: ${frame.length}`)
         for (let ptr = 12; ptr < 12 + frame[2]; ) {
             const psz = frame[ptr] + 4
             const sz = ALIGN(psz)
@@ -501,7 +501,9 @@ function frameToPackets(frame: Uint8Array, timestamp: number) {
             )
             if (ptr + psz > 12 + frame[2])
                 warn(
-                    `${timestamp}ms: invalid frame compression, res len=${res.length}`
+                    `${timestamp | 0}ms: invalid frame compression, res len=${
+                        res.length
+                    }`
                 )
             const p = Packet.fromBinary(pkt)
             p.timestamp = timestamp
