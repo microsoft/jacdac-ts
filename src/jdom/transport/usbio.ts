@@ -265,7 +265,7 @@ export default class USBIO implements HF2_IO {
     }
 
     private async openDeviceAsync() {
-        if (!this.dev) throwError("device not found")
+        if (!this.dev) throwError("device not found", true)
         if (!this.checkDevice()) throwError("device does not support HF2")
 
         await this.dev.open()

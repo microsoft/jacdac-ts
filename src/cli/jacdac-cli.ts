@@ -22,6 +22,7 @@ import {
     createNodeWebSerialTransport,
     Transport,
     serializeToTrace,
+    isCancelError,
 } from "../jdom/jacdac-jdom"
 import packageInfo from "../../package.json"
 import {
@@ -204,7 +205,11 @@ if (transports?.length || options.ws) {
     bus.streaming = !!options.streaming
     bus.start()
     const run = async () => {
-        await bus.connect()
+        try {
+            await bus.connect()
+        } catch (e) {
+            if (!isCancelError(e)) console.error(e)
+        }
     }
     run()
 }
