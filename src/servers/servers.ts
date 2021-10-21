@@ -1149,7 +1149,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         services: () => [
             new AnalogSensorServer(SRV_SOIL_MOISTURE, {
                 readingValues: [0.5],
-                readingError: [0.03],
+                readingError: [0.05],
                 streamingInterval: 1000,
             }),
         ],
