@@ -13,6 +13,8 @@ import { matchVendorId } from "./webserialio"
 import { WebSerialTransport } from "./webserial"
 import Transport from "./transport"
 import { Observable, Observer } from "../observable"
+import { CONNECT, DISCONNECT } from "../constants"
+import JDEventSource from "../eventsource"
 
 const SCAN_INTERVAL = 2500
 
@@ -188,12 +190,14 @@ class NodeWebSerialIO implements HF2_IO {
     }
 }
 
-class ListPortObservable implements Observable<void> {
-    constructor(readonly SerialPort: any) {}
+class SerialPortWatch extends JDEventSource {
+    constructor(readonly SerialPort: any) {
+        super()
 
-    subscribe(observer: Observer<void>): { unsubscribe: () => void } {
-        const handler = () => !!observer.next && observer.next()
+        this.watch()
+    }
 
+    watch() {
         let knownPortIds: string[] = []
         const interval = setInterval(async () => {
             const ports: Port[] = await listPorts(this.SerialPort)
@@ -208,7 +212,8 @@ class ListPortObservable implements Observable<void> {
                 )
 
             knownPortIds = portIds
-            if (added.length) handler()
+            if (added.length) this.emit(CONNECT)
+            if (removed.length) this.emit(DISCONNECT)
         }, SCAN_INTERVAL)
         return {
             unsubscribe: () => clearInterval(interval),
@@ -223,9 +228,20 @@ class ListPortObservable implements Observable<void> {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createNodeWebSerialTransport(SerialPort: any): Transport {
-    const connectObservable = new ListPortObservable(SerialPort)
+    const watch = new SerialPortWatch(SerialPort)
+    const connectObservable: Observable<void> = {
+        subscribe: observer => ({
+            unsubscribe: watch.subscribe(CONNECT, observer.next),
+        }),
+    }
+    const disconnectObservable: Observable<void> = {
+        subscribe: observer => ({
+            unsubscribe: watch.subscribe(DISCONNECT, observer.next),
+        }),
+    }
     return new WebSerialTransport({
         mkTransport: () => new NodeWebSerialIO(SerialPort),
         connectObservable,
+        disconnectObservable,
     })
 }

@@ -158,7 +158,7 @@ export default class USBIO implements HF2_IO {
                 }
             } catch (err) {
                 if (this.dev) {
-                    this.onError(err)
+                    if (!isCancelError(err)) this.onError(err)
                     await this.disconnectAsync()
                 }
                 await delay(300)

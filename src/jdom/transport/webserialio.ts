@@ -143,12 +143,15 @@ export default class WebSerialIO implements HF2_IO {
                     else this.onData(value)
                 }
             } catch (e) {
-                if (this.dev) this.onError(e)
+                if (this.dev) {
+                    if (!isCancelError(e)) this.onError(e)
+                }
                 await delay(100)
             } finally {
                 try {
                     reader.releaseLock()
-                } catch {}
+                    // eslint-disable-next-line no-empty
+                } catch (e) {}
                 await delay(100)
             }
         }
