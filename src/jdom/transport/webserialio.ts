@@ -11,22 +11,23 @@ import Flags from "../flags"
 import JDError, { errorCode } from "../error"
 import { deviceSpecifications } from "../spec"
 
-const usbVendorIds = deviceSpecifications()
-    .filter(spec => spec.transport?.type === "serial")
-    .map(spec => spec.transport.vendorId)
-    .filter(v => !!v)
+function usbVendorIds() {
+    return deviceSpecifications()
+        .filter(spec => spec.transport?.type === "serial")
+        .map(spec => spec.transport.vendorId)
+        .filter(v => !!v)
+}
 export function matchVendorId(id: number) {
-    return !isNaN(id) && usbVendorIds.indexOf(id) > -1
+    if (isNaN(id)) return false
+
+    const ids = usbVendorIds()
+    return !isNaN(id) && ids.indexOf(id) > -1
 }
 export function matchFilter(port: SerialPort) {
     const info = port?.getInfo()
     const usbVendorId = info?.usbVendorId
     return matchVendorId(usbVendorId)
 }
-export const WEB_SERIAL_FILTERS = {
-    filters: usbVendorIds.map(usbVendorId => ({ usbVendorId })),
-}
-
 export default class WebSerialIO implements HF2_IO {
     private dev: SerialPort
     private readLoopStarted = false
@@ -185,6 +186,9 @@ export default class WebSerialIO implements HF2_IO {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private async requestDeviceAsync(deviceId?: string) {
+        const WEB_SERIAL_FILTERS = {
+            filters: usbVendorIds().map(usbVendorId => ({ usbVendorId })),
+        }
         try {
             this.dev = await navigator.serial.requestPort(WEB_SERIAL_FILTERS)
             // TODO: deviceid
