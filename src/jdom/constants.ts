@@ -219,5 +219,6 @@ export const UNBOUND = "unbound"
 
 export const JACDAC_ERROR = "JacdacError"
 export const TIMEOUT_ERROR_CODE = "Timeout"
+export const TRANSPORT_CLOSED_ERROR_CODE = "TransportClosed"
 
 export * from "../../jacdac-spec/dist/specconstants"

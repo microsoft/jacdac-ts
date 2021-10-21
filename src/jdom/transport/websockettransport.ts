@@ -1,4 +1,4 @@
-import { WEBSOCKET_TRANSPORT } from "../constants"
+import { TRANSPORT_CLOSED_ERROR_CODE, WEBSOCKET_TRANSPORT } from "../constants"
 import JDError from "../error"
 import Packet from "../packet"
 import Transport, { TransportOptions } from "./transport"
@@ -47,7 +47,7 @@ class WebSocketTransport extends Transport {
         if (this.ws?.readyState !== this.ws.OPEN)
             throw new JDError(
                 "Trying to send message on closed transport",
-                "TransportClosed"
+                TRANSPORT_CLOSED_ERROR_CODE
             )
         const data = p.toBuffer()
         this.ws.send(data)
