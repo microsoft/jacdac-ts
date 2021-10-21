@@ -12,6 +12,8 @@ import {
     read32,
     bufferToString,
 } from "../utils"
+import { HF2_TIMEOUT, TIMEOUT_ERROR_CODE } from "../constants"
+import { errorCode } from "../error"
 
 // see https://github.com/microsoft/uf2/blob/main/hf2.md for full spec
 export const HF2_DEVICE_MAJOR = 42
@@ -174,7 +176,7 @@ export class HF2Proto implements Proto {
         let numSkipped = 0
         const handleReturnAsync = (): Promise<Uint8Array> =>
             this.msgs
-                .shiftAsync(1000) // we wait up to a second
+                .shiftAsync(HF2_TIMEOUT) // we wait up to a second
                 .then(res => {
                     if (read16(res, 0) != seq) {
                         if (numSkipped < 3) {
@@ -208,7 +210,10 @@ export class HF2Proto implements Proto {
                 })
                 .catch(e => {
                     console.debug(`hf2 error: ${e.message}; cmd=${cmd}`)
-                    if (this.io) this.error(e)
+                    if (this.io) {
+                        const code = errorCode(e)
+                        if (code !== TIMEOUT_ERROR_CODE) this.error(e)
+                    }
                     return null
                 })
 

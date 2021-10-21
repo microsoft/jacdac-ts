@@ -1,3 +1,5 @@
+import { TIMEOUT_ERROR_CODE } from "./constants"
+import JDError from "./error"
 import Flags from "./flags"
 
 export function throwError(msg: string, cancel?: boolean) {
@@ -200,7 +202,7 @@ export class PromiseBuffer<T> {
                         const idx = this.waiting.indexOf(f)
                         if (idx >= 0) {
                             this.waiting.splice(idx, 1)
-                            reject(new Error("Timeout"))
+                            reject(new JDError("Timeout", TIMEOUT_ERROR_CODE))
                         }
                     })
                 }

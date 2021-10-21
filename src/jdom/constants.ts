@@ -180,6 +180,8 @@ export const SERIAL_TRANSPORT = "serial"
 export const PACKETIO_TRANSPORT = "packetio"
 export const WEBSOCKET_TRANSPORT = "web"
 
+export const HF2_TIMEOUT = 1000
+
 export const META_ACK = "ACK"
 export const META_ACK_FAILED = "ACK_FAILED"
 export const META_PIPE = "PIPE"
@@ -216,5 +218,6 @@ export const BOUND = "bound"
 export const UNBOUND = "unbound"
 
 export const JACDAC_ERROR = "JacdacError"
+export const TIMEOUT_ERROR_CODE = "Timeout"
 
 export * from "../../jacdac-spec/dist/specconstants"
