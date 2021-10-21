@@ -19,7 +19,6 @@ import {
     DEVICE_LOST,
     DEVICE_FOUND,
     FOUND,
-    JD_SERVICE_INDEX_CRC_ACK,
     ACK_MIN_DELAY,
     ACK_MAX_DELAY,
     ControlReg,
