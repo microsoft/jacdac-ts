@@ -760,6 +760,7 @@ ${dev
      */
     set minLoggerPriority(priority: LoggerPriority) {
         if (priority !== this._minLoggerPriority) {
+            this._lastPingLoggerTime = -Infinity
             this._minLoggerPriority = priority
             this.emit(CHANGE)
         }
