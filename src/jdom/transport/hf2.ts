@@ -276,8 +276,8 @@ export class HF2Proto implements Proto {
     onSerial(data: Uint8Array, iserr: boolean) {
         const line = bufferToString(data).replace(/[\r\n]*$/, "")
         const msg = `hf2: ${line}`
-        if (iserr) console.warn(msg)
-        else console.log(msg)
+        if (iserr) console.log(msg)
+        else console.debug(msg)
     }
 
     async postConnectAsync() {
