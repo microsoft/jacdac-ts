@@ -9,10 +9,12 @@ import {
 } from "../utils"
 import Flags from "../flags"
 import JDError, { errorCode } from "../error"
+import { deviceSpecifications } from "../spec"
 
-const usbVendorIds = [
-    0x303a, // espressif
-]
+const usbVendorIds = deviceSpecifications()
+    .filter(spec => spec.transport?.type === "serial")
+    .map(spec => spec.transport.vendorId)
+    .filter(v => !!v)
 export function matchVendorId(id: number) {
     return !isNaN(id) && usbVendorIds.indexOf(id) > -1
 }
