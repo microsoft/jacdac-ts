@@ -49,7 +49,7 @@ interface OptionsType {
 }
 
 const options: OptionsType = cli.parse({
-    streaming: [false, "ask all sensors to stream data"],
+    streaming: [false, "stream sensors data"],
     usb: ["u", "listen to Jacdac over USB"],
     serial: ["s", "listen to Jacdac over SERIAL"],
     ws: [false, "start web socket server"],
