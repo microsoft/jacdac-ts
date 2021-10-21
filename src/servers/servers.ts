@@ -144,7 +144,7 @@ const indoorThermometerOptions: AnalogSensorServerOptions = {
 const outdoorThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "temperature",
     readingValues: [21.5],
-    streamingInterval: 60000,
+    streamingInterval: 1000,
     minReading: -40,
     maxReading: 120,
     readingError: [0.25],
@@ -152,7 +152,7 @@ const outdoorThermometerOptions: AnalogSensorServerOptions = {
 }
 const outdoorHumidityOptions: AnalogSensorServerOptions = {
     instanceName: "humidity",
-    streamingInterval: 60000,
+    streamingInterval: 1000,
     readingValues: [40],
     readingError: [0.1],
 }
