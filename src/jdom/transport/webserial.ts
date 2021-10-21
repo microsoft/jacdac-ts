@@ -34,7 +34,7 @@ export class WebSerialTransport extends Transport {
     private mkTransport: () => HF2_IO
     private hf2: Proto
     constructor(options: WebSerialOptions) {
-        super(SERIAL_TRANSPORT, { ...options })
+        super(SERIAL_TRANSPORT, { ...options, checkPulse: true })
         this.mkTransport = options.mkTransport
     }
 

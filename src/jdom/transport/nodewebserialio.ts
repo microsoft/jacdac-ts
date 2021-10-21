@@ -46,6 +46,13 @@ async function listPorts(serialPort: any) {
     )
 }
 
+async function cancelStreams(dev: any) {
+    await toPromise(cb => {
+        if (!dev.isOpen) cb(undefined, undefined)
+        else dev.close(cb)
+    })
+}
+
 /**
  * @internal
  */
@@ -53,7 +60,6 @@ class NodeWebSerialIO implements HF2_IO {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private dev: any
     private port: Port
-    ready = false
 
     /**
      *
@@ -83,23 +89,21 @@ class NodeWebSerialIO implements HF2_IO {
     private clearDev() {
         if (this.dev) {
             this.dev = null
-            this.onData = () => console.warn("rogue webserial hf2 onData")
+            this.port = null
         }
     }
 
     disconnectAsync(): Promise<void> {
-        this.ready = false
-        if (!this.dev) return Promise.resolve()
-        console.debug("close device")
-        return this.cancelStreams()
+        const d = this.dev
+        if (!d) return Promise.resolve()
+
+        this.clearDev()
+        return cancelStreams(d)
             .catch(e => {
                 // just ignore errors closing, most likely device just disconnected
                 if (!isCancelError(e)) console.debug(e)
             })
-            .then(() => {
-                this.clearDev()
-                return delay(500)
-            })
+            .then(() => delay(500))
     }
 
     private devInfo() {
@@ -112,12 +116,11 @@ class NodeWebSerialIO implements HF2_IO {
         this.onError(e)
     }
 
-    private async cancelStreams() {
-        await toPromise(cb => this.dev.close(cb))
-    }
-
     sendPacketAsync(pkt: Uint8Array) {
-        if (!this.dev) return Promise.reject(new Error("Disconnected"))
+        if (!this.dev) {
+            // device is disconnecting
+            return Promise.resolve()
+        }
         assert(pkt.length <= 64)
         // console.log("Send", toHex(pkt))
         if (pkt.length < 64) {
@@ -164,6 +167,7 @@ class NodeWebSerialIO implements HF2_IO {
                 this.dev.on("error", (err: any) => {
                     this.error(err.messsage || err + "")
                 })
+                this.dev.on("close", () => this.disconnectAsync())
             }
         } catch (e) {
             if (!isCancelError(e)) console.debug(e)
