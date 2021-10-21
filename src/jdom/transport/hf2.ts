@@ -160,8 +160,8 @@ export class HF2Proto implements Proto {
         return this.io?.error(m)
     }
 
-    talkAsync(cmd: number, data?: Uint8Array) {
-        if (!this.io) console.error("rogue hf2 instance")
+    talkAsync(cmd: number, data?: Uint8Array): Promise<Uint8Array> {
+        if (!this.io) throwError("hf2: rogue instance")
 
         let len = 8
         if (data) len += data.length
@@ -207,17 +207,18 @@ export class HF2Proto implements Proto {
                     return null
                 })
                 .catch(e => {
-                    console.debug(`HF2: ${e.message}; cmd=${cmd}`)
-                    this.error(e)
+                    console.debug(`hf2 error: ${e.message}; cmd=${cmd}`)
+                    if (this.io) this.error(e)
                     return null
                 })
 
-        return this.lock.enqueue("talk", () =>
-            this.sendMsgAsync(pkt).then(handleReturnAsync)
-        )
+        return this.lock.enqueue("talk", async () => {
+            if (!this.io) return null // disconnected
+            return await this.sendMsgAsync(pkt).then(handleReturnAsync)
+        })
     }
 
-    private sendMsgAsync(buf: Uint8Array, serial = 0) {
+    private sendMsgAsync(buf: Uint8Array, serial = 0): Promise<void> {
         // Util.assert(buf.length <= this.maxMsgSize)
         const frame = new Uint8Array(64)
         const loop = (pos: number): Promise<void> => {

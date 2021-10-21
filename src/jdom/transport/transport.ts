@@ -65,8 +65,10 @@ export abstract class Transport extends JDEventSource {
                             if (
                                 typeof document === "undefined" || // Node.js
                                 document.visibilityState === "visible" // or tab visible
-                            )
-                                this.connect(true)
+                            ) {
+                                await delay(2000)
+                                if (this.bus?.disconnected) this.connect(true)
+                            }
                         }
                     }
                 },
