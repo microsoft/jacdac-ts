@@ -148,7 +148,7 @@ export class JDBus extends JDNode {
     private _lastResetInTime = 0
     private _restartCounter = 0
     private _roleManagerClient: RoleManagerClient
-    private _minLoggerPriority = LoggerPriority.Debug
+    private _minLoggerPriority = LoggerPriority.Silent
     private _firmwareBlobs: FirmwareBlob[]
     private _gcDevicesFrozen = 0
     private _serviceProviders: JDServiceProvider[] = []
