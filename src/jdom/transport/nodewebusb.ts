@@ -1,3 +1,4 @@
+import { isCancelError } from "../utils"
 import EventTargetObservable from "./eventtargetobservable"
 import { HF2_DEVICE_MAJOR } from "./hf2"
 import { MICROBIT_V2_PRODUCT_ID, MICROBIT_V2_VENDOR_ID } from "./microbit"
@@ -46,7 +47,7 @@ export function createNodeUSBOptions(): USBOptions {
             const device = await usb.requestDevice(options)
             return device
         } catch (e) {
-            console.debug(e)
+            if (!isCancelError(e)) console.debug(e)
             return undefined
         }
     }

@@ -20,6 +20,9 @@ import {
     JDDevice,
     Packet,
     createNodeWebSerialTransport,
+    Transport,
+    serializeToTrace,
+    isCancelError,
 } from "../jdom/jacdac-jdom"
 import packageInfo from "../../package.json"
 import {
@@ -33,6 +36,7 @@ cli.enable("version")
 interface OptionsType {
     usb?: boolean
     serial?: boolean
+    streaming?: boolean
     ws?: boolean
     port?: number
     packets?: boolean
@@ -45,6 +49,7 @@ interface OptionsType {
 }
 
 const options: OptionsType = cli.parse({
+    streaming: [false, "ask all sensors to stream data"],
     usb: ["u", "listen to Jacdac over USB"],
     serial: ["s", "listen to Jacdac over SERIAL"],
     ws: [false, "start web socket server"],
@@ -89,15 +94,17 @@ if (options.devicetwin) {
     run()
 }
 
-function mkTransport() {
-    if (options.serial) {
-        return createNodeWebSerialTransport(require("serialport"))
-    } else if (options.usb) {
-        const opts = createNodeUSBOptions()
-        return createUSBTransport(opts)
-    } else {
-        return null
+function mkTransports(): Transport[] {
+    const transports: Transport[] = []
+    if (options.usb) {
+        console.debug(`adding USB transport`)
+        transports.push(createUSBTransport(createNodeUSBOptions()))
     }
+    if (options.serial) {
+        console.debug(`adding serial transport`)
+        transports.push(createNodeWebSerialTransport(require("serialport")))
+    }
+    return transports
 }
 
 // Device catalog support
@@ -149,10 +156,10 @@ async function writeCatalog(dev: JDDevice) {
 }
 
 // USB
-const transport = mkTransport()
-if (transport || options.ws) {
+const transports = mkTransports()
+if (transports?.length || options.ws) {
     console.log(`starting bus...`)
-    const bus = new JDBus([transport], { client: false })
+    const bus = new JDBus(transports, { client: false })
     bus.on(DEVICE_ANNOUNCE, (dev: JDDevice) => {
         if (options.catalog && !dev.isClient) writeCatalog(dev)
     })
@@ -186,10 +193,23 @@ if (transport || options.ws) {
         })
         wss.on("error", console.error)
     }
-    if (options.packets) bus.on(PACKET_PROCESS, pkt => console.debug(pkt))
+    if (options.packets)
+        bus.on(PACKET_PROCESS, (pkt: Packet) => {
+            const str = printPacket(pkt, {
+                showTime: true,
+                skipRepeatedAnnounce: true,
+                skipResetIn: true,
+            })
+            if (str) console.debug(serializeToTrace(pkt, 0))
+        })
+    bus.streaming = !!options.streaming
     bus.start()
     const run = async () => {
-        await bus.connect()
+        try {
+            await bus.connect()
+        } catch (e) {
+            if (!isCancelError(e)) console.error(e)
+        }
     }
     run()
 }

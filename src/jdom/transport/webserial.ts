@@ -1,6 +1,6 @@
 import Packet from "../packet"
 import Flags from "../flags"
-import { SERIAL_TRANSPORT, USB_TRANSPORT } from "../constants"
+import { SERIAL_TRANSPORT } from "../constants"
 import Transport from "./transport"
 import Proto from "./proto"
 import WebSerialIO from "./webserialio"
@@ -40,7 +40,7 @@ export class WebSerialTransport extends Transport {
 
     protected async transportConnectAsync(background: boolean) {
         const transport = this.mkTransport()
-        transport.onError = e => this.errorHandler(USB_TRANSPORT, e)
+        transport.onError = e => this.errorHandler(SERIAL_TRANSPORT, e)
         this.hf2 = await transport.connectAsync(background)
         this.hf2.onJDMessage(this.handleFrame.bind(this))
     }

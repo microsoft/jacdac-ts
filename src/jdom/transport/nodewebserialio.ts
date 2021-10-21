@@ -1,11 +1,20 @@
 import { HF2Proto, HF2_IO } from "./hf2"
 import Proto from "./proto"
-import { assert, bufferConcat, delay, throwError } from "../utils"
+import {
+    assert,
+    bufferConcat,
+    delay,
+    isCancelError,
+    throwError,
+} from "../utils"
 import Flags from "../flags"
 import JDError, { errorCode } from "../error"
-import { WEB_SERIAL_FILTERS } from "./webserialio"
+import { matchVendorId } from "./webserialio"
 import { WebSerialTransport } from "./webserial"
 import Transport from "./transport"
+import { Observable, Observer } from "../observable"
+
+const SCAN_INTERVAL = 2500
 
 interface Port {
     path: string
@@ -23,6 +32,15 @@ function toPromise<T>(f: (cb: (err: Error, res: T) => void) => void) {
             if (err) reject(err)
             else resolve(result)
         })
+    )
+}
+
+async function listPorts(serialPort: any) {
+    const ports: Port[] = await serialPort.list()
+    return ports.filter(
+        p =>
+            /^PX/.test(p.serialNumber) ||
+            matchVendorId(parseInt(p.vendorId, 16))
     )
 }
 
@@ -45,14 +63,14 @@ class NodeWebSerialIO implements HF2_IO {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onData = (v: Uint8Array) => {}
     onError = (e: Error) => {
-        console.warn(`usb error: ${errorCode(e) || ""} ${e ? e.stack : e}`)
+        console.warn(`serial error: ${errorCode(e) || ""} ${e ? e.stack : e}`)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     log(msg: string, v?: any) {
         if (Flags.diagnostics) {
-            if (v != undefined) console.debug("usb: " + msg, v)
-            else console.debug("usb: " + msg)
+            if (v != undefined) console.debug("serial: " + msg, v)
+            else console.debug("serial: " + msg)
         }
     }
 
@@ -74,7 +92,7 @@ class NodeWebSerialIO implements HF2_IO {
         return this.cancelStreams()
             .catch(e => {
                 // just ignore errors closing, most likely device just disconnected
-                console.debug(e)
+                if (!isCancelError(e)) console.debug(e)
             })
             .then(() => {
                 this.clearDev()
@@ -108,21 +126,15 @@ class NodeWebSerialIO implements HF2_IO {
         return toPromise<void>(cb => this.dev.write(pkt, undefined, cb))
     }
 
-    private async tryReconnectAsync() {
+    private async tryReconnectAsync(deviceId?: string) {
         try {
             this.dev = undefined
             this.port = undefined
 
-            const ports: Port[] = await this.SerialPort.list()
-            this.port = ports.filter(
-                p =>
-                    /^PX/.test(p.serialNumber) ||
-                    WEB_SERIAL_FILTERS.filters.some(
-                        f => f.usbVendorId == parseInt(p.vendorId, 16)
-                    )
-            )[0]
-
+            const ports = await listPorts(this.SerialPort)
+            this.port = ports?.[0]
             if (this.port) {
+                console.debug(`serial: found ${this.port.serialNumber}`)
                 await toPromise(cb => {
                     this.dev = new this.SerialPort(
                         this.port.path,
@@ -152,26 +164,55 @@ class NodeWebSerialIO implements HF2_IO {
                 })
             }
         } catch (e) {
-            console.log(e)
+            if (!isCancelError(e)) console.debug(e)
             this.dev = undefined
             this.port = undefined
         }
     }
 
     async connectAsync(background: boolean, deviceId?: string) {
-        await this.tryReconnectAsync()
+        await this.tryReconnectAsync(deviceId)
         if (!this.dev && background)
             throwError("can't find suitable device", true)
-
+        if (!this.dev) throwError("device not found", true)
+        console.log(`serial: found ${this.devInfo()}`)
         const proto = this.mkProto()
         try {
             await proto.postConnectAsync()
         } catch (e) {
-            console.debug(e)
+            if (!isCancelError(e)) console.debug(e)
             await proto.disconnectAsync()
             throw e
         }
         return proto
+    }
+}
+
+class ListPortObservable implements Observable<void> {
+    constructor(readonly SerialPort: any) {}
+
+    subscribe(observer: Observer<void>): { unsubscribe: () => void } {
+        const handler = () => !!observer.next && observer.next()
+
+        let knownPortIds: string[] = []
+        const interval = setInterval(async () => {
+            const ports: Port[] = await listPorts(this.SerialPort)
+            const portIds = ports.map(port => port.serialNumber || port.path)
+            const added = portIds.filter(id => knownPortIds.indexOf(id) < 0)
+            const removed = knownPortIds.filter(id => portIds.indexOf(id) < 0)
+            if (added.length || removed.length)
+                console.log(
+                    `detected serial port change + ${added.join(
+                        ", "
+                    )} - ${removed.join(", ")}`
+                )
+
+            knownPortIds = portIds
+            if (added.length) handler()
+        }, SCAN_INTERVAL)
+        return {
+            unsubscribe: () => clearInterval(interval),
+        }
     }
 }
 
@@ -182,7 +223,9 @@ class NodeWebSerialIO implements HF2_IO {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createNodeWebSerialTransport(SerialPort: any): Transport {
+    const connectObservable = new ListPortObservable(SerialPort)
     return new WebSerialTransport({
         mkTransport: () => new NodeWebSerialIO(SerialPort),
+        connectObservable,
     })
 }

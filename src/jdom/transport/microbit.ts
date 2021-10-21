@@ -10,6 +10,7 @@ import {
     fromHex,
     bufferConcat,
     fromUTF8,
+    isCancelError,
 } from "../utils"
 import Flags from "../flags"
 import {
@@ -534,7 +535,7 @@ export class CMSISProto implements Proto {
         )
 
         /* async */ this.xchgLoop().catch(e => {
-            console.debug(e)
+            if (!isCancelError(e)) console.debug(e)
             this.error(e?.message || "an error occured")
         })
     }
