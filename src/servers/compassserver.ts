@@ -21,7 +21,7 @@ export default class CompassServer extends AnalogSensorServer {
         this.enabled.on(CHANGE, () => {
             const [status] = this.statusCode.values()
             if (status === SystemStatusCodes.CalibrationNeeded) {
-                console.log("start calibration")
+                console.debug("start calibration")
                 this.calibrate()
             }
         })

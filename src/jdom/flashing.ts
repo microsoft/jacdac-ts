@@ -70,7 +70,7 @@ function timestamp() {
 }
 
 function log(msg: string) {
-    console.log(`BL [${timestamp()}ms]: ${msg}`)
+    console.debug(`BL [${timestamp()}ms]: ${msg}`)
 }
 
 class FlashClient {

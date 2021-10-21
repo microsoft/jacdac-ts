@@ -1433,7 +1433,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
             const pwr = dev.service(1) as PowerServer
             pwr.enabled.on(CHANGE, () => {
                 const enabled = !!pwr.enabled.values()[0]
-                console.log(`power: ${enabled ? "on" : "off"}`)
+                console.debug(`power: ${enabled ? "on" : "off"}`)
                 if (enabled)
                     // power + rest
                     dev.updateServices(services)

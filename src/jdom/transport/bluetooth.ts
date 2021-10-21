@@ -151,7 +151,7 @@ class BluetoothTransport extends Transport {
             )
             sent += n
             remainingChunks = remainingChunks == 0 ? 0 : remainingChunks - 1
-            console.log(
+            console.debug(
                 `chunk: ${chunk.toString()} [${remainingChunks} chunks remaining]`
             )
         }
@@ -189,7 +189,7 @@ class BluetoothTransport extends Transport {
     private handleCharacteristicChanged() {
         const data = new Uint8Array(this._rxCharacteristic.value.buffer)
         const packetData = data.slice(2)
-        console.log(`received length ${data.length}`)
+        console.debug(`received length ${data.length}`)
 
         if (data[0] & JD_BLE_FIRST_CHUNK_FLAG) {
             if (this._rxBuffer)
@@ -198,12 +198,14 @@ class BluetoothTransport extends Transport {
                 )
             this._rxBuffer = new Uint8Array()
             this._rxChunkCounter = data[0] & 0x7f
-            console.log(`Initial chunk counter: ${this._rxChunkCounter}`)
+            console.debug(`Initial chunk counter: ${this._rxChunkCounter}`)
         }
 
         this._rxChunkCounter =
             this._rxChunkCounter == 0 ? 0 : this._rxChunkCounter - 1
-        console.log(`after modification chunk counter: ${this._rxChunkCounter}`)
+        console.debug(
+            `after modification chunk counter: ${this._rxChunkCounter}`
+        )
 
         if (data[1] !== this._rxChunkCounter)
             console.error(
@@ -213,7 +215,7 @@ class BluetoothTransport extends Transport {
 
         if (this._rxChunkCounter == 0) {
             const pkt = Packet.fromBinary(this._rxBuffer, this.bus.timestamp)
-            console.log(`processed packet ${pkt}`)
+            console.debug(`processed packet ${pkt}`)
             pkt.sender = BLUETOOTH_TRANSPORT
             this.bus.processPacket(pkt)
             this._rxBuffer = undefined

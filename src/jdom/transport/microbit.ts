@@ -285,7 +285,7 @@ export class CMSISProto implements Proto {
             if (d > 500) {
                 const s = fromUTF8(uint8ArrayToString(this.pendingSerial))
                 this.pendingSerial = null
-                console.log("SERIAL[TO]: " + s)
+                console.debug("SERIAL[TO]: " + s)
             }
         }
 

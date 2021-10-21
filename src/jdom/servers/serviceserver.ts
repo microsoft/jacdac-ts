@@ -278,7 +278,8 @@ export class JDServiceServer extends JDEventSource {
         } else if (pkt.isCommand) {
             const cmd = this.commands[pkt.serviceCommand]
             if (cmd) cmd(pkt)
-            else if (cmd === undefined) console.log(`ignored command`, { pkt })
+            else if (cmd === undefined)
+                console.debug(`ignored command`, { pkt })
         }
         // ignored?
     }

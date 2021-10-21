@@ -297,7 +297,6 @@ function jdpackCore(
                     if (c0 == ch_b) buf = v
                     else throw new Error(`unexpected buffer`)
                 } else {
-                    console.log({ parser, v })
                     throw new Error(`expecting string or buffer`)
                 }
 

@@ -14,6 +14,6 @@ export default class DMXServer extends JDServiceServer {
 
     private handleSend(pkt: Packet) {
         // ignore
-        console.log(`dmx send`, toHex(pkt.data))
+        console.debug(`dmx send`, toHex(pkt.data))
     }
 }

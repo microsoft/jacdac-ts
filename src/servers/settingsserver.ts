@@ -51,7 +51,6 @@ export default class SettingsServer extends JDServiceServer {
 
     private async handleSet(pkt: Packet) {
         const [key, value] = pkt.jdunpack<[string, Uint8Array]>("z b")
-        console.log({ cmd: "set", key, value })
         this.settings[key] = toHex(value)
         await this.save()
     }
@@ -91,7 +90,7 @@ export default class SettingsServer extends JDServiceServer {
                 window.localStorage.getItem(this.storageKey)
             return JSON.parse(payload || "{}")
         } catch (e) {
-            console.log(e)
+            console.debug(e)
             return {}
         }
     }
@@ -105,7 +104,7 @@ export default class SettingsServer extends JDServiceServer {
                         JSON.stringify(this.settings)
                     )
             } catch (e) {
-                console.log(e)
+                console.debug(e)
             }
         }
         await this.sendEvent(SettingsEvent.Change)

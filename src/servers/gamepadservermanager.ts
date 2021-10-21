@@ -63,12 +63,12 @@ export default class GamepadHostManager extends JDClient {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private handleGamepadConnected(event: GamepadEvent) {
-        console.log("gamepad connected")
+        console.debug("gamepad connected")
         if (!this.ticking) this.tick()
     }
 
     private handleGamepadDisconnected(event: GamepadEvent) {
-        console.log("gamepad disconnected")
+        console.debug("gamepad disconnected")
         const { gamepad } = event
         const { index } = gamepad
         const provider = this.providers[index]

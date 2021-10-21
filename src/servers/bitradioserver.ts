@@ -290,7 +290,6 @@ export default class BitRadioServer extends JDServiceServer {
             },
         }
         // send message to parent
-        console.log(`bitradio: send`, msg)
         if (inIFrame()) {
             window.parent.postMessage(msg, "*")
         }

@@ -1092,7 +1092,7 @@ export class VMProgramRunner extends JDClient {
     }
 
     public unmount() {
-        console.log("VMProgram (unmount)")
+        //console.log("VMProgram (unmount)")
         super.unmount()
         if (this._provider) {
             this.roleManager.bus.removeServiceProvider(this._provider)

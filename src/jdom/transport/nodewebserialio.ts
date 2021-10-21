@@ -181,7 +181,7 @@ class NodeWebSerialIO implements HF2_IO {
         if (!this.dev && background)
             throwError("can't find suitable device", true)
         if (!this.dev) throwError("device not found", true)
-        console.log(`serial: found ${this.devInfo()}`)
+        console.debug(`serial: found ${this.devInfo()}`)
         const proto = this.mkProto()
         try {
             await proto.postConnectAsync()
@@ -209,7 +209,7 @@ class SerialPortWatch extends JDEventSource {
             const added = portIds.filter(id => knownPortIds.indexOf(id) < 0)
             const removed = knownPortIds.filter(id => portIds.indexOf(id) < 0)
             if (added.length || removed.length)
-                console.log(
+                console.debug(
                     `detected serial port change + ${added.join(
                         ", "
                     )} - ${removed.join(", ")}`

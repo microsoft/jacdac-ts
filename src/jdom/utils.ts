@@ -455,7 +455,7 @@ export function readBlobToUint8Array(blob: Blob): Promise<Uint8Array> {
             resolve(new Uint8Array(fileReader.result as ArrayBuffer))
         }
         fileReader.onerror = e => {
-            console.log(e)
+            //console.log(e)
             reject(e)
         }
         try {
@@ -475,7 +475,7 @@ export function readBlobToText(blob: Blob): Promise<string> {
         const fileReader = new FileReader()
         fileReader.onload = () => resolve(fileReader.result as string)
         fileReader.onerror = e => {
-            console.log(e)
+            //console.log(e)
             reject(e)
         }
         try {

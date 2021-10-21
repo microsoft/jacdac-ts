@@ -482,7 +482,7 @@ export class JDService extends JDNode {
                 if (ev) ev.processEvent(pkt)
             } else if (pkt.isCommand) {
                 // this is a report...
-                console.log("cmd report", { pkt })
+                //console.log("cmd report", { pkt })
             }
         } else if (pkt.isRegisterSet) {
             const id = pkt.registerIdentifier

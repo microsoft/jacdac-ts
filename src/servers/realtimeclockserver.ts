@@ -71,7 +71,7 @@ export default class RealTimeClockServer extends SensorServer<RealTimeClockReadi
     }
 
     private handleSetTime(pkt: Packet) {
-        console.log(`set time`, { pkt })
+        console.debug(`set time`, { pkt })
     }
 
     private refreshTime() {
