@@ -24,7 +24,6 @@ interface ScanResult {
 
 export class WifiServer extends JDServiceServer {
     readonly enabled: JDRegisterServer<[boolean]>
-    readonly connected: JDRegisterServer<[boolean]>
     readonly ssid: JDRegisterServer<[string]>
     readonly ipAddress: JDRegisterServer<[Uint8Array]>
     readonly eui48: JDRegisterServer<[Uint8Array]>
@@ -56,7 +55,6 @@ export class WifiServer extends JDServiceServer {
         super(SRV_WIFI, { intensityValues: [true] })
 
         this.enabled = this.addRegister(WifiReg.Enabled, [true])
-        this.connected = this.addRegister(WifiReg.Connected, [false])
         this.ssid = this.addRegister(WifiReg.Ssid, [""])
         this.ipAddress = this.addRegister<[Uint8Array]>(WifiReg.IpAddress, [
             new Uint8Array(0),
@@ -118,7 +116,6 @@ export class WifiServer extends JDServiceServer {
             known: this._knownNetworks,
             networks: this.scannedKnownNetworks,
             enabled: this.enabled.values()[0],
-            connected: this.connected.values()[0],
         })
         this.disconnect()
         if (this.scannedKnownNetworks.length) {
@@ -137,14 +134,12 @@ export class WifiServer extends JDServiceServer {
         const { ssid } = network || {}
         this.ssid.setValues([ssid || ""])
         this.enabled.setValues([!!ssid])
-        this.connected.setValues([!!ssid])
         this.ipAddress.setValues([randomBytes(4)])
     }
 
     private disconnect() {
         console.debug(`wifi: disconnect`)
         this.ssid.setValues([""])
-        this.connected.setValues([false])
         this.enabled.setValues([false])
         this.ipAddress.setValues([new Uint8Array(0)])
     }
