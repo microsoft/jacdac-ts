@@ -6,11 +6,18 @@ import { USBOptions } from "./usbio"
 import createIFrameBridge from "../bridges/iframebridge"
 
 /**
- * Options to instantiate a bus
+ * Options to instantiate a bus. By default, the bus acts as a client.
  */
 export interface WebBusOptions extends BusOptions {
+    /**
+     * USB connection options
+     */
     usbOptions?: USBOptions
     iframeTargetOrigin?: string
+    /**
+     * Bus self device advertises itself as a client
+     */
+    client?: boolean
 }
 
 /**

@@ -221,4 +221,7 @@ export const JACDAC_ERROR = "JacdacError"
 export const TIMEOUT_ERROR_CODE = "Timeout"
 export const TRANSPORT_CLOSED_ERROR_CODE = "TransportClosed"
 
+// eslint-disable-next-line prefer-const
+export let DOCS_ROOT = "https://microsoft.github.io/docs/"
+
 export * from "../../jacdac-spec/dist/specconstants"
