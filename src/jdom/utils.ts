@@ -580,6 +580,12 @@ export function toMap<T, V>(
     return m
 }
 
+export function ellipse(text: string, maxChars: number, suffix = "...") {
+    if (text?.length > maxChars - suffix.length)
+        return text.slice(0, maxChars) + suffix
+    return text
+}
+
 export function ellipseJoin(
     values: string[],
     maxChars: number,
@@ -590,7 +596,8 @@ export function ellipseJoin(
         if (r) r += ", "
         r += values[i]
     }
-    if (r.length > maxChars) return r.slice(0, maxChars) + ellipse
+    if (r.length > maxChars - ellipse.length)
+        return r.slice(0, maxChars) + ellipse
     else return r
 }
 
