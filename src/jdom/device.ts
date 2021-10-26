@@ -433,9 +433,8 @@ export class JDDevice extends JDNode {
             ControlReg.BootloaderProductIdentifier
         )?.uintValue
         const ready =
-            version &&
-            (productIdentifier !== undefined ||
-                bootloaderProductIdentifier !== undefined)
+            productIdentifier !== undefined ||
+            bootloaderProductIdentifier !== undefined
 
         return ready
             ? {
