@@ -6,17 +6,20 @@ import { USBOptions } from "./usbio"
 import createIFrameBridge from "../bridges/iframebridge"
 
 /**
+ * Options to instantiate a bus
+ */
+export interface WebBusOptions extends BusOptions {
+    usbOptions?: USBOptions
+    iframeTargetOrigin?: string
+}
+
+/**
  * Creates a Jacdac bus using WebUSB, WebSerial or WebBluetooth
  * @param options
  * @returns
  * @category Transport
  */
-export function createWebBus(
-    options?: {
-        usbOptions?: USBOptions
-        iframeTargetOrigin?: string
-    } & BusOptions
-) {
+export function createWebBus(options?: WebBusOptions) {
     const {
         usbOptions,
         iframeTargetOrigin,
