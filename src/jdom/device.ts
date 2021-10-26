@@ -37,6 +37,7 @@ import {
     WEBSOCKET_TRANSPORT,
     DEVICE_PACKET_ANNOUNCE,
     SRV_PROXY,
+    SRV_UNIQUE_BRAIN,
 } from "./constants"
 import { read32, bufferEq, setAckError, read16 } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
@@ -862,6 +863,13 @@ export class JDDevice extends JDNode {
      */
     get proxy() {
         return this.serviceClasses.indexOf(SRV_PROXY) > -1
+    }
+
+    /**
+     * Indicates if the device is a unique brain
+     */
+    get brain() {
+        return this.serviceClasses.indexOf(SRV_UNIQUE_BRAIN) > -1
     }
 
     private initAcks() {

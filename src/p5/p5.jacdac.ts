@@ -17,7 +17,7 @@ declare let p5: any
 /**
  * The Jacdac bus
  */
-export const bus = createWebBus({ client: true })
+export const bus = createWebBus()
 bus.streaming = true
 
 /**
