@@ -115,20 +115,29 @@ export class RoleManager extends JDClient {
                 // added role
                 changed = true
                 this._roles.push({ ...newRole })
-            } else if (existingRole.serviceClass !== newRole.serviceClass) {
-                // modified type, force rebinding
-                changed = true
+            } else {
+                changed =
+                    existingRole.serviceClass !== newRole.serviceClass ||
+                    existingRole.preferredDeviceId !=
+                        newRole.preferredDeviceId ||
+                    existingRole.preferredServiceIndex !=
+                        newRole.preferredServiceIndex
+
                 existingRole.serviceClass = newRole.serviceClass
                 existingRole.preferredDeviceId = newRole.preferredDeviceId
                 existingRole.preferredServiceIndex =
                     newRole.preferredServiceIndex
-
                 // unbinding existing service
-                if (existingRole.service) {
+                if (
+                    existingRole.service &&
+                    existingRole.serviceClass !== newRole.serviceClass
+                ) {
                     existingRole.service = undefined
+                    changed = true
                     this.emit(ROLE_UNBOUND, existingRole.role)
                 }
-            } else if (newRole.preferredDeviceId) {
+            }
+            if (newRole.preferredDeviceId) {
                 // make sure that the preferred device id is free
                 const otherBinding = this._roles.find(
                     r =>
