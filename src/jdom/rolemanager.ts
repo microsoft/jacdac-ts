@@ -21,6 +21,7 @@ export interface RoleBinding {
     role: string
     serviceClass: number
     preferredDeviceId?: string
+    preferredServiceIndex?: number
     service?: JDService
 }
 
@@ -135,28 +136,25 @@ export class RoleManager extends JDClient {
     public updateRole(
         role: string,
         serviceClass: number,
-        preferredDeviceId?: string
+        preferredDeviceId?: string,
+        preferredServiceIndex?: number
     ) {
-        if (!serviceSpecificationFromClassIdentifier(serviceClass)) return // unknown role type
-
-        let binding = this._roles.find(r => r.role === role)
-
-        // check if we already have this role
-        if (binding && serviceClass === binding.serviceClass) {
-            if (!binding.service && preferredDeviceId) {
-                binding.preferredDeviceId = preferredDeviceId
+        const newRoles = this._roles.slice(0).map(r => ({ ...r }))
+        let binding = newRoles.find(r => r.role === role)
+        if (binding) {
+            binding.service = undefined
+            binding.preferredDeviceId = preferredDeviceId
+            binding.preferredServiceIndex = preferredServiceIndex
+        } else {
+            binding = {
+                role,
+                serviceClass,
+                preferredDeviceId,
+                preferredServiceIndex,
             }
-            return
+            newRoles.push(binding)
         }
-        const oldBound = this.isBound
-        // new role
-        binding = { role, serviceClass, preferredDeviceId }
-        this._roles.push(binding)
-        if (!this.bindRole(binding)) {
-            this.emit(ROLE_UNBOUND, role)
-        }
-        this.emit(CHANGE)
-        this.emitBoundEvents(oldBound)
+        this.updateRoles(newRoles)
     }
 
     private emitBoundEvents(oldBound: boolean) {
@@ -166,6 +164,7 @@ export class RoleManager extends JDClient {
 
     // TODO: need to respect other (unbound) role's preferredDeviceId
     private bindRole(role: RoleBinding) {
+        // find a service that is not yet allocated
         const ret = this.bus
             .services({
                 ignoreInfrastructure: true,
@@ -176,7 +175,10 @@ export class RoleManager extends JDClient {
             let theOne = ret[0]
             if (role.preferredDeviceId) {
                 const newOne = ret.find(
-                    s => s.device.deviceId === role.preferredDeviceId
+                    s =>
+                        s.device.deviceId === role.preferredDeviceId &&
+                        (isNaN(role.preferredServiceIndex) ||
+                            role.preferredServiceIndex === s.serviceIndex)
                 )
                 if (newOne) theOne = newOne
             }
@@ -188,7 +190,16 @@ export class RoleManager extends JDClient {
     }
 
     private bindServices(changed?: boolean) {
-        this.roles(false).forEach(binding => {
+        const r = this.roles(false).sort(
+            (l, r) =>
+                (r.preferredDeviceId || "").localeCompare(
+                    l.preferredDeviceId || ""
+                ) *
+                    10 +
+                (r.preferredServiceIndex || 0xff) -
+                (l.preferredServiceIndex || 0xff)
+        )
+        r.forEach(binding => {
             if (this.bindRole(binding)) changed = true
         })
         if (changed) this.emit(CHANGE)
@@ -231,7 +242,11 @@ export default RoleManager
 export function startRoles<
     TRoles extends Record<
         string,
-        { serviceClass: number; preferredDeviceId?: string }
+        {
+            serviceClass: number
+            preferredDeviceId?: string
+            preferredServiceIndex?: number
+        }
     >
 >(
     bus: JDBus,
@@ -243,7 +258,7 @@ export function startRoles<
          */
         incomplete?: boolean
     }
-): () => void {
+) {
     const { incomplete } = options || {}
     const roleManager = new RoleManager(bus)
     roleManager.updateRoles(
@@ -251,6 +266,7 @@ export function startRoles<
             role,
             serviceClass: bindings[role].serviceClass,
             preferredDeviceId: bindings[role].preferredDeviceId,
+            preferredServiceIndex: bindings[role].preferredServiceIndex,
         }))
     )
     const roles = () => {
