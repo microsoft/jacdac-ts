@@ -183,4 +183,46 @@ suite("rolemanager", () => {
             )
         })
     )
+    test(
+        "double bind reverse",
+        makeTest(async tester => {
+            const { bus } = tester
+            const { button, button2 } = await tester.createServices({
+                button2: new ButtonServer("button2", false),
+                button: new ButtonServer("button", false),
+            })
+            const roleManager = new RoleManager(bus)
+            roleManager.updateRole("button2", SRV_BUTTON)
+            roleManager.updateRole(
+                "button",
+                SRV_BUTTON,
+                button.service.device.deviceId
+            )
+            assert(roleManager.isBound, "role manager not found")
+            const roles = roleManager.roles(true)
+            assert(
+                roles.find(r => r.role === "button").service === button.service,
+                "button not bound"
+            )
+            assert(
+                roles.find(r => r.role === "button2").service ===
+                    button2.service,
+                "button2 not bound"
+            )
+            roleManager.updateRole(
+                "button",
+                SRV_BUTTON,
+                button2.service.device.deviceId
+            )
+            assert(
+                roles.find(r => r.role === "button2").service === button.service,
+                "double button not bound"
+            )
+            assert(
+                roles.find(r => r.role === "button").service ===
+                    button2.service,
+                "double button2 not bound"
+            )
+        })
+    )
 })

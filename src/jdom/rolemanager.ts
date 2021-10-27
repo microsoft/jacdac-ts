@@ -116,27 +116,26 @@ export class RoleManager extends JDClient {
                 changed = true
                 this._roles.push({ ...newRole })
             } else {
-                changed =
+                const bindingChanged =
                     existingRole.serviceClass !== newRole.serviceClass ||
                     existingRole.preferredDeviceId !=
                         newRole.preferredDeviceId ||
                     existingRole.preferredServiceIndex !=
                         newRole.preferredServiceIndex
+                changed = changed || bindingChanged
 
                 existingRole.serviceClass = newRole.serviceClass
                 existingRole.preferredDeviceId = newRole.preferredDeviceId
                 existingRole.preferredServiceIndex =
                     newRole.preferredServiceIndex
                 // unbinding existing service
-                if (
-                    existingRole.service &&
-                    existingRole.serviceClass !== newRole.serviceClass
-                ) {
+                if (existingRole.service && bindingChanged) {
                     existingRole.service = undefined
                     changed = true
                     this.emit(ROLE_UNBOUND, existingRole.role)
                 }
             }
+
             if (newRole.preferredDeviceId) {
                 // make sure that the preferred device id is free
                 const otherBinding = this._roles.find(
@@ -149,6 +148,7 @@ export class RoleManager extends JDClient {
                                 newRole.preferredServiceIndex)
                 )
                 if (otherBinding) {
+                    changed = true
                     otherBinding.service = undefined
                     this.emit(ROLE_UNBOUND, otherBinding.role)
                 }
