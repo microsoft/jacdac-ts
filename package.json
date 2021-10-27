@@ -35,6 +35,7 @@
     "dist": "node node_modules/rollup/dist/bin/rollup -c rollup.config.ts",
     "watch:ts": "node node_modules/rollup/dist/bin/rollup -c rollup.config.ts -w",
     "test": "cd tests && node ../node_modules/mocha/bin/mocha --require ts-node/register --watch-extensions ts,tsx -p ./tsconfig.json **/*.spec.ts",
+    "testone": "cd tests && node ../node_modules/mocha/bin/mocha --require ts-node/register --watch-extensions ts,tsx -p ./tsconfig.json **/rolemanager.spec.ts",
     "tools": "npx http-server . -c-1",
     "disttools": "cd docs && mkdir tools && cd ../tools && node ./prepare.js && cp * -t ../docs/tools",
     "buildspecs": "cd jacdac-spec/spectool && sh build.sh && cd ../.. && cp -r jacdac-spec/services/generated/makecode/* pxt-jacdac",

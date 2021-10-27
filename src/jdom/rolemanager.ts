@@ -82,6 +82,19 @@ export class RoleManager extends JDClient {
             serviceSpecificationFromClassIdentifier(serviceClass)
         )
 
+        // ensure that preferred deviceid/service index is unique
+        const preferreds: Set<string> = new Set()
+        for (const role of supportedNewRoles.filter(
+            r => !!r.preferredDeviceId
+        )) {
+            const key =
+                role.preferredDeviceId + (role.preferredServiceIndex || -1)
+            if (preferreds.has(key)) {
+                role.preferredDeviceId = undefined
+                role.preferredServiceIndex = undefined
+            } else preferreds.add(key)
+        }
+
         // unbind removed roles
         let i = 0
         while (i < this._roles.length) {
@@ -106,11 +119,32 @@ export class RoleManager extends JDClient {
                 // modified type, force rebinding
                 changed = true
                 existingRole.serviceClass = newRole.serviceClass
+                existingRole.preferredDeviceId = newRole.preferredDeviceId
+                existingRole.preferredServiceIndex =
+                    newRole.preferredServiceIndex
+
+                // unbinding existing service
                 if (existingRole.service) {
                     existingRole.service = undefined
                     this.emit(ROLE_UNBOUND, existingRole.role)
                 }
-            } // else unmodifed role
+            } else if (newRole.preferredDeviceId) {
+                // make sure that the preferred device id is free
+                const otherBinding = this._roles.find(
+                    r =>
+                        r.service &&
+                        r.service.device.deviceId ===
+                            newRole.preferredDeviceId &&
+                        (isNaN(newRole.preferredServiceIndex) ||
+                            r.service.serviceIndex ===
+                                newRole.preferredServiceIndex)
+                )
+                if (otherBinding) {
+                    otherBinding.service = undefined
+                    this.emit(ROLE_UNBOUND, otherBinding.role)
+                }
+            }
+            // role unmodified
         }
         // bound services
         this.bindServices(changed)
@@ -165,40 +199,55 @@ export class RoleManager extends JDClient {
     // TODO: need to respect other (unbound) role's preferredDeviceId
     private bindRole(role: RoleBinding) {
         // find a service that is not yet allocated
-        const ret = this.bus
+        const bound = this.roles(true)
+        const unboundServices = this.bus
             .services({
                 ignoreInfrastructure: true,
                 serviceClass: role.serviceClass,
             })
-            .filter(s => !this.roles(true).find(r => r.service === s))
-        if (ret.length) {
-            let theOne = ret[0]
-            if (role.preferredDeviceId) {
-                const newOne = ret.find(
-                    s =>
-                        s.device.deviceId === role.preferredDeviceId &&
-                        (isNaN(role.preferredServiceIndex) ||
-                            role.preferredServiceIndex === s.serviceIndex)
-                )
-                if (newOne) theOne = newOne
+            .filter(s => !bound.find(r => r.service === s))
+        const boundServices = bound.map(r => r.service).filter(srv => !!srv)
+
+        // pick the first unbound service
+        let theOne = unboundServices[0]
+
+        // if there are constraint, try a better fit
+        if (role.preferredDeviceId) {
+            const newOne = [...unboundServices, ...boundServices].find(
+                s =>
+                    s.device.deviceId === role.preferredDeviceId &&
+                    (isNaN(role.preferredServiceIndex) ||
+                        role.preferredServiceIndex === s.serviceIndex)
+            )
+            if (newOne) {
+                theOne = newOne
             }
+        }
+
+        if (theOne) {
             role.service = theOne
             this.emit(ROLE_BOUND, role.role)
             return true
-        }
-        return false
+        } else return false
     }
 
     private bindServices(changed?: boolean) {
-        const r = this.roles(false).sort(
-            (l, r) =>
-                (r.preferredDeviceId || "").localeCompare(
-                    l.preferredDeviceId || ""
-                ) *
-                    10 +
-                (r.preferredServiceIndex || 0xff) -
-                (l.preferredServiceIndex || 0xff)
-        )
+        const r = this.roles().sort((l, r) => {
+            let c = 0
+            if (r.preferredDeviceId || l.preferredDeviceId)
+                c = -(l.preferredDeviceId || "").localeCompare(
+                    r.preferredDeviceId || ""
+                )
+            if (c != 0) return c
+            if (
+                !isNaN(l.preferredServiceIndex) ||
+                !isNaN(r.preferredServiceIndex)
+            )
+                c =
+                    -(l.preferredServiceIndex || 0) +
+                    (r.preferredServiceIndex || 0)
+            return c
+        })
         r.forEach(binding => {
             if (this.bindRole(binding)) changed = true
         })

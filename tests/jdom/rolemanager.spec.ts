@@ -48,7 +48,6 @@ suite("rolemanager", () => {
                 ])
                 assert(roleManager.isBound, "role manager not found")
                 const roles = roleManager.roles(true)
-                console.log(roles)
                 assert(
                     !!roles.find(r => r.role === "button").service,
                     "button not bound"
@@ -81,7 +80,6 @@ suite("rolemanager", () => {
                 ])
                 assert(roleManager.isBound, "role manager not found")
                 const roles = roleManager.roles(true)
-                console.log(roles)
                 assert(
                     roles.find(r => r.role === "button").service ===
                         button.service,
@@ -116,7 +114,6 @@ suite("rolemanager", () => {
                 ])
                 assert(roleManager.isBound, "role manager not found")
                 const roles = roleManager.roles(true)
-                console.log(roles)
                 assert(
                     roles.find(r => r.role === "button").service ===
                         button.service,
@@ -146,7 +143,6 @@ suite("rolemanager", () => {
                 roleManager.updateRole("button2", SRV_BUTTON)
                 assert(roleManager.isBound, "role manager not found")
                 const roles = roleManager.roles(true)
-                console.log(roles)
                 assert(
                     roles.find(r => r.role === "button").service ===
                         button.service,
@@ -160,7 +156,7 @@ suite("rolemanager", () => {
             })
         )
     test(
-        "bind sep 2 button with preferences",
+        "bind sep 2 button with preferences reverse",
         makeTest(async tester => {
             const { bus } = tester
             const { button, button2 } = await tester.createServices({
@@ -176,7 +172,6 @@ suite("rolemanager", () => {
             )
             assert(roleManager.isBound, "role manager not found")
             const roles = roleManager.roles(true)
-            console.log(roles)
             assert(
                 roles.find(r => r.role === "button").service === button.service,
                 "button not bound"
