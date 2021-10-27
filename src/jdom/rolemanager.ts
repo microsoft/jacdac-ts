@@ -197,6 +197,19 @@ export class RoleManager extends JDClient {
             }
             newRoles.push(binding)
         }
+        // find any other binding with the same preferences and clear it
+        if (preferredDeviceId) {
+            const other = this._roles.find(
+                r =>
+                    r !== binding &&
+                    r.preferredDeviceId === preferredDeviceId &&
+                    r.preferredServiceIndex === preferredServiceIndex
+            )
+            if (other) {
+                other.preferredDeviceId = undefined
+                other.preferredServiceIndex = undefined
+            }
+        }
         this.updateRoles(newRoles)
     }
 
