@@ -22,6 +22,9 @@ export interface RoleBinding {
     serviceClass: number
     preferredDeviceId?: string
     preferredServiceIndex?: number
+}
+
+interface LiveRoleBinding extends RoleBinding {
     service?: JDService
 }
 
@@ -30,7 +33,7 @@ export interface RoleBinding {
  * @category Roles
  */
 export class RoleManager extends JDClient {
-    private readonly _roles: RoleBinding[] = []
+    private readonly _roles: LiveRoleBinding[] = []
 
     /**
      * Gets the bus for this role
@@ -70,12 +73,25 @@ export class RoleManager extends JDClient {
     }
 
     /**
+     * Saves roles status
+     * @returns
+     */
+    saveRoles(): RoleBinding[] {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        return this._roles.map(({ service, ...rest }) => ({ ...rest }))
+    }
+
+    private get hash() {
+        return JSON.stringify(this.saveRoles())
+    }
+
+    /**
      * Updates the list of roles
      * @param newRoles
      */
     updateRoles(newRoles: RoleBinding[]) {
         const oldBound = this.isBound
-        let changed = false
+        const oldHash = this.hash
 
         // remove unknown roles
         const supportedNewRoles = newRoles.filter(({ serviceClass }) =>
@@ -100,7 +116,6 @@ export class RoleManager extends JDClient {
         while (i < this._roles.length) {
             const role = this._roles[i]
             if (!supportedNewRoles.find(r => r.role === role.role)) {
-                changed = true
                 this._roles.splice(i, 1)
                 this.emit(ROLE_UNBOUND, role.role)
             } else {
@@ -113,7 +128,6 @@ export class RoleManager extends JDClient {
             const existingRole = this._roles.find(r => r.role === newRole.role)
             if (!existingRole) {
                 // added role
-                changed = true
                 this._roles.push({ ...newRole })
             } else {
                 const bindingChanged =
@@ -122,7 +136,6 @@ export class RoleManager extends JDClient {
                         newRole.preferredDeviceId ||
                     existingRole.preferredServiceIndex !=
                         newRole.preferredServiceIndex
-                changed = changed || bindingChanged
 
                 existingRole.serviceClass = newRole.serviceClass
                 existingRole.preferredDeviceId = newRole.preferredDeviceId
@@ -131,7 +144,6 @@ export class RoleManager extends JDClient {
                 // unbinding existing service
                 if (existingRole.service && bindingChanged) {
                     existingRole.service = undefined
-                    changed = true
                     this.emit(ROLE_UNBOUND, existingRole.role)
                 }
             }
@@ -148,7 +160,6 @@ export class RoleManager extends JDClient {
                                 newRole.preferredServiceIndex)
                 )
                 if (otherBinding) {
-                    changed = true
                     otherBinding.service = undefined
                     this.emit(ROLE_UNBOUND, otherBinding.role)
                 }
@@ -156,6 +167,7 @@ export class RoleManager extends JDClient {
             // role unmodified
         }
         // bound services
+        const changed = oldHash !== this.hash
         this.bindServices(changed)
         this.emitBoundEvents(oldBound)
     }
@@ -219,7 +231,7 @@ export class RoleManager extends JDClient {
     }
 
     // TODO: need to respect other (unbound) role's preferredDeviceId
-    private bindRole(role: RoleBinding) {
+    private bindRole(role: LiveRoleBinding) {
         // find a service that is not yet allocated
         const bound = this.roles(true)
         const unboundServices = this.bus
