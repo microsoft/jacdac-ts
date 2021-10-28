@@ -131,6 +131,7 @@ import AzureIoTHubHealthServer from "./azureiothubhealthserver"
 import JDServiceProvider from "../jdom/servers/serviceprovider"
 import VibrationMotor from "./vibrationmotorserver"
 import WifiServer from "./wifiserver"
+import AccelerometerServer from "./accelerometerserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "indoor",
@@ -349,12 +350,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     {
         name: "accelerometer",
         serviceClasses: [SRV_ACCELEROMETER],
-        services: () => [
-            new SensorServer<[number, number, number]>(SRV_ACCELEROMETER, {
-                readingValues: [0.5, 0.5, -(1 - (0.5 * 0.5 + 0.5 * 0.5))],
-                preferredStreamingInterval: 20,
-            }),
-        ],
+        services: () => [new AccelerometerServer()],
     },
     {
         name: "barometer",
