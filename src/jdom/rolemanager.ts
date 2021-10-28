@@ -77,8 +77,10 @@ export class RoleManager extends JDClient {
      * @returns
      */
     saveRoles(): RoleBinding[] {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        return this._roles.map(({ service, ...rest }) => ({ ...rest }))
+        return this._roles.map(({ service, ...rest }) => ({
+            ...rest,
+            serviceId: service?.id,
+        }))
     }
 
     private get hash() {
