@@ -43,6 +43,12 @@ export interface JDServerOptions {
      * Initial value for the ``intensity`` register
      */
     intensityValues?: PackedValues
+
+    /**
+     * A callback to transform the received intensity value data
+     */
+    intensityProcessor?: (values: PackedValues) => PackedValues
+
     /**
      * Emit active/inactive events based on the intensity register
      */
@@ -88,6 +94,7 @@ export class JDServiceServer extends JDEventSource {
             variant,
             valueValues,
             intensityValues,
+            intensityProcessor,
             registerValues,
             isActive,
         } = options || {}
@@ -106,6 +113,8 @@ export class JDServiceServer extends JDEventSource {
                 SystemReg.Intensity,
                 intensityValues
             )
+            if (intensityProcessor)
+                intensity.valueProcessor = intensityProcessor
             if (isActive)
                 intensity.on(CHANGE, () => {
                     const ev = isActive(intensity.values())

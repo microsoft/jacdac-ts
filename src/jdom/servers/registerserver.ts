@@ -80,6 +80,7 @@ export class JDRegisterServer<
     errorRegister: JDRegisterServer<TValues>
     skipBoundaryCheck = false
     skipErrorInjection = false
+    valueProcessor: (values: TValues) => TValues
 
     constructor(
         public readonly service: JDServiceServer,
@@ -146,6 +147,8 @@ export class JDRegisterServer<
         if (this.readOnly) return
 
         if (this.shouldNormalize()) this.normalize(values)
+        if (this.valueProcessor) values = this.valueProcessor(values)
+
         const d = jdpack(this.packFormat, values)
         if (!bufferEq(this.data, d)) {
             this.data = d
@@ -189,11 +192,13 @@ export class JDRegisterServer<
             let d = pkt.data
 
             // unpack and check boundaries
-            if (this.shouldNormalize()) {
+            if (this.shouldNormalize() || this.valueProcessor) {
                 try {
                     // unpack, apply boundaries, repack
-                    const values = jdunpack<TValues>(d, this.packFormat)
-                    this.normalize(values)
+                    let values = jdunpack<TValues>(d, this.packFormat)
+                    if (this.shouldNormalize()) this.normalize(values)
+                    if (this.valueProcessor)
+                        values = this.valueProcessor(values)
                     d = jdpack<TValues>(this.packFormat, values)
                 } catch (e) {
                     // invalid format, refuse

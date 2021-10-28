@@ -86,6 +86,8 @@ import {
     FlexVariant,
     SRV_FLEX,
     SRV_WIFI,
+    SRV_LIGHT_BULB,
+    LightBulbReg,
 } from "../jdom/constants"
 import JDServerServiceProvider from "../jdom/servers/serverserviceprovider"
 import ProtocolTestServer from "../jdom/servers/protocoltestserver"
@@ -839,6 +841,42 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
                 numPixels: 64,
                 numColumns: 16,
                 variant: LedPixelVariant.Matrix,
+            }),
+        ],
+    },
+    {
+        name: "light bulb",
+        serviceClasses: [SRV_LIGHT_BULB],
+        services: () => [
+            new JDServiceServer(SRV_LIGHT_BULB, {
+                intensityValues: [0],
+                isActive: values => !!values?.[0],
+                intensityProcessor: (values: [number]) => {
+                    const newValues = [values[0] > 0 ? 1 : 0]
+                    return newValues
+                },
+                registerValues: [
+                    {
+                        code: LightBulbReg.Dimmeable,
+                        values: [false],
+                    },
+                ],
+            }),
+        ],
+    },
+    {
+        name: "light bulb (dimmeable)",
+        serviceClasses: [SRV_LIGHT_BULB],
+        services: () => [
+            new JDServiceServer(SRV_LIGHT_BULB, {
+                intensityValues: [0],
+                isActive: values => !!values?.[0],
+                registerValues: [
+                    {
+                        code: LightBulbReg.Dimmeable,
+                        values: [true],
+                    },
+                ],
             }),
         ],
     },
