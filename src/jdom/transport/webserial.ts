@@ -60,13 +60,8 @@ export class WebSerialTransport extends Transport {
     }
 }
 
-/**
- * Creates a transport over a Web Serial connection
- * @category Transport
- */
-export function createWebSerialTransport(): Transport {
+function defaultOptions(): WebSerialOptions {
     if (!isWebSerialSupported()) return undefined
-
     const connectObservable = new EventTargetObservable(
         navigator.serial,
         "connect"
@@ -75,9 +70,20 @@ export function createWebSerialTransport(): Transport {
         navigator.serial,
         "disconnect"
     )
-    return new WebSerialTransport({
+    return {
         mkTransport: () => new WebSerialIO(),
         connectObservable,
         disconnectObservable,
-    })
+    }
+}
+
+/**
+ * Creates a transport over a Web Serial connection
+ * @category Transport
+ */
+export function createWebSerialTransport(
+    options?: WebSerialOptions
+): Transport {
+    if (!options) options = defaultOptions()
+    return options && new WebSerialTransport(options)
 }

@@ -1,7 +1,15 @@
 import JDBus, { BusOptions } from "../bus"
 import { createUSBTransport, isWebUSBSupported } from "./usb"
-import { createWebSerialTransport, isWebSerialSupported } from "./webserial"
-import { createBluetoothTransport, isWebBluetoothSupported } from "./bluetooth"
+import {
+    createWebSerialTransport,
+    isWebSerialSupported,
+    WebSerialOptions,
+} from "./webserial"
+import {
+    createBluetoothTransport,
+    isWebBluetoothSupported,
+    WebBluetoothOptions,
+} from "./bluetooth"
 import { USBOptions } from "./usbio"
 import createIFrameBridge from "../bridges/iframebridge"
 
@@ -10,14 +18,24 @@ import createIFrameBridge from "../bridges/iframebridge"
  */
 export interface WebBusOptions extends BusOptions {
     /**
-     * USB connection options
+     * USB connection options, set to null to disable USB
      */
     usbOptions?: USBOptions
-    iframeTargetOrigin?: string
+
     /**
-     * Bus self device advertises itself as a client
+     * WebSerial connection options, set to null to disable serial
      */
-    client?: boolean
+    serialOptions?: WebSerialOptions
+
+    /**
+     * WebBluetooth connection options, set to null to disable BLE
+     */
+    bluetoothOptions?: WebBluetoothOptions
+
+    /**
+     * Specify target origin for iframe messages
+     */
+    iframeTargetOrigin?: string
 }
 
 /**
@@ -29,6 +47,8 @@ export interface WebBusOptions extends BusOptions {
 export function createWebBus(options?: WebBusOptions) {
     const {
         usbOptions,
+        serialOptions,
+        bluetoothOptions,
         iframeTargetOrigin,
         client = true,
         ...rest
@@ -36,8 +56,9 @@ export function createWebBus(options?: WebBusOptions) {
     const bus = new JDBus(
         [
             usbOptions !== null && createUSBTransport(usbOptions),
-            createWebSerialTransport(),
-            createBluetoothTransport(),
+            serialOptions !== null && createWebSerialTransport(serialOptions),
+            bluetoothOptions !== null &&
+                createBluetoothTransport(bluetoothOptions),
         ],
         { client, ...rest }
     )

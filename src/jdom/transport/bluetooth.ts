@@ -11,6 +11,9 @@ import Transport from "./transport"
 
 const JD_BLE_FIRST_CHUNK_FLAG = 0x80
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface WebBluetoothOptions {}
+
 /**
  * Indicates with Web Bluetooth transport are enabled
  * @category Transport
@@ -71,7 +74,8 @@ class BluetoothTransport extends Transport {
     private _rxBuffer: Uint8Array
     private _rxChunkCounter: number
 
-    constructor() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    constructor(options?: WebBluetoothOptions) {
         super(BLUETOOTH_TRANSPORT, { checkPulse: true })
 
         this.handleDisconnected = this.handleDisconnected.bind(this)
@@ -228,6 +232,8 @@ class BluetoothTransport extends Transport {
  * Creates a transport that uses Web Bluetooth
  * @category Transport
  */
-export function createBluetoothTransport(): Transport {
-    return isWebBluetoothSupported() && new BluetoothTransport()
+export function createBluetoothTransport(
+    options?: WebBluetoothOptions
+): Transport {
+    return isWebBluetoothSupported() && new BluetoothTransport(options)
 }

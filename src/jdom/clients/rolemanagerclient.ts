@@ -8,6 +8,7 @@ import {
     DISCONNECT,
     ERROR,
     EVENT,
+    RESTART,
     RoleManagerCmd,
     ROLE_MANAGER_POLL,
     SELF_ANNOUNCE,
@@ -79,9 +80,9 @@ export class RoleManagerClient extends JDServiceClient {
         this.mount(
             this.bus.subscribe(DEVICE_ANNOUNCE, this.assignRoles.bind(this))
         )
-        // unmount when device is removed
+        // unmount when device is removed or reset
         this.mount(
-            service.device.subscribe(DISCONNECT, () => {
+            service.device.subscribe([DISCONNECT, RESTART], () => {
                 if (this.bus.roleManager?.service === this.service)
                     this.bus.setRoleManagerService(undefined)
             })
