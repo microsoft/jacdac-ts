@@ -113,6 +113,11 @@ export interface BusOptions {
      * enable bus acting as a client
      */
     client?: boolean
+
+    /**
+     * Ignore role managers detected on the bus
+     */
+    disableRoleManager?: boolean
 }
 
 /**
@@ -152,8 +157,8 @@ export class JDBus extends JDNode {
     private _firmwareBlobs: FirmwareBlob[]
     private _gcDevicesFrozen = 0
     private _serviceProviders: JDServiceProvider[] = []
-    private _streaming = false
     private _unsubscribeBroadcastChannel: () => void
+    private _streaming = false
     private _passive = false
     private _client = false
 
@@ -171,7 +176,15 @@ export class JDBus extends JDNode {
     constructor(transports?: Transport[], options?: BusOptions) {
         super()
 
-        const { deviceId, scheduler, parentOrigin, client } = options || {}
+        const {
+            deviceId,
+            scheduler,
+            parentOrigin,
+            client,
+            disableRoleManager,
+        } = options || {}
+
+        this._roleManagerClient = disableRoleManager === null ? null : undefined
         this.selfDeviceId = deviceId || randomDeviceId()
         this.scheduler = scheduler || new WallClockScheduler()
         this.parentOrigin = parentOrigin || "*"
@@ -583,6 +596,9 @@ export class JDBus extends JDNode {
      * @category Services
      */
     setRoleManagerService(service: JDService) {
+        // feature disabled
+        if (this._roleManagerClient === null) return
+
         // clean if needed
         if (
             this._roleManagerClient &&
