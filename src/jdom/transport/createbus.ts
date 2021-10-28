@@ -20,17 +20,17 @@ export interface WebBusOptions extends BusOptions {
     /**
      * USB connection options, set to null to disable USB
      */
-    usbOptions?: USBOptions
+    usbOptions?: USBOptions | null
 
     /**
      * WebSerial connection options, set to null to disable serial
      */
-    serialOptions?: WebSerialOptions
+    serialOptions?: WebSerialOptions | null
 
     /**
      * WebBluetooth connection options, set to null to disable BLE
      */
-    bluetoothOptions?: WebBluetoothOptions
+    bluetoothOptions?: WebBluetoothOptions | null
 
     /**
      * Specify target origin for iframe messages
@@ -55,10 +55,13 @@ export function createWebBus(options?: WebBusOptions) {
     } = options || {}
     const bus = new JDBus(
         [
-            usbOptions !== null && createUSBTransport(usbOptions),
-            serialOptions !== null && createWebSerialTransport(serialOptions),
-            bluetoothOptions !== null &&
-                createBluetoothTransport(bluetoothOptions),
+            usbOptions !== null ? createUSBTransport(usbOptions) : undefined,
+            serialOptions !== null
+                ? createWebSerialTransport(serialOptions)
+                : undefined,
+            bluetoothOptions !== null
+                ? createBluetoothTransport(bluetoothOptions)
+                : undefined,
         ],
         { client, ...rest }
     )

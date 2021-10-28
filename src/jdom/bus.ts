@@ -173,7 +173,7 @@ export class JDBus extends JDNode {
      * @param sendPacket
      * @category Lifecycle
      */
-    constructor(transports?: Transport[], options?: BusOptions) {
+    constructor(transports?: (Transport | undefined)[], options?: BusOptions) {
         super()
 
         const {
@@ -324,8 +324,8 @@ export class JDBus extends JDNode {
      * Adds a transport to the bus
      * @category Transports and Bridges
      */
-    addTransport(transport: Transport) {
-        if (this._transports.indexOf(transport) > -1) return // already added
+    addTransport(transport: Transport | undefined) {
+        if (!transport || this._transports.indexOf(transport) > -1) return // already added
 
         this._transports.push(transport)
         transport.bus = this
@@ -965,7 +965,11 @@ ${dev
      * @param pkt packet that generated this device query
      * @category Services
      */
-    device(id: string, skipCreate?: boolean, pkt?: Packet) {
+    device(
+        id: string,
+        skipCreate?: boolean,
+        pkt?: Packet
+    ): JDDevice | undefined {
         if (id === "0000000000000000" && !skipCreate) {
             console.warn("jadac: trying to access device 0000000000000000")
             return undefined
