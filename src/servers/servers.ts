@@ -12,6 +12,7 @@ import {
     SRV_BUTTON,
     SRV_BUZZER,
     SRV_CHARACTER_SCREEN,
+    SRV_BRAILLE_DISPLAY,
     SRV_DISTANCE,
     SRV_E_CO2,
     SRV_HUMIDITY,
@@ -365,6 +366,16 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         name: "bitradio",
         serviceClasses: [SRV_BIT_RADIO],
         services: () => [new BitRadioServer()],
+    },
+    {
+        name: "braille display (4 patterns)",
+        serviceClasses: [SRV_BRAILLE_DISPLAY],
+        services: () => [
+            new BrailleDisplayServer({
+                patterns: "⠃",
+                lengh: 4
+            }),
+        ],
     },
     {
         name: "button",
