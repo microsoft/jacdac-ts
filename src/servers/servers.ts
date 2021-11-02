@@ -135,6 +135,7 @@ import JDServiceProvider from "../jdom/servers/serviceprovider"
 import VibrationMotor from "./vibrationmotorserver"
 import WifiServer from "./wifiserver"
 import AccelerometerServer from "./accelerometerserver"
+import BrailleDisplayServer from "./brailledisplayserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "indoor",
@@ -373,7 +374,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         services: () => [
             new BrailleDisplayServer({
                 patterns: "⠃",
-                lengh: 4
+                length: 4,
             }),
         ],
     },
