@@ -1,6 +1,11 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-const cli = require("cli")
-const fs = require("fs-extra")
+import {
+    mkdirpSync,
+    emptyDirSync,
+    writeJSONSync,
+    readFileSync,
+    writeFileSync,
+} from "fs-extra"
+import { program, CommandOptions } from "commander"
 import {
     ControlReg,
     DEVICE_ANNOUNCE,
@@ -30,9 +35,47 @@ import {
     serviceSpecificationToServiceTwinSpecification,
 } from "../azure-iot/jacdac-azure-iot"
 
-cli.setApp("jacdac", packageInfo.version)
-cli.enable("version")
+const info = console.info
+const debug = console.debug
+const error = console.error
 
+async function mainCli() {
+    const createCommand = (name: string, opts?: CommandOptions) => {
+        const cmd = program.command(name, opts)
+        return cmd
+    }
+
+    program.version(packageInfo.version)
+
+    createCommand("devicetwin")
+        .argument("<dir>", "output folder path")
+        .option("--rm", "remove all files before generating")
+        .option("--services", "regular expression to filter service names")
+        .description("generate device twins")
+        .action(devicetwinCommand)
+
+    createCommand("parse")
+        .argument("<file>", "logic analyzer log file")
+        .description("parse a Logic analyzer trace and replay packets")
+        .action(parseCommand)
+
+    createCommand("stream", { isDefault: true })
+        .option("--streaming", "stream sensors data")
+        .option("--usb", "listen to Jacdac over USB")
+        .option("--serial", "listen to Jacdac over SERIAL")
+        .option("--packets", "show all packets")
+        .option("--ws", "start web socket server")
+        .option("--port <number>", "specify custom web socket server port")
+        .option("--devices <string>", "regular expression filter for devices")
+        .option("--services <string>", "regular expression filter for services")
+        .option("--rm", "delete files from output folder")
+        .option("--catalog", "generate .json files for device catalog")
+        .action(streamCommand)
+
+    await program.parseAsync(process.argv)
+}
+
+/*
 interface OptionsType {
     usb?: boolean
     serial?: boolean
@@ -40,61 +83,66 @@ interface OptionsType {
     ws?: boolean
     port?: number
     packets?: boolean
-    devicetwin?: boolean
     devices?: string
     services?: string
     rm?: boolean
-    parse?: string
     catalog?: boolean
 }
-
 const options: OptionsType = cli.parse({
-    streaming: [false, "stream sensors data"],
-    usb: ["u", "listen to Jacdac over USB"],
-    serial: ["s", "listen to Jacdac over SERIAL"],
-    ws: [false, "start web socket server"],
-    port: [false, "specify custom web socket server port", "int"],
-    packets: ["p", "show/hide all packets"],
-    devicetwin: [false, "generate device twin files", "file"],
-    devices: ["d", "regular expression filter for devices", "string"],
-    services: [false, "regular expression filter for services", "string"],
-    rm: [false, "delete files from output folder"],
-    parse: ["l", "parse logic analyzer log file", "string"],
-    catalog: [false, "generate .json files for device catalog"],
 })
+*/
 
-// DeviceTwin
-if (options.devicetwin) {
-    cli.info(`generating DeviceTwin models`)
-    const run = async () => {
-        const dir = options.devicetwin
-        fs.mkdirpSync(dir)
-        if (options.rm) fs.emptyDirSync(dir)
-        // generate services
-        {
-            let services = serviceSpecificationsWithServiceTwinSpecification()
-            if (options.services) {
-                const rx = new RegExp(options.services, "i")
-                services = services.filter(dev => rx.test(dev.name))
-            }
-            cli.info(`${services.length} services`)
-            services.forEach((srv, i) => {
-                const fn = `${dir}/${dashify(srv.shortName)}.json`
-                cli.debug(`${srv.name} => ${fn}`)
-                cli.progress(i / (services.length - 1))
-                const serviceTwin =
-                    serviceSpecificationToServiceTwinSpecification(srv)
-                fs.writeJSONSync(fn, serviceTwin, { spaces: 2 })
-            })
-        }
-
-        // all done
-        cli.info(`done`)
+async function mainWrapper() {
+    try {
+        await mainCli()
+    } catch (e) {
+        error("Exception: " + e.stack)
+        error("Build failed")
+        process.exit(1)
     }
-    run()
 }
 
-function mkTransports(): Transport[] {
+mainWrapper()
+
+async function devicetwinCommand(
+    dir: string,
+    options: { rm?: boolean; services?: string } = {}
+) {
+    console.info(`generating DeviceTwin models`)
+    mkdirpSync(dir)
+    if (options.rm) emptyDirSync(dir)
+    // generate services
+    {
+        let services = serviceSpecificationsWithServiceTwinSpecification()
+        if (options.services) {
+            const rx = new RegExp(options.services, "i")
+            services = services.filter(dev => rx.test(dev.name))
+        }
+        info(`${services.length} services`)
+        services.forEach((srv, i) => {
+            const fn = `${dir}/${dashify(srv.shortName)}.json`
+            debug(`${srv.name} => ${fn}`)
+            const serviceTwin =
+                serviceSpecificationToServiceTwinSpecification(srv)
+            writeJSONSync(fn, serviceTwin, { spaces: 2 })
+        })
+    }
+
+    // all done
+    info(`done`)
+}
+
+async function streamCommand(
+    options: {
+        usb?: boolean
+        serial?: boolean
+        ws?: boolean
+        catalog?: boolean
+        port?: number
+        packets?: boolean
+        streaming?: boolean
+    } = {}
+) {
     const transports: Transport[] = []
     if (options.usb) {
         console.debug(`adding USB transport`)
@@ -102,68 +150,17 @@ function mkTransports(): Transport[] {
     }
     if (options.serial) {
         console.debug(`adding serial transport`)
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
         transports.push(createNodeWebSerialTransport(require("serialport")))
     }
-    return transports
-}
 
-// Device catalog support
-// A good command to resize images:
-// magick image.jpg -scale 650 -strip -interlace JPEG -define jpeg:dct-method=float -quality 85% image-scaled.jpg
-// this command can be used to auto-rename image files
-// mv -i `ls IMG_* | head -1` `ls -t | head -1 | sed -e 's/\.json/.jpg/'`
-const baseDeviceSpec: jdspec.DeviceSpec = {
-    id: "microsoft-research-",
-    name: "",
-    company: "Microsoft Research",
-    description: "",
-    repo: "https://github.com/microsoft/jacdac-msr-modules",
-    link: "https://github.com/microsoft/jacdac-msr-modules",
-    services: [],
-    productIdentifiers: [],
-}
-
-// for devices that don't expose it
-const deviceDescription: Record<string, string> = {
-    "357084e1": "JM Button 10 v1.3",
-    "3f9ca24e": "JM Keyboard Key 46 v1.0",
-    "3a3320ac": "JM Analog Joystick 44 v0.2",
-    "36b4f47c": "JM Single RGB LED 42 v0.1",
-    "36550513": "JM Keyboard Key 46 v1.1",
-    "3e700a4b": "JM Button Terminal 62 v0.1",
-    "357512db": "JM Ambient Light 55 v0.1",
-}
-
-async function writeCatalog(dev: JDDevice) {
-    const ctrl = dev.service(0)
-    const desc = ctrl.register(ControlReg.DeviceDescription)
-    const fwid = ctrl.register(ControlReg.ProductIdentifier)
-    await Promise.all([desc.refresh(), fwid.refresh()])
-    const pid = fwid.uintValue.toString(16)
-    const descString =
-        desc.stringValue || deviceDescription[pid] || "dev-" + pid
-    const id = descString.replace(/[^a-zA-Z0-9.-]+/g, "-").toLowerCase()
-    const spec = clone(baseDeviceSpec)
-    spec.id += id
-    spec.name = descString
-    spec.productIdentifiers.push(fwid.uintValue)
-    spec.services = dev.serviceClasses.slice(1)
-    fs.writeFileSync(
-        id.replace(/[-.]/g, "") + ".json",
-        JSON.stringify(spec, null, 4)
-    )
-    console.log(spec)
-}
-
-// USB
-const transports = mkTransports()
-if (transports?.length || options.ws) {
     console.log(`starting bus...`)
     const bus = new JDBus(transports, { client: false })
     bus.on(DEVICE_ANNOUNCE, (dev: JDDevice) => {
         if (options.catalog && !dev.isClient) writeCatalog(dev)
     })
     if (options.ws) {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const ws = require("ws")
         const port = options.port || 8080
         const urls = [`http://localhost:${port}/`, `http://127.0.0.1:${port}/`]
@@ -214,8 +211,55 @@ if (transports?.length || options.ws) {
     run()
 }
 
-// Logic parsing
-if (options.parse) {
+// Device catalog support
+// A good command to resize images:
+// magick image.jpg -scale 650 -strip -interlace JPEG -define jpeg:dct-method=float -quality 85% image-scaled.jpg
+// this command can be used to auto-rename image files
+// mv -i `ls IMG_* | head -1` `ls -t | head -1 | sed -e 's/\.json/.jpg/'`
+const baseDeviceSpec: jdspec.DeviceSpec = {
+    id: "microsoft-research-",
+    name: "",
+    company: "Microsoft Research",
+    description: "",
+    repo: "https://github.com/microsoft/jacdac-msr-modules",
+    link: "https://github.com/microsoft/jacdac-msr-modules",
+    services: [],
+    productIdentifiers: [],
+}
+
+// for devices that don't expose it
+const deviceDescription: Record<string, string> = {
+    "357084e1": "JM Button 10 v1.3",
+    "3f9ca24e": "JM Keyboard Key 46 v1.0",
+    "3a3320ac": "JM Analog Joystick 44 v0.2",
+    "36b4f47c": "JM Single RGB LED 42 v0.1",
+    "36550513": "JM Keyboard Key 46 v1.1",
+    "3e700a4b": "JM Button Terminal 62 v0.1",
+    "357512db": "JM Ambient Light 55 v0.1",
+}
+
+async function writeCatalog(dev: JDDevice) {
+    const ctrl = dev.service(0)
+    const desc = ctrl.register(ControlReg.DeviceDescription)
+    const fwid = ctrl.register(ControlReg.ProductIdentifier)
+    await Promise.all([desc.refresh(), fwid.refresh()])
+    const pid = fwid.uintValue.toString(16)
+    const descString =
+        desc.stringValue || deviceDescription[pid] || "dev-" + pid
+    const id = descString.replace(/[^a-zA-Z0-9.-]+/g, "-").toLowerCase()
+    const spec = clone(baseDeviceSpec)
+    spec.id += id
+    spec.name = descString
+    spec.productIdentifiers.push(fwid.uintValue)
+    spec.services = dev.serviceClasses.slice(1)
+    writeFileSync(
+        id.replace(/[-.]/g, "") + ".json",
+        JSON.stringify(spec, null, 4)
+    )
+    console.log(spec)
+}
+
+async function parseCommand(file: string) {
     const bus = new JDBus([], { client: false })
     const opts = {
         skipRepeatedAnnounce: false,
@@ -224,7 +268,7 @@ if (options.parse) {
     bus.on(PACKET_RECEIVE, pkt => console.log(printPacket(pkt, opts)))
     bus.on(PACKET_RECEIVE_ANNOUNCE, pkt => console.log(printPacket(pkt, opts)))
 
-    const text = fs.readFileSync(options.parse, "utf8")
+    const text = readFileSync(file, "utf8")
     replayLogicLog(bus, parseLogicLog(text), Number.POSITIVE_INFINITY)
     setTimeout(() => process.exit(0), 500)
 }
