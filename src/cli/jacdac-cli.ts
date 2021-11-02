@@ -13,7 +13,6 @@ import {
     printPacket,
     parseLogicLog,
     replayLogicLog,
-    dashify,
     JDDevice,
     Packet,
     createNodeWebSerialTransport,
@@ -22,23 +21,11 @@ import {
     isCancelError,
 } from "../jdom/jacdac-jdom"
 import packageInfo from "../../package.json"
-import {
-    serviceSpecificationsWithServiceTwinSpecification,
-    serviceSpecificationToServiceTwinSpecification,
-} from "../azure-iot/jacdac-azure-iot"
-const {
-    mkdirpSync,
-    emptyDirSync,
-    writeJSONSync,
-    readFileSync,
-    writeFileSync,
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-} = require("fs-extra")
+import { readFileSync, writeFileSync } from "fs"
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { program } = require("commander")
 import type { CommandOptions } from "commander"
 
-const info = console.info
 const log = console.log
 const debug = console.debug
 const error = console.error
@@ -51,13 +38,6 @@ async function mainCli() {
 
     log(`jacdac cli`)
     program.version(packageInfo.version)
-
-    createCommand("devicetwin")
-        .argument("<dir>", "output folder path")
-        .option("--rm", "remove all files before generating")
-        .option("--services", "regular expression to filter service names")
-        .description("generate device twins")
-        .action(devicetwinCommand)
 
     createCommand("parse")
         .argument("<file>", "logic analyzer log file")
@@ -80,23 +60,6 @@ async function mainCli() {
     await program.parseAsync(process.argv)
 }
 
-/*
-interface OptionsType {
-    usb?: boolean
-    serial?: boolean
-    streaming?: boolean
-    ws?: boolean
-    port?: number
-    packets?: boolean
-    devices?: string
-    services?: string
-    rm?: boolean
-    catalog?: boolean
-}
-const options: OptionsType = cli.parse({
-})
-*/
-
 async function mainWrapper() {
     try {
         await mainCli()
@@ -108,34 +71,6 @@ async function mainWrapper() {
 }
 
 mainWrapper()
-
-async function devicetwinCommand(
-    dir: string,
-    options: { rm?: boolean; services?: string } = {}
-) {
-    info(`generating DeviceTwin models`)
-    mkdirpSync(dir)
-    if (options.rm) emptyDirSync(dir)
-    // generate services
-    {
-        let services = serviceSpecificationsWithServiceTwinSpecification()
-        if (options.services) {
-            const rx = new RegExp(options.services, "i")
-            services = services.filter(dev => rx.test(dev.name))
-        }
-        info(`${services.length} services`)
-        services.forEach(srv => {
-            const fn = `${dir}/${dashify(srv.shortName)}.json`
-            debug(`${srv.name} => ${fn}`)
-            const serviceTwin =
-                serviceSpecificationToServiceTwinSpecification(srv)
-            writeJSONSync(fn, serviceTwin, { spaces: 2 })
-        })
-    }
-
-    // all done
-    info(`done`)
-}
 
 async function streamCommand(
     options: {
