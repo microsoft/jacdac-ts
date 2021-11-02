@@ -369,12 +369,32 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         services: () => [new BitRadioServer()],
     },
     {
-        name: "braille display (4 patterns)",
+        name: "Braille display (4 patterns)",
         serviceClasses: [SRV_BRAILLE_DISPLAY],
         services: () => [
             new BrailleDisplayServer({
                 patterns: "⠃",
                 length: 4,
+            }),
+        ],
+    },
+    {
+        name: "Braille display (16 patterns)",
+        serviceClasses: [SRV_BRAILLE_DISPLAY],
+        services: () => [
+            new BrailleDisplayServer({
+                patterns: "⠃",
+                length: 16,
+            }),
+        ],
+    },
+    {
+        name: "Braille display (32 patterns)",
+        serviceClasses: [SRV_BRAILLE_DISPLAY],
+        services: () => [
+            new BrailleDisplayServer({
+                patterns: "⠃",
+                length: 32,
             }),
         ],
     },
