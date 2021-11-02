@@ -12,6 +12,7 @@ import {
     SRV_BUTTON,
     SRV_BUZZER,
     SRV_CHARACTER_SCREEN,
+    SRV_BRAILLE_DISPLAY,
     SRV_DISTANCE,
     SRV_E_CO2,
     SRV_HUMIDITY,
@@ -134,6 +135,7 @@ import JDServiceProvider from "../jdom/servers/serviceprovider"
 import VibrationMotor from "./vibrationmotorserver"
 import WifiServer from "./wifiserver"
 import AccelerometerServer from "./accelerometerserver"
+import BrailleDisplayServer from "./brailledisplayserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "indoor",
@@ -365,6 +367,36 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         name: "bitradio",
         serviceClasses: [SRV_BIT_RADIO],
         services: () => [new BitRadioServer()],
+    },
+    {
+        name: "Braille display (4 patterns)",
+        serviceClasses: [SRV_BRAILLE_DISPLAY],
+        services: () => [
+            new BrailleDisplayServer({
+                patterns: "⠃",
+                length: 4,
+            }),
+        ],
+    },
+    {
+        name: "Braille display (16 patterns)",
+        serviceClasses: [SRV_BRAILLE_DISPLAY],
+        services: () => [
+            new BrailleDisplayServer({
+                patterns: "⠃",
+                length: 16,
+            }),
+        ],
+    },
+    {
+        name: "Braille display (32 patterns)",
+        serviceClasses: [SRV_BRAILLE_DISPLAY],
+        services: () => [
+            new BrailleDisplayServer({
+                patterns: "⠃",
+                length: 32,
+            }),
+        ],
     },
     {
         name: "button",
