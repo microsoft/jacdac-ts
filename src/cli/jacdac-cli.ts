@@ -49,6 +49,7 @@ async function mainCli() {
         return cmd
     }
 
+    log(`jacdac cli`)
     program.version(packageInfo.version)
 
     createCommand("devicetwin")
@@ -123,7 +124,7 @@ async function devicetwinCommand(
             services = services.filter(dev => rx.test(dev.name))
         }
         info(`${services.length} services`)
-        services.forEach((srv, i) => {
+        services.forEach(srv => {
             const fn = `${dir}/${dashify(srv.shortName)}.json`
             debug(`${srv.name} => ${fn}`)
             const serviceTwin =
