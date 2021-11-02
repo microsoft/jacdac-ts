@@ -275,6 +275,7 @@ export function isSet(v: unknown) {
 }
 
 export function toArray<T>(a: ArrayLike<T>): T[] {
+    if (!a) return undefined
     const r: T[] = new Array(a.length)
     for (let i = 0; i < a.length; ++i) r[i] = a[i]
     return r
