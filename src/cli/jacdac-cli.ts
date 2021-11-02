@@ -21,7 +21,8 @@ import {
     isCancelError,
 } from "../jdom/jacdac-jdom"
 import packageInfo from "../../package.json"
-import { readFileSync, writeFileSync } from "fs"
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { readFileSync, writeFileSync } = require("fs")
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { program } = require("commander")
 import type { CommandOptions } from "commander"
