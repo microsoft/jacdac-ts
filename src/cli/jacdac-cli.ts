@@ -39,6 +39,7 @@ const { program } = require("commander")
 import type { CommandOptions } from "commander"
 
 const info = console.info
+const log = console.log
 const debug = console.debug
 const error = console.error
 
@@ -63,10 +64,10 @@ async function mainCli() {
         .action(parseCommand)
 
     createCommand("stream", { isDefault: true })
-        .option("--streaming", "stream sensors data")
-        .option("--usb", "listen to Jacdac over USB")
-        .option("--serial", "listen to Jacdac over SERIAL")
-        .option("--packets", "show all packets")
+        .option("--sensors", "stream sensors data")
+        .option("-u, --usb", "listen to Jacdac over USB")
+        .option("-s, --serial", "listen to Jacdac over SERIAL")
+        .option("-p, --packets", "show all packets")
         .option("--ws", "start web socket server")
         .option("--port <number>", "specify custom web socket server port")
         .option("--devices <string>", "regular expression filter for devices")
@@ -111,7 +112,7 @@ async function devicetwinCommand(
     dir: string,
     options: { rm?: boolean; services?: string } = {}
 ) {
-    console.info(`generating DeviceTwin models`)
+    info(`generating DeviceTwin models`)
     mkdirpSync(dir)
     if (options.rm) emptyDirSync(dir)
     // generate services
@@ -143,21 +144,23 @@ async function streamCommand(
         catalog?: boolean
         port?: number
         packets?: boolean
-        streaming?: boolean
+        sensors?: boolean
     } = {}
 ) {
+    if (!options.usb && !options.serial) options.usb = options.serial = true
+
     const transports: Transport[] = []
     if (options.usb) {
-        console.debug(`adding USB transport`)
+        debug(`adding USB transport`)
         transports.push(createUSBTransport(createNodeUSBOptions()))
     }
     if (options.serial) {
-        console.debug(`adding serial transport`)
+        debug(`adding serial transport`)
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         transports.push(createNodeWebSerialTransport(require("serialport")))
     }
 
-    console.log(`starting bus...`)
+    log(`starting bus...`)
     const bus = new JDBus(transports, { client: false })
     bus.on(DEVICE_ANNOUNCE, (dev: JDDevice) => {
         if (options.catalog && !dev.isClient) writeCatalog(dev)
@@ -167,12 +170,12 @@ async function streamCommand(
         const ws = require("ws")
         const port = options.port || 8080
         const urls = [`http://localhost:${port}/`, `http://127.0.0.1:${port}/`]
-        console.log(`starting web socket server`)
-        urls.forEach(url => console.log(`\t${url}`))
+        log(`starting web socket server`)
+        urls.forEach(url => debug(`\t${url}`))
         const wss = new ws.WebSocketServer({ port })
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         wss.on("connection", (ws: any) => {
-            console.log(`ws: client connected`)
+            debug(`ws: client connected`)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ws.on("message", (message: any) => {
                 const data = new Uint8Array(message as ArrayBuffer)
@@ -187,11 +190,11 @@ async function streamCommand(
                 }
             )
             ws.on("close", () => {
-                console.log(`ws: client disconnected`)
+                debug(`ws: client disconnected`)
                 cleanup?.()
             })
         })
-        wss.on("error", console.error)
+        wss.on("error", error)
     }
     if (options.packets)
         bus.on(PACKET_PROCESS, (pkt: Packet) => {
@@ -200,15 +203,15 @@ async function streamCommand(
                 skipRepeatedAnnounce: true,
                 skipResetIn: true,
             })
-            if (str) console.debug(serializeToTrace(pkt, 0))
+            if (str) debug(serializeToTrace(pkt, 0))
         })
-    bus.streaming = !!options.streaming
+    bus.streaming = !!options.sensors
     bus.start()
     const run = async () => {
         try {
             await bus.connect()
         } catch (e) {
-            if (!isCancelError(e)) console.error(e)
+            if (!isCancelError(e)) error(e)
         }
     }
     run()
@@ -259,7 +262,7 @@ async function writeCatalog(dev: JDDevice) {
         id.replace(/[-.]/g, "") + ".json",
         JSON.stringify(spec, null, 4)
     )
-    console.log(spec)
+    debug(spec)
 }
 
 async function parseCommand(file: string) {
@@ -268,8 +271,8 @@ async function parseCommand(file: string) {
         skipRepeatedAnnounce: false,
         showTime: true,
     }
-    bus.on(PACKET_RECEIVE, pkt => console.log(printPacket(pkt, opts)))
-    bus.on(PACKET_RECEIVE_ANNOUNCE, pkt => console.log(printPacket(pkt, opts)))
+    bus.on(PACKET_RECEIVE, pkt => log(printPacket(pkt, opts)))
+    bus.on(PACKET_RECEIVE_ANNOUNCE, pkt => log(printPacket(pkt, opts)))
 
     const text = readFileSync(file, "utf8")
     replayLogicLog(bus, parseLogicLog(text), Number.POSITIVE_INFINITY)
