@@ -4,8 +4,6 @@ import typescript from "rollup-plugin-typescript2"
 import json from "rollup-plugin-json"
 import filesize from "rollup-plugin-filesize"
 import visualizer from "rollup-plugin-visualizer"
-import progress from "rollup-plugin-progress"
-import commonjs from "rollup-plugin-commonjs"
 
 export default [
     {
@@ -42,7 +40,6 @@ export default [
         dir: "cli",
         external: ["jacdac", "jacdac-azure-iot", "jacdac-node", "webusb"],
         watch: "src/**",
-        cjs: true,
     },
     {
         libraryName: "jacdac-worker",
@@ -53,7 +50,7 @@ export default [
         cjs: false,
         tsconfig: "src/worker/tsconfig.json",
     },
-].map(({ libraryName, dir, external, watch, tsconfig, cjs, umd, web, cjs }) => {
+].map(({ libraryName, dir, external, watch, tsconfig, cjs, umd, web }) => {
     return {
         input: dir ? `src/${dir}/${libraryName}.ts` : `src/${libraryName}.ts`,
         output: [
@@ -89,7 +86,7 @@ export default [
                 tsconfig,
             }),
             // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
-            cjs ? commonjs() : undefined,
+            //nodejs ? commonjs() : undefined,
             // Allow node_modules resolution, so you can use 'external' to control
             // which external modules to include in the bundle
             // https://github.com/rollup/rollup-plugin-node-resolve#usage
@@ -98,7 +95,6 @@ export default [
             }),
             // Resolve source maps to the original source
             sourceMaps(),
-            progress(),
             filesize(),
             visualizer({ template: "network" }),
         ].filter(plugin => !!plugin),

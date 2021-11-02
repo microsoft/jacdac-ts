@@ -1,12 +1,4 @@
 import {
-    mkdirpSync,
-    emptyDirSync,
-    writeJSONSync,
-    readFileSync,
-    writeFileSync,
-} from "fs-extra"
-import { program, CommandOptions } from "commander"
-import {
     ControlReg,
     DEVICE_ANNOUNCE,
     PACKET_PROCESS,
@@ -34,6 +26,17 @@ import {
     serviceSpecificationsWithServiceTwinSpecification,
     serviceSpecificationToServiceTwinSpecification,
 } from "../azure-iot/jacdac-azure-iot"
+const {
+    mkdirpSync,
+    emptyDirSync,
+    writeJSONSync,
+    readFileSync,
+    writeFileSync,
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+} = require("fs-extra")
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { program } = require("commander")
+import type { CommandOptions } from "commander"
 
 const info = console.info
 const debug = console.debug
