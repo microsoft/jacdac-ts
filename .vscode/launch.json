@@ -10,7 +10,7 @@
             "name": "cli usb",
             "skipFiles": ["<node_internals>/**"],
             "program": "${workspaceFolder}/dist/jacdac-cli.js",
-            "args": ["--usb=true"],
+            "args": ["--usb"],
             "outFiles": ["${workspaceFolder}/dist/*.js"]
         },
         {

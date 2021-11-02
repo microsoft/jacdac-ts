@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-const cli = require("cli")
-const fs = require("fs-extra")
 import {
     ControlReg,
     DEVICE_ANNOUNCE,
@@ -16,7 +13,6 @@ import {
     printPacket,
     parseLogicLog,
     replayLogicLog,
-    dashify,
     JDDevice,
     Packet,
     createNodeWebSerialTransport,
@@ -25,86 +21,140 @@ import {
     isCancelError,
 } from "../jdom/jacdac-jdom"
 import packageInfo from "../../package.json"
-import {
-    serviceSpecificationsWithServiceTwinSpecification,
-    serviceSpecificationToServiceTwinSpecification,
-} from "../azure-iot/jacdac-azure-iot"
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { readFileSync, writeFileSync } = require("fs")
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { program } = require("commander")
+import type { CommandOptions } from "commander"
 
-cli.setApp("jacdac", packageInfo.version)
-cli.enable("version")
+const log = console.log
+const debug = console.debug
+const error = console.error
 
-interface OptionsType {
-    usb?: boolean
-    serial?: boolean
-    streaming?: boolean
-    ws?: boolean
-    port?: number
-    packets?: boolean
-    devicetwin?: boolean
-    devices?: string
-    services?: string
-    rm?: boolean
-    parse?: string
-    catalog?: boolean
-}
-
-const options: OptionsType = cli.parse({
-    streaming: [false, "stream sensors data"],
-    usb: ["u", "listen to Jacdac over USB"],
-    serial: ["s", "listen to Jacdac over SERIAL"],
-    ws: [false, "start web socket server"],
-    port: [false, "specify custom web socket server port", "int"],
-    packets: ["p", "show/hide all packets"],
-    devicetwin: [false, "generate device twin files", "file"],
-    devices: ["d", "regular expression filter for devices", "string"],
-    services: [false, "regular expression filter for services", "string"],
-    rm: [false, "delete files from output folder"],
-    parse: ["l", "parse logic analyzer log file", "string"],
-    catalog: [false, "generate .json files for device catalog"],
-})
-
-// DeviceTwin
-if (options.devicetwin) {
-    cli.info(`generating DeviceTwin models`)
-    const run = async () => {
-        const dir = options.devicetwin
-        fs.mkdirpSync(dir)
-        if (options.rm) fs.emptyDirSync(dir)
-        // generate services
-        {
-            let services = serviceSpecificationsWithServiceTwinSpecification()
-            if (options.services) {
-                const rx = new RegExp(options.services, "i")
-                services = services.filter(dev => rx.test(dev.name))
-            }
-            cli.info(`${services.length} services`)
-            services.forEach((srv, i) => {
-                const fn = `${dir}/${dashify(srv.shortName)}.json`
-                cli.debug(`${srv.name} => ${fn}`)
-                cli.progress(i / (services.length - 1))
-                const serviceTwin =
-                    serviceSpecificationToServiceTwinSpecification(srv)
-                fs.writeJSONSync(fn, serviceTwin, { spaces: 2 })
-            })
-        }
-
-        // all done
-        cli.info(`done`)
+async function mainCli() {
+    const createCommand = (name: string, opts?: CommandOptions) => {
+        const cmd = program.command(name, opts)
+        return cmd
     }
-    run()
+
+    log(`jacdac cli`)
+    program.version(packageInfo.version)
+
+    createCommand("parse")
+        .argument("<file>", "logic analyzer log file")
+        .description("parse a Logic analyzer trace and replay packets")
+        .action(parseCommand)
+
+    createCommand("stream", { isDefault: true })
+        .option("--sensors", "stream sensors data")
+        .option("-u, --usb", "listen to Jacdac over USB")
+        .option("-s, --serial", "listen to Jacdac over SERIAL")
+        .option("-p, --packets", "show all packets")
+        .option("--ws", "start web socket server")
+        .option("--port <number>", "specify custom web socket server port")
+        .option("--devices <string>", "regular expression filter for devices")
+        .option("--services <string>", "regular expression filter for services")
+        .option("--rm", "delete files from output folder")
+        .option("--catalog", "generate .json files for device catalog")
+        .action(streamCommand)
+
+    await program.parseAsync(process.argv)
 }
 
-function mkTransports(): Transport[] {
+async function mainWrapper() {
+    try {
+        await mainCli()
+    } catch (e) {
+        error("Exception: " + e.stack)
+        error("Build failed")
+        process.exit(1)
+    }
+}
+
+mainWrapper()
+
+async function streamCommand(
+    options: {
+        usb?: boolean
+        serial?: boolean
+        ws?: boolean
+        catalog?: boolean
+        port?: number
+        packets?: boolean
+        sensors?: boolean
+    } = {}
+) {
+    if (!options.usb && !options.serial) options.usb = options.serial = true
+
     const transports: Transport[] = []
     if (options.usb) {
-        console.debug(`adding USB transport`)
+        debug(`adding USB transport`)
+        debug(
+            `on windows, node.js will crash if you haven't setup libusb properly...`
+        )
         transports.push(createUSBTransport(createNodeUSBOptions()))
     }
     if (options.serial) {
-        console.debug(`adding serial transport`)
+        debug(`adding serial transport`)
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
         transports.push(createNodeWebSerialTransport(require("serialport")))
     }
-    return transports
+
+    log(`starting bus...`)
+    const bus = new JDBus(transports, { client: false })
+    bus.on(DEVICE_ANNOUNCE, (dev: JDDevice) => {
+        if (options.catalog && !dev.isClient) writeCatalog(dev)
+    })
+    if (options.ws) {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const ws = require("ws")
+        const port = options.port || 8080
+        const urls = [`http://localhost:${port}/`, `http://127.0.0.1:${port}/`]
+        log(`starting web socket server`)
+        urls.forEach(url => debug(`\t${url}`))
+        const wss = new ws.WebSocketServer({ port })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        wss.on("connection", (ws: any) => {
+            debug(`ws: client connected`)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ws.on("message", (message: any) => {
+                const data = new Uint8Array(message as ArrayBuffer)
+                const pkt = Packet.fromBinary(data, bus.timestamp)
+                pkt.sender = WEBSOCKET_TRANSPORT
+                bus.processPacket(pkt)
+            })
+            const cleanup = bus.subscribe(
+                [PACKET_PROCESS, PACKET_SEND],
+                (pkt: Packet) => {
+                    ws.send(pkt.toBuffer())
+                }
+            )
+            ws.on("close", () => {
+                debug(`ws: client disconnected`)
+                cleanup?.()
+            })
+        })
+        wss.on("error", error)
+    }
+    if (options.packets)
+        bus.on(PACKET_PROCESS, (pkt: Packet) => {
+            const str = printPacket(pkt, {
+                showTime: true,
+                skipRepeatedAnnounce: true,
+                skipResetIn: true,
+            })
+            if (str) debug(serializeToTrace(pkt, 0))
+        })
+    bus.streaming = !!options.sensors
+    bus.start()
+    const run = async () => {
+        try {
+            await bus.connect()
+        } catch (e) {
+            if (!isCancelError(e)) error(e)
+        }
+    }
+    run()
 }
 
 // Device catalog support
@@ -148,83 +198,23 @@ async function writeCatalog(dev: JDDevice) {
     spec.name = descString
     spec.productIdentifiers.push(fwid.uintValue)
     spec.services = dev.serviceClasses.slice(1)
-    fs.writeFileSync(
+    writeFileSync(
         id.replace(/[-.]/g, "") + ".json",
         JSON.stringify(spec, null, 4)
     )
-    console.log(spec)
+    debug(spec)
 }
 
-// USB
-const transports = mkTransports()
-if (transports?.length || options.ws) {
-    console.log(`starting bus...`)
-    const bus = new JDBus(transports, { client: false })
-    bus.on(DEVICE_ANNOUNCE, (dev: JDDevice) => {
-        if (options.catalog && !dev.isClient) writeCatalog(dev)
-    })
-    if (options.ws) {
-        const ws = require("ws")
-        const port = options.port || 8080
-        const urls = [`http://localhost:${port}/`, `http://127.0.0.1:${port}/`]
-        console.log(`starting web socket server`)
-        urls.forEach(url => console.log(`\t${url}`))
-        const wss = new ws.WebSocketServer({ port })
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        wss.on("connection", (ws: any) => {
-            console.log(`ws: client connected`)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ws.on("message", (message: any) => {
-                const data = new Uint8Array(message as ArrayBuffer)
-                const pkt = Packet.fromBinary(data, bus.timestamp)
-                pkt.sender = WEBSOCKET_TRANSPORT
-                bus.processPacket(pkt)
-            })
-            const cleanup = bus.subscribe(
-                [PACKET_PROCESS, PACKET_SEND],
-                (pkt: Packet) => {
-                    ws.send(pkt.toBuffer())
-                }
-            )
-            ws.on("close", () => {
-                console.log(`ws: client disconnected`)
-                cleanup?.()
-            })
-        })
-        wss.on("error", console.error)
-    }
-    if (options.packets)
-        bus.on(PACKET_PROCESS, (pkt: Packet) => {
-            const str = printPacket(pkt, {
-                showTime: true,
-                skipRepeatedAnnounce: true,
-                skipResetIn: true,
-            })
-            if (str) console.debug(serializeToTrace(pkt, 0))
-        })
-    bus.streaming = !!options.streaming
-    bus.start()
-    const run = async () => {
-        try {
-            await bus.connect()
-        } catch (e) {
-            if (!isCancelError(e)) console.error(e)
-        }
-    }
-    run()
-}
-
-// Logic parsing
-if (options.parse) {
+async function parseCommand(file: string) {
     const bus = new JDBus([], { client: false })
     const opts = {
         skipRepeatedAnnounce: false,
         showTime: true,
     }
-    bus.on(PACKET_RECEIVE, pkt => console.log(printPacket(pkt, opts)))
-    bus.on(PACKET_RECEIVE_ANNOUNCE, pkt => console.log(printPacket(pkt, opts)))
+    bus.on(PACKET_RECEIVE, pkt => log(printPacket(pkt, opts)))
+    bus.on(PACKET_RECEIVE_ANNOUNCE, pkt => log(printPacket(pkt, opts)))
 
-    const text = fs.readFileSync(options.parse, "utf8")
+    const text = readFileSync(file, "utf8")
     replayLogicLog(bus, parseLogicLog(text), Number.POSITIVE_INFINITY)
     setTimeout(() => process.exit(0), 500)
 }

@@ -4,7 +4,6 @@ import typescript from "rollup-plugin-typescript2"
 import json from "rollup-plugin-json"
 import filesize from "rollup-plugin-filesize"
 import visualizer from "rollup-plugin-visualizer"
-import progress from "rollup-plugin-progress"
 
 export default [
     {
@@ -87,7 +86,7 @@ export default [
                 tsconfig,
             }),
             // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
-            //commonjs(),
+            //nodejs ? commonjs() : undefined,
             // Allow node_modules resolution, so you can use 'external' to control
             // which external modules to include in the bundle
             // https://github.com/rollup/rollup-plugin-node-resolve#usage
@@ -96,9 +95,8 @@ export default [
             }),
             // Resolve source maps to the original source
             sourceMaps(),
-            progress(),
             filesize(),
             visualizer({ template: "network" }),
-        ],
+        ].filter(plugin => !!plugin),
     }
 })
