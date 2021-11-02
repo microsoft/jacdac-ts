@@ -284,8 +284,11 @@ export function decodeMember(
     }
 }
 
-export function valueToFlags(enumInfo: jdspec.EnumInfo, value: number) {
-    const r = []
+export function valueToFlags(
+    enumInfo: jdspec.EnumInfo,
+    value: number
+): number[] {
+    const r: number[] = []
     const curr = value
     for (const key of Object.keys(enumInfo.members)) {
         const val = enumInfo.members[key]
