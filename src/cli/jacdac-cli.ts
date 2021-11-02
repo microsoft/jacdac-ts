@@ -89,6 +89,9 @@ async function streamCommand(
     const transports: Transport[] = []
     if (options.usb) {
         debug(`adding USB transport`)
+        debug(
+            `on windows, node.js will crash if you haven't setup libusb properly...`
+        )
         transports.push(createUSBTransport(createNodeUSBOptions()))
     }
     if (options.serial) {
