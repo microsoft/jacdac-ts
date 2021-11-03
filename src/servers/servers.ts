@@ -1351,6 +1351,8 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         services: () => [
             new AnalogSensorServer(SRV_UV_INDEX, {
                 readingValues: [5],
+                minReading: 0,
+                maxReading: 12,
                 streamingInterval: 1000,
             }),
         ],
