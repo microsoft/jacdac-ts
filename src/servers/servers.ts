@@ -161,6 +161,15 @@ const outdoorHumidityOptions: AnalogSensorServerOptions = {
     readingValues: [40],
     readingError: [0.1],
 }
+const soilThermometerOptions: AnalogSensorServerOptions = {
+    instanceName: "temperature",
+    readingValues: [15],
+    streamingInterval: 1000,
+    minReading: -55,
+    maxReading: 125,
+    readingError: [0.5],
+    variant: ThermometerVariant.Outdoor,
+}
 const medicalThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "medical",
     readingValues: [37.5],
@@ -1288,6 +1297,13 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         serviceClasses: [SRV_THERMOMETER],
         services: () => [
             new AnalogSensorServer(SRV_THERMOMETER, outdoorThermometerOptions),
+        ],
+    },
+    {
+        name: "thermometer (soil)",
+        serviceClasses: [SRV_THERMOMETER],
+        services: () => [
+            new AnalogSensorServer(SRV_THERMOMETER, soilThermometerOptions),
         ],
     },
     {
