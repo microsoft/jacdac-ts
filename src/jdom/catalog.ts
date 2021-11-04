@@ -18,7 +18,7 @@ export class DeviceCatalog extends JDEventSource {
     }
 
     /**
-     * Update specifications
+     * Update specifications list and emit `change` event.
      * @param specifications
      */
     update(specifications: jdspec.DeviceSpec[]) {
