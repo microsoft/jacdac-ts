@@ -23,7 +23,6 @@ import {
 import { jdpack, jdunpack } from "./pack"
 import { BootloaderError } from "./constants"
 import { prettySize } from "./pretty"
-import { deviceSpecificationFromProductIdentifier } from "./spec"
 
 const BL_SUBPAGE_SIZE = 208
 const BL_RETRIES = 15

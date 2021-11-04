@@ -59,12 +59,7 @@ import { serviceClass } from "./pretty"
 import JDNode from "./node"
 import { FirmwareBlob, sendStayInBootloaderCommand } from "./flashing"
 import JDService from "./service"
-import {
-    deviceSpecificationFromProductIdentifier,
-    isConstRegister,
-    isReading,
-    isSensor,
-} from "./spec"
+import { isConstRegister, isReading, isSensor } from "./spec"
 import {
     LoggerPriority,
     LoggerReg,
@@ -645,14 +640,7 @@ ${this.devices({ ignoreInfrastructure: true })
     .map(
         dev => `device: 
   id: ${dev.shortId} (0x${dev.deviceId})
-  product: ${
-      dev.productIdentifier
-          ? `${
-                deviceSpecificationFromProductIdentifier(dev.productIdentifier)
-                    ?.id || "?"
-            } (0x${dev.productIdentifier?.toString(16)})`
-          : ""
-  }
+  product: ${dev.name || "?"} (0x${dev.productIdentifier?.toString(16) || "?"})
   firmware_version: ${dev.firmwareVersion || ""}
   services:
 ${dev

@@ -9,10 +9,11 @@ import {
 } from "../utils"
 import Flags from "../flags"
 import JDError, { errorCode } from "../error"
-import { deviceSpecifications } from "../spec"
+import { deviceCatalog } from "../catalog"
 
 function usbVendorIds() {
-    return deviceSpecifications()
+    return deviceCatalog
+        .specifications()
         .filter(spec => spec.transport?.type === "serial")
         .map(spec => spec.transport.vendorId)
         .filter(v => !!v)

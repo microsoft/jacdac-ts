@@ -3,7 +3,6 @@
 
 import { NumberFormat } from "./buffer"
 import serviceSpecificationData from "../../jacdac-spec/dist/services.json"
-import deviceRegistryData from "../../jacdac-spec/dist/devices.json"
 import { fromHex, toHex } from "./utils"
 import {
     SystemEvent,
@@ -25,8 +24,6 @@ let _serviceSpecifications: jdspec.ServiceSpec[] =
     serviceSpecificationData as any
 let _serviceSpecificationMap: Record<number, jdspec.ServiceSpec> = undefined
 let _customServiceSpecifications: Record<string, jdspec.ServiceSpec> = {}
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const _deviceRegistry: jdspec.DeviceSpec[] = deviceRegistryData as any
 
 /**
  * Override built-in service specifications
@@ -75,63 +72,6 @@ export function serviceMap(): Record<string, jdspec.ServiceSpec> {
  */
 export function serviceSpecifications() {
     return _serviceSpecifications.slice(0)
-}
-
-/**
- * Resolve the device specification from the product identiier
- * @category Specification
- */
-export function deviceSpecificationFromProductIdentifier(
-    productIdentifier: number
-): jdspec.DeviceSpec {
-    if (isNaN(productIdentifier)) return undefined
-
-    const spec = _deviceRegistry.find(
-        spec => spec.productIdentifiers?.indexOf(productIdentifier) > -1
-    )
-    return spec
-}
-
-/**
- * @internal
- */
-export function deviceSpecificationFromIdentifier(
-    id: string
-): jdspec.DeviceSpec {
-    if (id === undefined) return undefined
-
-    const spec = _deviceRegistry.find(spec => spec.id === id)
-    return spec
-}
-
-/**
- * Gets the list of devices that use this service class
- * @param serviceClass
- * @category Specification
- */
-export function deviceSpecificationsForService(
-    serviceClass: number
-): jdspec.DeviceSpec[] {
-    if (isNaN(serviceClass)) return undefined
-    return _deviceRegistry.filter(
-        spec => spec.services?.indexOf(serviceClass) > -1
-    )
-}
-
-/**
- * Gets the list of device specifications
- * @returns
- * @category Specification
- */
-export function deviceSpecifications(options?: {
-    includeDeprecated?: boolean
-    includeExperimental?: boolean
-}): jdspec.DeviceSpec[] {
-    const { includeDeprecated, includeExperimental } = options || {}
-    let r = _deviceRegistry.slice(0)
-    if (!includeDeprecated) r = r.filter(d => d.status !== "deprecated")
-    if (!includeExperimental) r = r.filter(d => d.status !== "experimental")
-    return r
 }
 
 /**
