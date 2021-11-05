@@ -7,6 +7,7 @@ import WebSerialIO from "./webserialio"
 import { HF2_IO } from "./hf2"
 import { Observable } from "../observable"
 import EventTargetObservable from "./eventtargetobservable"
+import JDBus from "../bus"
 
 export function isWebSerialEnabled(): boolean {
     return !!Flags.webSerial
@@ -25,13 +26,13 @@ export function isWebSerialSupported(): boolean {
 }
 
 export interface WebSerialOptions {
-    mkTransport: () => HF2_IO
+    mkTransport: (bus: JDBus) => HF2_IO
     connectObservable?: Observable<void>
     disconnectObservable?: Observable<void>
 }
 
 export class WebSerialTransport extends Transport {
-    private mkTransport: () => HF2_IO
+    private mkTransport: (bus: JDBus) => HF2_IO
     private hf2: Proto
     constructor(options: WebSerialOptions) {
         super(SERIAL_TRANSPORT, { ...options, checkPulse: true })
@@ -39,7 +40,7 @@ export class WebSerialTransport extends Transport {
     }
 
     protected async transportConnectAsync(background: boolean) {
-        const transport = this.mkTransport()
+        const transport = this.mkTransport(this.bus)
         transport.onError = e => this.errorHandler(SERIAL_TRANSPORT, e)
         this.hf2 = await transport.connectAsync(background)
         this.hf2.onJDMessage(this.handleFrame.bind(this))
@@ -71,7 +72,7 @@ function defaultOptions(): WebSerialOptions {
         "disconnect"
     )
     return {
-        mkTransport: () => new WebSerialIO(),
+        mkTransport: (bus: JDBus) => new WebSerialIO(bus),
         connectObservable,
         disconnectObservable,
     }

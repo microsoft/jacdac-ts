@@ -78,6 +78,31 @@ export class DeviceCatalog extends JDEventSource {
             spec => spec.services?.indexOf(serviceClass) > -1
         )
     }
+
+    /**
+     * Gets the list of vendor ids for a given transport
+     * @param type
+     * @returns
+     */
+    vendorIds(type: string) {
+        return this._specifications
+            .filter(spec => spec.transport?.type === type)
+            .map(spec => spec.transport.vendorId)
+            .filter(v => !!v)
+    }
+
+    /**
+     * Checks if a vendor id match the transport
+     * @param type
+     * @param id
+     * @returns
+     */
+    matchVendorId(type: string, id: number) {
+        if (isNaN(id)) return false
+
+        const ids = this.vendorIds(type)
+        return ids.indexOf(id) > -1
+    }
 }
 
 /**

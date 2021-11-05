@@ -86,6 +86,7 @@ import ServiceFilter from "./filters/servicefilter"
 import DeviceFilter from "./filters/devicefilter"
 import Flags from "./flags"
 import { stack } from "./trace/trace"
+import { DeviceCatalog } from "./catalog"
 
 /**
  * Creation options for a bus
@@ -158,6 +159,12 @@ export class JDBus extends JDNode {
     private _client = false
 
     /**
+     * the device catalog
+     * @category JDOM
+     */
+    public readonly deviceCatalog: DeviceCatalog
+
+    /**
      * Gets an instance that tracks packet statistics
      * @category Diagnostics
      **/
@@ -185,6 +192,7 @@ export class JDBus extends JDNode {
         this.parentOrigin = parentOrigin || "*"
         this._client = !!client
         this.stats = new BusStatsMonitor(this)
+        this.deviceCatalog = new DeviceCatalog()
 
         // some transport may be undefined
         transports?.filter(tr => !!tr).map(tr => this.addTransport(tr))

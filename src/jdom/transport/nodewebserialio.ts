@@ -9,12 +9,12 @@ import {
 } from "../utils"
 import Flags from "../flags"
 import JDError, { errorCode } from "../error"
-import { matchVendorId } from "./webserialio"
 import { WebSerialTransport } from "./webserial"
 import Transport from "./transport"
 import { Observable, Observer } from "../observable"
 import { CONNECT, DISCONNECT } from "../constants"
 import JDEventSource from "../eventsource"
+import JDBus from "../bus"
 
 const SCAN_INTERVAL = 2500
 
@@ -37,12 +37,12 @@ function toPromise<T>(f: (cb: (err: Error, res: T) => void) => void) {
     )
 }
 
-async function listPorts(serialPort: any) {
+async function listPorts(bus: JDBus, serialPort: any) {
     const ports: Port[] = await serialPort.list()
     return ports.filter(
         p =>
             /^PX/.test(p.serialNumber) ||
-            matchVendorId(parseInt(p.vendorId, 16))
+            bus.deviceCatalog.matchVendorId("serial", parseInt(p.vendorId, 16))
     )
 }
 
@@ -66,7 +66,7 @@ class NodeWebSerialIO implements HF2_IO {
      * @param SerialPort ``require("serialport")``
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    constructor(private SerialPort: any) {}
+    constructor(readonly bus: JDBus, private SerialPort: any) {}
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onData = (v: Uint8Array) => {}
@@ -136,7 +136,7 @@ class NodeWebSerialIO implements HF2_IO {
             this.dev = undefined
             this.port = undefined
 
-            const ports = await listPorts(this.SerialPort)
+            const ports = await listPorts(this.bus, this.SerialPort)
             this.port = ports?.[0]
             if (this.port) {
                 console.debug(`serial: found ${this.port.serialNumber}`)
@@ -195,6 +195,7 @@ class NodeWebSerialIO implements HF2_IO {
 }
 
 class SerialPortWatch extends JDEventSource {
+    bus: JDBus
     constructor(readonly SerialPort: any) {
         super()
 
@@ -204,7 +205,9 @@ class SerialPortWatch extends JDEventSource {
     watch() {
         let knownPortIds: string[] = []
         const interval = setInterval(async () => {
-            const ports: Port[] = await listPorts(this.SerialPort)
+            if (!this.bus) return
+
+            const ports: Port[] = await listPorts(this.bus, this.SerialPort)
             const portIds = ports.map(port => port.serialNumber || port.path)
             const added = portIds.filter(id => knownPortIds.indexOf(id) < 0)
             const removed = knownPortIds.filter(id => portIds.indexOf(id) < 0)
@@ -244,7 +247,10 @@ export function createNodeWebSerialTransport(SerialPort: any): Transport {
         }),
     }
     return new WebSerialTransport({
-        mkTransport: () => new NodeWebSerialIO(SerialPort),
+        mkTransport: (bus: JDBus) => {
+            watch.bus = bus
+            return new NodeWebSerialIO(bus, SerialPort)
+        },
         connectObservable,
         disconnectObservable,
     })

@@ -10,25 +10,8 @@ import {
 import Flags from "../flags"
 import JDError, { errorCode } from "../error"
 import { deviceCatalog } from "../catalog"
+import JDBus from "../bus"
 
-function usbVendorIds() {
-    return deviceCatalog
-        .specifications()
-        .filter(spec => spec.transport?.type === "serial")
-        .map(spec => spec.transport.vendorId)
-        .filter(v => !!v)
-}
-export function matchVendorId(id: number) {
-    if (isNaN(id)) return false
-
-    const ids = usbVendorIds()
-    return !isNaN(id) && ids.indexOf(id) > -1
-}
-export function matchFilter(port: SerialPort) {
-    const info = port?.getInfo()
-    const usbVendorId = info?.usbVendorId
-    return matchVendorId(usbVendorId)
-}
 export default class WebSerialIO implements HF2_IO {
     private dev: SerialPort
     private readLoopStarted = false
@@ -36,7 +19,7 @@ export default class WebSerialIO implements HF2_IO {
     private writer: WritableStreamDefaultWriter<Uint8Array>
     private reader: ReadableStreamDefaultReader<Uint8Array>
 
-    constructor() {}
+    constructor(readonly bus: JDBus) {}
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onData = (v: Uint8Array) => {}
@@ -175,6 +158,11 @@ export default class WebSerialIO implements HF2_IO {
     }
 
     private async tryReconnectAsync() {
+        const matchFilter = (port: SerialPort) => {
+            const info = port?.getInfo()
+            const usbVendorId = info?.usbVendorId
+            return this.bus.deviceCatalog.matchVendorId("serial", usbVendorId)
+        }
         try {
             const ports = await navigator.serial.getPorts()
             const filtered = ports.filter(matchFilter)
@@ -187,8 +175,9 @@ export default class WebSerialIO implements HF2_IO {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private async requestDeviceAsync(deviceId?: string) {
+        const vendorIds = this.bus.deviceCatalog.vendorIds("serial")
         const WEB_SERIAL_FILTERS = {
-            filters: usbVendorIds().map(usbVendorId => ({ usbVendorId })),
+            filters: vendorIds.map(usbVendorId => ({ usbVendorId })),
         }
         try {
             this.dev = await navigator.serial.requestPort(WEB_SERIAL_FILTERS)
