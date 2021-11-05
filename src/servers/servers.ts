@@ -1551,7 +1551,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         services: () => [new WifiServer()],
     },
     {
-        name: "Azure IoT Hub Health",
+        name: "Azure IoT Hub Health (virtual)",
         serviceClasses: [SRV_AZURE_IOT_HUB_HEALTH],
         services: () => [new AzureIoTHubHealthServer()],
     },
