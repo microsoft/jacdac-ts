@@ -120,7 +120,7 @@ export class DeviceCatalog extends JDEventSource {
 
     /**
      * Generates a unique firmware identifier
-     * @returns 
+     * @returns
      */
     uniqueFirmwareId() {
         const genFirmwareId = () => {
@@ -142,7 +142,7 @@ export class DeviceCatalog extends JDEventSource {
 
     /**
      * Generate a unique service identifier
-     * @returns 
+     * @returns
      */
     uniqueServiceId() {
         const genServId = () => {
@@ -163,7 +163,7 @@ export class DeviceCatalog extends JDEventSource {
 
     /**
      * Generate a unique device identifier
-     * @returns 
+     * @returns
      */
     uniqueDeviceId() {
         const n = cryptoRandomUint32(2)
