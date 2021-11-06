@@ -117,6 +117,7 @@ export class JDRegister extends JDServiceMemberNode {
      * @category Packets
      */
     sendSetAsync(data: Uint8Array, autoRefresh?: boolean): Promise<void> {
+        if (this.nack) return Promise.resolve()
         const cmd = CMD_SET_REG | this.code
         const pkt = Packet.from(cmd, data)
         this._lastSetTimestamp = this.service.device.bus.timestamp
