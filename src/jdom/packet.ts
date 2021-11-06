@@ -22,6 +22,7 @@ import {
     JD_SERVICE_INDEX_INV_MASK,
     JD_SERIAL_MAX_PAYLOAD_SIZE,
     JD_SERVICE_INDEX_CRC_ACK,
+    JD_SERVICE_INDEX_NACK,
     JD_SERVICE_INDEX_PIPE,
     PIPE_PORT_SHIFT,
     PIPE_COUNTER_MASK,
@@ -216,6 +217,10 @@ export class Packet {
 
     get isCRCAck() {
         return this.serviceIndex === JD_SERVICE_INDEX_CRC_ACK
+    }
+
+    get isNack() {
+        return !!(this.serviceIndex & JD_SERVICE_INDEX_NACK)
     }
 
     get isPipe() {

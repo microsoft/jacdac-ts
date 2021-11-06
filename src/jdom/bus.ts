@@ -1247,6 +1247,8 @@ ${dev
                     device.services({ specification: true }).map(service =>
                         service
                             .registers()
+                            // reported as not implemented
+                            .filter(reg => !reg.nack)
                             // someone is listening for reports
                             .filter(
                                 reg =>

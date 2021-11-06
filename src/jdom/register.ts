@@ -32,12 +32,20 @@ export class JDRegister extends JDServiceMemberNode {
     private _lastSetTimestamp = -Infinity
     private _lastGetTimestamp = -Infinity
     private _lastGetAttempts = 0
+    private _nack = false
 
     /**
      * @internal
      */
     constructor(service: JDService, code: number) {
         super(service, code, isRegister)
+    }
+
+    /**
+     * Indicates if the register receives a nack
+     */
+    get nack() {
+        return this._nack
     }
 
     /**
@@ -126,6 +134,7 @@ export class JDRegister extends JDServiceMemberNode {
      * @category Packets
      */
     sendGetAsync(): Promise<void> {
+        if (this.nack) return Promise.resolve()
         if (this.specification?.kind === "const" && this.data !== undefined)
             return Promise.resolve()
 
@@ -290,6 +299,8 @@ export class JDRegister extends JDServiceMemberNode {
      * @category Data
      */
     refresh(skipIfValue?: boolean): Promise<void> {
+        // don't refetch nacks
+        if (this.nack) return
         // don't refetch consts
         // don't refetch if already data
         if (
@@ -328,6 +339,10 @@ export class JDRegister extends JDServiceMemberNode {
      * @internal
      */
     processPacket(pkt: Packet) {
+        if (!this._nack && pkt.isNack) {
+            this._nack = true
+            this.emit(CHANGE)
+        }
         if (pkt.isRegisterGet) this.processReport(pkt)
         else if (pkt.isRegisterSet) {
             // another device sent a set packet to this register
