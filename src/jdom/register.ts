@@ -42,7 +42,7 @@ export class JDRegister extends JDServiceMemberNode {
     }
 
     /**
-     * Indicates if the register receives a nack
+     * Indicates if the register received a nack
      */
     get nack() {
         return this._nack
@@ -340,10 +340,14 @@ export class JDRegister extends JDServiceMemberNode {
      * @internal
      */
     processPacket(pkt: Packet) {
-        if (!this._nack && pkt.isNack) {
-            this._nack = true
-            this.emit(CHANGE)
+        if (pkt.isNack) {
+            if (!this._nack) {
+                this._nack = true
+                this.emit(CHANGE)
+            }
+            return
         }
+
         if (pkt.isRegisterGet) this.processReport(pkt)
         else if (pkt.isRegisterSet) {
             // another device sent a set packet to this register

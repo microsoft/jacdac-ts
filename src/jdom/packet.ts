@@ -220,7 +220,7 @@ export class Packet {
     }
 
     get isNack() {
-        return !!(this.serviceIndex & JD_SERVICE_INDEX_NACK)
+        return !!(this._header[13] & JD_SERVICE_INDEX_NACK)
     }
 
     get isPipe() {
