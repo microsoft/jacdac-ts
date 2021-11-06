@@ -291,14 +291,22 @@ export class JDService extends JDNode {
         )
     }
 
-    registers() {
+    /**
+     * Gets the list of registers in the service
+     * @param options
+     * @returns
+     */
+    registers(options?: { ignoreNacks?: boolean }) {
         if (!this._registers) {
             const spec = this.specification
             this._registers = (spec?.packets || [])
                 .filter(isRegister)
                 .map(pkt => new JDRegister(this, pkt.identifier))
         }
-        return this._registers.slice(0)
+
+        let regs = this._registers.slice(0)
+        if (options?.ignoreNacks) regs = regs.filter(r => !r.nack)
+        return regs
     }
 
     /**
