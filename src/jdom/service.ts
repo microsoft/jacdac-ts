@@ -296,7 +296,7 @@ export class JDService extends JDNode {
      * @param options
      * @returns
      */
-    registers(options?: { skipNacks?: boolean }) {
+    registers(options?: { ignoreNacks?: boolean }) {
         if (!this._registers) {
             const spec = this.specification
             this._registers = (spec?.packets || [])
@@ -305,7 +305,7 @@ export class JDService extends JDNode {
         }
 
         let regs = this._registers.slice(0)
-        if (options?.skipNacks) regs = regs.filter(r => !r.nack)
+        if (options?.ignoreNacks) regs = regs.filter(r => !r.nack)
         return regs
     }
 
