@@ -494,8 +494,7 @@ export class JDService extends JDNode {
                 if (ev) ev.processEvent(pkt)
             } else if (pkt.serviceCommand === SystemCmd.CommandNotImplemented) {
                 const [serviceCommand, packetCrc] =
-                    pkt.jdunpack<[number, number]>("u16 16")
-                console.debug(`not impl`, { serviceCommand, packetCrc })
+                    pkt.jdunpack<[number, number]>("u16 u16")
                 if (
                     serviceCommand >> 12 === CMD_GET_REG >> 12 ||
                     serviceCommand >> 12 === CMD_SET_REG >> 12

@@ -41,6 +41,7 @@ export interface PacketFilterProps {
     collapseAck?: boolean
     collapsePipes?: boolean
     collapseGets?: boolean
+    collapseNotImplemented?: boolean
     errors?: boolean
 }
 
@@ -92,6 +93,7 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
     let collapseAck = true
     let collapsePipes = true
     let collapseGets = true
+    let collapseNotImplemented = true
     let errors: boolean = undefined
     let selfDevice: boolean = undefined
     text.split(/\s+/g).forEach(part => {
@@ -144,6 +146,9 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
                 break
             case "collapse-ack":
                 collapseAck = parseBoolean(value)
+                break
+            case "collapse-notimpl":
+                collapseNotImplemented = parseBoolean(value)
                 break
             case "device":
             case "dev":
@@ -232,6 +237,7 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
         minPriority,
         requiresAck,
         collapseAck,
+        collapseNotImplemented,
         log,
         productIdentifiers:
             !!productIdentifiers.size && Array.from(productIdentifiers.keys()),

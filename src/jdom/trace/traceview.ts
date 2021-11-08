@@ -5,9 +5,11 @@ import {
     DEVICE_ANNOUNCE,
     META_ACK,
     META_GET,
+    META_NOT_IMPLEMENTED,
     META_PIPE,
     PACKET_PROCESS,
     PACKET_SEND,
+    SystemCmd,
     TRACE_FILTER_HORIZON,
 } from "../constants"
 import Packet from "../packet"
@@ -68,8 +70,7 @@ export class TraceView extends JDClient {
         this.handleFilterUpdate = this.handleFilterUpdate.bind(this)
 
         this.notifyPacketsChanged = throttle(() => {
-            if (!this.silent)
-                this.setFilteredPackets()
+            if (!this.silent) this.setFilteredPackets()
         }, throttleDelay)
 
         this.mount(
@@ -242,6 +243,23 @@ export class TraceView extends JDClient {
                 }
             }
         }
+
+        // track command not supported
+        if (packet.serviceCommand === SystemCmd.CommandNotImplemented) {
+            const pkts = this.trace.packets
+            const [sc, crc] = packet.jdunpack<[number, number]>("u16 u16")
+            const m = Math.max(0, pkts.length - TRACE_FILTER_HORIZON) // max scan 100 packets back
+            for (let i = pkts.length - 1; i >= m; i--) {
+                const old = pkts[i]
+                if (old.crc === crc && old.serviceCommand === sc) {
+                    old.meta[META_NOT_IMPLEMENTED] = packet
+                    if (this._packetFilter?.props.collapseNotImplemented)
+                        filtered = false
+                    break
+                }
+            }
+        }
+
         // report coming back
         if (packet.isRegisterGet && packet.isReport && !packet.meta[META_GET]) {
             const pkts = this.trace.packets
