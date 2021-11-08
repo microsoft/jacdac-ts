@@ -11,6 +11,9 @@ import {
     SERVICE_CLIENT_REMOVED,
     CHANGE,
     ROLE_CHANGE,
+    CMD_REG_MASK,
+    CMD_GET_REG,
+    CMD_SET_REG,
 } from "./constants"
 import JDNode from "./node"
 import {
@@ -28,6 +31,7 @@ import { strcmp } from "./utils"
 import {
     BaseEvent,
     BaseReg,
+    SystemCmd,
     SystemEvent,
     SystemReg,
 } from "../../jacdac-spec/dist/specconstants"
@@ -305,7 +309,7 @@ export class JDService extends JDNode {
         }
 
         let regs = this._registers.slice(0)
-        if (options?.ignoreNacks) regs = regs.filter(r => !r.nack)
+        if (options?.ignoreNacks) regs = regs.filter(r => !r.notImplemented)
         return regs
     }
 
@@ -488,6 +492,18 @@ export class JDService extends JDNode {
             } else if (pkt.isEvent) {
                 const ev = this.event(pkt.eventCode)
                 if (ev) ev.processEvent(pkt)
+            } else if (pkt.serviceCommand === SystemCmd.CommandNotImplemented) {
+                const [serviceCommand, packetCrc] =
+                    pkt.jdunpack<[number, number]>("u16 16")
+                console.debug(`not impl`, { serviceCommand, packetCrc })
+                if (
+                    serviceCommand >> 12 === CMD_GET_REG >> 12 ||
+                    serviceCommand >> 12 === CMD_SET_REG >> 12
+                ) {
+                    const regCode = serviceCommand & CMD_REG_MASK
+                    const reg = this.registers().find(r => r.code === regCode)
+                    reg?.setNotImplemented()
+                }
             } else if (pkt.isCommand) {
                 // this is a report...
                 //console.log("cmd report", { pkt })
