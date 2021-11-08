@@ -89,6 +89,7 @@ import {
     SRV_WIFI,
     SRV_LIGHT_BULB,
     LightBulbReg,
+    WifiAPFlags,
 } from "../jdom/constants"
 import JDServerServiceProvider from "../jdom/servers/serverserviceprovider"
 import ProtocolTestServer from "../jdom/servers/protocoltestserver"
@@ -136,6 +137,7 @@ import VibrationMotor from "./vibrationmotorserver"
 import WifiServer from "./wifiserver"
 import AccelerometerServer from "./accelerometerserver"
 import BrailleDisplayServer from "./brailledisplayserver"
+import Flags from "../jdom/flags"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "indoor",
@@ -319,1250 +321,1374 @@ export interface ServiceProviderDefinition {
     factory?: (services: JDServiceServer[]) => JDServiceProvider
 }
 
-const _providerDefinitions: ServiceProviderDefinition[] = [
-    {
-        name: "7-segment (4 segments)",
-        serviceClasses: [SRV_SEVEN_SEGMENT_DISPLAY],
-        services: () => [
-            new JDServiceServer(SRV_SEVEN_SEGMENT_DISPLAY, {
-                intensityValues: [0xffff],
-                valueValues: [fromHex("ff112233")],
-                registerValues: [
-                    {
-                        code: SevenSegmentDisplayReg.DigitCount,
-                        values: [4],
-                    },
-                    {
-                        code: SevenSegmentDisplayReg.DecimalPoint,
-                        values: [true],
-                    },
+let _providerDefinitions: ServiceProviderDefinition[]
+function initProviders() {
+    return (_providerDefinitions =
+        _providerDefinitions ||
+        [
+            <ServiceProviderDefinition>{
+                name: "7-segment (4 segments)",
+                serviceClasses: [SRV_SEVEN_SEGMENT_DISPLAY],
+                services: () => [
+                    new JDServiceServer(SRV_SEVEN_SEGMENT_DISPLAY, {
+                        intensityValues: [0xffff],
+                        valueValues: [fromHex("ff112233")],
+                        registerValues: [
+                            {
+                                code: SevenSegmentDisplayReg.DigitCount,
+                                values: [4],
+                            },
+                            {
+                                code: SevenSegmentDisplayReg.DecimalPoint,
+                                values: [true],
+                            },
+                        ],
+                    }),
                 ],
-            }),
-        ],
-    },
-    {
-        name: "7-segment (8 segments)",
-        serviceClasses: [SRV_SEVEN_SEGMENT_DISPLAY],
-        services: () => [
-            new JDServiceServer(SRV_SEVEN_SEGMENT_DISPLAY, {
-                intensityValues: [0xffff],
-                valueValues: [fromHex("0102040810204080")],
-                registerValues: [
-                    {
-                        code: SevenSegmentDisplayReg.DigitCount,
-                        values: [8],
-                    },
-                    {
-                        code: SevenSegmentDisplayReg.DecimalPoint,
-                        values: [true],
-                    },
+            },
+            {
+                name: "7-segment (8 segments)",
+                serviceClasses: [SRV_SEVEN_SEGMENT_DISPLAY],
+                services: () => [
+                    new JDServiceServer(SRV_SEVEN_SEGMENT_DISPLAY, {
+                        intensityValues: [0xffff],
+                        valueValues: [fromHex("0102040810204080")],
+                        registerValues: [
+                            {
+                                code: SevenSegmentDisplayReg.DigitCount,
+                                values: [8],
+                            },
+                            {
+                                code: SevenSegmentDisplayReg.DecimalPoint,
+                                values: [true],
+                            },
+                        ],
+                    }),
                 ],
-            }),
-        ],
-    },
-    {
-        name: "accelerometer",
-        serviceClasses: [SRV_ACCELEROMETER],
-        services: () => [new AccelerometerServer()],
-    },
-    {
-        name: "barometer",
-        serviceClasses: [SRV_BAROMETER],
-        services: () => [
-            new AnalogSensorServer(SRV_BAROMETER, barometerOptions),
-        ],
-    },
-    {
-        name: "bitradio",
-        serviceClasses: [SRV_BIT_RADIO],
-        services: () => [new BitRadioServer()],
-    },
-    {
-        name: "Braille display (4 patterns)",
-        serviceClasses: [SRV_BRAILLE_DISPLAY],
-        services: () => [
-            new BrailleDisplayServer({
-                patterns: "⠃",
-                length: 4,
-            }),
-        ],
-    },
-    {
-        name: "Braille display (16 patterns)",
-        serviceClasses: [SRV_BRAILLE_DISPLAY],
-        services: () => [
-            new BrailleDisplayServer({
-                patterns: "⠃",
-                length: 16,
-            }),
-        ],
-    },
-    {
-        name: "Braille display (32 patterns)",
-        serviceClasses: [SRV_BRAILLE_DISPLAY],
-        services: () => [
-            new BrailleDisplayServer({
-                patterns: "⠃",
-                length: 32,
-            }),
-        ],
-    },
-    {
-        name: "button",
-        serviceClasses: [SRV_BUTTON],
-        services: () => [new ButtonServer()],
-    },
-    {
-        name: "button (2x)",
-        serviceClasses: [SRV_BUTTON],
-        services: () => [new ButtonServer("B0"), new ButtonServer("B1")],
-    },
-    {
-        name: "button (4x)",
-        serviceClasses: [SRV_BUTTON],
-        services: () =>
-            Array(4)
-                .fill(0)
-                .map((_, i) => new ButtonServer(`B${i}`)),
-    },
-    {
-        name: "buzzer",
-        serviceClasses: [SRV_BUZZER],
-        services: () => [new BuzzerServer()],
-    },
-    {
-        name: "capacitive button",
-        serviceClasses: [SRV_BUTTON],
-        services: () => {
-            const button = new ButtonServer()
-            const config = new CapacitiveButtonServer()
-            button.threshold = config.threshold
-            return [button, config]
-        },
-    },
-    {
-        name: "capacitive button (6x)",
-        serviceClasses: [SRV_BUTTON],
-        services: () =>
-            Array(6)
-                .fill(0)
-                .map((_, i) => new ButtonServer(`C${i}`, true)),
-    },
-    {
-        name: "capacitive button (12x)",
-        serviceClasses: [SRV_BUTTON],
-        services: () =>
-            Array(12)
-                .fill(0)
-                .map((_, i) => new ButtonServer(`C${i}`, true)),
-    },
-    {
-        name: "character screen (LDC, 16x2)",
-        serviceClasses: [SRV_CHARACTER_SCREEN],
-        services: () => [
-            new CharacterScreenServer({ message: "hello\nworld!" }),
-        ],
-    },
-    {
-        name: "character screen (OLED, 32x8, RTL)",
-        serviceClasses: [SRV_CHARACTER_SCREEN],
-        services: () => [
-            new CharacterScreenServer({
-                message: "hello\nworld!",
-                columns: 32,
-                rows: 8,
-                variant: CharacterScreenVariant.OLED,
-                textDirection: CharacterScreenTextDirection.RightToLeft,
-            }),
-        ],
-    },
-    {
-        name: "character screen (Braille, 4x1)",
-        serviceClasses: [SRV_CHARACTER_SCREEN],
-        services: () => [
-            new CharacterScreenServer({
-                message: "hi",
-                columns: 4,
-                rows: 1,
-                variant: CharacterScreenVariant.Braille,
-                textDirection: CharacterScreenTextDirection.LeftToRight,
-            }),
-        ],
-    },
-    {
-        name: "character screen (Braille, 16x1)",
-        serviceClasses: [SRV_CHARACTER_SCREEN],
-        services: () => [
-            new CharacterScreenServer({
-                message: "hi",
-                columns: 16,
-                rows: 1,
-                variant: CharacterScreenVariant.Braille,
-                textDirection: CharacterScreenTextDirection.LeftToRight,
-            }),
-        ],
-    },
-    {
-        name: "character screen (Braille, 32x1)",
-        serviceClasses: [SRV_CHARACTER_SCREEN],
-        services: () => [
-            new CharacterScreenServer({
-                message: "hi",
-                columns: 32,
-                rows: 1,
-                variant: CharacterScreenVariant.Braille,
-                textDirection: CharacterScreenTextDirection.LeftToRight,
-            }),
-        ],
-    },
-    {
-        name: "color",
-        serviceClasses: [SRV_COLOR],
-        services: () => [
-            new SensorServer<[number, number, number]>(SRV_COLOR, {
-                readingValues: [0.5, 0, 0.5],
-                preferredStreamingInterval: 1000,
-            }),
-        ],
-    },
-    {
-        name: "compass",
-        serviceClasses: [SRV_COMPASS],
-        services: () => [new CompassServer()],
-    },
-    {
-        name: "dimmer (fan)",
-        serviceClasses: [SRV_DIMMER],
-        services: () => [
-            new DimmerServer("fan", { variant: DimmerVariant.Fan }),
-        ],
-    },
-    {
-        name: "dimmer (light)",
-        serviceClasses: [SRV_DIMMER],
-        services: () => [
-            new DimmerServer("light", { variant: DimmerVariant.Light }),
-        ],
-    },
-    {
-        name: "distance (sonar)",
-        serviceClasses: [SRV_DISTANCE],
-        services: () => [new AnalogSensorServer(SRV_DISTANCE, sonarOptions)],
-    },
-    {
-        name: "DMX",
-        serviceClasses: [SRV_DMX],
-        services: () => [new DMXServer()],
-    },
-    {
-        name: "eCO₂",
-        serviceClasses: [SRV_E_CO2],
-        services: () => [new AnalogSensorServer(SRV_E_CO2, eCO2Options)],
-    },
-    {
-        name: "eCO₂ + TVOC",
-        serviceClasses: [SRV_E_CO2, SRV_TVOC],
-        services: () => [
-            new AnalogSensorServer(SRV_E_CO2, eCO2Options),
-            new AnalogSensorServer(SRV_TVOC, tvocOptions),
-        ],
-    },
-    {
-        name: "eCO₂ + humidity + thermometer",
-        serviceClasses: [SRV_E_CO2, SRV_HUMIDITY, SRV_THERMOMETER],
-        services: () => [
-            new AnalogSensorServer(SRV_E_CO2, CO2Options),
-            new AnalogSensorServer(SRV_HUMIDITY, outdoorHumidityOptions),
-            new AnalogSensorServer(SRV_THERMOMETER, indoorThermometerOptions),
-        ],
-    },
-    {
-        name: "flex sensor (2.2 inch)",
-        serviceClasses: [SRV_FLEX],
-        services: () => [
-            new AnalogSensorServer(SRV_FLEX, {
-                variant: FlexVariant.Linear22Inch,
-                readingValues: [0.5],
-            }),
-        ],
-    },
-    {
-        name: "gyroscope",
-        serviceClasses: [SRV_GYROSCOPE],
-        services: () => [
-            new SensorServer<[number, number, number]>(SRV_GYROSCOPE, {
-                readingValues: [0, 0, 0],
-            }),
-        ],
-    },
-    {
-        name: "heart rate",
-        serviceClasses: [SRV_HEART_RATE],
-        services: () => [
-            new AnalogSensorServer(SRV_HEART_RATE, {
-                readingValues: [80],
-                streamingInterval: 100,
-                variant: HeartRateVariant.Finger,
-            }),
-        ],
-    },
-    {
-        name: "humidity",
-        serviceClasses: [SRV_HUMIDITY],
-        services: () => [
-            new AnalogSensorServer(SRV_HUMIDITY, outdoorHumidityOptions),
-        ],
-    },
-    {
-        name: "humidity + temperature",
-        serviceClasses: [SRV_HUMIDITY, SRV_THERMOMETER],
-        services: () => [
-            new AnalogSensorServer(SRV_THERMOMETER, outdoorThermometerOptions),
-            new AnalogSensorServer(SRV_HUMIDITY, outdoorHumidityOptions),
-        ],
-    },
-    {
-        name: "humidity + temperature + barometer",
-        serviceClasses: [SRV_HUMIDITY, SRV_THERMOMETER, SRV_BAROMETER],
-        services: () => [
-            new AnalogSensorServer(SRV_THERMOMETER, outdoorThermometerOptions),
-            new AnalogSensorServer(SRV_HUMIDITY, outdoorHumidityOptions),
-            new AnalogSensorServer(SRV_BAROMETER, barometerOptions),
-        ],
-    },
-    {
-        name: "illuminance",
-        serviceClasses: [SRV_ILLUMINANCE],
-        services: () => [
-            new AnalogSensorServer(SRV_ILLUMINANCE, {
-                readingValues: [1],
-            }),
-        ],
-    },
-    {
-        name: "joystick (stick + A + B)",
-        serviceClasses: [SRV_JOYSTICK],
-        services: () => [
-            new JoystickServer({
-                variant: JoystickVariant.Thumb,
-                buttonsAvailable: JoystickButtons.A | JoystickButtons.B,
-            }),
-        ],
-    },
-    {
-        name: "joystick (stick)",
-        serviceClasses: [SRV_JOYSTICK],
-        services: () => [
-            new JoystickServer({
-                variant: JoystickVariant.Thumb,
-            }),
-        ],
-    },
-    {
-        name: "joystick (stick+A)",
-        serviceClasses: [SRV_JOYSTICK],
-        services: () => [
-            new JoystickServer({
-                variant: JoystickVariant.Thumb,
-                buttonsAvailable: JoystickButtons.A,
-            }),
-        ],
-    },
-    {
-        name: "joystick (Dpad + all buttons)",
-        serviceClasses: [SRV_JOYSTICK],
-        services: () => [
-            new JoystickServer({
-                variant: JoystickVariant.Gamepad,
-                buttonsAvailable: JOYSTICK_ARCADE_BUTTONS,
-            }),
-        ],
-    },
-    {
-        name: "joystick (only DPad+A/B)",
-        serviceClasses: [SRV_JOYSTICK],
-        services: () => [
-            new JoystickServer({
-                variant: JoystickVariant.Gamepad,
-                buttonsAvailable: JOYSTICK_DPAD_AB_BUTTONS,
-            }),
-        ],
-    },
-    {
-        name: "RGB LED (RGB through hole)",
-        serviceClasses: [SRV_LED],
-        services: () => [
-            new LEDServer({
-                variant: LedVariant.ThroughHole,
-                ledCount: 1,
-                color: [255, 0, 0],
-            }),
-        ],
-    },
-    {
-        name: "LED (5x blue through hole)",
-        serviceClasses: [SRV_LED],
-        services: () => [
-            new LEDServer({
-                variant: LedVariant.ThroughHole,
-                waveLength: 450,
-                ledCount: 5,
-                color: [0, 0, 255],
-            }),
-        ],
-    },
-    {
-        name: "LED matrix (5x5 micro:bit)",
-        serviceClasses: [SRV_DOT_MATRIX],
-        services: () => [
-            new DotMatrixServer(5, 5, {
-                brightness: 128,
-                variant: DotMatrixVariant.LED,
-            }),
-        ],
-    },
-    {
-        name: "LED matrix (8x8)",
-        serviceClasses: [SRV_DOT_MATRIX],
-        services: () => [
-            new DotMatrixServer(8, 8, {
-                brightness: 128,
-                variant: DotMatrixVariant.LED,
-            }),
-        ],
-    },
-    {
-        name: "LED matrix (11x7)",
-        serviceClasses: [SRV_DOT_MATRIX],
-        services: () => [
-            new DotMatrixServer(11, 7, {
-                brightness: 128,
-                variant: DotMatrixVariant.LED,
-            }),
-        ],
-    },
-    {
-        name: "Braille matrix (8x4)",
-        serviceClasses: [SRV_DOT_MATRIX],
-        services: () => [
-            new DotMatrixServer(8, 4, {
-                variant: DotMatrixVariant.Braille,
-            }),
-        ],
-    },
-    {
-        name: "LED pixel ring 10",
-        serviceClasses: [SRV_LED_PIXEL],
-        services: () => [
-            new LedPixelServer({
-                numPixels: 10,
-                variant: LedPixelVariant.Ring,
-            }),
-        ],
-    },
-    {
-        name: "LED pixel ring 12",
-        serviceClasses: [SRV_LED_PIXEL],
-        services: () => [
-            new LedPixelServer({
-                numPixels: 12,
-                variant: LedPixelVariant.Ring,
-            }),
-        ],
-    },
-    {
-        name: "LED pixel ring 16",
-        serviceClasses: [SRV_LED_PIXEL],
-        services: () => [
-            new LedPixelServer({
-                numPixels: 16,
-                variant: LedPixelVariant.Ring,
-            }),
-        ],
-    },
-    {
-        name: "LED pixel ring 24",
-        serviceClasses: [SRV_LED_PIXEL],
-        services: () => [
-            new LedPixelServer({
-                numPixels: 24,
-                variant: LedPixelVariant.Ring,
-            }),
-        ],
-    },
-    {
-        name: "LED pixel jewel 7",
-        serviceClasses: [SRV_LED_PIXEL],
-        services: () => [
-            new LedPixelServer({
-                numPixels: 7,
-                variant: LedPixelVariant.Jewel,
-            }),
-        ],
-    },
-    {
-        name: "LED pixel stick 8",
-        serviceClasses: [SRV_LED_PIXEL],
-        services: () => [
-            new LedPixelServer({
-                numPixels: 8,
-                variant: LedPixelVariant.Stick,
-            }),
-        ],
-    },
-    {
-        name: "LED pixel strip 30",
-        serviceClasses: [SRV_LED_PIXEL],
-        services: () => [
-            new LedPixelServer({
-                numPixels: 60,
-                maxPower: 1000,
-                variant: LedPixelVariant.Strip,
-            }),
-        ],
-    },
-    {
-        name: "LED pixel strip 60",
-        serviceClasses: [SRV_LED_PIXEL],
-        services: () => [
-            new LedPixelServer({
-                numPixels: 60,
-                maxPower: 2000,
-                variant: LedPixelVariant.Strip,
-            }),
-        ],
-    },
-    {
-        name: "LED pixel strip 150",
-        serviceClasses: [SRV_LED_PIXEL],
-        services: () => [
-            new LedPixelServer({
-                numPixels: 150,
-                maxPower: 5000,
-                variant: LedPixelVariant.Strip,
-            }),
-        ],
-    },
-    {
-        name: "LED pixel strip 300",
-        serviceClasses: [SRV_LED_PIXEL],
-        services: () => [
-            new LedPixelServer({
-                numPixels: 300,
-                maxPower: 5000,
-                variant: LedPixelVariant.Strip,
-            }),
-        ],
-    },
-    {
-        name: "LED pixel matrix (4x4)",
-        serviceClasses: [SRV_LED_PIXEL],
-        services: () => [
-            new LedPixelServer({
-                numPixels: 16,
-                variant: LedPixelVariant.Matrix,
-            }),
-        ],
-    },
-    {
-        name: "LED pixel matrix (8x8)",
-        serviceClasses: [SRV_LED_PIXEL],
-        services: () => [
-            new LedPixelServer({
-                numPixels: 64,
-                variant: LedPixelVariant.Matrix,
-            }),
-        ],
-    },
-    {
-        name: "LED pixel matrix (16x4)",
-        serviceClasses: [SRV_LED_PIXEL],
-        services: () => [
-            new LedPixelServer({
-                numPixels: 64,
-                numColumns: 16,
-                variant: LedPixelVariant.Matrix,
-            }),
-        ],
-    },
-    {
-        name: "light bulb",
-        serviceClasses: [SRV_LIGHT_BULB],
-        services: () => [
-            new JDServiceServer(SRV_LIGHT_BULB, {
-                intensityValues: [0],
-                isActive: values => !!values?.[0],
-                intensityProcessor: (values: [number]) => {
-                    const newValues = [values[0] > 0 ? 1 : 0]
-                    return newValues
+            },
+            {
+                name: "accelerometer",
+                serviceClasses: [SRV_ACCELEROMETER],
+                services: () => [new AccelerometerServer()],
+            },
+            {
+                name: "barometer",
+                serviceClasses: [SRV_BAROMETER],
+                services: () => [
+                    new AnalogSensorServer(SRV_BAROMETER, barometerOptions),
+                ],
+            },
+            {
+                name: "bitradio",
+                serviceClasses: [SRV_BIT_RADIO],
+                services: () => [new BitRadioServer()],
+            },
+            {
+                name: "Braille display (4 patterns)",
+                serviceClasses: [SRV_BRAILLE_DISPLAY],
+                services: () => [
+                    new BrailleDisplayServer({
+                        patterns: "⠃",
+                        length: 4,
+                    }),
+                ],
+            },
+            {
+                name: "Braille display (16 patterns)",
+                serviceClasses: [SRV_BRAILLE_DISPLAY],
+                services: () => [
+                    new BrailleDisplayServer({
+                        patterns: "⠃",
+                        length: 16,
+                    }),
+                ],
+            },
+            {
+                name: "Braille display (32 patterns)",
+                serviceClasses: [SRV_BRAILLE_DISPLAY],
+                services: () => [
+                    new BrailleDisplayServer({
+                        patterns: "⠃",
+                        length: 32,
+                    }),
+                ],
+            },
+            {
+                name: "button",
+                serviceClasses: [SRV_BUTTON],
+                services: () => [new ButtonServer()],
+            },
+            {
+                name: "button (2x)",
+                serviceClasses: [SRV_BUTTON],
+                services: () => [
+                    new ButtonServer("B0"),
+                    new ButtonServer("B1"),
+                ],
+            },
+            {
+                name: "button (4x)",
+                serviceClasses: [SRV_BUTTON],
+                services: () =>
+                    Array(4)
+                        .fill(0)
+                        .map((_, i) => new ButtonServer(`B${i}`)),
+            },
+            {
+                name: "buzzer",
+                serviceClasses: [SRV_BUZZER],
+                services: () => [new BuzzerServer()],
+            },
+            {
+                name: "capacitive button",
+                serviceClasses: [SRV_BUTTON],
+                services: () => {
+                    const button = new ButtonServer()
+                    const config = new CapacitiveButtonServer()
+                    button.threshold = config.threshold
+                    return [button, config]
                 },
-                registerValues: [
-                    {
-                        code: LightBulbReg.Dimmeable,
-                        values: [false],
-                    },
+            },
+            {
+                name: "capacitive button (6x)",
+                serviceClasses: [SRV_BUTTON],
+                services: () =>
+                    Array(6)
+                        .fill(0)
+                        .map((_, i) => new ButtonServer(`C${i}`, true)),
+            },
+            {
+                name: "capacitive button (12x)",
+                serviceClasses: [SRV_BUTTON],
+                services: () =>
+                    Array(12)
+                        .fill(0)
+                        .map((_, i) => new ButtonServer(`C${i}`, true)),
+            },
+            {
+                name: "character screen (LDC, 16x2)",
+                serviceClasses: [SRV_CHARACTER_SCREEN],
+                services: () => [
+                    new CharacterScreenServer({ message: "hello\nworld!" }),
                 ],
-            }),
-        ],
-    },
-    {
-        name: "light bulb (dimmeable)",
-        serviceClasses: [SRV_LIGHT_BULB],
-        services: () => [
-            new JDServiceServer(SRV_LIGHT_BULB, {
-                intensityValues: [0],
-                isActive: values => !!values?.[0],
-                registerValues: [
-                    {
-                        code: LightBulbReg.Dimmeable,
-                        values: [true],
-                    },
+            },
+            {
+                name: "character screen (OLED, 32x8, RTL)",
+                serviceClasses: [SRV_CHARACTER_SCREEN],
+                services: () => [
+                    new CharacterScreenServer({
+                        message: "hello\nworld!",
+                        columns: 32,
+                        rows: 8,
+                        variant: CharacterScreenVariant.OLED,
+                        textDirection: CharacterScreenTextDirection.RightToLeft,
+                    }),
                 ],
-            }),
-        ],
-    },
-    {
-        name: "light level (photo-resistor)",
-        serviceClasses: [SRV_LIGHT_LEVEL],
-        services: () => [
-            new SensorServer(SRV_LIGHT_LEVEL, {
-                readingValues: [0.5],
-                variant: LightLevelVariant.PhotoResistor,
-            }),
-        ],
-    },
-    {
-        name: "line tracker (digital)",
-        serviceClasses: [SRV_REFLECTED_LIGHT],
-        services: () => [new ReflectedLightServer()],
-    },
-    {
-        name: "line tracker (2x digital)",
-        serviceClasses: [SRV_REFLECTED_LIGHT],
-        services: () => [
-            new ReflectedLightServer(),
-            new ReflectedLightServer(),
-        ],
-    },
-    {
-        name: "line tracker (analog)",
-        serviceClasses: [SRV_REFLECTED_LIGHT],
-        services: () => [
-            new ReflectedLightServer({
-                variant: ReflectedLightVariant.InfraredAnalog,
-            }),
-        ],
-    },
-    {
-        name: "matrix keypad (3x4)",
-        serviceClasses: [SRV_MATRIX_KEYPAD],
-        services: () => [
-            new MatrixKeypadServer(3, 4, [
-                "0",
-                "1",
-                "2",
-                "3",
-                "4",
-                "5",
-                "6",
-                "7",
-                "8",
-                "*",
-                "0",
-                "#",
-            ]),
-        ],
-    },
-    {
-        name: "matrix keypad (4x4)",
-        serviceClasses: [SRV_MATRIX_KEYPAD],
-        services: () => [
-            new MatrixKeypadServer(4, 4, [
-                "0",
-                "1",
-                "2",
-                "A",
-                "3",
-                "4",
-                "5",
-                "B",
-                "6",
-                "7",
-                "8",
-                "C",
-                "*",
-                "0",
-                "#",
-                "D",
-            ]),
-        ],
-    },
-    {
-        name: "matrix keypad (1x4)",
-        serviceClasses: [SRV_MATRIX_KEYPAD],
-        services: () => [new MatrixKeypadServer(4, 1, ["1", "2", "3", "4"])],
-    },
-    {
-        name: "motion",
-        serviceClasses: [SRV_MOTION],
-        services: () => [
-            new SensorServer(SRV_MOTION, {
-                readingValues: [false],
-                streamingInterval: 1000,
-            }),
-        ],
-    },
-    {
-        name: "motor",
-        serviceClasses: [SRV_MOTOR],
-        services: () => [new MotorServer()],
-        resetIn: true,
-    },
-    {
-        name: "protocol test",
-        serviceClasses: [SRV_PROTO_TEST],
-        services: () => [new ProtocolTestServer()],
-    },
-    {
-        name: "pulse oxymeter",
-        serviceClasses: [SRV_PULSE_OXIMETER],
-        services: () => [
-            new SensorServer<[number]>(SRV_PULSE_OXIMETER, {
-                readingValues: [98],
-                streamingInterval: 1000,
-            }),
-        ],
-    },
-    {
-        name: "oxymeter + heart beat",
-        serviceClasses: [SRV_PULSE_OXIMETER, SRV_HEART_RATE],
-        services: () => [
-            new SensorServer<[number]>(SRV_PULSE_OXIMETER, {
-                readingValues: [98],
-                streamingInterval: 1000,
-            }),
-            new AnalogSensorServer(SRV_HEART_RATE, {
-                readingValues: [80],
-                streamingInterval: 1000,
-                variant: HeartRateVariant.Finger,
-            }),
-        ],
-    },
-    {
-        name: "power",
-        serviceClasses: [SRV_POWER],
-        services: () => [new PowerServer()],
-    },
-    {
-        name: "RNG (random number generator)",
-        serviceClasses: [SRV_RNG],
-        services: () => [new RandomNumberGeneratorServer()],
-    },
-    {
-        name: "rain gauge",
-        serviceClasses: [SRV_RAIN_GAUGE],
-        services: () => [new RainGaugeServer()],
-    },
-    {
-        name: "real time clock",
-        serviceClasses: [SRV_REAL_TIME_CLOCK],
-        services: () => [new RealTimeClockServer()],
-    },
-    {
-        name: "relay (EM/10A)",
-        serviceClasses: [SRV_RELAY],
-        services: () => [
-            new JDServiceServer(SRV_RELAY, {
-                intensityValues: [false],
-                isActive: values => !!values?.[0],
-                variant: RelayVariant.Electromechanical,
-                registerValues: [
-                    {
-                        code: RelayReg.MaxSwitchingCurrent,
-                        values: [10],
-                    },
+            },
+            {
+                name: "character screen (Braille, 4x1)",
+                serviceClasses: [SRV_CHARACTER_SCREEN],
+                services: () => [
+                    new CharacterScreenServer({
+                        message: "hi",
+                        columns: 4,
+                        rows: 1,
+                        variant: CharacterScreenVariant.Braille,
+                        textDirection: CharacterScreenTextDirection.LeftToRight,
+                    }),
                 ],
-            }),
-        ],
-    },
-    {
-        name: "relay 4x (SSR/5A)",
-        serviceClasses: [SRV_RELAY],
-        services: () =>
-            Array(4)
-                .fill(0)
-                .map(
-                    () =>
-                        new JDServiceServer(SRV_RELAY, {
-                            intensityValues: [false],
-                            isActive: values => !!values?.[0],
-                            variant: RelayVariant.SolidState,
-                            registerValues: [
-                                {
-                                    code: RelayReg.MaxSwitchingCurrent,
-                                    values: [5],
-                                },
+            },
+            {
+                name: "character screen (Braille, 16x1)",
+                serviceClasses: [SRV_CHARACTER_SCREEN],
+                services: () => [
+                    new CharacterScreenServer({
+                        message: "hi",
+                        columns: 16,
+                        rows: 1,
+                        variant: CharacterScreenVariant.Braille,
+                        textDirection: CharacterScreenTextDirection.LeftToRight,
+                    }),
+                ],
+            },
+            {
+                name: "character screen (Braille, 32x1)",
+                serviceClasses: [SRV_CHARACTER_SCREEN],
+                services: () => [
+                    new CharacterScreenServer({
+                        message: "hi",
+                        columns: 32,
+                        rows: 1,
+                        variant: CharacterScreenVariant.Braille,
+                        textDirection: CharacterScreenTextDirection.LeftToRight,
+                    }),
+                ],
+            },
+            {
+                name: "color",
+                serviceClasses: [SRV_COLOR],
+                services: () => [
+                    new SensorServer<[number, number, number]>(SRV_COLOR, {
+                        readingValues: [0.5, 0, 0.5],
+                        preferredStreamingInterval: 1000,
+                    }),
+                ],
+            },
+            {
+                name: "compass",
+                serviceClasses: [SRV_COMPASS],
+                services: () => [new CompassServer()],
+            },
+            {
+                name: "dimmer (fan)",
+                serviceClasses: [SRV_DIMMER],
+                services: () => [
+                    new DimmerServer("fan", { variant: DimmerVariant.Fan }),
+                ],
+            },
+            {
+                name: "dimmer (light)",
+                serviceClasses: [SRV_DIMMER],
+                services: () => [
+                    new DimmerServer("light", { variant: DimmerVariant.Light }),
+                ],
+            },
+            {
+                name: "distance (sonar)",
+                serviceClasses: [SRV_DISTANCE],
+                services: () => [
+                    new AnalogSensorServer(SRV_DISTANCE, sonarOptions),
+                ],
+            },
+            {
+                name: "DMX",
+                serviceClasses: [SRV_DMX],
+                services: () => [new DMXServer()],
+            },
+            {
+                name: "eCO₂",
+                serviceClasses: [SRV_E_CO2],
+                services: () => [
+                    new AnalogSensorServer(SRV_E_CO2, eCO2Options),
+                ],
+            },
+            {
+                name: "eCO₂ + TVOC",
+                serviceClasses: [SRV_E_CO2, SRV_TVOC],
+                services: () => [
+                    new AnalogSensorServer(SRV_E_CO2, eCO2Options),
+                    new AnalogSensorServer(SRV_TVOC, tvocOptions),
+                ],
+            },
+            {
+                name: "eCO₂ + humidity + thermometer",
+                serviceClasses: [SRV_E_CO2, SRV_HUMIDITY, SRV_THERMOMETER],
+                services: () => [
+                    new AnalogSensorServer(SRV_E_CO2, CO2Options),
+                    new AnalogSensorServer(
+                        SRV_HUMIDITY,
+                        outdoorHumidityOptions
+                    ),
+                    new AnalogSensorServer(
+                        SRV_THERMOMETER,
+                        indoorThermometerOptions
+                    ),
+                ],
+            },
+            {
+                name: "flex sensor (2.2 inch)",
+                serviceClasses: [SRV_FLEX],
+                services: () => [
+                    new AnalogSensorServer(SRV_FLEX, {
+                        variant: FlexVariant.Linear22Inch,
+                        readingValues: [0.5],
+                    }),
+                ],
+            },
+            {
+                name: "gyroscope",
+                serviceClasses: [SRV_GYROSCOPE],
+                services: () => [
+                    new SensorServer<[number, number, number]>(SRV_GYROSCOPE, {
+                        readingValues: [0, 0, 0],
+                    }),
+                ],
+            },
+            {
+                name: "heart rate",
+                serviceClasses: [SRV_HEART_RATE],
+                services: () => [
+                    new AnalogSensorServer(SRV_HEART_RATE, {
+                        readingValues: [80],
+                        streamingInterval: 100,
+                        variant: HeartRateVariant.Finger,
+                    }),
+                ],
+            },
+            {
+                name: "humidity",
+                serviceClasses: [SRV_HUMIDITY],
+                services: () => [
+                    new AnalogSensorServer(
+                        SRV_HUMIDITY,
+                        outdoorHumidityOptions
+                    ),
+                ],
+            },
+            {
+                name: "humidity + temperature",
+                serviceClasses: [SRV_HUMIDITY, SRV_THERMOMETER],
+                services: () => [
+                    new AnalogSensorServer(
+                        SRV_THERMOMETER,
+                        outdoorThermometerOptions
+                    ),
+                    new AnalogSensorServer(
+                        SRV_HUMIDITY,
+                        outdoorHumidityOptions
+                    ),
+                ],
+            },
+            {
+                name: "humidity + temperature + barometer",
+                serviceClasses: [SRV_HUMIDITY, SRV_THERMOMETER, SRV_BAROMETER],
+                services: () => [
+                    new AnalogSensorServer(
+                        SRV_THERMOMETER,
+                        outdoorThermometerOptions
+                    ),
+                    new AnalogSensorServer(
+                        SRV_HUMIDITY,
+                        outdoorHumidityOptions
+                    ),
+                    new AnalogSensorServer(SRV_BAROMETER, barometerOptions),
+                ],
+            },
+            {
+                name: "HID keyboard",
+                serviceClasses: [SRV_HID_KEYBOARD],
+                services: () => [new HIDKeyboardServer()],
+            },
+            {
+                name: "HID mouse",
+                serviceClasses: [SRV_HID_MOUSE],
+                services: () => [new HIDMouseServer()],
+            },
+            {
+                name: "illuminance",
+                serviceClasses: [SRV_ILLUMINANCE],
+                services: () => [
+                    new AnalogSensorServer(SRV_ILLUMINANCE, {
+                        readingValues: [1],
+                    }),
+                ],
+            },
+            {
+                name: "joystick (stick + A + B)",
+                serviceClasses: [SRV_JOYSTICK],
+                services: () => [
+                    new JoystickServer({
+                        variant: JoystickVariant.Thumb,
+                        buttonsAvailable: JoystickButtons.A | JoystickButtons.B,
+                    }),
+                ],
+            },
+            {
+                name: "joystick (stick)",
+                serviceClasses: [SRV_JOYSTICK],
+                services: () => [
+                    new JoystickServer({
+                        variant: JoystickVariant.Thumb,
+                    }),
+                ],
+            },
+            {
+                name: "joystick (stick+A)",
+                serviceClasses: [SRV_JOYSTICK],
+                services: () => [
+                    new JoystickServer({
+                        variant: JoystickVariant.Thumb,
+                        buttonsAvailable: JoystickButtons.A,
+                    }),
+                ],
+            },
+            {
+                name: "joystick (Dpad + all buttons)",
+                serviceClasses: [SRV_JOYSTICK],
+                services: () => [
+                    new JoystickServer({
+                        variant: JoystickVariant.Gamepad,
+                        buttonsAvailable: JOYSTICK_ARCADE_BUTTONS,
+                    }),
+                ],
+            },
+            {
+                name: "joystick (only DPad+A/B)",
+                serviceClasses: [SRV_JOYSTICK],
+                services: () => [
+                    new JoystickServer({
+                        variant: JoystickVariant.Gamepad,
+                        buttonsAvailable: JOYSTICK_DPAD_AB_BUTTONS,
+                    }),
+                ],
+            },
+            {
+                name: "RGB LED (RGB through hole)",
+                serviceClasses: [SRV_LED],
+                services: () => [
+                    new LEDServer({
+                        variant: LedVariant.ThroughHole,
+                        ledCount: 1,
+                        color: [255, 0, 0],
+                    }),
+                ],
+            },
+            {
+                name: "LED (5x blue through hole)",
+                serviceClasses: [SRV_LED],
+                services: () => [
+                    new LEDServer({
+                        variant: LedVariant.ThroughHole,
+                        waveLength: 450,
+                        ledCount: 5,
+                        color: [0, 0, 255],
+                    }),
+                ],
+            },
+            {
+                name: "LED matrix (5x5 micro:bit)",
+                serviceClasses: [SRV_DOT_MATRIX],
+                services: () => [
+                    new DotMatrixServer(5, 5, {
+                        brightness: 128,
+                        variant: DotMatrixVariant.LED,
+                    }),
+                ],
+            },
+            {
+                name: "LED matrix (8x8)",
+                serviceClasses: [SRV_DOT_MATRIX],
+                services: () => [
+                    new DotMatrixServer(8, 8, {
+                        brightness: 128,
+                        variant: DotMatrixVariant.LED,
+                    }),
+                ],
+            },
+            {
+                name: "LED matrix (11x7)",
+                serviceClasses: [SRV_DOT_MATRIX],
+                services: () => [
+                    new DotMatrixServer(11, 7, {
+                        brightness: 128,
+                        variant: DotMatrixVariant.LED,
+                    }),
+                ],
+            },
+            {
+                name: "Braille matrix (8x4)",
+                serviceClasses: [SRV_DOT_MATRIX],
+                services: () => [
+                    new DotMatrixServer(8, 4, {
+                        variant: DotMatrixVariant.Braille,
+                    }),
+                ],
+            },
+            {
+                name: "LED pixel ring 10",
+                serviceClasses: [SRV_LED_PIXEL],
+                services: () => [
+                    new LedPixelServer({
+                        numPixels: 10,
+                        variant: LedPixelVariant.Ring,
+                    }),
+                ],
+            },
+            {
+                name: "LED pixel ring 12",
+                serviceClasses: [SRV_LED_PIXEL],
+                services: () => [
+                    new LedPixelServer({
+                        numPixels: 12,
+                        variant: LedPixelVariant.Ring,
+                    }),
+                ],
+            },
+            {
+                name: "LED pixel ring 16",
+                serviceClasses: [SRV_LED_PIXEL],
+                services: () => [
+                    new LedPixelServer({
+                        numPixels: 16,
+                        variant: LedPixelVariant.Ring,
+                    }),
+                ],
+            },
+            {
+                name: "LED pixel ring 24",
+                serviceClasses: [SRV_LED_PIXEL],
+                services: () => [
+                    new LedPixelServer({
+                        numPixels: 24,
+                        variant: LedPixelVariant.Ring,
+                    }),
+                ],
+            },
+            {
+                name: "LED pixel jewel 7",
+                serviceClasses: [SRV_LED_PIXEL],
+                services: () => [
+                    new LedPixelServer({
+                        numPixels: 7,
+                        variant: LedPixelVariant.Jewel,
+                    }),
+                ],
+            },
+            {
+                name: "LED pixel stick 8",
+                serviceClasses: [SRV_LED_PIXEL],
+                services: () => [
+                    new LedPixelServer({
+                        numPixels: 8,
+                        variant: LedPixelVariant.Stick,
+                    }),
+                ],
+            },
+            {
+                name: "LED pixel strip 30",
+                serviceClasses: [SRV_LED_PIXEL],
+                services: () => [
+                    new LedPixelServer({
+                        numPixels: 60,
+                        maxPower: 1000,
+                        variant: LedPixelVariant.Strip,
+                    }),
+                ],
+            },
+            {
+                name: "LED pixel strip 60",
+                serviceClasses: [SRV_LED_PIXEL],
+                services: () => [
+                    new LedPixelServer({
+                        numPixels: 60,
+                        maxPower: 2000,
+                        variant: LedPixelVariant.Strip,
+                    }),
+                ],
+            },
+            {
+                name: "LED pixel strip 150",
+                serviceClasses: [SRV_LED_PIXEL],
+                services: () => [
+                    new LedPixelServer({
+                        numPixels: 150,
+                        maxPower: 5000,
+                        variant: LedPixelVariant.Strip,
+                    }),
+                ],
+            },
+            {
+                name: "LED pixel strip 300",
+                serviceClasses: [SRV_LED_PIXEL],
+                services: () => [
+                    new LedPixelServer({
+                        numPixels: 300,
+                        maxPower: 5000,
+                        variant: LedPixelVariant.Strip,
+                    }),
+                ],
+            },
+            {
+                name: "LED pixel matrix (4x4)",
+                serviceClasses: [SRV_LED_PIXEL],
+                services: () => [
+                    new LedPixelServer({
+                        numPixels: 16,
+                        variant: LedPixelVariant.Matrix,
+                    }),
+                ],
+            },
+            {
+                name: "LED pixel matrix (8x8)",
+                serviceClasses: [SRV_LED_PIXEL],
+                services: () => [
+                    new LedPixelServer({
+                        numPixels: 64,
+                        variant: LedPixelVariant.Matrix,
+                    }),
+                ],
+            },
+            {
+                name: "LED pixel matrix (16x4)",
+                serviceClasses: [SRV_LED_PIXEL],
+                services: () => [
+                    new LedPixelServer({
+                        numPixels: 64,
+                        numColumns: 16,
+                        variant: LedPixelVariant.Matrix,
+                    }),
+                ],
+            },
+            {
+                name: "light bulb",
+                serviceClasses: [SRV_LIGHT_BULB],
+                services: () => [
+                    new JDServiceServer(SRV_LIGHT_BULB, {
+                        intensityValues: [0],
+                        isActive: values => !!values?.[0],
+                        intensityProcessor: (values: [number]) => {
+                            const newValues = [values[0] > 0 ? 1 : 0]
+                            return newValues
+                        },
+                        registerValues: [
+                            {
+                                code: LightBulbReg.Dimmeable,
+                                values: [false],
+                            },
+                        ],
+                    }),
+                ],
+            },
+            {
+                name: "light bulb (dimmeable)",
+                serviceClasses: [SRV_LIGHT_BULB],
+                services: () => [
+                    new JDServiceServer(SRV_LIGHT_BULB, {
+                        intensityValues: [0],
+                        isActive: values => !!values?.[0],
+                        registerValues: [
+                            {
+                                code: LightBulbReg.Dimmeable,
+                                values: [true],
+                            },
+                        ],
+                    }),
+                ],
+            },
+            {
+                name: "light level (photo-resistor)",
+                serviceClasses: [SRV_LIGHT_LEVEL],
+                services: () => [
+                    new SensorServer(SRV_LIGHT_LEVEL, {
+                        readingValues: [0.5],
+                        variant: LightLevelVariant.PhotoResistor,
+                    }),
+                ],
+            },
+            {
+                name: "line tracker (digital)",
+                serviceClasses: [SRV_REFLECTED_LIGHT],
+                services: () => [new ReflectedLightServer()],
+            },
+            {
+                name: "line tracker (2x digital)",
+                serviceClasses: [SRV_REFLECTED_LIGHT],
+                services: () => [
+                    new ReflectedLightServer(),
+                    new ReflectedLightServer(),
+                ],
+            },
+            {
+                name: "line tracker (analog)",
+                serviceClasses: [SRV_REFLECTED_LIGHT],
+                services: () => [
+                    new ReflectedLightServer({
+                        variant: ReflectedLightVariant.InfraredAnalog,
+                    }),
+                ],
+            },
+            {
+                name: "matrix keypad (3x4)",
+                serviceClasses: [SRV_MATRIX_KEYPAD],
+                services: () => [
+                    new MatrixKeypadServer(3, 4, [
+                        "0",
+                        "1",
+                        "2",
+                        "3",
+                        "4",
+                        "5",
+                        "6",
+                        "7",
+                        "8",
+                        "*",
+                        "0",
+                        "#",
+                    ]),
+                ],
+            },
+            {
+                name: "matrix keypad (4x4)",
+                serviceClasses: [SRV_MATRIX_KEYPAD],
+                services: () => [
+                    new MatrixKeypadServer(4, 4, [
+                        "0",
+                        "1",
+                        "2",
+                        "A",
+                        "3",
+                        "4",
+                        "5",
+                        "B",
+                        "6",
+                        "7",
+                        "8",
+                        "C",
+                        "*",
+                        "0",
+                        "#",
+                        "D",
+                    ]),
+                ],
+            },
+            {
+                name: "matrix keypad (1x4)",
+                serviceClasses: [SRV_MATRIX_KEYPAD],
+                services: () => [
+                    new MatrixKeypadServer(4, 1, ["1", "2", "3", "4"]),
+                ],
+            },
+            {
+                name: "motion",
+                serviceClasses: [SRV_MOTION],
+                services: () => [
+                    new SensorServer(SRV_MOTION, {
+                        readingValues: [false],
+                        streamingInterval: 1000,
+                    }),
+                ],
+            },
+            {
+                name: "motor",
+                serviceClasses: [SRV_MOTOR],
+                services: () => [new MotorServer()],
+                resetIn: true,
+            },
+            {
+                name: "protocol test",
+                serviceClasses: [SRV_PROTO_TEST],
+                services: () => [new ProtocolTestServer()],
+            },
+            {
+                name: "pulse oxymeter",
+                serviceClasses: [SRV_PULSE_OXIMETER],
+                services: () => [
+                    new SensorServer<[number]>(SRV_PULSE_OXIMETER, {
+                        readingValues: [98],
+                        streamingInterval: 1000,
+                    }),
+                ],
+            },
+            {
+                name: "oxymeter + heart beat",
+                serviceClasses: [SRV_PULSE_OXIMETER, SRV_HEART_RATE],
+                services: () => [
+                    new SensorServer<[number]>(SRV_PULSE_OXIMETER, {
+                        readingValues: [98],
+                        streamingInterval: 1000,
+                    }),
+                    new AnalogSensorServer(SRV_HEART_RATE, {
+                        readingValues: [80],
+                        streamingInterval: 1000,
+                        variant: HeartRateVariant.Finger,
+                    }),
+                ],
+            },
+            {
+                name: "power",
+                serviceClasses: [SRV_POWER],
+                services: () => [new PowerServer()],
+            },
+            {
+                name: "RNG (random number generator)",
+                serviceClasses: [SRV_RNG],
+                services: () => [new RandomNumberGeneratorServer()],
+            },
+            {
+                name: "rain gauge",
+                serviceClasses: [SRV_RAIN_GAUGE],
+                services: () => [new RainGaugeServer()],
+            },
+            {
+                name: "real time clock",
+                serviceClasses: [SRV_REAL_TIME_CLOCK],
+                services: () => [new RealTimeClockServer()],
+            },
+            {
+                name: "relay (EM/10A)",
+                serviceClasses: [SRV_RELAY],
+                services: () => [
+                    new JDServiceServer(SRV_RELAY, {
+                        intensityValues: [false],
+                        isActive: values => !!values?.[0],
+                        variant: RelayVariant.Electromechanical,
+                        registerValues: [
+                            {
+                                code: RelayReg.MaxSwitchingCurrent,
+                                values: [10],
+                            },
+                        ],
+                    }),
+                ],
+            },
+            {
+                name: "relay 4x (SSR/5A)",
+                serviceClasses: [SRV_RELAY],
+                services: () =>
+                    Array(4)
+                        .fill(0)
+                        .map(
+                            () =>
+                                new JDServiceServer(SRV_RELAY, {
+                                    intensityValues: [false],
+                                    isActive: values => !!values?.[0],
+                                    variant: RelayVariant.SolidState,
+                                    registerValues: [
+                                        {
+                                            code: RelayReg.MaxSwitchingCurrent,
+                                            values: [5],
+                                        },
+                                    ],
+                                })
+                        ),
+            },
+            {
+                name: "rotary encoder",
+                serviceClasses: [SRV_ROTARY_ENCODER],
+                services: () => [new RotaryEncoderServer()],
+            },
+            {
+                name: "rotary encoder + button",
+                serviceClasses: [SRV_ROTARY_ENCODER, SRV_BUTTON],
+                services: () => [new RotaryEncoderServer(), new ButtonServer()],
+            },
+            {
+                name: "rotary potentiometer",
+                serviceClasses: [SRV_POTENTIOMETER],
+                services: () => [
+                    new AnalogSensorServer(SRV_POTENTIOMETER, {
+                        variant: PotentiometerVariant.Rotary,
+                        readingValues: [0.5],
+                    }),
+                ],
+            },
+            {
+                name: "servo",
+                serviceClasses: [SRV_SERVO],
+                services: () => [new ServoServer(microServoOptions)],
+                resetIn: true,
+            },
+            {
+                name: "servo (270°)",
+                serviceClasses: [SRV_SERVO],
+                services: () => [new ServoServer(microServo270Options)],
+                resetIn: true,
+            },
+            {
+                name: "servo (360°)",
+                serviceClasses: [SRV_SERVO],
+                services: () => [new ServoServer(microServo360Options)],
+                resetIn: true,
+            },
+            {
+                name: "servo x 2",
+                serviceClasses: [SRV_SERVO],
+                resetIn: true,
+                services: () =>
+                    Array(2)
+                        .fill(0)
+                        .map(
+                            (_, i) =>
+                                new ServoServer({
+                                    ...microServoOptions,
+                                    instanceName: `S${i}`,
+                                })
+                        ),
+            },
+            {
+                name: "servo x 4",
+                serviceClasses: [SRV_SERVO],
+                resetIn: true,
+                services: () =>
+                    Array(4)
+                        .fill(0)
+                        .map(
+                            (_, i) =>
+                                new ServoServer({
+                                    ...microServoOptions,
+                                    instanceName: `S${i}`,
+                                })
+                        ),
+            },
+            {
+                name: "servo x 6",
+                serviceClasses: [SRV_SERVO],
+                resetIn: true,
+                services: () =>
+                    Array(6)
+                        .fill(0)
+                        .map(
+                            (_, i) =>
+                                new ServoServer({
+                                    ...microServoOptions,
+                                    instanceName: `S${i}`,
+                                })
+                        ),
+            },
+            {
+                name: "servo x 16",
+                serviceClasses: [SRV_SERVO],
+                resetIn: true,
+                services: () =>
+                    Array(16)
+                        .fill(0)
+                        .map(
+                            (_, i) =>
+                                new ServoServer({
+                                    ...microServoOptions,
+                                    instanceName: `S${i}`,
+                                })
+                        ),
+            },
+            {
+                name: "settings",
+                serviceClasses: [SRV_SETTINGS],
+                services: () => [new SettingsServer()],
+            },
+            {
+                name: "slider (potentiometer)",
+                serviceClasses: [SRV_POTENTIOMETER],
+                services: () => [
+                    new AnalogSensorServer(SRV_POTENTIOMETER, {
+                        variant: PotentiometerVariant.Slider,
+                    }),
+                ],
+            },
+            {
+                name: "soil moisture",
+                serviceClasses: [SRV_SOIL_MOISTURE],
+                services: () => [
+                    new AnalogSensorServer(SRV_SOIL_MOISTURE, {
+                        readingValues: [0.5],
+                        readingError: [0.05],
+                        streamingInterval: 1000,
+                    }),
+                ],
+            },
+            {
+                name: "speech synthesis",
+                serviceClasses: [SRV_SPEECH_SYNTHESIS],
+                services: () => [new SpeechSynthesisServer()],
+            },
+            {
+                name: "solenoid",
+                serviceClasses: [SRV_SOLENOID],
+                services: () => [
+                    new JDServiceServer(SRV_SOLENOID, {
+                        intensityValues: [0],
+                    }),
+                ],
+            },
+            {
+                name: "sound level",
+                serviceClasses: [SRV_SOUND_LEVEL],
+                services: () => [
+                    new AnalogSensorServer(SRV_SOUND_LEVEL, soundLevel),
+                ],
+            },
+            {
+                name: "sound spectrum",
+                serviceClasses: [SRV_SOUND_SPECTRUM],
+                services: () => [
+                    new SensorServer<[Uint8Array]>(
+                        SRV_SOUND_SPECTRUM,
+                        soundSpectrum
+                    ),
+                ],
+            },
+            {
+                name: "sound player (micro:bit v2 sounds)",
+                serviceClasses: [SRV_SOUND_PLAYER],
+                services: () => [new SoundPlayerServer(microbitSounds)],
+            },
+            {
+                name: "switch (slide)",
+                serviceClasses: [SRV_SWITCH],
+                services: () => [
+                    new SwitchServer({ variant: SwitchVariant.Slide }),
+                ],
+            },
+            {
+                name: "switch (push button)",
+                serviceClasses: [SRV_SWITCH],
+                services: () => [
+                    new SwitchServer({ variant: SwitchVariant.PushButton }),
+                ],
+            },
+            {
+                name: "switch (toggle)",
+                serviceClasses: [SRV_SWITCH],
+                services: () => [
+                    new SwitchServer({ variant: SwitchVariant.Toggle }),
+                ],
+            },
+            {
+                name: "switch (tilt)",
+                serviceClasses: [SRV_SWITCH],
+                services: () => [
+                    new SwitchServer({ variant: SwitchVariant.Tilt }),
+                ],
+            },
+            {
+                name: "switch (proximity)",
+                serviceClasses: [SRV_SWITCH],
+                services: () => [
+                    new SwitchServer({
+                        variant: SwitchVariant.Proximity,
+                        autoOffDelay: 30,
+                    }),
+                ],
+            },
+            {
+                name: "thermometer (outdoor)",
+                serviceClasses: [SRV_THERMOMETER],
+                services: () => [
+                    new AnalogSensorServer(
+                        SRV_THERMOMETER,
+                        outdoorThermometerOptions
+                    ),
+                ],
+            },
+            {
+                name: "thermometer (soil)",
+                serviceClasses: [SRV_THERMOMETER],
+                services: () => [
+                    new AnalogSensorServer(
+                        SRV_THERMOMETER,
+                        soilThermometerOptions
+                    ),
+                ],
+            },
+            {
+                name: "thermometer (medical)",
+                serviceClasses: [SRV_THERMOMETER],
+                services: () => [
+                    new AnalogSensorServer(
+                        SRV_THERMOMETER,
+                        medicalThermometerOptions
+                    ),
+                ],
+            },
+            {
+                name: "traffic light",
+                serviceClasses: [SRV_TRAFFIC_LIGHT],
+                services: () => [new TrafficLightServer()],
+            },
+            {
+                name: "traffic crossing (4 x lights)",
+                serviceClasses: [SRV_TRAFFIC_LIGHT],
+                services: () =>
+                    Array(4)
+                        .fill(0)
+                        .map(_ => new TrafficLightServer()),
+            },
+            {
+                name: "thermocouple",
+                serviceClasses: [SRV_THERMOCOUPLE],
+                services: () => [
+                    new AnalogSensorServer(SRV_THERMOCOUPLE, {
+                        readingValues: [550],
+                        streamingInterval: 1000,
+                        minReading: 0,
+                        maxReading: 1100,
+                        readingError: [2.2],
+                        variant: ThermocoupleVariant.TypeB,
+                    }),
+                ],
+            },
+            {
+                name: "TVOC",
+                serviceClasses: [SRV_TVOC],
+                services: () => [new AnalogSensorServer(SRV_TVOC, tvocOptions)],
+            },
+            {
+                name: "UV index",
+                serviceClasses: [SRV_UV_INDEX],
+                services: () => [
+                    new AnalogSensorServer(SRV_UV_INDEX, {
+                        readingValues: [5],
+                        minReading: 0,
+                        maxReading: 11,
+                        streamingInterval: 1000,
+                    }),
+                ],
+            },
+            {
+                name: "vibration motor",
+                serviceClasses: [SRV_VIBRATION_MOTOR],
+                services: () => [new VibrationMotor()],
+            },
+            {
+                name: "water level",
+                serviceClasses: [SRV_WATER_LEVEL],
+                services: () => [
+                    new AnalogSensorServer(SRV_WATER_LEVEL, {
+                        readingValues: [0.5],
+                        streamingInterval: 1000,
+                    }),
+                ],
+            },
+            {
+                name: "weight scale (jewelry)",
+                serviceClasses: [SRV_WEIGHT_SCALE],
+                services: () => [
+                    new AnalogSensorServer(SRV_WEIGHT_SCALE, {
+                        readingValues: [0.001],
+                        variant: WeightScaleVariant.Jewelry,
+                        maxReading: 0.2,
+                        minReading: 0.0005,
+                        readingResolution: 0.00001,
+                    }),
+                ],
+            },
+            {
+                name: "weight scale (body)",
+                serviceClasses: [SRV_WEIGHT_SCALE],
+                services: () => [
+                    new AnalogSensorServer(SRV_WEIGHT_SCALE, {
+                        readingValues: [60],
+                        variant: WeightScaleVariant.Body,
+                        maxReading: 180,
+                        readingResolution: 0.1,
+                    }),
+                ],
+            },
+            {
+                name: "weight scale (food)",
+                serviceClasses: [SRV_WEIGHT_SCALE],
+                services: () => [
+                    new AnalogSensorServer(SRV_WEIGHT_SCALE, {
+                        readingValues: [0.5],
+                        variant: WeightScaleVariant.Food,
+                        maxReading: 6,
+                        readingResolution: 0.001,
+                    }),
+                ],
+            },
+            {
+                name: "wind direction",
+                serviceClasses: [SRV_WIND_DIRECTION],
+                services: () => [
+                    new AnalogSensorServer(
+                        SRV_WIND_DIRECTION,
+                        windDirectionOptions
+                    ),
+                ],
+            },
+            {
+                name: "wind speed",
+                serviceClasses: [SRV_WIND_SPEED],
+                services: () => [
+                    new AnalogSensorServer(SRV_WIND_SPEED, windSpeedOptions),
+                ],
+            },
+            {
+                name: "weather station (wind speed, direction, rain)",
+                serviceClasses: [
+                    SRV_WIND_SPEED,
+                    SRV_WIND_DIRECTION,
+                    SRV_RAIN_GAUGE,
+                ],
+                services: () => [
+                    new AnalogSensorServer(SRV_WIND_SPEED, windSpeedOptions),
+                    new AnalogSensorServer(
+                        SRV_WIND_DIRECTION,
+                        windDirectionOptions
+                    ),
+                    new RainGaugeServer(),
+                ],
+            },
+            {
+                name: "chassis (motor x 2 + sonar + light)",
+                serviceClasses: [SRV_DISTANCE, SRV_LED_PIXEL, SRV_MOTOR],
+                services: () => [
+                    new MotorServer("L"),
+                    new MotorServer("R"),
+                    new AnalogSensorServer(SRV_DISTANCE, sonarOptions),
+                    new LedPixelServer({
+                        numPixels: 5,
+                        variant: LedPixelVariant.Stick,
+                        instanceName: "lights",
+                    }),
+                ],
+            },
+            {
+                name: "railway crossing (2 x lights, 2 x servos, 1 x buffer)",
+                serviceClasses: [SRV_TRAFFIC_LIGHT, SRV_SERVO, SRV_BUZZER],
+                services: () => [
+                    new TrafficLightServer({ instanceName: "left light" }),
+                    new ServoServer({
+                        minAngle: 0,
+                        maxAngle: 90,
+                        instanceName: "left arm",
+                    }),
+                    new TrafficLightServer({ instanceName: "right light" }),
+                    new ServoServer({
+                        minAngle: 0,
+                        maxAngle: 90,
+                        instanceName: "right arm",
+                    }),
+                    new BuzzerServer({ instanceName: "bell" }),
+                ],
+            },
+            {
+                name: "Arcade controller (6 x buttons)",
+                serviceClasses: [SRV_BUTTON],
+                services: () => [
+                    new ButtonServer("Left"),
+                    new ButtonServer("Up"),
+                    new ButtonServer("Right"),
+                    new ButtonServer("Down"),
+                    new ButtonServer("A"),
+                    new ButtonServer("B"),
+                ],
+            },
+            {
+                name: "micro:bit v2",
+                serviceClasses: [
+                    SRV_DOT_MATRIX,
+                    SRV_BUTTON,
+                    SRV_ACCELEROMETER,
+                    SRV_SOUND_LEVEL,
+                    SRV_LIGHT_LEVEL,
+                    SRV_BUZZER,
+                    SRV_SOUND_PLAYER,
+                ],
+                services: () => [
+                    new DotMatrixServer(5, 5),
+                    new ButtonServer("A"),
+                    new ButtonServer("B"),
+                    new SensorServer<[number, number, number]>(
+                        SRV_ACCELEROMETER,
+                        {
+                            readingValues: [
+                                0.5,
+                                0.5,
+                                -(1 - (0.5 * 0.5 + 0.5 * 0.5)),
                             ],
-                        })
-                ),
-    },
-    {
-        name: "rotary encoder",
-        serviceClasses: [SRV_ROTARY_ENCODER],
-        services: () => [new RotaryEncoderServer()],
-    },
-    {
-        name: "rotary encoder + button",
-        serviceClasses: [SRV_ROTARY_ENCODER, SRV_BUTTON],
-        services: () => [new RotaryEncoderServer(), new ButtonServer()],
-    },
-    {
-        name: "rotary potentiometer",
-        serviceClasses: [SRV_POTENTIOMETER],
-        services: () => [
-            new AnalogSensorServer(SRV_POTENTIOMETER, {
-                variant: PotentiometerVariant.Rotary,
-                readingValues: [0.5],
-            }),
-        ],
-    },
-    {
-        name: "servo",
-        serviceClasses: [SRV_SERVO],
-        services: () => [new ServoServer(microServoOptions)],
-        resetIn: true,
-    },
-    {
-        name: "servo (270°)",
-        serviceClasses: [SRV_SERVO],
-        services: () => [new ServoServer(microServo270Options)],
-        resetIn: true,
-    },
-    {
-        name: "servo (360°)",
-        serviceClasses: [SRV_SERVO],
-        services: () => [new ServoServer(microServo360Options)],
-        resetIn: true,
-    },
-    {
-        name: "servo x 2",
-        serviceClasses: [SRV_SERVO],
-        resetIn: true,
-        services: () =>
-            Array(2)
-                .fill(0)
-                .map(
-                    (_, i) =>
-                        new ServoServer({
-                            ...microServoOptions,
-                            instanceName: `S${i}`,
-                        })
-                ),
-    },
-    {
-        name: "servo x 4",
-        serviceClasses: [SRV_SERVO],
-        resetIn: true,
-        services: () =>
-            Array(4)
-                .fill(0)
-                .map(
-                    (_, i) =>
-                        new ServoServer({
-                            ...microServoOptions,
-                            instanceName: `S${i}`,
-                        })
-                ),
-    },
-    {
-        name: "servo x 6",
-        serviceClasses: [SRV_SERVO],
-        resetIn: true,
-        services: () =>
-            Array(6)
-                .fill(0)
-                .map(
-                    (_, i) =>
-                        new ServoServer({
-                            ...microServoOptions,
-                            instanceName: `S${i}`,
-                        })
-                ),
-    },
-    {
-        name: "servo x 16",
-        serviceClasses: [SRV_SERVO],
-        resetIn: true,
-        services: () =>
-            Array(16)
-                .fill(0)
-                .map(
-                    (_, i) =>
-                        new ServoServer({
-                            ...microServoOptions,
-                            instanceName: `S${i}`,
-                        })
-                ),
-    },
-    {
-        name: "settings",
-        serviceClasses: [SRV_SETTINGS],
-        services: () => [new SettingsServer()],
-    },
-    {
-        name: "slider (potentiometer)",
-        serviceClasses: [SRV_POTENTIOMETER],
-        services: () => [
-            new AnalogSensorServer(SRV_POTENTIOMETER, {
-                variant: PotentiometerVariant.Slider,
-            }),
-        ],
-    },
-    {
-        name: "soil moisture",
-        serviceClasses: [SRV_SOIL_MOISTURE],
-        services: () => [
-            new AnalogSensorServer(SRV_SOIL_MOISTURE, {
-                readingValues: [0.5],
-                readingError: [0.05],
-                streamingInterval: 1000,
-            }),
-        ],
-    },
-    {
-        name: "speech synthesis",
-        serviceClasses: [SRV_SPEECH_SYNTHESIS],
-        services: () => [new SpeechSynthesisServer()],
-    },
-    {
-        name: "solenoid",
-        serviceClasses: [SRV_SOLENOID],
-        services: () => [
-            new JDServiceServer(SRV_SOLENOID, {
-                intensityValues: [0],
-            }),
-        ],
-    },
-    {
-        name: "sound level",
-        serviceClasses: [SRV_SOUND_LEVEL],
-        services: () => [new AnalogSensorServer(SRV_SOUND_LEVEL, soundLevel)],
-    },
-    {
-        name: "sound spectrum",
-        serviceClasses: [SRV_SOUND_SPECTRUM],
-        services: () => [
-            new SensorServer<[Uint8Array]>(SRV_SOUND_SPECTRUM, soundSpectrum),
-        ],
-    },
-    {
-        name: "sound player (micro:bit v2 sounds)",
-        serviceClasses: [SRV_SOUND_PLAYER],
-        services: () => [new SoundPlayerServer(microbitSounds)],
-    },
-    {
-        name: "switch (slide)",
-        serviceClasses: [SRV_SWITCH],
-        services: () => [new SwitchServer({ variant: SwitchVariant.Slide })],
-    },
-    {
-        name: "switch (push button)",
-        serviceClasses: [SRV_SWITCH],
-        services: () => [
-            new SwitchServer({ variant: SwitchVariant.PushButton }),
-        ],
-    },
-    {
-        name: "switch (toggle)",
-        serviceClasses: [SRV_SWITCH],
-        services: () => [new SwitchServer({ variant: SwitchVariant.Toggle })],
-    },
-    {
-        name: "switch (tilt)",
-        serviceClasses: [SRV_SWITCH],
-        services: () => [new SwitchServer({ variant: SwitchVariant.Tilt })],
-    },
-    {
-        name: "switch (proximity)",
-        serviceClasses: [SRV_SWITCH],
-        services: () => [
-            new SwitchServer({
-                variant: SwitchVariant.Proximity,
-                autoOffDelay: 30,
-            }),
-        ],
-    },
-    {
-        name: "thermometer (outdoor)",
-        serviceClasses: [SRV_THERMOMETER],
-        services: () => [
-            new AnalogSensorServer(SRV_THERMOMETER, outdoorThermometerOptions),
-        ],
-    },
-    {
-        name: "thermometer (soil)",
-        serviceClasses: [SRV_THERMOMETER],
-        services: () => [
-            new AnalogSensorServer(SRV_THERMOMETER, soilThermometerOptions),
-        ],
-    },
-    {
-        name: "thermometer (medical)",
-        serviceClasses: [SRV_THERMOMETER],
-        services: () => [
-            new AnalogSensorServer(SRV_THERMOMETER, medicalThermometerOptions),
-        ],
-    },
-    {
-        name: "traffic light",
-        serviceClasses: [SRV_TRAFFIC_LIGHT],
-        services: () => [new TrafficLightServer()],
-    },
-    {
-        name: "traffic crossing (4 x lights)",
-        serviceClasses: [SRV_TRAFFIC_LIGHT],
-        services: () =>
-            Array(4)
-                .fill(0)
-                .map(_ => new TrafficLightServer()),
-    },
-    {
-        name: "thermocouple",
-        serviceClasses: [SRV_THERMOCOUPLE],
-        services: () => [
-            new AnalogSensorServer(SRV_THERMOCOUPLE, {
-                readingValues: [550],
-                streamingInterval: 1000,
-                minReading: 0,
-                maxReading: 1100,
-                readingError: [2.2],
-                variant: ThermocoupleVariant.TypeB,
-            }),
-        ],
-    },
-    {
-        name: "TVOC",
-        serviceClasses: [SRV_TVOC],
-        services: () => [new AnalogSensorServer(SRV_TVOC, tvocOptions)],
-    },
-    {
-        name: "UV index",
-        serviceClasses: [SRV_UV_INDEX],
-        services: () => [
-            new AnalogSensorServer(SRV_UV_INDEX, {
-                readingValues: [5],
-                minReading: 0,
-                maxReading: 11,
-                streamingInterval: 1000,
-            }),
-        ],
-    },
-    {
-        name: "vibration motor",
-        serviceClasses: [SRV_VIBRATION_MOTOR],
-        services: () => [new VibrationMotor()],
-    },
-    {
-        name: "water level",
-        serviceClasses: [SRV_WATER_LEVEL],
-        services: () => [
-            new AnalogSensorServer(SRV_WATER_LEVEL, {
-                readingValues: [0.5],
-                streamingInterval: 1000,
-            }),
-        ],
-    },
-    {
-        name: "weight scale (jewelry)",
-        serviceClasses: [SRV_WEIGHT_SCALE],
-        services: () => [
-            new AnalogSensorServer(SRV_WEIGHT_SCALE, {
-                readingValues: [0.001],
-                variant: WeightScaleVariant.Jewelry,
-                maxReading: 0.2,
-                minReading: 0.0005,
-                readingResolution: 0.00001,
-            }),
-        ],
-    },
-    {
-        name: "weight scale (body)",
-        serviceClasses: [SRV_WEIGHT_SCALE],
-        services: () => [
-            new AnalogSensorServer(SRV_WEIGHT_SCALE, {
-                readingValues: [60],
-                variant: WeightScaleVariant.Body,
-                maxReading: 180,
-                readingResolution: 0.1,
-            }),
-        ],
-    },
-    {
-        name: "weight scale (food)",
-        serviceClasses: [SRV_WEIGHT_SCALE],
-        services: () => [
-            new AnalogSensorServer(SRV_WEIGHT_SCALE, {
-                readingValues: [0.5],
-                variant: WeightScaleVariant.Food,
-                maxReading: 6,
-                readingResolution: 0.001,
-            }),
-        ],
-    },
-    {
-        name: "wind direction",
-        serviceClasses: [SRV_WIND_DIRECTION],
-        services: () => [
-            new AnalogSensorServer(SRV_WIND_DIRECTION, windDirectionOptions),
-        ],
-    },
-    {
-        name: "wind speed",
-        serviceClasses: [SRV_WIND_SPEED],
-        services: () => [
-            new AnalogSensorServer(SRV_WIND_SPEED, windSpeedOptions),
-        ],
-    },
-    {
-        name: "weather station (wind speed, direction, rain)",
-        serviceClasses: [SRV_WIND_SPEED, SRV_WIND_DIRECTION, SRV_RAIN_GAUGE],
-        services: () => [
-            new AnalogSensorServer(SRV_WIND_SPEED, windSpeedOptions),
-            new AnalogSensorServer(SRV_WIND_DIRECTION, windDirectionOptions),
-            new RainGaugeServer(),
-        ],
-    },
-    {
-        name: "chassis (motor x 2 + sonar + light)",
-        serviceClasses: [SRV_DISTANCE, SRV_LED_PIXEL, SRV_MOTOR],
-        services: () => [
-            new MotorServer("L"),
-            new MotorServer("R"),
-            new AnalogSensorServer(SRV_DISTANCE, sonarOptions),
-            new LedPixelServer({
-                numPixels: 5,
-                variant: LedPixelVariant.Stick,
-                instanceName: "lights",
-            }),
-        ],
-    },
-    {
-        name: "railway crossing (2 x lights, 2 x servos, 1 x buffer)",
-        serviceClasses: [SRV_TRAFFIC_LIGHT, SRV_SERVO, SRV_BUZZER],
-        services: () => [
-            new TrafficLightServer({ instanceName: "left light" }),
-            new ServoServer({
-                minAngle: 0,
-                maxAngle: 90,
-                instanceName: "left arm",
-            }),
-            new TrafficLightServer({ instanceName: "right light" }),
-            new ServoServer({
-                minAngle: 0,
-                maxAngle: 90,
-                instanceName: "right arm",
-            }),
-            new BuzzerServer({ instanceName: "bell" }),
-        ],
-    },
-    {
-        name: "Arcade controller (6 x buttons)",
-        serviceClasses: [SRV_BUTTON],
-        services: () => [
-            new ButtonServer("Left"),
-            new ButtonServer("Up"),
-            new ButtonServer("Right"),
-            new ButtonServer("Down"),
-            new ButtonServer("A"),
-            new ButtonServer("B"),
-        ],
-    },
-    {
-        name: "micro:bit v2",
-        serviceClasses: [
-            SRV_DOT_MATRIX,
-            SRV_BUTTON,
-            SRV_ACCELEROMETER,
-            SRV_SOUND_LEVEL,
-            SRV_LIGHT_LEVEL,
-            SRV_BUZZER,
-            SRV_SOUND_PLAYER,
-        ],
-        services: () => [
-            new DotMatrixServer(5, 5),
-            new ButtonServer("A"),
-            new ButtonServer("B"),
-            new SensorServer<[number, number, number]>(SRV_ACCELEROMETER, {
-                readingValues: [0.5, 0.5, -(1 - (0.5 * 0.5 + 0.5 * 0.5))],
-            }),
-            new AnalogSensorServer(SRV_SOUND_LEVEL, soundLevel),
-            new SensorServer(SRV_LIGHT_LEVEL, {
-                readingValues: [0.5],
-                variant: LightLevelVariant.LEDMatrix,
-            }),
-            new BuzzerServer(),
-            new SoundPlayerServer(microbitSounds),
-        ],
-    },
-    {
-        name: "power + humidity",
-        serviceClasses: [SRV_POWER, SRV_HUMIDITY],
-        services: () => [
-            new PowerServer(),
-            new AnalogSensorServer(SRV_HUMIDITY, outdoorHumidityOptions),
-        ],
-        factory: services => {
-            const dev = new JDServerServiceProvider("power+humidity", [
-                services[0],
-            ])
-            const pwr = dev.service(1) as PowerServer
-            pwr.enabled.on(CHANGE, () => {
-                const enabled = !!pwr.enabled.values()[0]
-                console.debug(`power: ${enabled ? "on" : "off"}`)
-                if (enabled)
-                    // power + rest
-                    dev.updateServices(services)
-                // power only
-                else dev.updateServices([services[0]])
-            })
-            return dev
-        },
-    },
-    {
-        name: "HID keyboard",
-        serviceClasses: [SRV_HID_KEYBOARD],
-        services: () => [new HIDKeyboardServer()],
-    },
-    {
-        name: "HID mouse",
-        serviceClasses: [SRV_HID_MOUSE],
-        services: () => [new HIDMouseServer()],
-    },
-    /*    
-    {
-        name: "Azure IoT Hub",
-        serviceClasses: [SRV_AZURE_IOT_HUB],
-        services: () => [new AzureIoTHubServer()],
-    },
-    */
-    {
-        name: "WiFi (virtual)",
-        serviceClasses: [SRV_WIFI],
-        services: () => [new WifiServer()],
-    },
-    {
-        name: "Azure IoT Hub Health (virtual)",
-        serviceClasses: [SRV_AZURE_IOT_HUB_HEALTH],
-        services: () => [new AzureIoTHubHealthServer()],
-    },
-]
+                        }
+                    ),
+                    new AnalogSensorServer(SRV_SOUND_LEVEL, soundLevel),
+                    new SensorServer(SRV_LIGHT_LEVEL, {
+                        readingValues: [0.5],
+                        variant: LightLevelVariant.LEDMatrix,
+                    }),
+                    new BuzzerServer(),
+                    new SoundPlayerServer(microbitSounds),
+                ],
+            },
+            <ServiceProviderDefinition>{
+                name: "power + humidity",
+                serviceClasses: [SRV_POWER, SRV_HUMIDITY],
+                services: () => [
+                    new PowerServer(),
+                    new AnalogSensorServer(
+                        SRV_HUMIDITY,
+                        outdoorHumidityOptions
+                    ),
+                ],
+                factory: services => {
+                    const dev = new JDServerServiceProvider("power+humidity", [
+                        services[0],
+                    ])
+                    const pwr = dev.service(1) as PowerServer
+                    pwr.enabled.on(CHANGE, () => {
+                        const enabled = !!pwr.enabled.values()[0]
+                        console.debug(`power: ${enabled ? "on" : "off"}`)
+                        if (enabled)
+                            // power + rest
+                            dev.updateServices(services)
+                        // power only
+                        else dev.updateServices([services[0]])
+                    })
+                    return dev
+                },
+            },
+            Flags.diagnostics
+                ? {
+                      name: "WiFi (virtual, no ap)",
+                      serviceClasses: [SRV_WIFI],
+                      services: () => [new WifiServer()],
+                  }
+                : undefined,
+            Flags.diagnostics
+                ? {
+                      name: "WiFi (virtual, 1 AP)",
+                      serviceClasses: [SRV_WIFI],
+                      services: () => [
+                          new WifiServer({
+                              scanResults: [
+                                  {
+                                      ssid: "HOME",
+                                      bssid: new Uint8Array(0),
+                                      rssi: -42,
+                                      channel: 10,
+                                      flags:
+                                          WifiAPFlags.WPS |
+                                          WifiAPFlags.IEEE_802_11B,
+                                  },
+                              ],
+                          }),
+                      ],
+                  }
+                : undefined,
+            Flags.diagnostics
+                ? {
+                      name: "WiFi (virtual, 1 network)",
+                      serviceClasses: [SRV_WIFI],
+                      services: () => [
+                          new WifiServer({
+                              scanResults: [
+                                  {
+                                      ssid: "HOME",
+                                      bssid: new Uint8Array(0),
+                                      rssi: -42,
+                                      channel: 10,
+                                      flags:
+                                          WifiAPFlags.WPS |
+                                          WifiAPFlags.IEEE_802_11B,
+                                  },
+                              ],
+                              knownNetworks: [
+                                  {
+                                      ssid: "HOME",
+                                      password: "home",
+                                      priority: 0,
+                                      flags:
+                                          WifiAPFlags.WPS |
+                                          WifiAPFlags.IEEE_802_11B,
+                                  },
+                              ],
+                          }),
+                      ],
+                  }
+                : undefined,
+            Flags.diagnostics
+                ? {
+                      name: "Azure IoT Hub Health (virtual)",
+                      serviceClasses: [SRV_AZURE_IOT_HUB_HEALTH],
+                      services: () => [new AzureIoTHubHealthServer()],
+                  }
+                : undefined,
+        ].filter(s => !!s))
+}
 
 /**
  * Gets the list of simulated service providers
  * @category Servers
  */
 export default function serviceProviderDefinitions() {
-    return _providerDefinitions.slice(0)
+    return initProviders().slice(0)
 }
 
 function stableSimulatorDeviceId(bus: JDBus, template: string): string {
@@ -1602,7 +1728,7 @@ export function addServiceProvider(
 export function serviceProviderDefinitionFromServiceClass(
     serviceClass: number
 ) {
-    return _providerDefinitions.find(
+    return initProviders().find(
         provider =>
             provider.serviceClasses.length === 1 &&
             provider.serviceClasses[0] === serviceClass

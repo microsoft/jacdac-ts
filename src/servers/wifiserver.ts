@@ -12,14 +12,20 @@ import { OutPipe } from "../jdom/pipes"
 import { randomBytes } from "../jdom/random"
 import JDRegisterServer from "../jdom/servers/registerserver"
 import JDServiceServer from "../jdom/servers/serviceserver"
-import { toHex } from "../jdom/utils"
 
-interface ScanResult {
+export interface ScanResult {
     flags: WifiAPFlags
     rssi: number
     channel: number
     bssid: Uint8Array
     ssid: string
+}
+
+export interface Network {
+    ssid: string
+    flags: WifiAPFlags
+    priority: number
+    password: string
 }
 
 export class WifiServer extends JDServiceServer {
@@ -28,31 +34,17 @@ export class WifiServer extends JDServiceServer {
     readonly ipAddress: JDRegisterServer<[Uint8Array]>
     readonly eui48: JDRegisterServer<[Uint8Array]>
 
-    private _lastScanResults: ScanResult[] = [
-        {
-            ssid: "HOME",
-            bssid: new Uint8Array(0),
-            rssi: -42,
-            channel: 10,
-            flags: WifiAPFlags.WPS | WifiAPFlags.IEEE_802_11B,
-        },
-    ]
-    private _knownNetworks: {
-        ssid: string
-        flags: WifiAPFlags
-        priority: number
-        password: string
-    }[] = [
-        {
-            ssid: "HOME",
-            password: "home",
-            priority: 0,
-            flags: WifiAPFlags.WPS | WifiAPFlags.IEEE_802_11B,
-        },
-    ]
+    private _lastScanResults: ScanResult[]
+    private _knownNetworks: Network[]
 
-    constructor() {
+    constructor(options?: {
+        scanResults?: ScanResult[]
+        knownNetworks?: Network[]
+    }) {
         super(SRV_WIFI, { intensityValues: [true] })
+
+        this._lastScanResults = options?.scanResults || []
+        this._knownNetworks = options?.knownNetworks || []
 
         this.enabled = this.addRegister(WifiReg.Enabled, [true])
         this.ssid = this.addRegister(WifiReg.Ssid, [""])
@@ -60,7 +52,7 @@ export class WifiServer extends JDServiceServer {
             new Uint8Array(0),
         ])
         this.eui48 = this.addRegister<[Uint8Array]>(WifiReg.Eui48, [
-            randomBytes(6),
+            new Uint8Array(0),
         ])
 
         this.addCommand(WifiCmd.Scan, this.handleScan.bind(this))
@@ -99,7 +91,6 @@ export class WifiServer extends JDServiceServer {
 
     private handleIpChange() {
         const [ip] = this.ipAddress.values()
-        console.debug(`wifi: ip ${toHex(ip)}`)
         if (ip?.length) this.sendEvent(WifiEvent.GotIp)
         else this.sendEvent(WifiEvent.LostIp)
     }
@@ -111,12 +102,6 @@ export class WifiServer extends JDServiceServer {
     }
 
     private handleReconnect() {
-        console.debug(`wifi: reconnect`, {
-            scan: this._lastScanResults,
-            known: this._knownNetworks,
-            networks: this.scannedKnownNetworks,
-            enabled: this.enabled.values()[0],
-        })
         this.disconnect()
         if (this.scannedKnownNetworks.length) {
             console.debug(`wifi: reconnect, connect`)
@@ -125,43 +110,20 @@ export class WifiServer extends JDServiceServer {
     }
 
     private connect() {
-        console.debug(`wifi: connect`, {
-            scan: this._lastScanResults,
-            known: this._knownNetworks,
-            networks: this.scannedKnownNetworks,
-        })
         const network = this.scannedKnownNetworks[0]
         const { ssid } = network || {}
         this.ssid.setValues([ssid || ""])
         this.enabled.setValues([!!ssid])
-        this.ipAddress.setValues([randomBytes(4)])
+        this.ipAddress.setValues([ssid ? randomBytes(4) : new Uint8Array(0)])
     }
 
     private disconnect() {
-        console.debug(`wifi: disconnect`)
         this.ssid.setValues([""])
         this.enabled.setValues([false])
         this.ipAddress.setValues([new Uint8Array(0)])
     }
 
     private scan() {
-        this._lastScanResults = [
-            {
-                ssid: "HOME",
-                bssid: new Uint8Array(0),
-                rssi: -42,
-                channel: 10,
-                flags: WifiAPFlags.WPS | WifiAPFlags.IEEE_802_11B,
-            },
-            Math.random() > 0.5 && {
-                ssid: "OFFICE",
-                bssid: new Uint8Array(0),
-                rssi: -70,
-                channel: 11,
-                flags: WifiAPFlags.IEEE_802_11N,
-            },
-        ].filter(res => !!res)
-
         this.sendEvent(
             WifiEvent.ScanComplete,
             jdpack<[number, number]>("u16 u16", [
@@ -177,7 +139,6 @@ export class WifiServer extends JDServiceServer {
 
     private async handleLastScanResults(pkt: Packet) {
         const pipe = OutPipe.from(this.device.bus, pkt, true)
-        console.debug(`list scan results`, this._lastScanResults)
         await pipe.respondForEach(
             this._lastScanResults,
             ({ flags, rssi, channel, bssid, ssid }) =>
@@ -190,7 +151,6 @@ export class WifiServer extends JDServiceServer {
 
     private async handleListKnownNetworks(pkt: Packet) {
         const pipe = OutPipe.from(this.device.bus, pkt, true)
-        console.debug(`list knowns`, this._knownNetworks)
         await pipe.respondForEach(
             this._knownNetworks,
             ({ priority, flags, ssid }) =>
@@ -203,7 +163,6 @@ export class WifiServer extends JDServiceServer {
     }
 
     private handleAddNetwork(pkt: Packet) {
-        console.debug(`wifi: add network`)
         const [ssid, password] = pkt.jdunpack<[string, string]>("z z")
         let network = this._knownNetworks.find(n => n.ssid === ssid)
         if (!network) {
