@@ -16,7 +16,7 @@ import {
     SRV_INFRASTRUCTURE,
     SRV_PROTO_TEST,
     SRV_PROXY,
-    SRV_UNIQUE_BRAIN,
+    SRV_UNIQUE_BRAIN
 } from "./constants"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

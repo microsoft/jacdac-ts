@@ -1,6 +1,7 @@
 import JDNode from "./node"
 import JDService from "./service"
 import { DecodedPacket } from "./pretty"
+import { CHANGE } from "./constants"
 
 /**
  * Base class for JDOM service member classes.
@@ -8,6 +9,7 @@ import { DecodedPacket } from "./pretty"
  */
 export abstract class JDServiceMemberNode extends JDNode {
     private _specification: jdspec.PacketInfo
+    private _notImplemented = false
 
     /**
      * Parent service
@@ -92,6 +94,25 @@ export abstract class JDServiceMemberNode extends JDNode {
     get friendlyName() {
         const parts = [this.service.friendlyName, this.name]
         return parts.join(".")
+    }
+
+    /**
+     * Indicates if the member is not implemented on the server side
+     * @category JDOM
+     */
+    get notImplemented() {
+        return this._notImplemented
+    }
+
+    /**
+     * Internal
+     * @internal
+     */
+    setNotImplemented() {
+        if (!this._notImplemented) {
+            this._notImplemented = true
+            this.emit(CHANGE)
+        }
     }
 
     /**

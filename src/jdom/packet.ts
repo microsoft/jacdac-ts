@@ -219,10 +219,6 @@ export class Packet {
         return this.serviceIndex === JD_SERVICE_INDEX_CRC_ACK
     }
 
-    get isNack() {
-        return !!(this._header[13] & JD_SERVICE_INDEX_NACK)
-    }
-
     get isPipe() {
         return this.serviceIndex === JD_SERVICE_INDEX_PIPE
     }

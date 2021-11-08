@@ -38,7 +38,6 @@ export const JD_SERVICE_INDEX_CRC_ACK = 0x3f
 export const JD_SERVICE_INDEX_PIPE = 0x3e
 export const JD_SERVICE_INDEX_MAX_NORMAL = 0x30
 export const JD_SERVICE_INDEX_CTRL = 0x00
-export const JD_SERVICE_INDEX_NACK = 0x40
 
 // the COMMAND flag signifies that the device_identifier is the recipent
 // (i.e., it's a command for the peripheral); the bit clear means device_identifier is the source

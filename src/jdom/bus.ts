@@ -1248,7 +1248,7 @@ ${dev
                         service
                             .registers()
                             // reported as not implemented
-                            .filter(reg => !reg.nack)
+                            .filter(reg => !reg.notImplemented)
                             // someone is listening for reports
                             .filter(
                                 reg =>
