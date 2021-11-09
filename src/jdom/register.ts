@@ -15,7 +15,7 @@ import JDService from "./service"
 import { intOfBuffer, uintOfBuffer } from "./buffer"
 import { bufferEq, toHex, fromUTF8, uint8ArrayToString } from "./utils"
 import { DecodedPacket } from "./pretty"
-import { isRegister } from "./spec"
+import { isConstRegisterCode, isRegister } from "./spec"
 import JDField from "./field"
 import JDServiceMemberNode from "./servicemembernode"
 import JDNode from "./node"
@@ -128,7 +128,7 @@ export class JDRegister extends JDServiceMemberNode {
      */
     sendGetAsync(): Promise<void> {
         if (this.notImplemented) return Promise.resolve()
-        if (this.specification?.kind === "const" && this.data !== undefined)
+        if (isConstRegisterCode(this.code) && !!this.data)
             return Promise.resolve()
 
         this._lastGetTimestamp = this.service.device.bus.timestamp
@@ -296,10 +296,7 @@ export class JDRegister extends JDServiceMemberNode {
         if (this.notImplemented) return
         // don't refetch consts
         // don't refetch if already data
-        if (
-            !!this.data &&
-            (skipIfValue || this.specification?.kind === "const")
-        )
+        if (!!this.data && (skipIfValue || isConstRegisterCode(this.code)))
             return
 
         const bus = this.service.device.bus

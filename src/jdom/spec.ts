@@ -16,7 +16,7 @@ import {
     SRV_INFRASTRUCTURE,
     SRV_PROTO_TEST,
     SRV_PROXY,
-    SRV_UNIQUE_BRAIN
+    SRV_UNIQUE_BRAIN,
 } from "./constants"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -317,6 +317,14 @@ export function isValueOrIntensity(pkt: jdspec.PacketInfo) {
  */
 export function isConstRegister(pkt: jdspec.PacketInfo) {
     return pkt?.kind == "const"
+}
+
+/**
+ * Indicates if the register code represents an ``const`` register
+ * @category Specification
+ */
+ export function isConstRegisterCode(code: number) {
+    return (0x180 <= code && code <= 0x1ff) || (0x100 <= code && code <= 0x17f)
 }
 
 /**
