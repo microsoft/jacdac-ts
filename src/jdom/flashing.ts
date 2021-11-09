@@ -23,6 +23,7 @@ import {
 import { jdpack, jdunpack } from "./pack"
 import { BootloaderError } from "./constants"
 import { prettySize } from "./pretty"
+import Flags from "./flags"
 
 const BL_SUBPAGE_SIZE = 208
 const BL_RETRIES = 15
@@ -69,7 +70,7 @@ function timestamp() {
 }
 
 function log(msg: string) {
-    console.debug(`BL [${timestamp()}ms]: ${msg}`)
+    if (Flags.diagnostics) console.debug(`BL [${timestamp()}ms]: ${msg}`)
 }
 
 class FlashClient {
