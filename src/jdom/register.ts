@@ -332,6 +332,13 @@ export class JDRegister extends JDServiceMemberNode {
      * @internal
      */
     processPacket(pkt: Packet) {
+        // sanity check
+        console.assert(
+            !this.notImplemented,
+            `register not implemented received packet`,
+            { pkt }
+        )
+
         if (pkt.isRegisterGet) this.processReport(pkt)
         else if (pkt.isRegisterSet) {
             // another device sent a set packet to this register
@@ -339,6 +346,15 @@ export class JDRegister extends JDServiceMemberNode {
             // clear any data caching to force updating the value
             this.clearGetTimestamp()
         }
+    }
+
+    setNotImplemented() {
+        console.assert(
+            !this._lastReportPkt,
+            `register reported changed not implemented`,
+            { register: this }
+        )
+        super.setNotImplemented()
     }
 
     private processReport(pkt: Packet) {
