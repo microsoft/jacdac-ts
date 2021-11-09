@@ -320,14 +320,6 @@ export function isConstRegister(pkt: jdspec.PacketInfo) {
 }
 
 /**
- * Indicates if the register code represents an ``const`` register
- * @category Specification
- */
-export function isConstRegisterCode(code: number) {
-    return (0x180 <= code && code <= 0x1ff) || (0x100 <= code && code <= 0x17f)
-}
-
-/**
  * Indicates if the packet info represents an ``event``
  * @category Specification
  */
