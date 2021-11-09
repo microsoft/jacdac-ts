@@ -4,6 +4,7 @@ import JDEventSource from "../eventsource"
 import Packet from "../packet"
 import { shortDeviceId } from "../pretty"
 import { randomDeviceId } from "../random"
+import JDServiceServer from "./serviceserver"
 
 /**
  * Implements a device with service servers.
@@ -51,6 +52,8 @@ export abstract class JDServiceProvider extends JDEventSource {
             this._bus = undefined
         }
     }
+
+    abstract service(serviceIndex: number): JDServiceServer
 
     protected handleSelfAnnounce(): void {}
     protected abstract handlePacket(pkt: Packet): void
