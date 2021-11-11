@@ -1255,6 +1255,8 @@ ${dev
                                     // automatic streaming
                                     (this._streaming &&
                                         reg.code === SystemReg.Reading) ||
+                                    // someone asked for the value
+                                    reg.needsRefresh ||
                                     // listening for updates
                                     reg.listenerCount(REPORT_RECEIVE) > 0 ||
                                     reg.listenerCount(REPORT_UPDATE) > 0

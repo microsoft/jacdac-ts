@@ -810,14 +810,12 @@ export class JDDevice extends JDNode {
      * @category Control
      */
     async resolveProductIdentifier(retry = 0): Promise<number> {
-        const fwIdRegister = this.service(0)?.register(
-            ControlReg.ProductIdentifier
-        )
-        if (!fwIdRegister) return undefined
+        const register = this.service(0)?.register(ControlReg.ProductIdentifier)
+        if (!register) return undefined
 
-        while (retry-- >= 0 && fwIdRegister.data === undefined)
-            await fwIdRegister.refresh(true)
-        return fwIdRegister.uintValue
+        while (retry-- >= 0 && register.data === undefined)
+            await register.refresh(true)
+        return register.uintValue
     }
 
     /**
@@ -827,7 +825,7 @@ export class JDDevice extends JDNode {
     get productIdentifier(): number {
         const reg = this.service(0)?.register(ControlReg.ProductIdentifier)
         const v = reg?.uintValue
-        if (reg && v === undefined) reg?.refresh(true)
+        if (reg && v === undefined) reg.scheduleRefresh()
         return v
     }
 
@@ -838,7 +836,7 @@ export class JDDevice extends JDNode {
     get uptime(): number {
         const reg = this.service(0)?.register(ControlReg.Uptime)
         const v = reg?.unpackedValue?.[0]
-        if (reg && v === undefined) reg?.refresh(true)
+        if (reg && v === undefined) reg.scheduleRefresh()
         let uptime: number = undefined
         if (v !== undefined) {
             // compute offset
@@ -854,7 +852,7 @@ export class JDDevice extends JDNode {
     get firmwareVersion(): string {
         const reg = this.service(0)?.register(ControlReg.FirmwareVersion)
         const v = reg?.stringValue
-        if (reg && v === undefined) reg?.refresh(true)
+        if (reg && v === undefined) reg.scheduleRefresh()
         return v
     }
 

@@ -47,7 +47,7 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
             this.service
                 .event(AzureIotHubHealthEvent.ConnectionStatusChange)
                 .on(EVENT, () => {
-                    this.connectionStatusRegister.refresh()
+                    this.connectionStatusRegister.scheduleRefresh()
                 })
         )
     }
@@ -64,7 +64,7 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
         const reg = this.connectionStatusRegister
         const status = reg
             .unpackedValue?.[0] as AzureIotHubHealthConnectionStatus
-        if (status === undefined) reg.refresh()
+        if (status === undefined) reg.scheduleRefresh()
         return status
     }
 

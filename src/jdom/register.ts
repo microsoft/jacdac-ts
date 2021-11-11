@@ -21,6 +21,7 @@ import JDServiceMemberNode from "./servicemembernode"
 import JDNode from "./node"
 import { jdpack, jdunpack, PackedValues } from "./pack"
 import { PackedObject, unpackedToObject } from "./packobject"
+import { this_str } from "jsep"
 
 /**
  * A Jacdac register client.
@@ -32,6 +33,7 @@ export class JDRegister extends JDServiceMemberNode {
     private _lastSetTimestamp = -Infinity
     private _lastGetTimestamp = -Infinity
     private _lastGetAttempts = 0
+    private _needsRefresh = false
 
     /**
      * @internal
@@ -286,6 +288,18 @@ export class JDRegister extends JDServiceMemberNode {
     }
 
     /**
+     * Schedules to query the value for this register
+     */
+    scheduleRefresh() {
+        if (this.notImplemented) return
+        this._needsRefresh = true
+    }
+
+    get needsRefresh() {
+        return this._needsRefresh
+    }
+
+    /**
      * Refresh the value of the register within a timeout
      * @param skipIfValue don't refesh if any data if available
      * @returns
@@ -355,10 +369,11 @@ export class JDRegister extends JDServiceMemberNode {
     }
 
     private processReport(pkt: Packet) {
-        const updated = !bufferEq(this.data, pkt.data)
+        const updated = !bufferEq(this.data, pkt.data) || this._needsRefresh
         this._lastReportPkt = pkt
         this._lastGetAttempts = 0 // reset counter
         this._lastGetTimestamp = this.service.device.bus.timestamp // reset time counter too
+        this._needsRefresh = false
         this.emit(REPORT_RECEIVE, this)
         if (updated) {
             this.emitPropagated(REPORT_UPDATE, this)
