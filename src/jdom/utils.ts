@@ -516,13 +516,17 @@ export function debounceAsync(
     }
 }
 
-export function JSONTryParse(src: string) {
-    if (src === undefined || src === null) return src
+export function JSONTryParse<T = unknown>(
+    src: string,
+    defaultValue?: T
+): T | undefined | null {
+    if (src === undefined) return undefined
+    if (src === null) return null
 
     try {
-        return JSON.parse(src)
+        return JSON.parse(src) as T
     } catch (e) {
-        return undefined
+        return defaultValue
     }
 }
 
