@@ -448,20 +448,22 @@ export class JDDevice extends JDNode {
             : undefined
     }
 
-    refreshFirmwareInfo() {
-        // listen for specific registers
+    private refreshFirmwareInfo() {
         const ctrl = this._services?.[0]
         const firmwareRegs = [
-            (ControlReg.ProductIdentifier,
+            ControlReg.ProductIdentifier,
             ControlReg.FirmwareVersion,
-            ControlReg.BootloaderProductIdentifier),
+            ControlReg.BootloaderProductIdentifier,
+            ControlReg.DeviceDescription,
         ]
-        firmwareRegs.forEach(reg =>
-            ctrl.register(reg).once(REPORT_UPDATE, () => {
-                this.emitPropagated(DEVICE_FIRMWARE_INFO)
-                this.emitPropagated(CHANGE)
-            })
-        )
+        firmwareRegs
+            .map(code => ctrl.register(code))
+            .forEach(reg =>
+                reg.once(REPORT_UPDATE, () => {
+                    this.emitPropagated(DEVICE_FIRMWARE_INFO)
+                    this.emitPropagated(CHANGE)
+                })
+            )
     }
 
     /**
@@ -609,6 +611,7 @@ export class JDDevice extends JDNode {
             this._services = s
             this.lastServiceUpdate = this.bus.timestamp
             this.refreshFirmwareInfo()
+            this.emitPropagated(CHANGE)
         }
     }
 
