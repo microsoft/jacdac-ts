@@ -917,6 +917,20 @@ ${dev
     }
 
     /**
+     * Removes all service providers from the bus
+     * @category Services
+     */
+    clearServiceProviders() {
+        this._serviceProviders.forEach(provider => {
+            this.removeDevice(provider.deviceId)
+            provider.bus = undefined
+            this.emit(SERVICE_PROVIDER_REMOVED, provider)
+        })
+        this._serviceProviders = []
+        this.emit(CHANGE)
+    }
+
+    /**
      * Remove a device client by identifier
      * @param deviceId
      * @category Devices
@@ -1016,6 +1030,7 @@ ${dev
 
     private gcDevices() {
         this.emit(DEVICE_CLEAN)
+        console.debug("clean devices", { devs: this._devices })
         if (this.devicesFrozen) {
             console.debug("devices frozen")
             return

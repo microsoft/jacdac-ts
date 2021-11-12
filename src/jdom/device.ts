@@ -245,6 +245,7 @@ export class JDDevice extends JDNode {
         this.connected = true
         this._lost = false
         this._identifying = false
+        this.lastSeen = bus.timestamp
 
         this._source = pkt?.sender
         this._replay = !!pkt?.replay
