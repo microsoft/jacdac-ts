@@ -1030,7 +1030,6 @@ ${dev
 
     private gcDevices() {
         this.emit(DEVICE_CLEAN)
-        console.debug("clean devices", { devs: this._devices })
         if (this.devicesFrozen) {
             console.debug("devices frozen")
             return
