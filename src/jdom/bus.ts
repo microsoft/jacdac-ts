@@ -148,6 +148,7 @@ export class JDBus extends JDNode {
     private _lastPingLoggerTime = 0
     private _lastResetInTime = 0
     private _restartCounter = 0
+    // null means disabled
     private _roleManagerClient: RoleManagerClient
     private _minLoggerPriority = LoggerPriority.Silent
     private _firmwareBlobs: FirmwareBlob[]
@@ -186,7 +187,7 @@ export class JDBus extends JDNode {
             disableRoleManager,
         } = options || {}
 
-        this._roleManagerClient = disableRoleManager === null ? null : undefined
+        this._roleManagerClient = disableRoleManager ? null : undefined
         this.selfDeviceId = deviceId || randomDeviceId()
         this.scheduler = scheduler || new WallClockScheduler()
         this.parentOrigin = parentOrigin || "*"
@@ -594,32 +595,30 @@ export class JDBus extends JDNode {
         return this._roleManagerClient
     }
 
-    /**
-     * Sets the default role manager service client
-     * @category Services
-     */
-    setRoleManagerService(service: JDService) {
+    private setRoleManagerService(service: JDService) {
         // feature disabled
         if (this._roleManagerClient === null) return
 
+        // unchanged service
+        if (this._roleManagerClient?.service === service) return
+
+        // service changed
         // clean if needed
-        if (
-            this._roleManagerClient &&
-            this._roleManagerClient.service !== service
-        ) {
+        if (this._roleManagerClient) {
             //console.debug("unmount role manager")
             this._roleManagerClient.unmount()
             this._roleManagerClient = undefined
         }
 
         // allocate new manager
-        if (service && service !== this._roleManagerClient?.service) {
-            //console.debug("mount role manager")
+        if (service) {
             this._roleManagerClient = new RoleManagerClient(service)
-            this.emit(ROLE_MANAGER_CHANGE)
-            this.emit(CHANGE)
             this._roleManagerClient.startRefreshRoles()
         }
+
+        // notify listeneres
+        this.emit(ROLE_MANAGER_CHANGE)
+        this.emit(CHANGE)
     }
 
     /**
@@ -792,8 +791,6 @@ ${dev
     }
 
     private handleRoleManager() {
-        if (this.roleManager) return
-
         const service = this.services({ serviceClass: SRV_ROLE_MANAGER })[0]
         this.setRoleManagerService(service)
     }

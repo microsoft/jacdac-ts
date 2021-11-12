@@ -5,16 +5,17 @@ import {
 import {
     CHANGE,
     DEVICE_ANNOUNCE,
-    DISCONNECT,
     ERROR,
     EVENT,
-    RESTART,
     RoleManagerCmd,
     ROLE_MANAGER_POLL,
     SELF_ANNOUNCE,
     SRV_CONTROL,
+    SRV_INFRASTRUCTURE,
     SRV_LOGGER,
+    SRV_PROXY,
     SRV_ROLE_MANAGER,
+    SRV_UNIQUE_BRAIN,
     SystemEvent,
 } from "../constants"
 import { jdpack, jdunpack } from "../pack"
@@ -79,13 +80,6 @@ export class RoleManagerClient extends JDServiceClient {
         // assign roles when need device enter the bus
         this.mount(
             this.bus.subscribe(DEVICE_ANNOUNCE, this.assignRoles.bind(this))
-        )
-        // unmount when device is removed or reset
-        this.mount(
-            service.device.subscribe([DISCONNECT, RESTART], () => {
-                if (this.bus.roleManager?.service === this.service)
-                    this.bus.setRoleManagerService(undefined)
-            })
         )
         // clear on unmount
         this.mount(this.clearRoles.bind(this))
@@ -159,7 +153,14 @@ export class RoleManagerClient extends JDServiceClient {
         }
     }
 
-    static unroledSrvs = [SRV_CONTROL, SRV_ROLE_MANAGER, SRV_LOGGER]
+    static unroledSrvs = [
+        SRV_CONTROL,
+        SRV_ROLE_MANAGER,
+        SRV_LOGGER,
+        SRV_UNIQUE_BRAIN,
+        SRV_PROXY,
+        SRV_INFRASTRUCTURE,
+    ]
 
     private assignRoles() {
         this.bus
