@@ -80,6 +80,7 @@ import {
     ControlAnnounceFlags,
     ControlReg,
     SRV_CONTROL,
+    SRV_PROXY,
 } from "../../jacdac-spec/dist/specconstants"
 import Scheduler, { WallClockScheduler } from "./scheduler"
 import ServiceFilter from "./filters/servicefilter"
@@ -1245,8 +1246,11 @@ ${dev
      */
     private handleRefreshRegisters() {
         const devices = this._devices.filter(
-            device => device.announced && !device.lost
-        ) // don't try lost devices or devices flashing
+            device =>
+                device.announced && // needs services
+                !device.lost && // ignore lost devices
+                !device.hasService(SRV_PROXY) // just ignore proxies
+        )
 
         // skip if no devices or any device is currently flashing
         if (!devices.length || devices.some(dev => dev.flashing)) return // no devices, we're done
