@@ -36,12 +36,6 @@ export default [
         umd: true,
     },
     {
-        libraryName: "jacdac-cli",
-        dir: "cli",
-        external: ["jacdac", "jacdac-azure-iot", "jacdac-node", "webusb"],
-        watch: "src/**",
-    },
-    {
         libraryName: "jacdac-worker",
         dir: "worker",
         watch: "src/**",
