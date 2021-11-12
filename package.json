@@ -1,8 +1,13 @@
 {
   "name": "jacdac-ts",
-  "version": "1.22.4",
+  "version": "1.22.5",
   "description": "JavaScript/TypeScript library to interact with Jacdac devices",
-  "keywords": ["jacdac", "typescript", "i2c", "sensors"],
+  "keywords": [
+    "jacdac",
+    "typescript",
+    "i2c",
+    "sensors"
+  ],
   "main": "dist/jacdac.js",
   "module": "dist/jacdac.cjs.js",
   "exports": {
