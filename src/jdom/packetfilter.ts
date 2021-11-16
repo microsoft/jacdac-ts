@@ -148,6 +148,7 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
                 collapseAck = parseBoolean(value)
                 break
             case "collapse-notimpl":
+            case "collapse-not-implemeneted":
                 collapseNotImplemented = parseBoolean(value)
                 break
             case "device":
