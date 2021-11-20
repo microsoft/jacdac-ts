@@ -29,13 +29,13 @@ export type RealTimeClockReadingType = [
 export function dateToClock(n: Date): RealTimeClockReadingType {
     const year = n.getFullYear()
     const month = n.getMonth() + 1
-    const date = n.getDate()
-    const day = n.getDay()
+    const dayOfMonth = n.getDate()
+    const dayOfWeek = n.getDay()
     const hour = n.getHours()
     const min = n.getMinutes()
     const sec = n.getSeconds()
 
-    return [year, month, date, day, hour, min, sec]
+    return [year, month, dayOfMonth, dayOfWeek, hour, min, sec]
 }
 
 export default class RealTimeClockServer extends SensorServer<RealTimeClockReadingType> {
