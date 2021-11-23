@@ -14,6 +14,7 @@ import {
     CMD_REG_MASK,
     CMD_GET_REG,
     CMD_SET_REG,
+    COMMAND_RECEIVE,
 } from "./constants"
 import JDNode from "./node"
 import {
@@ -513,6 +514,7 @@ export class JDService extends JDNode {
             if (reg) reg.processPacket(pkt)
         } else if (pkt.isCommand) {
             this.invalidateRegisterValues(pkt)
+            this.emit(COMMAND_RECEIVE, pkt)
         }
     }
 
