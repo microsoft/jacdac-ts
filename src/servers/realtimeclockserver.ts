@@ -39,7 +39,7 @@ export function dateToClock(n: Date): RealTimeClockReadingType {
 }
 
 export default class RealTimeClockServer extends SensorServer<RealTimeClockReadingType> {
-    readonly error: JDRegisterServer<[number]>
+    readonly drift: JDRegisterServer<[number]>
     readonly precision: JDRegisterServer<[number]>
     private lastSecond = 0
 
@@ -50,7 +50,7 @@ export default class RealTimeClockServer extends SensorServer<RealTimeClockReadi
             streamingInterval: 1000,
         })
 
-        this.error = this.addRegister<[number]>(RealTimeClockReg.Error, [0])
+        this.drift = this.addRegister<[number]>(RealTimeClockReg.Drift, [0])
         this.precision = this.addRegister<[number]>(
             RealTimeClockReg.Precision,
             [0]
