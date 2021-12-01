@@ -530,7 +530,7 @@ export function JSONTryParse<T = unknown>(
     }
 }
 
-export function roundWithPrecision(x: number, digits: number): number {
+export function roundWithPrecision(x: number, digits: number, round = Math.round): number {
     digits = digits | 0
     // invalid digits input
     if (digits <= 0) return Math.round(x)
@@ -538,7 +538,7 @@ export function roundWithPrecision(x: number, digits: number): number {
     let r = 0
     while (r == 0 && digits < 21) {
         const d = Math.pow(10, digits++)
-        r = Math.round(x * d + Number.EPSILON) / d
+        r = round(x * d + Number.EPSILON) / d
     }
     return r
 }

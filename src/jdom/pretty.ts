@@ -73,7 +73,7 @@ export interface DecodedPacket {
     error?: string
 }
 
-export function prettyUnit(u: jdspec.Unit): string {
+export function prettyUnit(u: jdspec.Unit | string): string {
     switch (u) {
         case "us":
             return "μs"
