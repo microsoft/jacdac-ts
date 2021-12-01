@@ -185,6 +185,7 @@ const barometerOptions: AnalogSensorServerOptions = {
     instanceName: "pressure",
     readingValues: [1013],
     readingError: [0.4],
+    streamingInterval: 1000,
 }
 const sonarOptions: AnalogSensorServerOptions = {
     variant: DistanceVariant.Ultrasonic,
