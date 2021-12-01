@@ -644,7 +644,7 @@ export class JDBus extends JDNode {
 transport:
 ${this._transports.map(tr => `  ${tr.type}: ${tr.connectionState}`).join("\n")}
 
-${this.devices({ ignoreInfrastructure: true })
+${this.devices({ ignoreInfrastructure: false })
     .map(
         dev => `device: 
   id: ${dev.shortId} (0x${dev.deviceId})

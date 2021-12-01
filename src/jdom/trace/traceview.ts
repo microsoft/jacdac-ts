@@ -184,7 +184,7 @@ export class TraceView extends JDClient {
         if (this._paused) return
 
         // remember packet
-        this.trace.addPacket(pkt)
+        this._trace.addPacket(pkt)
 
         // add packet to live list
         if (this._packetFilter?.filter(pkt)) {
