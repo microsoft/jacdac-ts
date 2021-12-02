@@ -80,6 +80,7 @@ import {
     ControlAnnounceFlags,
     ControlReg,
     SRV_CONTROL,
+    SRV_DASHBOARD,
     SRV_PROXY,
 } from "../../jacdac-spec/dist/specconstants"
 import Scheduler, { WallClockScheduler } from "./scheduler"
@@ -115,6 +116,11 @@ export interface BusOptions {
      * Ignore role managers detected on the bus
      */
     disableRoleManager?: boolean
+
+    /**
+     * This bus is a dashboard
+     */
+    dashboard?: boolean
 }
 
 /**
@@ -159,6 +165,7 @@ export class JDBus extends JDNode {
     private _streaming = false
     private _passive = false
     private _client = false
+    private _dashboard = false
 
     /**
      * the device catalog
@@ -186,6 +193,7 @@ export class JDBus extends JDNode {
             parentOrigin,
             client,
             disableRoleManager,
+            dashboard,
         } = options || {}
 
         this._roleManagerClient = disableRoleManager ? null : undefined
@@ -193,6 +201,7 @@ export class JDBus extends JDNode {
         this.scheduler = scheduler || new WallClockScheduler()
         this.parentOrigin = parentOrigin || "*"
         this._client = !!client
+        this._dashboard = !!dashboard
         this.stats = new BusStatsMonitor(this)
         this.deviceCatalog = new DeviceCatalog()
 
@@ -1151,7 +1160,12 @@ ${dev
                     ControlAnnounceFlags.SupportsBroadcast |
                     ControlAnnounceFlags.SupportsFrames |
                     ControlAnnounceFlags.SupportsACK,
-                [[SRV_INFRASTRUCTURE]],
+                [
+                    [
+                        SRV_INFRASTRUCTURE,
+                        this._dashboard ? SRV_DASHBOARD : undefined,
+                    ].filter(sc => !!sc),
+                ],
             ]
         )
         pkt.serviceIndex = JD_SERVICE_INDEX_CTRL

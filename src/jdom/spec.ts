@@ -17,6 +17,7 @@ import {
     SRV_PROTO_TEST,
     SRV_PROXY,
     SRV_UNIQUE_BRAIN,
+    SRV_DASHBOARD,
 } from "./constants"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -126,6 +127,7 @@ export function isInfrastructure(spec: jdspec.ServiceSpec) {
             SRV_INFRASTRUCTURE,
             SRV_PROXY,
             SRV_UNIQUE_BRAIN,
+            SRV_DASHBOARD,
         ].indexOf(spec.classIdentifier) > -1 ||
             spec.shortId[0] === "_")
     )
