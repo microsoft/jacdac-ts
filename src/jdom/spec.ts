@@ -185,10 +185,7 @@ export function isSensor(spec: jdspec.ServiceSpec): boolean {
     return (
         spec &&
         spec.packets.some(pkt => isReading(pkt)) &&
-        spec.packets.some(
-            pkt => pkt.identifier == SensorReg.StreamingSamples
-        ) &&
-        spec.packets.some(pkt => pkt.identifier == SensorReg.StreamingInterval)
+        spec.packets.some(pkt => pkt.identifier == SensorReg.StreamingSamples)
     )
 }
 

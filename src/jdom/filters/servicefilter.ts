@@ -23,5 +23,9 @@ export interface ServiceFilter {
      * Match or excludes mixin services
      */
     mixins?: boolean
+    /**
+     * Is a sensor service
+     */
+    sensor?: boolean
 }
 export default ServiceFilter

@@ -45,7 +45,7 @@ import JDBus from "./bus"
 import JDService from "./service"
 import { serviceClass, shortDeviceId } from "./pretty"
 import JDNode from "./node"
-import { isInstanceOf } from "./spec"
+import { isInstanceOf, isSensor } from "./spec"
 import { FirmwareInfo } from "./flashing"
 import LEDController from "./ledcontroller"
 import JDEventSource from "./eventsource"
@@ -652,6 +652,8 @@ export class JDDevice extends JDNode {
         if (sc > -1) r = r.filter(s => s.serviceClass == sc)
 
         if (options?.specification) r = r.filter(s => !!s.specification)
+
+        if (options?.sensor) r = r.filter(s => isSensor(s.specification))
 
         const mixins = options?.mixins
         if (mixins !== undefined) r = r.filter(s => s.isMixin === mixins)
