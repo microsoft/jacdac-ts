@@ -431,7 +431,9 @@ export class Packet {
             service_name = "PIPE"
         } else {
             const serv_id = serviceName(this.serviceClass)
-            service_name = `${serv_id} (${this.serviceIndex})`
+            service_name = `${
+                serv_id === "?" ? hexNum(this.serviceClass) : serv_id
+            } (${this.serviceIndex})`
         }
         return service_name
     }

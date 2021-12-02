@@ -652,7 +652,7 @@ export function printPacket(
     const frame_flags = pkt.frameFlags
     const devname = pkt.friendlyDeviceName
     const service_name = pkt.friendlyServiceName
-    const cmdname = pkt.friendlyCommandName
+    const cmdname = pkt.friendlyCommandName || hexNum(pkt.serviceCommand)
     const sender = pkt.sender
 
     if (
@@ -679,10 +679,9 @@ export function printPacket(
             if (opts.skipRepeatedAnnounce) return ""
             else pdesc = " ====== " + pdesc
         } else {
-            const services = []
-            for (const sc of pkt.device.serviceClasses)
-                services.push(serviceName(sc))
-            pdesc += "; " + "Announce services: " + services.join(", ")
+            pdesc +=
+                "; Announce services: " +
+                pkt.device.serviceClasses.map(serviceName).join(", ")
         }
     } else {
         const decoded = pkt.decoded
@@ -698,7 +697,7 @@ export function printPacket(
         }
     }
 
-    if (sender) pdesc += `; ${sender}`
+    if (sender) pdesc += ` (${sender})`
 
     return (
         (!isNaN(pkt.timestamp) && opts?.showTime

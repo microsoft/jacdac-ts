@@ -1,6 +1,7 @@
 import { META_TRACE } from "../constants"
 import Packet from "../packet"
 import { printPacket } from "../pretty"
+import { randomDeviceId } from "../random"
 import { roundWithPrecision, toHex } from "../utils"
 
 const TRACE_OVERSHOOT = 1.1
@@ -27,12 +28,13 @@ export function cleanStack(text: string) {
 }
 
 export function serializeToTrace(pkt: Packet, start: number) {
-    let t = `${roundWithPrecision(pkt.timestamp - start, 3)}\t${toHex(
-        pkt.toBuffer()
-    )}\t${printPacket(pkt, {}).replace(/\r?\n/g, " ")}`
+    const data = toHex(pkt.toBuffer()).padEnd(84, " ")
+    const t = roundWithPrecision(pkt.timestamp - start, 3)
+    const descr = printPacket(pkt, {}).replace(/\r?\n/g, " ")
+    let msg = `${t}\t${data}\t${descr}`
     const trace = pkt.meta[META_TRACE] as string
-    if (trace) t += "\n" + cleanStack(trace)
-    return t
+    if (trace) msg += "\n" + cleanStack(trace)
+    return msg
 }
 
 /**
@@ -40,6 +42,7 @@ export function serializeToTrace(pkt: Packet, start: number) {
  * @category Trace
  */
 export class Trace {
+    readonly id = randomDeviceId()
     readonly maxLength: number
     readonly description: string
     /**
@@ -96,6 +99,12 @@ export class Trace {
      * @param maxLength If positive, prunes older packets when the length reaches maxLength
      */
     addPacket(packet: Packet) {
+        if (packet.meta[this.id]) {
+            console.trace("packet added twice", { packet })
+            return
+        }
+        // keep track of trace added
+        packet.meta[this.id] = true
         // packets are mutable (eg., timestamp is updated on each send), so we take a copy
         const copy = packet.clone()
         copy.sender = packet.sender

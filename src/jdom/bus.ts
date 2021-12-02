@@ -1161,11 +1161,9 @@ ${dev
                     ControlAnnounceFlags.SupportsFrames |
                     ControlAnnounceFlags.SupportsACK,
                 [
-                    [
-                        SRV_INFRASTRUCTURE,
-                        this._dashboard ? SRV_DASHBOARD : undefined,
-                    ].filter(sc => !!sc),
-                ],
+                    [SRV_INFRASTRUCTURE],
+                    this._dashboard ? [SRV_DASHBOARD] : undefined,
+                ].filter(sc => !!sc),
             ]
         )
         pkt.serviceIndex = JD_SERVICE_INDEX_CTRL
