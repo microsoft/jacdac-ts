@@ -99,8 +99,10 @@ export class Trace {
      * @param maxLength If positive, prunes older packets when the length reaches maxLength
      */
     addPacket(packet: Packet) {
+        // our event tracing may end up registering the same
+        // packet twice when it is received and transmitted
         if (packet.meta[this.id]) {
-            console.trace("packet added twice", { packet })
+            // console.trace("packet added twice", { packet })
             return
         }
         // keep track of trace added
