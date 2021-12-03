@@ -1,4 +1,5 @@
 import {
+    CHANGE,
     JoystickButtons,
     JoystickEvent,
     JoystickReg,
@@ -90,9 +91,9 @@ export default class JoystickServer extends SensorServer<
         )
     }
 
-    get isDigital() {
+    get isAnalog() {
         const [value] = this.buttonsAvailable.values()
-        return (value & JOYSTICK_DPAD_BUTTONS) === JOYSTICK_DPAD_BUTTONS
+        return !(value & JOYSTICK_DPAD_BUTTONS)
     }
 
     async down(buttons: JoystickButtons) {
@@ -129,7 +130,7 @@ export default class JoystickServer extends SensorServer<
 
         let newX = 0,
             newY = 0
-        if (!this.isDigital) {
+        if (this.isAnalog) {
             const [axeLeftRight, axeUpDown] = axes
             newX = axeLeftRight
             newY = axeUpDown
@@ -144,7 +145,8 @@ export default class JoystickServer extends SensorServer<
         y: number
     ) {
         const [oldButtons] = this.reading.values()
-        if (this.isDigital) {
+        let newButtons = buttons
+        if (!this.isAnalog) {
             x =
                 buttons & JoystickButtons.Left
                     ? -1
@@ -158,20 +160,21 @@ export default class JoystickServer extends SensorServer<
                     ? 1
                     : 0
         } else {
-            const threshold = -1
-            if (x < -threshold) buttons |= JoystickButtons.Left
-            else if (x > threshold) buttons |= JoystickButtons.Right
-            else buttons &= ~(JoystickButtons.Left | JoystickButtons.Right)
-            if (y < -threshold) buttons |= JoystickButtons.Up
-            else if (y > threshold) buttons |= JoystickButtons.Down
-            else buttons &= ~(JoystickButtons.Up | JoystickButtons.Down)
+            const threshold = 0.4
+            // clear events
+            const mask = ~JOYSTICK_DPAD_BUTTONS
+            newButtons = buttons & mask
+            // recompute
+            if (x < -threshold) newButtons |= JoystickButtons.Left
+            else if (x > threshold) newButtons |= JoystickButtons.Right
+            if (y < -threshold) newButtons |= JoystickButtons.Up
+            else if (y > threshold) newButtons |= JoystickButtons.Down
         }
-        this.reading.setValues([buttons, x, y])
-
-        if (buttons !== oldButtons) {
+        this.reading.setValues([newButtons, x, y])
+        if (newButtons !== oldButtons) {
             await this.sendEvent(
                 JoystickEvent.ButtonsChanged,
-                jdpack<[number]>("u32", [buttons])
+                jdpack<[number]>("u32", [newButtons])
             )
         }
     }
