@@ -198,14 +198,6 @@ export class TraceView extends JDClient {
         if (packet.meta[this.id]) return
         packet.meta[this.id] = true
 
-        // resolve packet device for pretty name
-        if (!packet.isMultiCommand && !packet.device)
-            packet.device = this.bus.device(
-                packet.deviceIdentifier,
-                false,
-                packet
-            )
-
         // keep in filtered view
         let filtered = true
         const hash = toHex(packet.toBuffer())

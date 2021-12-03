@@ -115,11 +115,14 @@ export class Packet {
         return toHex(this._header.slice(4, 4 + 8))
     }
     set deviceIdentifier(id: string) {
-        const idb = fromHex(id)
-        if (idb.length != 8) throwError("Invalid id")
-        if (this.isMultiCommand) throwError("Invalid multicast")
-        this._header.set(idb, 4)
-        this._decoded = undefined
+        if (id !== this.deviceIdentifier) {
+            const idb = fromHex(id)
+            if (idb.length != 8) throwError("Invalid id")
+            if (this.isMultiCommand) throwError("Invalid multicast")
+            this._header.set(idb, 4)
+            this._decoded = undefined
+            this.device = undefined
+        }
     }
 
     get frameFlags() {
@@ -365,6 +368,11 @@ export class Packet {
         return !this.isCommand
     }
 
+    assignDevice(bus: JDBus) {
+        if (!this.isMultiCommand && !this.device)
+            this.device = bus.device(this.deviceIdentifier, false, this)
+    }
+
     toString(): string {
         let msg = `${shortDeviceId(this.deviceIdentifier)}/${
             this.serviceIndex
@@ -382,18 +390,21 @@ export class Packet {
         this._header[0] = buf[0]
         this._header[1] = buf[1]
         this._header[2] = buf[2]
+        this.assignDevice(bus)
         return bus.sendPacketAsync(this)
     }
 
     sendReportAsync(dev: JDDevice) {
         if (!dev) return Promise.resolve()
         this.deviceIdentifier = dev.deviceId
+        this.device = dev
         return this.sendCoreAsync(dev.bus)
     }
 
     sendCmdAsync(dev: JDDevice) {
         if (!dev) return Promise.resolve()
         this.deviceIdentifier = dev.deviceId
+        this.device = dev
         this.isCommand = true
         return this.sendCoreAsync(dev.bus)
     }

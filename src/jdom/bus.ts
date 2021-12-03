@@ -1077,19 +1077,14 @@ ${dev
      * @internal
      */
     processPacket(pkt: Packet) {
+        pkt.assignDevice(this)
         if (!pkt.isMultiCommand && !pkt.device) {
-            pkt.device = this.device(pkt.deviceIdentifier, false, pkt)
             // the device id is unknown dropping
-            if (!pkt.device) {
-                if (Flags.diagnostics)
-                    console.debug(
-                        `unknown pkt device ${pkt.deviceIdentifier}`,
-                        {
-                            pkt,
-                        }
-                    )
-                return
-            }
+            if (Flags.diagnostics)
+                console.debug(`unknown pkt device ${pkt.deviceIdentifier}`, {
+                    pkt,
+                })
+            return
         }
         this.emit(PACKET_PRE_PROCESS, pkt)
         let isAnnounce = false
