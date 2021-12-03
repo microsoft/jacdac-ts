@@ -537,7 +537,7 @@ export function roundWithPrecision(
 ): number {
     digits = digits | 0
     // invalid digits input
-    if (digits <= 0) return Math.round(x)
+    if (digits <= 0) return round(x)
     if (x == 0) return 0
     let r = 0
     while (r == 0 && digits < 21) {
