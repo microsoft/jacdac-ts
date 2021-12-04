@@ -21,7 +21,6 @@ import JDServiceMemberNode from "./servicemembernode"
 import JDNode from "./node"
 import { jdpack, jdunpack, PackedValues } from "./pack"
 import { PackedObject, unpackedToObject } from "./packobject"
-import { this_str } from "jsep"
 
 /**
  * A Jacdac register client.
