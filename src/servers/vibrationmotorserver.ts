@@ -3,15 +3,11 @@ import {
     REFRESH,
     SRV_VIBRATION_MOTOR,
     VibrationMotorCmd,
-    VibrationMotorReg,
 } from "../jdom/constants"
 import Packet from "../jdom/packet"
-import JDRegisterServer from "../jdom/servers/registerserver"
 import JDServiceServer from "../jdom/servers/serviceserver"
 
 export default class VibrationMotorServer extends JDServiceServer {
-    readonly enabled: JDRegisterServer<[boolean]>
-
     static VIBRATE_PATTERN = "vibratePattern"
 
     private _animation: {
@@ -22,9 +18,6 @@ export default class VibrationMotorServer extends JDServiceServer {
 
     constructor() {
         super(SRV_VIBRATION_MOTOR)
-        this.enabled = this.addRegister<[boolean]>(VibrationMotorReg.Enabled, [
-            false,
-        ])
         this.addCommand(
             VibrationMotorCmd.Vibrate,
             this.handleVibrate.bind(this)

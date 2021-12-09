@@ -68,7 +68,6 @@ import {
     SRV_THERMOCOUPLE,
     ThermocoupleVariant,
     SRV_GYROSCOPE,
-    SoundLevelReg,
     SRV_SOUND_SPECTRUM,
     SoundSpectrumReg,
     SRV_SOLENOID,
@@ -80,11 +79,8 @@ import {
     SRV_HID_KEYBOARD,
     SRV_HID_MOUSE,
     //    SRV_AZURE_IOT_HUB,
-    SRV_DIMMER,
-    DimmerVariant,
     SRV_AZURE_IOT_HUB_HEALTH,
     DotMatrixVariant,
-    FlexVariant,
     SRV_FLEX,
     SRV_WIFI,
     SRV_LIGHT_BULB,
@@ -129,8 +125,6 @@ import PowerServer from "./powerserver"
 import CapacitiveButtonServer from "./capacitivebuttonserver"
 import HIDKeyboardServer from "./hidkeyboardserver"
 import HIDMouseServer from "./hidmouseserver"
-//import AzureIoTHubServer from "./azureiothubserver"
-import DimmerServer from "./dimmerserver"
 import AzureIoTHubHealthServer from "./azureiothubhealthserver"
 import JDServiceProvider from "../jdom/servers/serviceprovider"
 import VibrationMotor from "./vibrationmotorserver"
@@ -261,16 +255,6 @@ const soundLevel: AnalogSensorServerOptions = {
     inactiveThreshold: 10,
     activeThreshold: 70,
     intensityValues: [false],
-    registerValues: [
-        {
-            code: SoundLevelReg.MinDecibels,
-            values: [-100],
-        },
-        {
-            code: SoundLevelReg.MaxDecibels,
-            values: [-30],
-        },
-    ],
 }
 const soundSpectrum: SensorServiceOptions<[Uint8Array]> = {
     readingValues: [new Uint8Array(0)],
@@ -541,20 +525,6 @@ function initProviders() {
                 services: () => [new CompassServer()],
             },
             {
-                name: "dimmer (fan)",
-                serviceClasses: [SRV_DIMMER],
-                services: () => [
-                    new DimmerServer("fan", { variant: DimmerVariant.Fan }),
-                ],
-            },
-            {
-                name: "dimmer (light)",
-                serviceClasses: [SRV_DIMMER],
-                services: () => [
-                    new DimmerServer("light", { variant: DimmerVariant.Light }),
-                ],
-            },
-            {
                 name: "distance (sonar)",
                 serviceClasses: [SRV_DISTANCE],
                 services: () => [
@@ -597,11 +567,10 @@ function initProviders() {
                 ],
             },
             {
-                name: "flex sensor (2.2 inch)",
+                name: "flex sensor",
                 serviceClasses: [SRV_FLEX],
                 services: () => [
                     new AnalogSensorServer(SRV_FLEX, {
-                        variant: FlexVariant.Linear22Inch,
                         readingValues: [0.5],
                     }),
                 ],
@@ -943,7 +912,7 @@ function initProviders() {
                         },
                         registerValues: [
                             {
-                                code: LightBulbReg.Dimmeable,
+                                code: LightBulbReg.Dimmable,
                                 values: [false],
                             },
                         ],
@@ -959,7 +928,7 @@ function initProviders() {
                         isActive: values => !!values?.[0],
                         registerValues: [
                             {
-                                code: LightBulbReg.Dimmeable,
+                                code: LightBulbReg.Dimmable,
                                 values: [true],
                             },
                         ],
