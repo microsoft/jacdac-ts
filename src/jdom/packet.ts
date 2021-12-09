@@ -499,7 +499,9 @@ function frameToPackets(frame: Uint8Array, timestamp: number) {
         const actual = read16(frame, 0)
         if (actual != computed)
             warn(
-                `${timestamp | 0}ms: crc mismatch; sz=${size} got:${actual}, exp:${computed}`
+                `${
+                    timestamp | 0
+                }ms: crc mismatch; sz=${size} got:${actual}, exp:${computed}`
             )
 
         const res: Packet[] = []
