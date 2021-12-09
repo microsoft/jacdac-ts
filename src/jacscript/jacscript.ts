@@ -46,6 +46,8 @@ export enum ValueKind {
 export enum ValueSpecial {
     NAN = 0x0,
     SIZE = 0x1,
+    EV_CODE = 0x2, // or nan
+    REG_CODE = 0x3, // or nan
 }
 
 export enum Op {
@@ -152,6 +154,10 @@ export function stringifyValueKind(vk: ValueKind) {
             return "Jacdac event"
         case ValueKind.JD_REG:
             return "Jacdac register"
+        case ValueKind.JD_ROLE:
+            return "Jacdac role"
+        case ValueKind.ERROR:
+            return "(error node)"
         default:
             return "ValueKind: 0x" + (vk as number).toString(16)
     }
@@ -184,11 +190,11 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
         case Op.STORE:
             return `${arg16(arg)} := R${dst}`
         case Op.JUMP:
-            return jmpcode()
+            return "jmp " + jmpcode()
         case Op.CALL:
-            return `call F-${right}`
+            return `call ${resolver.funName(right)}_F${right}`
         case Op.CALL_BG:
-            return `callbg F-${right}`
+            return `callbg ${resolver.funName(right)}_F${right}`
         case Op.RET:
             return `ret`
         case Op.SPRINTF:
@@ -206,7 +212,7 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
         case Op.WAIT_REG:
             return `wait ${jdreg()} refresh[${subop}]`
         case Op.WAIT_PKT:
-            return `wait pkt from ${role}`
+            return `wait pkt from ${role()}`
         case Op.SET_TIMEOUT:
             return `set timeout ${arg} ms`
     }
@@ -298,6 +304,10 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
                         return "NAN"
                     case ValueSpecial.SIZE:
                         return "SIZE"
+                    case ValueSpecial.EV_CODE:
+                        return "EV_CODE"
+                    case ValueSpecial.REG_CODE:
+                        return "REG_CODE"
                     default:
                         return `${r}_SPEC[${idx}]`
                 }
@@ -331,15 +341,22 @@ class Cell {
 }
 
 class Role extends Cell {
+    dispatcher: Procedure
+
     constructor(
         definition: estree.VariableDeclarator,
         scope: VariableScope,
         public spec: jdspec.ServiceSpec
     ) {
         super(definition, scope)
+        assert(!!spec)
     }
     value(): ValueDesc {
-        return mkValue(ValueKind.JD_ROLE, this.index)
+        return mkValue(ValueKind.JD_ROLE, this.index, this)
+    }
+    encode() {
+        assert(this.index <= 0x7f)
+        return this.index << 9
     }
 }
 
@@ -351,7 +368,7 @@ class Variable extends Cell {
     }
     value(): ValueDesc {
         const kind = this.isLocal ? ValueKind.LOCAL : ValueKind.GLOBAL
-        return mkValue(kind, this.index)
+        return mkValue(kind, this.index, this)
     }
 }
 
@@ -388,19 +405,37 @@ function idName(pat: estree.BaseExpression) {
     return (pat as estree.Identifier).name
 }
 
+function specialVal(sp: ValueSpecial) {
+    return mkValue(ValueKind.SPECIAL, sp)
+}
+
 const values = {
     zero: mkValue(ValueKind.SMALL_INT, 0),
     error: mkValue(ValueKind.ERROR, 0),
 }
 
+class Label {
+    uses: number[] = []
+    offset = -1
+    constructor(public name: string) {}
+}
+
 class OpWriter {
-    allocatedRegs: ValueDesc[] = []
-    allocatedRegsMask = 0
-    scopes: ValueDesc[][] = []
-    binary: number[] = []
-    assembly = ""
-    floatLiterals: number[] = []
-    intLiterals: number[] = []
+    private allocatedRegs: ValueDesc[] = []
+    private allocatedRegsMask = 0
+    private scopes: ValueDesc[][] = []
+    private binary: number[] = []
+    private labels: Label[] = []
+    top: Label
+    bot: Label
+    private assembly: (string | number)[] = []
+    private assemblyPtr = 0
+
+    constructor(public parent: Procedure) {
+        this.top = this.mkLabel("top")
+        this.bot = this.mkLabel("bot")
+        this.emitLabel(this.top)
+    }
 
     push() {
         this.scopes.push([])
@@ -441,10 +476,16 @@ class OpWriter {
             if (0 <= v && v <= 0x7fff) {
                 return mkValue(ValueKind.SMALL_INT, v)
             } else {
-                return mkValue(ValueKind.INT, addUnique(this.intLiterals, v))
+                return mkValue(
+                    ValueKind.INT,
+                    addUnique(this.parent.parent.intLiterals, v)
+                )
             }
         } else {
-            return mkValue(ValueKind.FLOAT, addUnique(this.floatLiterals, v))
+            return mkValue(
+                ValueKind.FLOAT,
+                addUnique(this.parent.parent.floatLiterals, v)
+            )
         }
 
         function addUnique(arr: number[], v: number) {
@@ -484,16 +525,38 @@ class OpWriter {
         return (q >> 8) | (q & 0xf)
     }
 
-    mkOp(op: Op, subop: number, dst: number) {
+    mkOp(op: Op, subop: number = 0, dst: number = 0) {
         assert(0 <= dst && dst < NUM_REGS)
         assert(0 <= subop && subop <= 0xf)
         assert(0 <= op && op <= 0xff)
         return (op << 24) | (subop << 20) | (dst << 16)
     }
 
+    emitOp(op: Op, subop: number, dst: number, arg: number) {
+        const instr = this.mkOp(op, subop, dst)
+        assertRange(0, arg, 0xffff)
+        this.emitInstr(instr | arg)
+    }
+
+    private catchUpAssembly() {
+        while (this.assemblyPtr < this.binary.length) {
+            this.assembly.push(this.assemblyPtr++)
+        }
+    }
+
     private writeAsm(msg: string) {
-        console.log(msg)
-        this.assembly += msg + "\n"
+        this.catchUpAssembly()
+        this.assembly.push(msg)
+    }
+
+    getAssembly() {
+        this.catchUpAssembly()
+        let r = ""
+        for (const ln of this.assembly) {
+            if (typeof ln == "string") r += ln + "\n"
+            else r += stringifyInstr(this.binary[ln], this.parent.parent) + "\n"
+        }
+        return r
     }
 
     emitComment(msg: string) {
@@ -502,8 +565,113 @@ class OpWriter {
 
     emitInstr(v: number) {
         v >>>= 0
-        this.writeAsm(stringifyInstr(v))
         this.binary.push(v)
+    }
+
+    mkLabel(name: string) {
+        const l = new Label(name)
+        this.labels.push(l)
+        return l
+    }
+
+    emitLabel(l: Label) {
+        assert(l.offset == -1)
+        this.emitComment("lbl " + l.name)
+        l.offset = this.binary.length
+    }
+
+    emitIf(
+        subop: OpBinary,
+        left: ValueDesc,
+        right: ValueDesc,
+        thenBody: () => void,
+        elseBody?: () => void
+    ) {
+        if (elseBody) {
+            const endIf = this.mkLabel("endif")
+            const elseIf = this.mkLabel("elseif")
+            this.emitJumpIfFalse(elseIf, subop, left, right)
+            thenBody()
+            this.emitJump(endIf)
+            this.emitLabel(elseIf)
+            elseBody()
+            this.emitLabel(endIf)
+        } else {
+            const skipIf = this.mkLabel("skipif")
+            this.emitJumpIfFalse(skipIf, subop, left, right)
+            thenBody()
+            this.emitLabel(skipIf)
+        }
+    }
+
+    emitJumpIfTrue(
+        label: Label,
+        subop: OpBinary,
+        left: ValueDesc,
+        right: ValueDesc
+    ) {
+        this.push()
+        const cmp = this.allocReg()
+        this.emitBin(subop, cmp, left, right)
+        this.emitJump(label, OpJump.FORWARD_IF_NOT_ZERO, cmp.index)
+        this.pop()
+    }
+
+    emitJumpIfFalse(
+        label: Label,
+        subop: OpBinary,
+        left: ValueDesc,
+        right: ValueDesc
+    ) {
+        this.push()
+        const cmp = this.allocReg()
+        this.emitBin(subop, cmp, left, right)
+        this.emitJump(label, OpJump.FORWARD_IF_ZERO, cmp.index)
+        this.pop()
+    }
+
+    emitJump(label: Label, cond: OpJump = OpJump.FORWARD, dst: number = -1) {
+        switch (cond) {
+            case OpJump.FORWARD:
+                assert(dst == -1)
+                dst = 0
+                break
+            case OpJump.FORWARD_IF_NOT_ZERO:
+            case OpJump.FORWARD_IF_ZERO:
+                assert(dst != -1)
+                break
+            default:
+                oops("invalid jmp")
+        }
+        label.uses.push(this.binary.length)
+        this.emitComment("jump " + label.name)
+        this.emitInstr(this.mkOp(Op.JUMP, cond, dst))
+    }
+
+    patchLabels() {
+        this.emitLabel(this.bot)
+        for (const l of this.labels) {
+            assert(l.offset != -1)
+            for (const u of l.uses) {
+                let op = this.binary[u]
+                assert(op >> 24 == Op.JUMP)
+                let off = l.offset - u
+                assert(off != 0)
+                if (off < 0) {
+                    off = -off
+                    op |= this.mkOp(Op.JUMP, OpJump.BACK)
+                }
+                assert((op & 0xffff) == 0)
+                off -= 1
+                assertRange(0, off, 0xffff)
+                op |= off
+                this.binary[u] = op >>> 0
+            }
+        }
+    }
+
+    emitCall(proc: Procedure) {
+        this.emitInstr(this.mkOp(Op.CALL) | proc.index)
     }
 
     emitLoad(dst: ValueDesc, src: ValueDesc) {
@@ -551,7 +719,18 @@ class OpWriter {
 }
 
 class Procedure {
-    constructor(public name: string, public index: number) {}
+    writer = new OpWriter(this)
+    index: number
+    constructor(public parent: Program, public name: string) {
+        this.index = this.parent.procs.length
+        this.parent.procs.push(this)
+    }
+    toString() {
+        return `proc ${this.name}:\n${this.writer.getAssembly()}`
+    }
+    finalize() {
+        this.writer.patchLabels()
+    }
 }
 
 class VariableScope {
@@ -583,8 +762,11 @@ class Program {
     globals = new VariableScope(this.roles)
     locals = new VariableScope(this.globals)
     tree: estree.Program
-    writer = new OpWriter()
     procs: Procedure[] = []
+    floatLiterals: number[] = []
+    intLiterals: number[] = []
+    writer: OpWriter
+    proc: Procedure
 
     constructor(public source: string) {}
 
@@ -609,9 +791,9 @@ class Program {
             case ValueKind.GLOBAL:
                 return this.globals.describeIndex(idx)
             case ValueKind.FLOAT:
-                return this.writer.floatLiterals[idx] + ""
+                return this.floatLiterals[idx] + ""
             case ValueKind.INT:
-                return this.writer.intLiterals[idx] + ""
+                return this.intLiterals[idx] + ""
             default:
                 return undefined
         }
@@ -625,6 +807,42 @@ class Program {
 
     roleName(idx: number): string {
         return this.roles.describeIndex(idx)
+    }
+
+    private roleDispatcher(r: Role) {
+        if (!r.dispatcher) {
+            r.dispatcher = new Procedure(this, r.getName() + "_disp")
+            this.withProcedure(r.dispatcher, () => {
+                this.writer.emitOp(Op.WAIT_PKT, 0, 0, r.encode())
+            })
+        }
+        return r.dispatcher
+    }
+
+    private finalizeDispatchers() {
+        for (const r of this.roles.list) {
+            const d = (r as Role).dispatcher
+            if (d)
+                // forever!
+                this.withProcedure(d, wr => {
+                    wr.emitJump(wr.top)
+                })
+        }
+    }
+
+    private withProcedure<T>(proc: Procedure, f: (wr: OpWriter) => T) {
+        assert(!!proc)
+        const prevProc = this.proc
+        try {
+            this.proc = proc
+            this.writer = proc.writer
+            proc.writer.push()
+            return f(proc.writer)
+        } finally {
+            proc.writer.pop()
+            this.proc = prevProc
+            if (prevProc) this.writer = prevProc.writer
+        }
     }
 
     private forceName(pat: estree.Expression | estree.Pattern) {
@@ -669,23 +887,70 @@ class Program {
     }
 
     private emitProgram(prog: estree.Program) {
-        for (const s of prog.body) this.emitStmt(s)
+        const main = new Procedure(this, "main")
+        this.withProcedure(main, () => {
+            for (const s of prog.body) this.emitStmt(s)
+        })
     }
 
     private emitExpressionStatement(stmt: estree.ExpressionStatement) {
         this.emitExpr(stmt.expression)
     }
 
+    private emitHandler(
+        name: string,
+        func: estree.ArrowFunctionExpression
+    ): Procedure {
+        const proc = new Procedure(this, name)
+        return proc
+    }
+
+    private codeName(node: estree.BaseNode) {
+        let [a, b] = node.range || []
+        if (!b) return ""
+        if (b - a > 30) b = a + 30
+        return this.source.slice(a, b).replace(/[^a-zA-Z0-9_]+/g, "_")
+    }
+
+    private emitEventCall(
+        expr: estree.CallExpression,
+        obj: ValueDesc,
+        prop: string
+    ): ValueDesc {
+        const role = obj.cell as Role
+        switch (prop) {
+            case "sub":
+                if (
+                    expr.arguments.length != 1 ||
+                    expr.arguments[0].type != "ArrowFunctionExpression"
+                )
+                    return this.error(expr, ".sub() requires a single handler")
+                const handler = this.emitHandler(
+                    this.codeName(expr.callee),
+                    expr.arguments[0]
+                )
+                this.withProcedure(this.roleDispatcher(role), wr => {
+                    wr.emitIf(
+                        OpBinary.EQ,
+                        specialVal(ValueSpecial.EV_CODE),
+                        wr.emitLiteral(obj.spec.identifier),
+                        () => {
+                            wr.emitCall(handler)
+                        }
+                    )
+                })
+                return values.zero
+        }
+        return this.error(expr, `events don't have property ${prop}`)
+    }
+
     private emitCallExpression(expr: estree.CallExpression): ValueDesc {
         if (expr.callee.type == "MemberExpression") {
+            const prop = idName(expr.callee.property)
             const obj = this.emitExpr(expr.callee.object)
             switch (obj.kind) {
                 case ValueKind.JD_EVENT:
-                    break
-            }
-            switch (idName(expr.callee.property)) {
-                case "sub":
-                    break
+                    return this.emitEventCall(expr, obj, prop)
             }
         }
         return this.error(expr, "unhandled call")
@@ -701,6 +966,7 @@ class Program {
     private emitMemberExpression(expr: estree.MemberExpression): ValueDesc {
         const obj = this.emitExpr(expr.object)
         if (obj.kind == ValueKind.JD_ROLE) {
+            assert(obj.cell instanceof Role)
             const role = obj.cell as Role
             const id = this.forceName(expr.property)
             let r: ValueDesc
@@ -833,6 +1099,11 @@ class Program {
         }
 
         this.emitProgram(this.tree)
+
+        this.finalizeDispatchers()
+        for (const p of this.procs) p.finalize()
+
+        console.log(this.procs.map(p => p.toString()).join("\n"))
     }
 }
 
