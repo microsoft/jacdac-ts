@@ -1,5 +1,6 @@
 import * as esprima from "esprima"
 import * as estree from "estree"
+import { NumberFormat } from "../jacdac"
 import { serviceSpecificationFromName } from "../jdom/spec"
 
 export interface SMap<T> {
@@ -18,8 +19,8 @@ export interface SMap<T> {
 // $code    - 8:0        9 bit register or command code
 // $ms      - $subop     delay in miliseconds, refresh_ms_value[] index
 // $fn      - $right     points into functions section
-// $str     - $right     points into string_literals section
-// $offset  - $left CHG
+// $str     - $left      points into string_literals section
+// $offset  - $right
 // $shift   - $left
 // $numfmt  - $subop
 
@@ -39,15 +40,18 @@ export enum ValueKind {
     JD_EVENT = 0x100,
     JD_REG = 0x101,
     JD_ROLE = 0x102,
+    JD_VALUE_SEQ = 0x103,
 
     ERROR = 0x200,
 }
 
 export enum ValueSpecial {
     NAN = 0x0,
+    // jd_packet accessors:
     SIZE = 0x1,
     EV_CODE = 0x2, // or nan
     REG_CODE = 0x3, // or nan
+    ROLE_ID = 0x4, // or nan
 }
 
 export enum Op {
@@ -67,6 +71,7 @@ export enum Op {
     SET_REG = 0x81, // $role.$code := buffer
     WAIT_REG = 0x82, // wait for $role.$code change, refresh $ms
     WAIT_PKT = 0x83, // wait for any pkt from $role
+    YIELD = 0x84, // yield
     SET_TIMEOUT = 0x90, // set_timeout $arg16 ms
 }
 
@@ -89,6 +94,7 @@ export enum OpUnary {
     NOT = 0x2,
 }
 
+// FORWARD_* | BACK = BACK_*
 export enum OpJump {
     FORWARD = 0x0,
     BACK = 0x1,
@@ -98,6 +104,8 @@ export enum OpJump {
     BACK_IF_NOT_ZERO = 0x5,
 }
 
+// Size in bits is: 8 << (fmt & 0b11)
+// Format is ["u", "i", "f", "reserved"](fmt >> 2)
 export enum OpFmt {
     U8 = 0b0000,
     U16 = 0b0001,
@@ -114,19 +122,17 @@ export enum OpFmt {
 const sample = `
 var btnA = roles.button()
 var color = roles.color()
-var led = roles.ledpixel()
+var led = roles.lightbulb()
 var r, g, b, tint
 
 btnA.down.sub(() => {
-  color.enabled.write(true)
-  led.color.write(0x00ff00)
-  wait(0.3)
+  led.brightness.write(1)
+  wait(0.1);
   [r, g, b] = color.reading.read()
-  tint = (r + g + 2 * b) / log(r + g + b)
+  tint = (r + g + 2 * b) / (r + g + b)
   upload("color", r, g, b, tint)
   display.text.write(format("t={0} {1}", tint, r))
-  led.color.write(0)
-  color.enabled.write(false)
+  led.brightness.write(0)
 })
 `
 
@@ -167,6 +173,10 @@ export interface InstrArgResolver {
     describeArg16(idx: number): string
     funName(idx: number): string
     roleName(idx: number): string
+}
+
+export function bitSize(fmt: OpFmt) {
+    return 8 << (fmt & 0b11)
 }
 
 export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
@@ -227,7 +237,7 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
 
     function numfmt() {
         const fmt = subop
-        const bitsz = 8 << (fmt & 0b11)
+        const bitsz = bitSize(fmt)
         const letter = ["u", "i", "f", "x"][fmt >> 2]
         if (left) return letter + (bitsz - left) + "." + left
         else return letter + bitsz
@@ -427,13 +437,11 @@ class OpWriter {
     private binary: number[] = []
     private labels: Label[] = []
     top: Label
-    bot: Label
     private assembly: (string | number)[] = []
     private assemblyPtr = 0
 
     constructor(public parent: Procedure) {
         this.top = this.mkLabel("top")
-        this.bot = this.mkLabel("bot")
         this.emitLabel(this.top)
     }
 
@@ -472,6 +480,7 @@ class OpWriter {
     }
 
     emitLiteral(v: number) {
+        if (isNaN(v)) return specialVal(ValueSpecial.NAN)
         if ((v | 0) == v) {
             if (0 <= v && v <= 0x7fff) {
                 return mkValue(ValueKind.SMALL_INT, v)
@@ -532,10 +541,41 @@ class OpWriter {
         return (op << 24) | (subop << 20) | (dst << 16)
     }
 
-    emitOp(op: Op, subop: number, dst: number, arg: number) {
+    emitOp(op: Op, subop: number = 0, dst: number = 0, arg: number = 0) {
         const instr = this.mkOp(op, subop, dst)
         assertRange(0, arg, 0xffff)
         this.emitInstr(instr | arg)
+    }
+
+    emitBufOp(op: Op, dst: ValueDesc, off: number, mem: jdspec.PacketMember) {
+        assert(this.isReg(dst))
+        let fmt = OpFmt.U8
+        let sz = mem.storage
+        if (sz < 0) {
+            fmt = OpFmt.I8
+            sz = -sz
+        }
+        switch (sz) {
+            case 1:
+                break
+            case 2:
+                fmt |= OpFmt.U16
+                break
+            case 4:
+                fmt |= OpFmt.U32
+                break
+            case 8:
+                fmt |= OpFmt.U64
+                break
+            default:
+                oops("unhandled format: " + mem.storage + " for " + mem.name)
+        }
+
+        const shift = mem.shift || 0
+        assertRange(0, shift, bitSize(fmt))
+        assertRange(0, off, 0xff)
+
+        return this.mkOp(op, fmt, dst.index) | (shift << 8) | off
     }
 
     private catchUpAssembly() {
@@ -649,7 +689,6 @@ class OpWriter {
     }
 
     patchLabels() {
-        this.emitLabel(this.bot)
         for (const l of this.labels) {
             assert(l.offset != -1)
             for (const u of l.uses) {
@@ -757,6 +796,11 @@ class VariableScope {
     }
 }
 
+enum RefreshMS {
+    Never = 0,
+    Normal = 1, // 500ms
+}
+
 class Program {
     roles = new VariableScope(null)
     globals = new VariableScope(this.roles)
@@ -767,6 +811,8 @@ class Program {
     intLiterals: number[] = []
     writer: OpWriter
     proc: Procedure
+    sysSpec = serviceSpecificationFromName("_system")
+    refreshMS: number[] = [0, 500]
 
     constructor(public source: string) {}
 
@@ -777,9 +823,16 @@ class Program {
         return `(${ln},${col})`
     }
 
-    error(range: number[] | estree.BaseNode, msg: string): ValueDesc {
-        if (!Array.isArray(range)) range = range.range
-        console.error(`${this.indexToPos(range[0])}: ${msg}`)
+    throwError(expr: estree.BaseNode, msg: string): never {
+        const err = new Error(msg)
+        ;(err as any).sourceNode = expr
+        throw err
+    }
+
+    reportError(range: number[], msg: string): ValueDesc {
+        console.error(
+            `${this.indexToPos(range[0])}: ${msg} (${this.sourceFrag(range)})`
+        )
         return values.error
     }
 
@@ -821,10 +874,10 @@ class Program {
 
     private finalizeDispatchers() {
         for (const r of this.roles.list) {
-            const d = (r as Role).dispatcher
-            if (d)
+            const disp = (r as Role).dispatcher
+            if (disp)
                 // forever!
-                this.withProcedure(d, wr => {
+                this.withProcedure(disp, wr => {
                     wr.emitJump(wr.top)
                 })
         }
@@ -847,7 +900,7 @@ class Program {
 
     private forceName(pat: estree.Expression | estree.Pattern) {
         const r = idName(pat)
-        if (!r) this.error(pat, "only simple identifiers supported")
+        if (!r) this.throwError(pat, "only simple identifiers supported")
         return (pat as estree.Identifier).name
     }
 
@@ -857,13 +910,9 @@ class Program {
         if (expr.callee.type != "MemberExpression") return null
         if (idName(expr.callee.object) != "roles") return null
         const serv = this.forceName(expr.callee.property)
-        if (expr.arguments.length != 0)
-            return this.error(
-                expr,
-                `services.${serv}() currently doesn't take arguments`
-            )
+        this.requireArgs(expr, 0)
         const spec = serviceSpecificationFromName(serv)
-        if (!spec) return this.error(expr.callee, "no such service: " + serv)
+        if (!spec) this.throwError(expr.callee, "no such service: " + serv)
         return new Role(decl, this.roles, spec)
     }
 
@@ -872,7 +921,7 @@ class Program {
     }
 
     private emitVariableDeclaration(decls: estree.VariableDeclaration) {
-        if (decls.kind != "var") this.error(decls, "only 'var' supported")
+        if (decls.kind != "var") this.throwError(decls, "only 'var' supported")
         for (const decl of decls.declarations) {
             const id = this.forceName(decl.id)
             const r = this.parseRole(decl)
@@ -893,8 +942,10 @@ class Program {
         })
     }
 
+    private ignore(val: ValueDesc) {}
+
     private emitExpressionStatement(stmt: estree.ExpressionStatement) {
-        this.emitExpr(stmt.expression)
+        this.ignore(this.emitExpr(stmt.expression))
     }
 
     private emitHandler(
@@ -902,6 +953,14 @@ class Program {
         func: estree.ArrowFunctionExpression
     ): Procedure {
         const proc = new Procedure(this, name)
+        this.withProcedure(proc, wr => {
+            if (func.body.type == "BlockStatement") {
+                for (const stmt of func.body.body) this.emitStmt(stmt)
+            } else {
+                this.ignore(this.emitExpr(func.body))
+            }
+            wr.emitOp(Op.RET)
+        })
         return proc
     }
 
@@ -910,6 +969,14 @@ class Program {
         if (!b) return ""
         if (b - a > 30) b = a + 30
         return this.source.slice(a, b).replace(/[^a-zA-Z0-9_]+/g, "_")
+    }
+
+    private requireArgs(expr: estree.CallExpression, num: number) {
+        if (expr.arguments.length != num)
+            this.throwError(
+                expr,
+                `${num} arguments required; got ${expr.arguments.length}`
+            )
     }
 
     private emitEventCall(
@@ -924,7 +991,7 @@ class Program {
                     expr.arguments.length != 1 ||
                     expr.arguments[0].type != "ArrowFunctionExpression"
                 )
-                    return this.error(expr, ".sub() requires a single handler")
+                    this.throwError(expr, ".sub() requires a single handler")
                 const handler = this.emitHandler(
                     this.codeName(expr.callee),
                     expr.arguments[0]
@@ -941,7 +1008,54 @@ class Program {
                 })
                 return values.zero
         }
-        return this.error(expr, `events don't have property ${prop}`)
+        this.throwError(expr, `events don't have property ${prop}`)
+    }
+
+    private emitRegisterCall(
+        expr: estree.CallExpression,
+        obj: ValueDesc,
+        prop: string
+    ): ValueDesc {
+        const role = obj.cell as Role
+        assertRange(0, obj.spec.identifier, 0x1ff)
+        const regcode = role.encode() | obj.spec.identifier
+        const refresh =
+            obj.spec.kind == "const" ? RefreshMS.Never : RefreshMS.Normal
+        const wr = this.writer
+        switch (prop) {
+            case "read":
+                this.requireArgs(expr, 0)
+                wr.emitOp(Op.GET_REG, refresh, 0, regcode)
+                if (obj.spec.fields.length == 1) {
+                    const v = wr.allocReg()
+                    wr.emitBufOp(Op.GET_BUFFER, v, 0, obj.spec.fields[0])
+                    return v
+                } else {
+                    const r = mkValue(ValueKind.JD_VALUE_SEQ, 0, role)
+                    r.spec = obj.spec
+                    return r
+                }
+            case "write":
+                this.requireArgs(expr, obj.spec.fields.length)
+                let tmpreg: ValueDesc
+                let off = 0
+                wr.push()
+                for (let i = 0; i < expr.arguments.length; ++i) {
+                    let v = this.emitExpr(expr.arguments[i])
+                    if (v.kind != ValueKind.REG) {
+                        if (!tmpreg) tmpreg = wr.allocReg(true)
+                        wr.emitLoad(tmpreg, v)
+                        v = tmpreg
+                    }
+                    const f = obj.spec.fields[i]
+                    wr.emitBufOp(Op.SET_BUFFER, v, off, f)
+                    off += Math.abs(f.storage)
+                }
+                wr.emitOp(Op.SET_REG, 0, 0, regcode)
+                wr.pop()
+                return values.zero
+        }
+        this.throwError(expr, `events don't have property ${prop}`)
     }
 
     private emitCallExpression(expr: estree.CallExpression): ValueDesc {
@@ -951,16 +1065,29 @@ class Program {
             switch (obj.kind) {
                 case ValueKind.JD_EVENT:
                     return this.emitEventCall(expr, obj, prop)
+                case ValueKind.JD_REG:
+                    return this.emitRegisterCall(expr, obj, prop)
             }
         }
-        return this.error(expr, "unhandled call")
+        switch (idName(expr.callee)) {
+            case "wait":
+                this.requireArgs(expr, 1)
+                this.writer.emitOp(Op.WAIT_PKT)
+                break
+        }
+        this.throwError(expr, "unhandled call")
     }
 
     private emitIdentifier(expr: estree.Identifier): ValueDesc {
         const id = this.forceName(expr)
         const cell = this.locals.lookup(id)
-        if (!cell) return this.error(expr, "unknown name: " + id)
+        if (!cell) this.throwError(expr, "unknown name: " + id)
         return cell.value()
+    }
+
+    private matchesSpecName(pi: jdspec.PacketInfo, id: string) {
+        // TODO camel case
+        return pi.name == id
     }
 
     private emitMemberExpression(expr: estree.MemberExpression): ValueDesc {
@@ -971,29 +1098,39 @@ class Program {
             const id = this.forceName(expr.property)
             let r: ValueDesc
 
+            let generic: jdspec.PacketInfo
+            for (const p of this.sysSpec.packets) {
+                if (this.matchesSpecName(p, id)) generic = p
+            }
+
             for (const p of role.spec.packets) {
-                if (!matchesSpecName(p, id)) continue
-                if (isRegister(p)) {
-                    assert(!r)
-                    r = mkValue(ValueKind.JD_REG, p.identifier, role)
-                    r.spec = p
-                }
-                if (isEvent(p)) {
-                    assert(!r)
-                    r = mkValue(ValueKind.JD_EVENT, p.identifier, role)
-                    r.spec = p
+                if (
+                    this.matchesSpecName(p, id) ||
+                    (generic?.identifier == p.identifier &&
+                        generic?.kind == p.kind)
+                ) {
+                    if (isRegister(p)) {
+                        assert(!r)
+                        r = mkValue(ValueKind.JD_REG, p.identifier, role)
+                        r.spec = p
+                    }
+                    if (isEvent(p)) {
+                        assert(!r)
+                        r = mkValue(ValueKind.JD_EVENT, p.identifier, role)
+                        r.spec = p
+                    }
                 }
             }
 
             if (!r)
-                return this.error(
+                this.throwError(
                     expr,
                     `role ${role.getName()} has no member ${id}`
                 )
             return r
         }
 
-        return this.error(expr, `unhandled member ${idName(expr.property)}`)
+        this.throwError(expr, `unhandled member ${idName(expr.property)}`)
 
         function isRegister(pi: jdspec.PacketInfo) {
             return pi.kind == "ro" || pi.kind == "rw" || pi.kind == "const"
@@ -1002,34 +1139,36 @@ class Program {
         function isEvent(pi: jdspec.PacketInfo) {
             return pi.kind == "event"
         }
-
-        function matchesSpecName(pi: jdspec.PacketInfo, id: string) {
-            return pi.name == id // TODO camelize
-        }
     }
 
     private emitLiteral(expr: estree.Literal): ValueDesc {
-        return this.error(expr, "unhandled literal")
+        let v = expr.value
+        if (v === true) v = 1
+        else if (v === false) v = 0
+        else if (v === null || v === undefined) v = 0
+
+        if (typeof v == "number") return this.writer.emitLiteral(v)
+        this.throwError(expr, "unhandled literal: " + v)
     }
 
     private emitAssignmentExpression(
         expr: estree.AssignmentExpression
     ): ValueDesc {
-        return this.error(expr, "unhandled assignment")
+        this.throwError(expr, "unhandled assignment")
     }
 
     private emitBinaryExpression(expr: estree.BinaryExpression): ValueDesc {
-        return this.error(expr, "unhandled operator")
+        this.throwError(expr, "unhandled operator")
     }
 
     private emitUnaryExpression(expr: estree.UnaryExpression): ValueDesc {
-        return this.error(expr, "unhandled operator")
+        this.throwError(expr, "unhandled operator")
     }
 
     private expectExpr(expr: estree.Expression, kind: ValueKind): ValueDesc {
         const r = this.emitExpr(expr)
         if (r.kind != kind && r.kind != ValueKind.ERROR)
-            return this.error(
+            return this.throwError(
                 expr,
                 `expecting ${stringifyValueKind(
                     kind
@@ -1038,7 +1177,9 @@ class Program {
         return r
     }
 
-    private emitExpr(expr: estree.Expression | estree.Super): ValueDesc {
+    private emitExpr(
+        expr: estree.Expression | estree.Super | estree.SpreadElement
+    ): ValueDesc {
         switch (expr.type) {
             case "CallExpression":
                 return this.emitCallExpression(expr)
@@ -1056,33 +1197,46 @@ class Program {
                 return this.emitUnaryExpression(expr)
             default:
                 console.log(expr)
-                return this.error(expr, "unhandled expr: " + expr.type)
+                return this.throwError(expr, "unhandled expr: " + expr.type)
         }
     }
 
-    private emitStmt(stmt: estree.BaseStatement) {
-        if (stmt.range) {
-            let [startp, endp] = stmt.range
+    private sourceFrag(range: number[]) {
+        if (range) {
+            let [startp, endp] = range
             if (endp === undefined) endp = startp + 60
             endp = Math.min(endp, startp + 60)
-            const src = this.source.slice(startp, endp).replace(/\n[^]*/, "...")
-            this.writer.emitComment(src)
+            return this.source.slice(startp, endp).replace(/\n[^]*/, "...")
         }
 
-        switch (stmt.type) {
-            case "Program":
-                return this.emitProgram(stmt as estree.Program)
-            case "ExpressionStatement":
-                return this.emitExpressionStatement(
-                    stmt as estree.ExpressionStatement
-                )
-            case "VariableDeclaration":
-                return this.emitVariableDeclaration(
-                    stmt as estree.VariableDeclaration
-                )
-            default:
-                console.error(stmt)
-                this.error(stmt, `unhandled type: ${stmt.type}`)
+        return null
+    }
+
+    private emitStmt(stmt: estree.BaseStatement) {
+        const src = this.sourceFrag(stmt.range)
+        if (src) this.writer.emitComment(src)
+
+        try {
+            switch (stmt.type) {
+                case "Program":
+                    return this.emitProgram(stmt as estree.Program)
+                case "ExpressionStatement":
+                    return this.emitExpressionStatement(
+                        stmt as estree.ExpressionStatement
+                    )
+                case "VariableDeclaration":
+                    return this.emitVariableDeclaration(
+                        stmt as estree.VariableDeclaration
+                    )
+                default:
+                    console.error(stmt)
+                    this.throwError(stmt, `unhandled type: ${stmt.type}`)
+            }
+        } catch (e) {
+            if (e.sourceNode !== undefined) {
+                const node = e.sourceNode || stmt
+                this.reportError(node.range, e.message)
+            }
         }
     }
 
@@ -1093,7 +1247,7 @@ class Program {
                 range: true,
             })
         } catch (e) {
-            if (e.description) this.error([e.index], e.description)
+            if (e.description) this.reportError([e.index], e.description)
             else throw e
             return
         }
