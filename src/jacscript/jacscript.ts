@@ -216,19 +216,23 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
         case Op.GET_BUFFER:
             return `R${dst} := buf[${offset}] @ ${numfmt()}`
         case Op.GET_REG:
-            return `buf := ${jdreg()} refresh[${subop}]`
+            return `get_reg(${jdreg()}, refresh=${subop})`
         case Op.SET_REG:
-            return `${jdreg()} := buf`
+            return `set_reg(${jdreg()})`
         case Op.WAIT_REG:
             return `wait ${jdreg()} refresh[${subop}]`
         case Op.WAIT_PKT:
             return `wait pkt from ${role()}`
         case Op.SET_TIMEOUT:
-            return `set timeout ${arg} ms`
+            return `set timeout ${arg16(arg)} ms`
+        case Op.YIELD:
+            return `yield`
+        default:
+            return `unknown (0x${op.toString(16)})`
     }
 
     function jdreg() {
-        return `${role()}[${code}]`
+        return `${role()}.reg_0x${code.toString(16)}`
     }
 
     function role() {
@@ -387,6 +391,7 @@ interface ValueDesc {
     index: number
     cell?: Cell
     spec?: jdspec.PacketInfo
+    litValue?: number
 }
 
 function oops(msg: string): never {
@@ -480,22 +485,27 @@ class OpWriter {
     }
 
     emitLiteral(v: number) {
-        if (isNaN(v)) return specialVal(ValueSpecial.NAN)
-        if ((v | 0) == v) {
+        let r: ValueDesc
+        if (isNaN(v)) {
+            r = specialVal(ValueSpecial.NAN)
+        } else if ((v | 0) == v) {
             if (0 <= v && v <= 0x7fff) {
-                return mkValue(ValueKind.SMALL_INT, v)
+                r = mkValue(ValueKind.SMALL_INT, v)
             } else {
-                return mkValue(
+                r = mkValue(
                     ValueKind.INT,
                     addUnique(this.parent.parent.intLiterals, v)
                 )
             }
         } else {
-            return mkValue(
+            r = mkValue(
                 ValueKind.FLOAT,
                 addUnique(this.parent.parent.floatLiterals, v)
             )
         }
+
+        r.litValue = v
+        return r
 
         function addUnique(arr: number[], v: number) {
             let idx = arr.indexOf(v)
@@ -524,6 +534,14 @@ class OpWriter {
         return (this.arg16(v) & 0x0ff0) == 0
     }
 
+    isWritable(v: ValueDesc) {
+        return (
+            this.isReg(v) ||
+            v.kind == ValueKind.LOCAL ||
+            v.kind == ValueKind.GLOBAL
+        )
+    }
+
     isReg(v: ValueDesc) {
         return v.kind == ValueKind.REG
     }
@@ -545,6 +563,10 @@ class OpWriter {
         const instr = this.mkOp(op, subop, dst)
         assertRange(0, arg, 0xffff)
         this.emitInstr(instr | arg)
+    }
+
+    emitSetTimeout(time: ValueDesc) {
+        this.emitOp(Op.SET_TIMEOUT, 0, 0, this.arg16(time))
     }
 
     emitBufOp(op: Op, dst: ValueDesc, off: number, mem: jdspec.PacketMember) {
@@ -575,7 +597,7 @@ class OpWriter {
         assertRange(0, shift, bitSize(fmt))
         assertRange(0, off, 0xff)
 
-        return this.mkOp(op, fmt, dst.index) | (shift << 8) | off
+        this.emitInstr(this.mkOp(op, fmt, dst.index) | (shift << 8) | off)
     }
 
     private catchUpAssembly() {
@@ -723,6 +745,7 @@ class OpWriter {
 
     emitStore(dst: ValueDesc, src: ValueDesc) {
         assert(this.isReg(src))
+        assert(this.isWritable(dst))
         this.emitInstr(this.mkOp(Op.STORE, 0, src.index) | this.arg16(dst))
     }
 
@@ -1040,6 +1063,9 @@ class Program {
                 let tmpreg: ValueDesc
                 let off = 0
                 wr.push()
+                let sz = 0
+                for (const f of obj.spec.fields) sz += Math.abs(f.storage)
+                wr.emitOp(Op.SETUP_BUFFER, 0, 0, sz)
                 for (let i = 0; i < expr.arguments.length; ++i) {
                     let v = this.emitExpr(expr.arguments[i])
                     if (v.kind != ValueKind.REG) {
@@ -1050,12 +1076,21 @@ class Program {
                     const f = obj.spec.fields[i]
                     wr.emitBufOp(Op.SET_BUFFER, v, off, f)
                     off += Math.abs(f.storage)
+                    assert(off <= sz)
                 }
                 wr.emitOp(Op.SET_REG, 0, 0, regcode)
                 wr.pop()
                 return values.zero
         }
         this.throwError(expr, `events don't have property ${prop}`)
+    }
+
+    private multExpr(v: ValueDesc, scale: number) {
+        if (v.litValue !== undefined)
+            return this.writer.emitLiteral(v.litValue * scale)
+        const r = this.writer.allocReg()
+        this.writer.emitBin(OpBinary.MUL, r, v, this.writer.emitLiteral(scale))
+        return r
     }
 
     private emitCallExpression(expr: estree.CallExpression): ValueDesc {
@@ -1072,8 +1107,11 @@ class Program {
         switch (idName(expr.callee)) {
             case "wait":
                 this.requireArgs(expr, 1)
-                this.writer.emitOp(Op.WAIT_PKT)
-                break
+                let time = this.emitExpr(expr.arguments[0])
+                time = this.multExpr(time, 1000)
+                this.writer.emitSetTimeout(time)
+                this.writer.emitOp(Op.YIELD)
+                return values.zero
         }
         this.throwError(expr, "unhandled call")
     }
@@ -1151,9 +1189,67 @@ class Program {
         this.throwError(expr, "unhandled literal: " + v)
     }
 
+    private lookupVar(
+        expr: estree.Expression | estree.Pattern,
+        forceVar = false
+    ) {
+        const name = this.forceName(expr)
+        const r = this.locals.lookup(name)
+        if (!r) this.throwError(expr, `can't find '${name}'`)
+        if (forceVar && !(r instanceof Variable))
+            this.throwError(expr, "expecting variable")
+        return r
+    }
+
+    private requireRuntimeValue(v: ValueDesc) {
+        switch (v.kind) {
+            case ValueKind.REG:
+            case ValueKind.LOCAL:
+            case ValueKind.GLOBAL:
+            case ValueKind.FLOAT:
+            case ValueKind.INT:
+            case ValueKind.SPECIAL:
+            case ValueKind.SMALL_INT:
+                break
+            default:
+                this.throwError(null, "value required here")
+        }
+    }
+
     private emitAssignmentExpression(
         expr: estree.AssignmentExpression
     ): ValueDesc {
+        const src = this.emitExpr(expr.right)
+        const wr = this.writer
+        let left = expr.left
+        if (left.type == "ArrayPattern") {
+            if (src.kind == ValueKind.JD_VALUE_SEQ) {
+                let off = 0
+                wr.push()
+                const tmpreg = wr.allocReg()
+                for (let i = 0; i < left.elements.length; ++i) {
+                    const pat = left.elements[i]
+                    const vr = this.lookupVar(pat, true)
+                    const f = src.spec.fields[i]
+                    if (!f)
+                        this.throwError(
+                            pat,
+                            `not enough fields in ${src.spec.name}`
+                        )
+                    wr.emitBufOp(Op.GET_BUFFER, tmpreg, off, f)
+                    off += Math.abs(f.storage)
+                    wr.emitStore(vr.value(), tmpreg)
+                }
+                wr.pop()
+            } else {
+                this.throwError(expr, "expecting a multi-field register read")
+            }
+            return src
+        } else if (left.type == "Identifier") {
+            this.requireRuntimeValue(src)
+            wr.emitStore(this.lookupVar(left, true).value(), src)
+            return src
+        }
         this.throwError(expr, "unhandled assignment")
     }
 
