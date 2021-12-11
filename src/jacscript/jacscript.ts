@@ -1,6 +1,6 @@
 import * as esprima from "esprima"
 import * as estree from "estree"
-import { NumberFormat } from "../jacdac"
+import { range } from "../jdom/utils"
 import { serviceSpecificationFromName } from "../jdom/spec"
 
 export interface SMap<T> {
@@ -19,12 +19,15 @@ export interface SMap<T> {
 // $code    - 8:0        9 bit register or command code
 // $ms      - $subop     delay in miliseconds, refresh_ms_value[] index
 // $fn      - $right     points into functions section
+// $rtfn    - $right     one of RtFunction
+// $opcnt   - $dst       number of args to pass to call
 // $str     - $left      points into string_literals section
 // $offset  - $right
 // $shift   - $left
 // $numfmt  - $subop
 
 export const NUM_REGS = 16
+
 export enum ValueKind {
     REG = 0x0,
     LOCAL = 0x1,
@@ -41,6 +44,8 @@ export enum ValueKind {
     JD_REG = 0x101,
     JD_ROLE = 0x102,
     JD_VALUE_SEQ = 0x103,
+    JD_CURR_BUFFER = 0x104,
+    JD_STRING = 0x105,
 
     ERROR = 0x200,
 }
@@ -60,10 +65,11 @@ export enum Op {
     UNARY = 0x02, // $dst := $subop $arg16
     STORE = 0x03, // $arg16 := $src
     JUMP = 0x04, // jump $subop($src) $arg16 (offset)
-    CALL = 0x05, // call $fn
-    CALL_BG = 0x06, // callbg $fn (max pending?)
+    CALL = 0x05, // call $fn/$opcnt
+    CALL_BG = 0x06, // callbg $fn/$opcnt (max pending?)
+    CALL_RT = 0x11, // callrt $rtfn/$opcnt
     RET = 0x07, // ret
-    SPRINTF = 0x10, // buffer[$offset] = $str % r0,...
+    FORMAT = 0x10, // buffer[$offset] = $str % r0,...
     SETUP_BUFFER = 0x20, // clear buffer sz=$offset
     SET_BUFFER = 0x21, // buffer[$offset @ $numfmt] := $src
     GET_BUFFER = 0x22, // $dst := buffer[$offset @ $numfmt]
@@ -73,6 +79,10 @@ export enum Op {
     WAIT_PKT = 0x83, // wait for any pkt from $role
     YIELD = 0x84, // yield
     SET_TIMEOUT = 0x90, // set_timeout $arg16 ms
+}
+
+export enum RtFunction {
+    CloudUpload = 0x01,
 }
 
 export enum OpBinary {
@@ -119,10 +129,16 @@ export enum OpFmt {
     F64 = 0b1011,
 }
 
+export enum OpFormat {
+    None = 0,
+    CurlyAlpha = 1,
+}
+
 const sample = `
 var btnA = roles.button()
 var color = roles.color()
-var led = roles.lightbulb()
+var led = roles.lightBulb()
+var display = roles.characterScreen()
 var r, g, b, tint
 
 btnA.down.sub(() => {
@@ -131,7 +147,7 @@ btnA.down.sub(() => {
   [r, g, b] = color.reading.read()
   tint = (r + g + 2 * b) / (r + g + b)
   upload("color", r, g, b, tint)
-  display.text.write(format("t={0} {1}", tint, r))
+  display.message.write(format("t={0} {1}", tint, r))
   led.brightness.write(0)
 })
 `
@@ -190,8 +206,6 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
     const roleidx = (instr >> 9) & 0x7f
     const code = instr & 0x1ff
 
-    // TODO include resolution context with roles, variables, functions, refresh_ms
-
     switch (op) {
         case Op.BINARY:
             return `R${dst} := ${arg8(left)} ${bincode()} ${arg8(right)}`
@@ -202,13 +216,17 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
         case Op.JUMP:
             return "jmp " + jmpcode()
         case Op.CALL:
-            return `call ${resolver.funName(right)}_F${right}`
+            return `call ${resolver.funName(right)}_F${right} #${dst}`
         case Op.CALL_BG:
-            return `callbg ${resolver.funName(right)}_F${right}`
+            return `callbg ${resolver.funName(right)}_F${right} #${dst}`
+        case Op.CALL_RT:
+            return `callrt ${right} #${dst}`
         case Op.RET:
             return `ret`
-        case Op.SPRINTF:
-            return `buf[${left}...] := format(str-${offset})`
+        case Op.FORMAT:
+            return `buf[${offset}...] := format/${subop}(str-${left}, R0, ..., R${
+                dst - 1
+            })`
         case Op.SETUP_BUFFER:
             return `clear buf[0...${offset}]`
         case Op.SET_BUFFER:
@@ -420,6 +438,15 @@ function idName(pat: estree.BaseExpression) {
     return (pat as estree.Identifier).name
 }
 
+function addUnique<T>(arr: T[], v: T) {
+    let idx = arr.indexOf(v)
+    if (idx < 0) {
+        idx = arr.length
+        arr.push(v)
+    }
+    return idx
+}
+
 function specialVal(sp: ValueSpecial) {
     return mkValue(ValueKind.SPECIAL, sp)
 }
@@ -434,6 +461,8 @@ class Label {
     offset = -1
     constructor(public name: string) {}
 }
+
+const BUFFER_REG = NUM_REGS + 1
 
 class OpWriter {
     private allocatedRegs: ValueDesc[] = []
@@ -461,20 +490,39 @@ class OpWriter {
         }
     }
 
-    allocReg(shortTerm = false): ValueDesc {
-        let regno = -1
-        for (let i = 0; i < NUM_REGS; i++) {
-            if (!(this.allocatedRegsMask & (1 << i))) {
-                regno = i
-                if (!shortTerm) break
-            }
-        }
+    allocBuf(): ValueDesc {
+        if (this.allocatedRegsMask & (1 << BUFFER_REG))
+            this.parent.parent.throwError(null, "buffer already in use")
+        return this.doAlloc(BUFFER_REG, ValueKind.JD_CURR_BUFFER)
+    }
+
+    private doAlloc(regno: number, kind = ValueKind.REG) {
         assert(regno != -1)
+        if (this.allocatedRegsMask & (1 << regno))
+            this.parent.parent.throwError(
+                null,
+                `register ${regno} already allocated`
+            )
         this.allocatedRegsMask |= 1 << regno
-        const r = mkValue(ValueKind.REG, regno)
+        const r = mkValue(kind, regno)
         this.allocatedRegs.push(r)
         this.scopes[this.scopes.length - 1].push(r)
         return r
+    }
+
+    allocArgs(num: number): ValueDesc[] {
+        return range(num).map(x => this.doAlloc(x))
+    }
+
+    allocReg(): ValueDesc {
+        let regno = -1
+        for (let i = NUM_REGS - 1; i >= 0; i--) {
+            if (!(this.allocatedRegsMask & (1 << i))) {
+                regno = i
+                break
+            }
+        }
+        return this.doAlloc(regno)
     }
 
     _freeReg(v: ValueDesc) {
@@ -482,6 +530,13 @@ class OpWriter {
         assert(idx >= 0)
         this.allocatedRegs.splice(idx, 1)
         this.allocatedRegsMask &= ~(1 << v.index)
+    }
+
+    emitString(s: string) {
+        return mkValue(
+            ValueKind.JD_STRING,
+            addUnique(this.parent.parent.stringLiterals, s)
+        )
     }
 
     emitLiteral(v: number) {
@@ -506,15 +561,6 @@ class OpWriter {
 
         r.litValue = v
         return r
-
-        function addUnique(arr: number[], v: number) {
-            let idx = arr.indexOf(v)
-            if (idx < 0) {
-                idx = arr.length
-                arr.push(v)
-            }
-            return idx
-        }
     }
 
     arg16(v: ValueDesc) {
@@ -735,6 +781,10 @@ class OpWriter {
         this.emitInstr(this.mkOp(Op.CALL) | proc.index)
     }
 
+    emitCallRt(rt: RtFunction, numargs: number) {
+        this.emitInstr(this.mkOp(Op.CALL_RT, 0, numargs) | rt)
+    }
+
     emitLoad(dst: ValueDesc, src: ValueDesc) {
         assert(this.isReg(dst))
         this.emitInstr(
@@ -744,29 +794,33 @@ class OpWriter {
     }
 
     emitStore(dst: ValueDesc, src: ValueDesc) {
-        assert(this.isReg(src))
-        assert(this.isWritable(dst))
+        assert(this.isReg(src), "store-reg")
+        assert(this.isWritable(dst), "store-val")
         this.emitInstr(this.mkOp(Op.STORE, 0, src.index) | this.arg16(dst))
     }
 
     emitUnary(op: OpUnary, dst: ValueDesc, arg: ValueDesc) {
         this.push()
 
-        const dst0 = this.isReg(dst) ? dst : this.allocReg(true)
+        const dst0 = this.isReg(dst) ? dst : this.allocReg()
         this.emitInstr(this.mkOp(Op.UNARY, op, dst0.index) | this.arg16(arg))
         if (dst != dst0) this.emitStore(dst, dst0)
 
         this.pop()
     }
 
+    asReg(v: ValueDesc) {
+        if (this.isReg(v)) return v
+        return this.emitLoad(this.allocReg(), v)
+    }
+
     emitBin(op: OpBinary, dst: ValueDesc, left: ValueDesc, right: ValueDesc) {
         this.push()
 
-        const dst0 = this.isReg(dst) ? dst : this.allocReg(true)
+        const dst0 = this.isReg(dst) ? dst : this.allocReg()
 
-        if (!this.isArg8(left)) left = this.emitLoad(this.allocReg(true), left)
-        if (!this.isArg8(right))
-            right = this.emitLoad(this.allocReg(true), right)
+        if (!this.isArg8(left)) left = this.asReg(left)
+        if (!this.isArg8(right)) right = this.asReg(right)
 
         this.emitInstr(
             this.mkOp(Op.BINARY, op, dst0.index) |
@@ -832,6 +886,7 @@ class Program {
     procs: Procedure[] = []
     floatLiterals: number[] = []
     intLiterals: number[] = []
+    stringLiterals: string[] = []
     writer: OpWriter
     proc: Procedure
     sysSpec = serviceSpecificationFromName("_system")
@@ -934,13 +989,16 @@ class Program {
         if (idName(expr.callee.object) != "roles") return null
         const serv = this.forceName(expr.callee.property)
         this.requireArgs(expr, 0)
-        const spec = serviceSpecificationFromName(serv)
+        const spec = serviceSpecificationFromName(serv.toLowerCase())
         if (!spec) this.throwError(expr.callee, "no such service: " + serv)
         return new Role(decl, this.roles, spec)
     }
 
     private emitStore(trg: Variable, src: ValueDesc) {
-        this.writer.emitUnary(OpUnary.ID, trg.value(), src)
+        const wr = this.writer
+        wr.push()
+        wr.emitStore(trg.value(), wr.asReg(src))
+        wr.pop()
     }
 
     private emitVariableDeclaration(decls: estree.VariableDeclaration) {
@@ -1068,8 +1126,16 @@ class Program {
                 wr.emitOp(Op.SETUP_BUFFER, 0, 0, sz)
                 for (let i = 0; i < expr.arguments.length; ++i) {
                     let v = this.emitExpr(expr.arguments[i])
+                    if (v.kind == ValueKind.JD_CURR_BUFFER) {
+                        if (i != expr.arguments.length - 1)
+                            this.throwError(
+                                expr.arguments[i + 1],
+                                "args can't follow a buffer"
+                            )
+                        break
+                    }
                     if (v.kind != ValueKind.REG) {
-                        if (!tmpreg) tmpreg = wr.allocReg(true)
+                        if (!tmpreg) tmpreg = wr.allocReg()
                         wr.emitLoad(tmpreg, v)
                         v = tmpreg
                     }
@@ -1093,7 +1159,21 @@ class Program {
         return r
     }
 
+    private emitArgs(args: (estree.Expression | estree.SpreadElement)[]) {
+        const wr = this.writer
+        const regs = wr.allocArgs(args.length)
+        wr.push()
+        for (let i = 0; i < args.length; i++) {
+            wr.push()
+            wr.emitLoad(regs[i], this.emitExpr(args[i]))
+            wr.pop()
+        }
+        wr.pop()
+    }
+
     private emitCallExpression(expr: estree.CallExpression): ValueDesc {
+        const wr = this.writer
+        const numargs = expr.arguments.length
         if (expr.callee.type == "MemberExpression") {
             const prop = idName(expr.callee.property)
             const obj = this.emitExpr(expr.callee.object)
@@ -1105,13 +1185,45 @@ class Program {
             }
         }
         switch (idName(expr.callee)) {
-            case "wait":
+            case "wait": {
                 this.requireArgs(expr, 1)
                 let time = this.emitExpr(expr.arguments[0])
                 time = this.multExpr(time, 1000)
-                this.writer.emitSetTimeout(time)
-                this.writer.emitOp(Op.YIELD)
+                wr.emitSetTimeout(time)
+                wr.emitOp(Op.YIELD)
                 return values.zero
+            }
+            case "upload": {
+                if (numargs == 0)
+                    this.throwError(expr, "upload() requires args")
+                wr.push()
+                const lbl = this.emitExpr(expr.arguments[0])
+                if (lbl.kind != ValueKind.JD_CURR_BUFFER)
+                    this.throwError(
+                        expr.arguments[0],
+                        "expecting buffer (string) here; got " +
+                            stringifyValueKind(lbl.kind)
+                    )
+                this.emitArgs(expr.arguments.slice(1))
+                wr.emitCallRt(RtFunction.CloudUpload, numargs - 1)
+                wr.pop()
+                return values.zero
+            }
+            case "format": {
+                const arg0 = expr.arguments[0]
+                if (arg0?.type != "Literal" || typeof arg0.value != "string")
+                    this.throwError(expr, "format() requires string arg")
+
+                this.emitArgs(expr.arguments.slice(1))
+                const r = wr.allocBuf()
+                const vd = wr.emitString(arg0.value)
+                wr.emitInstr(
+                    wr.mkOp(Op.FORMAT, OpFormat.CurlyAlpha, numargs - 1) |
+                        (vd.index << 8) |
+                        0
+                )
+                return r
+            }
         }
         this.throwError(expr, "unhandled call")
     }
@@ -1185,23 +1297,42 @@ class Program {
         else if (v === false) v = 0
         else if (v === null || v === undefined) v = 0
 
-        if (typeof v == "number") return this.writer.emitLiteral(v)
+        const wr = this.writer
+
+        if (typeof v == "string") {
+            const r = wr.allocBuf()
+            const vd = wr.emitString(v)
+            wr.emitInstr(
+                wr.mkOp(Op.FORMAT, OpFormat.None, 0) | (vd.index << 8) | 0
+            )
+            return r
+        }
+
+        if (typeof v == "number") return wr.emitLiteral(v)
         this.throwError(expr, "unhandled literal: " + v)
     }
 
-    private lookupVar(
-        expr: estree.Expression | estree.Pattern,
-        forceVar = false
-    ) {
+    private lookupCell(expr: estree.Expression | estree.Pattern) {
         const name = this.forceName(expr)
         const r = this.locals.lookup(name)
         if (!r) this.throwError(expr, `can't find '${name}'`)
-        if (forceVar && !(r instanceof Variable))
+        return r
+    }
+
+    private lookupVar(expr: estree.Expression | estree.Pattern) {
+        const r = this.lookupCell(expr)
+        if (!(r instanceof Variable))
             this.throwError(expr, "expecting variable")
         return r
     }
 
-    private requireRuntimeValue(v: ValueDesc) {
+    private emitSimpleValue(expr: estree.Expression) {
+        const r = this.emitExpr(expr)
+        this.requireRuntimeValue(expr, r)
+        return r
+    }
+
+    private requireRuntimeValue(node: estree.BaseNode, v: ValueDesc) {
         switch (v.kind) {
             case ValueKind.REG:
             case ValueKind.LOCAL:
@@ -1212,7 +1343,7 @@ class Program {
             case ValueKind.SMALL_INT:
                 break
             default:
-                this.throwError(null, "value required here")
+                this.throwError(node, "value required here")
         }
     }
 
@@ -1229,7 +1360,6 @@ class Program {
                 const tmpreg = wr.allocReg()
                 for (let i = 0; i < left.elements.length; ++i) {
                     const pat = left.elements[i]
-                    const vr = this.lookupVar(pat, true)
                     const f = src.spec.fields[i]
                     if (!f)
                         this.throwError(
@@ -1238,7 +1368,7 @@ class Program {
                         )
                     wr.emitBufOp(Op.GET_BUFFER, tmpreg, off, f)
                     off += Math.abs(f.storage)
-                    wr.emitStore(vr.value(), tmpreg)
+                    this.emitStore(this.lookupVar(pat), tmpreg)
                 }
                 wr.pop()
             } else {
@@ -1246,15 +1376,52 @@ class Program {
             }
             return src
         } else if (left.type == "Identifier") {
-            this.requireRuntimeValue(src)
-            wr.emitStore(this.lookupVar(left, true).value(), src)
+            this.requireRuntimeValue(expr.right, src)
+            this.emitStore(this.lookupVar(left), src)
             return src
         }
         this.throwError(expr, "unhandled assignment")
     }
 
     private emitBinaryExpression(expr: estree.BinaryExpression): ValueDesc {
-        this.throwError(expr, "unhandled operator")
+        const simpleOps: SMap<OpBinary> = {
+            "+": OpBinary.ADD,
+            "-": OpBinary.SUB,
+            "/": OpBinary.DIV,
+            "*": OpBinary.MUL,
+            "<": OpBinary.LT,
+            "<=": OpBinary.LE,
+            "==": OpBinary.EQ,
+            "===": OpBinary.EQ,
+            "!=": OpBinary.NE,
+            "!==": OpBinary.NE,
+            "&": OpBinary.AND,
+            "|": OpBinary.OR,
+        }
+
+        let op = expr.operator
+        let swap = false
+        if (op == ">") {
+            op = "<"
+            swap = true
+        }
+        if (op == ">=") {
+            op = "<="
+            swap = true
+        }
+
+        const op2 = simpleOps[op]
+        if (op2 === undefined) this.throwError(expr, "unhandled operator")
+
+        const wr = this.writer
+        const res = wr.allocReg()
+        wr.push()
+        const a = this.emitSimpleValue(expr.left)
+        const b = this.emitSimpleValue(expr.right)
+        if (swap) wr.emitBin(op2, res, b, a)
+        else wr.emitBin(op2, res, a, b)
+        wr.pop()
+        return res
     }
 
     private emitUnaryExpression(expr: estree.UnaryExpression): ValueDesc {
@@ -1332,6 +1499,9 @@ class Program {
             if (e.sourceNode !== undefined) {
                 const node = e.sourceNode || stmt
                 this.reportError(node.range, e.message)
+            } else {
+                this.reportError(stmt.range, "Internal error: " + e.message)
+                console.error(e.stack)
             }
         }
     }
