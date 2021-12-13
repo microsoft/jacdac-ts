@@ -46,7 +46,7 @@ import {
     serviceName,
     shortDeviceId,
 } from "./pretty"
-import { SystemCmd } from "../../jacdac-spec/dist/specconstants"
+import { SRV_CONTROL, SystemCmd } from "../../jacdac-spec/dist/specconstants"
 import { jdpack, jdunpack, PackedValues } from "./pack"
 import { serviceSpecificationFromClassIdentifier } from "./spec"
 
@@ -162,6 +162,7 @@ export class Packet {
 
     get serviceClass(): number {
         if (this.isMultiCommand) return read32(this._header, 4)
+        if (this.serviceIndex === 0) return SRV_CONTROL;
         return this.device?.serviceClassAt(this.serviceIndex)
     }
 
@@ -432,7 +433,7 @@ export class Packet {
     // helpers
     get friendlyDeviceName(): string {
         if (this.isMultiCommand) return "*"
-        return this.device?.friendlyName || this.deviceIdentifier
+        return this.device?.friendlyName || shortDeviceId(this.deviceIdentifier)
     }
     get friendlyServiceName(): string {
         let service_name: string
@@ -441,10 +442,14 @@ export class Packet {
         } else if (this.isPipe) {
             service_name = "PIPE"
         } else {
-            const serv_id = serviceName(this.serviceClass)
-            service_name = `${
-                serv_id === "?" ? hexNum(this.serviceClass) : serv_id
-            } (${this.serviceIndex})`
+            const sc = this.serviceClass
+            if (sc === undefined) return `(${this.serviceIndex})`
+            else {
+                const serv_id = serviceName(sc)
+                service_name = `${serv_id === "?" ? hexNum(sc) : serv_id} (${
+                    this.serviceIndex
+                })`
+            }
         }
         return service_name
     }

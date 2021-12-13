@@ -1,4 +1,4 @@
-import { META_TRACE } from "../constants"
+import { META_TRACE, META_TRACE_DESCRIPTION } from "../constants"
 import Packet from "../packet"
 import { printPacket } from "../pretty"
 import { randomDeviceId } from "../random"
@@ -30,7 +30,9 @@ export function cleanStack(text: string) {
 export function serializeToTrace(pkt: Packet, start?: number) {
     const data = toHex(pkt.toBuffer()).padEnd(84, " ")
     const t = roundWithPrecision(pkt.timestamp - (start || 0), 3)
-    const descr = printPacket(pkt, {}).replace(/\r?\n/g, " ")
+    const descr =
+        pkt.meta[META_TRACE_DESCRIPTION] ||
+        printPacket(pkt, {}).replace(/\r?\n/g, " ")
     let msg = `${t}\t${data}\t${descr}`
     const trace = pkt.meta[META_TRACE] as string
     if (trace) msg += "\n" + cleanStack(trace)
