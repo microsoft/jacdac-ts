@@ -24,6 +24,7 @@ export interface PacketFilterProps {
     resetIn?: boolean
     minPriority?: boolean
     requiresAck?: boolean
+    ack?: boolean
     log?: boolean
     productIdentifiers?: number[]
     flags?: string[]
@@ -83,6 +84,7 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
     let regGet: boolean = undefined
     let regSet: boolean = undefined
     let requiresAck: boolean = undefined
+    let ack: boolean = undefined
     let log: boolean = undefined
     let before: number = undefined
     let after: number = undefined
@@ -141,8 +143,10 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
                 minPriority = parseBoolean(value)
                 break
             case "requires-ack":
-            case "ack":
                 requiresAck = parseBoolean(value)
+                break
+            case "ack":
+                ack = parseBoolean(value)
                 break
             case "collapse-ack":
                 collapseAck = parseBoolean(value)
@@ -237,6 +241,7 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
         resetIn,
         minPriority,
         requiresAck,
+        ack,
         collapseAck,
         collapseNotImplemented,
         log,
@@ -283,6 +288,7 @@ function compileFilter(props: PacketFilterProps) {
         resetIn,
         minPriority,
         requiresAck,
+        ack,
         log,
         productIdentifiers,
         flags,
@@ -327,6 +333,8 @@ function compileFilter(props: PacketFilterProps) {
         )
     if (requiresAck !== undefined)
         filters.push(pkt => pkt.requiresAck === requiresAck)
+    if (ack !== undefined)
+        filters.push(pkt => pkt.isCRCAck === ack);
     if (flags) filters.push(pkt => hasAnyFlag(pkt))
     if (pipes !== undefined) filters.push(pkt => pkt.isPipe)
     if (port !== undefined) filters.push(pkt => pkt.pipePort === port)
