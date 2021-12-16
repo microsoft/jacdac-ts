@@ -1,43 +1,69 @@
 import * as esprima from "esprima"
+
 import * as estree from "estree"
 import { range } from "../jdom/utils"
 import { serviceSpecificationFromName } from "../jdom/spec"
+
+/*
+
+- FORMAT should maybe set the buffer size?
+- save registers before context switch
+- add role observers
+- get_reg option to return immediately
+
+*/
 
 export interface SMap<T> {
     [k: string]: T
 }
 
-// formats:
-// $op      - 31:24      JDVM_OP_*
-// $subop   - 23:20      JDVM_SUBOP_*
-// $dst     - 19:16      destination register index
-// $src     - $dst       used when $dst is actually source
-// $left    - 15:8       left argument of binary op (arg8 enc.)
-// $right   - 7:0        right argument of binary op (arg8 enc.)
-// $arg16   - 15:0       argument of unary ops (arg16 enc.)
-// $role    - 15:9       index into roles table
-// $code    - 8:0        9 bit register or command code
-// $ms      - $subop     delay in miliseconds, refresh_ms_value[] index
-// $fn      - $right     points into functions section
-// $rtfn    - $right     one of RtFunction
-// $opcnt   - $dst       number of args to pass to call
-// $str     - $left      points into string_literals section
-// $offset  - $right
-// $shift   - $left
-// $numfmt  - $subop
-
 export const NUM_REGS = 16
 
-export enum ValueKind {
-    REG = 0x0,
-    LOCAL = 0x1,
-    GLOBAL = 0x2,
-    FLOAT = 0x3,
-    INT = 0x4,
-    SPECIAL = 0x5,
-    RESERVED_6 = 0x6,
-    RESERVED_7 = 0x7,
-    SMALL_INT = 0x8, // until 0xF
+export enum OpTop {
+    SET_A = 0, // ARG[12]
+    SET_B = 1, // ARG[12]
+    SET_C = 2, // ARG[12]
+    SET_D = 3, // ARG[12]
+    SET_HIGH = 4, // A/B/C/D[2] ARG[10]
+
+    UNARY = 5, // OP[4] DST[4] SRC[4]
+    BINARY = 6, // OP[4] DST[4] SRC[4]
+
+    LOAD_CELL = 7, // DST[4] A:OP[2] B:OFF[6]
+    STORE_CELL = 8, // SRC[4] A:OP[2] B:OFF[6]
+
+    JMP = 9, // REG[4] BACK[1] IF_ZERO[1] B:OFF[6]
+    CALL = 10, // NUMREGS[4] BG[1] 0[1] B:OFF[6]
+
+    SYNC = 11, // A:ARG[4] OP[8]
+    ASYNC = 12, // D:SAVE_REGS[4] OP[8]
+}
+
+export enum OpAsync {
+    YIELD, // A-timeout in ms
+    CLOUD_UPLOAD, // A-numregs
+    QUERY_REG, // A-role, B-code, C-timeout
+    SET_REG, // A-role, B-code
+    _LAST,
+}
+
+export enum OpSync {
+    RETURN,
+    SETUP_BUFFER, // A-size
+    OBSERVE_ROLE, // A-role
+    FORMAT, // A-string-index B-numargs
+    MEMCPY, // A-string-index
+    _LAST,
+}
+
+export enum CellType {
+    LOCAL = 0,
+    GLOBAL = 1,
+    FLOAT_CONST = 2,
+    IDENTITY = 3,
+
+    BUFFER = 4, // arg=shift:numfmt, C=Offset
+    SPECIAL = 5, // arg=nan, regcode, role, ...
 
     // these cannot be emitted directly
     JD_EVENT = 0x100,
@@ -45,7 +71,9 @@ export enum ValueKind {
     JD_ROLE = 0x102,
     JD_VALUE_SEQ = 0x103,
     JD_CURR_BUFFER = 0x104,
-    JD_STRING = 0x105,
+    X_STRING = 0x105,
+    X_FP_REG = 0x106,
+    X_FLOAT = 0x107,
 
     ERROR = 0x200,
 }
@@ -57,32 +85,6 @@ export enum ValueSpecial {
     EV_CODE = 0x2, // or nan
     REG_CODE = 0x3, // or nan
     ROLE_ID = 0x4, // or nan
-}
-
-export enum Op {
-    INVALID = 0x00,
-    BINARY = 0x01, // $dst := $left $subop $right
-    UNARY = 0x02, // $dst := $subop $arg16
-    STORE = 0x03, // $arg16 := $src
-    JUMP = 0x04, // jump $subop($src) $arg16 (offset)
-    CALL = 0x05, // call $fn/$opcnt
-    CALL_BG = 0x06, // callbg $fn/$opcnt (max pending?)
-    CALL_RT = 0x11, // callrt $rtfn/$opcnt
-    RET = 0x07, // ret
-    FORMAT = 0x10, // buffer[$offset] = $str % r0,...
-    SETUP_BUFFER = 0x20, // clear buffer sz=$offset
-    SET_BUFFER = 0x21, // buffer[$offset @ $numfmt] := $src
-    GET_BUFFER = 0x22, // $dst := buffer[$offset @ $numfmt]
-    GET_REG = 0x80, // buffer := $role.$code (refresh: $ms)
-    SET_REG = 0x81, // $role.$code := buffer
-    WAIT_REG = 0x82, // wait for $role.$code change, refresh $ms
-    WAIT_PKT = 0x83, // wait for any pkt from $role
-    YIELD = 0x84, // yield
-    SET_TIMEOUT = 0x90, // set_timeout $arg16 ms
-}
-
-export enum RtFunction {
-    CloudUpload = 0x01,
 }
 
 export enum OpBinary {
@@ -104,16 +106,6 @@ export enum OpUnary {
     NOT = 0x2,
 }
 
-// FORWARD_* | BACK = BACK_*
-export enum OpJump {
-    FORWARD = 0x0,
-    BACK = 0x1,
-    FORWARD_IF_ZERO = 0x2,
-    BACK_IF_ZERO = 0x3,
-    FORWARD_IF_NOT_ZERO = 0x4,
-    BACK_IF_NOT_ZERO = 0x5,
-}
-
 // Size in bits is: 8 << (fmt & 0b11)
 // Format is ["u", "i", "f", "reserved"](fmt >> 2)
 export enum OpFmt {
@@ -127,11 +119,6 @@ export enum OpFmt {
     I64 = 0b0111,
     F32 = 0b1010,
     F64 = 0b1011,
-}
-
-export enum OpFormat {
-    None = 0,
-    CurlyAlpha = 1,
 }
 
 const sample = `
@@ -152,33 +139,33 @@ btnA.down.sub(() => {
 })
 `
 
-export function stringifyValueKind(vk: ValueKind) {
+export function stringifyValueKind(vk: CellType) {
     switch (vk) {
-        case ValueKind.REG:
+        case CellType.REG:
             return "(reg)"
-        case ValueKind.LOCAL:
+        case CellType.LOCAL:
             return "local variable"
-        case ValueKind.GLOBAL:
+        case CellType.GLOBAL:
             return "global variable"
-        case ValueKind.FLOAT:
+        case CellType.FLOAT:
             return "float literal"
-        case ValueKind.INT:
+        case CellType.INT:
             return "int literal"
-        case ValueKind.SPECIAL:
+        case CellType.SPECIAL:
             return "special value"
-        case ValueKind.RESERVED_6:
+        case CellType.RESERVED_6:
             return "(reserved 6)"
-        case ValueKind.RESERVED_7:
+        case CellType.RESERVED_7:
             return "(reserved 7)"
-        case ValueKind.SMALL_INT:
+        case CellType.SMALL_INT:
             return "small int literal"
-        case ValueKind.JD_EVENT:
+        case CellType.JD_EVENT:
             return "Jacdac event"
-        case ValueKind.JD_REG:
+        case CellType.JD_REG:
             return "Jacdac register"
-        case ValueKind.JD_ROLE:
+        case CellType.JD_ROLE:
             return "Jacdac role"
-        case ValueKind.ERROR:
+        case CellType.ERROR:
             return "(error node)"
         default:
             return "ValueKind: 0x" + (vk as number).toString(16)
@@ -320,17 +307,17 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
         const idx = a & 0x0fff
         const r = resolver?.describeArg16(a) || ""
         switch (a >> 12) {
-            case ValueKind.REG:
+            case CellType.REG:
                 return `R${idx}`
-            case ValueKind.LOCAL:
+            case CellType.LOCAL:
                 return `${r}_L${idx}`
-            case ValueKind.GLOBAL:
+            case CellType.GLOBAL:
                 return `${r}_G${idx}`
-            case ValueKind.FLOAT:
+            case CellType.FLOAT:
                 return `${r}_F${idx}`
-            case ValueKind.INT:
+            case CellType.INT:
                 return `${r}_I${idx}`
-            case ValueKind.SPECIAL:
+            case CellType.SPECIAL:
                 switch (idx) {
                     case ValueSpecial.NAN:
                         return "NAN"
@@ -343,9 +330,9 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
                     default:
                         return `${r}_SPEC[${idx}]`
                 }
-            case ValueKind.RESERVED_6:
+            case CellType.RESERVED_6:
                 return `X6[${idx}]`
-            case ValueKind.RESERVED_7:
+            case CellType.RESERVED_7:
                 return `X7[${idx}]`
             default:
                 return `${a & ~0x8000}`
@@ -384,11 +371,10 @@ class Role extends Cell {
         assert(!!spec)
     }
     value(): ValueDesc {
-        return mkValue(ValueKind.JD_ROLE, this.index, this)
+        return mkValue(CellType.JD_ROLE, this.index, this)
     }
     encode() {
-        assert(this.index <= 0x7f)
-        return this.index << 9
+        return this.index
     }
 }
 
@@ -399,13 +385,13 @@ class Variable extends Cell {
         super(definition, scope)
     }
     value(): ValueDesc {
-        const kind = this.isLocal ? ValueKind.LOCAL : ValueKind.GLOBAL
+        const kind = this.isLocal ? CellType.LOCAL : CellType.GLOBAL
         return mkValue(kind, this.index, this)
     }
 }
 
 interface ValueDesc {
-    kind: ValueKind
+    kind: CellType
     index: number
     cell?: Cell
     spec?: jdspec.PacketInfo
@@ -425,12 +411,18 @@ function assertRange(min: number, v: number, max: number, desc = "value") {
     oops(`${desc}=${v} out of range [${min}, ${max}]`)
 }
 
-function mkValue(kind: ValueKind, index: number, cell?: Cell): ValueDesc {
+function mkValue(kind: CellType, index: number, cell?: Cell): ValueDesc {
     return {
         kind,
         index,
         cell,
     }
+}
+
+function floatVal(v: number) {
+    const r = mkValue(CellType.X_FLOAT, v)
+    r.litValue = v
+    return r
 }
 
 function idName(pat: estree.BaseExpression) {
@@ -448,12 +440,12 @@ function addUnique<T>(arr: T[], v: T) {
 }
 
 function specialVal(sp: ValueSpecial) {
-    return mkValue(ValueKind.SPECIAL, sp)
+    return mkValue(CellType.SPECIAL, sp)
 }
 
 const values = {
-    zero: mkValue(ValueKind.SMALL_INT, 0),
-    error: mkValue(ValueKind.ERROR, 0),
+    zero: floatVal(0),
+    error: mkValue(CellType.ERROR, 0),
 }
 
 class Label {
@@ -493,10 +485,10 @@ class OpWriter {
     allocBuf(): ValueDesc {
         if (this.allocatedRegsMask & (1 << BUFFER_REG))
             this.parent.parent.throwError(null, "buffer already in use")
-        return this.doAlloc(BUFFER_REG, ValueKind.JD_CURR_BUFFER)
+        return this.doAlloc(BUFFER_REG, CellType.JD_CURR_BUFFER)
     }
 
-    private doAlloc(regno: number, kind = ValueKind.REG) {
+    private doAlloc(regno: number, kind = CellType.X_FP_REG) {
         assert(regno != -1)
         if (this.allocatedRegsMask & (1 << regno))
             this.parent.parent.throwError(
@@ -534,27 +526,29 @@ class OpWriter {
 
     emitString(s: string) {
         return mkValue(
-            ValueKind.JD_STRING,
+            CellType.X_STRING,
             addUnique(this.parent.parent.stringLiterals, s)
         )
     }
 
-    emitLiteral(v: number) {
+    emitLiteral(dest: ValueDesc, v: number) {
+        assert(this.isReg(dest))
+
         let r: ValueDesc
         if (isNaN(v)) {
             r = specialVal(ValueSpecial.NAN)
         } else if ((v | 0) == v) {
             if (0 <= v && v <= 0x7fff) {
-                r = mkValue(ValueKind.SMALL_INT, v)
+                r = mkValue(CellType.SMALL_INT, v)
             } else {
                 r = mkValue(
-                    ValueKind.INT,
+                    CellType.INT,
                     addUnique(this.parent.parent.intLiterals, v)
                 )
             }
         } else {
             r = mkValue(
-                ValueKind.FLOAT,
+                CellType.FLOAT,
                 addUnique(this.parent.parent.floatLiterals, v)
             )
         }
@@ -564,14 +558,14 @@ class OpWriter {
     }
 
     arg16(v: ValueDesc) {
-        if (v.kind < ValueKind.SMALL_INT) {
+        if (v.kind < CellType.SMALL_INT) {
             assertRange(0, v.index, 0x0fff)
             return (v.kind << 12) | v.index
-        } else if (v.kind == ValueKind.SMALL_INT) {
+        } else if (v.kind == CellType.SMALL_INT) {
             assertRange(0, v.index, 0x7fff)
             return 0x8000 | v.index
         } else {
-            if (v.kind == ValueKind.ERROR) return 0 // error already emitted
+            if (v.kind == CellType.ERROR) return 0 // error already emitted
             oops("cannot emit " + stringifyValueKind(v.kind))
         }
     }
@@ -583,26 +577,146 @@ class OpWriter {
     isWritable(v: ValueDesc) {
         return (
             this.isReg(v) ||
-            v.kind == ValueKind.LOCAL ||
-            v.kind == ValueKind.GLOBAL
+            v.kind == CellType.LOCAL ||
+            v.kind == CellType.GLOBAL
         )
     }
 
     isReg(v: ValueDesc) {
-        return v.kind == ValueKind.REG
+        return v.kind == CellType.X_FP_REG
     }
 
-    arg8(v: ValueDesc) {
-        const q = this.arg16(v)
-        assert((q & 0x0ff0) == 0)
-        return (q >> 8) | (q & 0xf)
+    emitRaw(op: OpTop, arg: number) {
+        assert(arg >> 12 == 0)
+        assertRange(0, op, 0xf)
+        this.emitInstr((op << 12) | arg)
     }
 
-    mkOp(op: Op, subop: number = 0, dst: number = 0) {
-        assert(0 <= dst && dst < NUM_REGS)
-        assert(0 <= subop && subop <= 0xf)
-        assert(0 <= op && op <= 0xff)
-        return (op << 24) | (subop << 20) | (dst << 16)
+    emitPrefix(a: number, b: number = 0, c: number = 0, d: number = 0) {
+        const vals = [a, b, c, d]
+        for (let i = 0; i < 4; ++i) {
+            const v = vals[i]
+            if (!v) continue
+            const high = v >> 12
+            if (high) {
+                assert(high >> 4 == 0)
+                this.emitRaw(OpTop.SET_HIGH, (i << 10) | high)
+            }
+            this.emitRaw(OpTop.SET_A + i, v & 0xfff)
+        }
+    }
+
+    emitSync(
+        op: OpSync,
+        a: number = 0,
+        b: number = 0,
+        c: number = 0,
+        d: number = 0
+    ) {
+        this.emitPrefix(a >> 4, b, c, d)
+        assertRange(0, op, OpSync._LAST)
+        this.emitRaw(OpTop.SYNC, ((a & 0xf) << 8) | op)
+    }
+
+    emitAsync(op: OpAsync, a: number = 0, b: number = 0, c: number = 0) {
+        const d = this.allocatedRegsMask & 0xffff
+        this.emitPrefix(a, b, c, d >> 4)
+        assertRange(0, op, OpAsync._LAST)
+        this.emitRaw(OpTop.ASYNC, ((d & 0xf) << 8) | op)
+    }
+
+    private emitMov(dst: number, src: number) {
+        this.emitRaw(OpTop.UNARY, (OpUnary.ID << 8) | (dst << 4) | src)
+    }
+
+    assign(dst: ValueDesc, src: ValueDesc) {
+        if (src == dst) return
+        if (this.isReg(dst)) {
+            this.emitLoadCell(dst, src.kind, src.index)
+        } else if (this.isReg(src)) {
+            this.emitStoreCell(dst.kind, dst.index, src)
+        } else {
+            const r = this.allocReg()
+            this.assign(r, src)
+            this.assign(dst, r)
+            this._freeReg(r)
+        }
+    }
+
+    private emitFloatLiteral(dst: ValueDesc, v: number) {
+        if (isNaN(v)) {
+            this.emitLoadCell(dst, CellType.SPECIAL, ValueSpecial.NAN)
+        } else if ((v | 0) == v && 0 <= v && v <= 0xffff) {
+            this.emitLoadCell(dst, CellType.IDENTITY, v)
+        } else {
+            this.emitLoadCell(
+                dst,
+                CellType.FLOAT_CONST,
+                addUnique(this.parent.parent.floatLiterals, v)
+            )
+        }
+    }
+
+    emitLoadCell(dst: ValueDesc, celltype: CellType, idx: number) {
+        assert(this.isReg(dst))
+        switch (celltype) {
+            case CellType.LOCAL:
+            case CellType.GLOBAL:
+            case CellType.FLOAT_CONST:
+            case CellType.IDENTITY:
+            case CellType.BUFFER:
+            case CellType.SPECIAL:
+                this.emitLoadStoreCell(OpTop.LOAD_CELL, dst, celltype, idx)
+                break
+            case CellType.X_FP_REG:
+                this.emitMov(dst.index, idx)
+                break
+            case CellType.X_FLOAT:
+                this.emitFloatLiteral(dst, idx)
+                break
+            case CellType.ERROR:
+                // ignore
+                break
+            default:
+                oops("can't load")
+                break
+        }
+    }
+
+    emitStoreCell(celltype: CellType, idx: number, src: ValueDesc) {
+        switch (celltype) {
+            case CellType.LOCAL:
+            case CellType.GLOBAL:
+            case CellType.BUFFER:
+                this.emitLoadStoreCell(OpTop.STORE_CELL, src, celltype, idx)
+                break
+            case CellType.X_FP_REG:
+                this.emitMov(idx, src.index)
+                break
+            case CellType.ERROR:
+                // ignore
+                break
+            default:
+                oops("can't store")
+                break
+        }
+    }
+
+    private emitLoadStoreCell(
+        op: OpTop,
+        dst: ValueDesc,
+        celltype: CellType,
+        idx: number,
+        argC = 0
+    ) {
+        assert(this.isReg(dst))
+        const [a, b] = [celltype, idx]
+        this.emitPrefix(a >> 2, b >> 6, argC)
+        // DST[4] A:OP[2] B:OFF[6]
+        this.emitRaw(
+            op,
+            (dst.index << 8) | ((celltype & 0x3) << 6) | (idx & 0x3f)
+        )
     }
 
     emitOp(op: Op, subop: number = 0, dst: number = 0, arg: number = 0) {
@@ -615,7 +729,12 @@ class OpWriter {
         this.emitOp(Op.SET_TIMEOUT, 0, 0, this.arg16(time))
     }
 
-    emitBufOp(op: Op, dst: ValueDesc, off: number, mem: jdspec.PacketMember) {
+    emitBufOp(
+        op: OpTop,
+        dst: ValueDesc,
+        off: number,
+        mem: jdspec.PacketMember
+    ) {
         assert(this.isReg(dst))
         let fmt = OpFmt.U8
         let sz = mem.storage
@@ -643,7 +762,13 @@ class OpWriter {
         assertRange(0, shift, bitSize(fmt))
         assertRange(0, off, 0xff)
 
-        this.emitInstr(this.mkOp(op, fmt, dst.index) | (shift << 8) | off)
+        this.emitLoadStoreCell(
+            op,
+            dst,
+            CellType.BUFFER,
+            fmt | (shift << 4),
+            off
+        )
     }
 
     private catchUpAssembly() {
@@ -712,19 +837,6 @@ class OpWriter {
         }
     }
 
-    emitJumpIfTrue(
-        label: Label,
-        subop: OpBinary,
-        left: ValueDesc,
-        right: ValueDesc
-    ) {
-        this.push()
-        const cmp = this.allocReg()
-        this.emitBin(subop, cmp, left, right)
-        this.emitJump(label, OpJump.FORWARD_IF_NOT_ZERO, cmp.index)
-        this.pop()
-    }
-
     emitJumpIfFalse(
         label: Label,
         subop: OpBinary,
@@ -777,66 +889,33 @@ class OpWriter {
         }
     }
 
-    emitCall(proc: Procedure) {
-        this.emitInstr(this.mkOp(Op.CALL) | proc.index)
-    }
-
-    emitCallRt(rt: RtFunction, numargs: number) {
-        this.emitInstr(this.mkOp(Op.CALL_RT, 0, numargs) | rt)
-    }
-
-    emitLoad(dst: ValueDesc, src: ValueDesc) {
-        assert(this.isReg(dst))
-        this.emitInstr(
-            this.mkOp(Op.UNARY, OpUnary.ID, dst.index) | this.arg16(src)
+    emitCall(proc: Procedure, isBg = false) {
+        this.emitPrefix(proc.index >> 6)
+        this.emitRaw(
+            OpTop.CALL,
+            (proc.numargs << 8) | (isBg ? 1 << 7 : 0) | (proc.index & 0x3f)
         )
-        return dst
     }
 
-    emitStore(dst: ValueDesc, src: ValueDesc) {
-        assert(this.isReg(src), "store-reg")
-        assert(this.isWritable(dst), "store-val")
-        this.emitInstr(this.mkOp(Op.STORE, 0, src.index) | this.arg16(dst))
+    emitUnary(op: OpUnary, left: ValueDesc, right: ValueDesc) {
+        assert(this.isReg(left))
+        assert(this.isReg(right))
+        assertRange(0, op, 0xf)
+        this.emitRaw(OpTop.UNARY, (op << 8) | (left.index << 4) | right.index)
     }
 
-    emitUnary(op: OpUnary, dst: ValueDesc, arg: ValueDesc) {
-        this.push()
-
-        const dst0 = this.isReg(dst) ? dst : this.allocReg()
-        this.emitInstr(this.mkOp(Op.UNARY, op, dst0.index) | this.arg16(arg))
-        if (dst != dst0) this.emitStore(dst, dst0)
-
-        this.pop()
-    }
-
-    asReg(v: ValueDesc) {
-        if (this.isReg(v)) return v
-        return this.emitLoad(this.allocReg(), v)
-    }
-
-    emitBin(op: OpBinary, dst: ValueDesc, left: ValueDesc, right: ValueDesc) {
-        this.push()
-
-        const dst0 = this.isReg(dst) ? dst : this.allocReg()
-
-        if (!this.isArg8(left)) left = this.asReg(left)
-        if (!this.isArg8(right)) right = this.asReg(right)
-
-        this.emitInstr(
-            this.mkOp(Op.BINARY, op, dst0.index) |
-                (this.arg8(left) << 8) |
-                this.arg8(right)
-        )
-
-        if (dst != dst0) this.emitStore(dst, dst0)
-
-        this.pop()
+    emitBin(op: OpBinary, left: ValueDesc, right: ValueDesc) {
+        assert(this.isReg(left))
+        assert(this.isReg(right))
+        assertRange(0, op, 0xf)
+        this.emitRaw(OpTop.BINARY, (op << 8) | (left.index << 4) | right.index)
     }
 }
 
 class Procedure {
     writer = new OpWriter(this)
     index: number
+    numargs = 0
     constructor(public parent: Program, public name: string) {
         this.index = this.parent.procs.length
         this.parent.procs.push(this)
@@ -875,8 +954,10 @@ class VariableScope {
 
 enum RefreshMS {
     Never = 0,
-    Normal = 1, // 500ms
+    Normal = 500,
 }
+
+type Expr = estree.Expression | estree.Super | estree.SpreadElement
 
 class Program {
     roles = new VariableScope(null)
@@ -891,6 +972,7 @@ class Program {
     proc: Procedure
     sysSpec = serviceSpecificationFromName("_system")
     refreshMS: number[] = [0, 500]
+    destReg: ValueDesc
 
     constructor(public source: string) {}
 
@@ -914,17 +996,14 @@ class Program {
         return values.error
     }
 
-    describeArg16(a: number): string {
-        const idx = a & 0x0fff
-        switch (a >> 12) {
-            case ValueKind.LOCAL:
+    describeCell(t: CellType, idx: number): string {
+        switch (t) {
+            case CellType.LOCAL:
                 return this.locals.describeIndex(idx)
-            case ValueKind.GLOBAL:
+            case CellType.GLOBAL:
                 return this.globals.describeIndex(idx)
-            case ValueKind.FLOAT:
+            case CellType.FLOAT_CONST:
                 return this.floatLiterals[idx] + ""
-            case ValueKind.INT:
-                return this.intLiterals[idx] + ""
             default:
                 return undefined
         }
@@ -944,7 +1023,8 @@ class Program {
         if (!r.dispatcher) {
             r.dispatcher = new Procedure(this, r.getName() + "_disp")
             this.withProcedure(r.dispatcher, () => {
-                this.writer.emitOp(Op.WAIT_PKT, 0, 0, r.encode())
+                this.writer.emitSync(OpSync.OBSERVE_ROLE, r.encode())
+                this.writer.emitAsync(OpAsync.YIELD)
             })
         }
         return r.dispatcher
@@ -995,10 +1075,7 @@ class Program {
     }
 
     private emitStore(trg: Variable, src: ValueDesc) {
-        const wr = this.writer
-        wr.push()
-        wr.emitStore(trg.value(), wr.asReg(src))
-        wr.pop()
+        this.writer.assign(trg.value(), src)
     }
 
     private emitVariableDeclaration(decls: estree.VariableDeclaration) {
@@ -1008,10 +1085,12 @@ class Program {
             const r = this.parseRole(decl)
             if (!r) {
                 const g = new Variable(decl, this.globals)
+                this.writer.push()
                 this.emitStore(
                     g,
-                    decl.init ? this.emitExpr(decl.init) : values.zero
+                    decl.init ? this.emitSimpleValue(decl.init) : values.zero
                 )
+                this.writer.pop()
             }
         }
     }
@@ -1040,7 +1119,7 @@ class Program {
             } else {
                 this.ignore(this.emitExpr(func.body))
             }
-            wr.emitOp(Op.RET)
+            wr.emitSync(OpSync.RETURN)
         })
         return proc
     }
@@ -1081,7 +1160,7 @@ class Program {
                     wr.emitIf(
                         OpBinary.EQ,
                         specialVal(ValueSpecial.EV_CODE),
-                        wr.emitLiteral(obj.spec.identifier),
+                        floatVal(obj.spec.identifier),
                         () => {
                             wr.emitCall(handler)
                         }
@@ -1106,27 +1185,34 @@ class Program {
         switch (prop) {
             case "read":
                 this.requireArgs(expr, 0)
-                wr.emitOp(Op.GET_REG, refresh, 0, regcode)
+                wr.emitAsync(
+                    OpAsync.QUERY_REG,
+                    role.encode(),
+                    obj.spec.identifier,
+                    refresh
+                )
                 if (obj.spec.fields.length == 1) {
-                    const v = wr.allocReg()
-                    wr.emitBufOp(Op.GET_BUFFER, v, 0, obj.spec.fields[0])
-                    return v
+                    wr.emitBufOp(
+                        OpTop.LOAD_CELL,
+                        this.destReg,
+                        0,
+                        obj.spec.fields[0]
+                    )
+                    return this.destReg
                 } else {
-                    const r = mkValue(ValueKind.JD_VALUE_SEQ, 0, role)
+                    const r = mkValue(CellType.JD_VALUE_SEQ, 0, role)
                     r.spec = obj.spec
                     return r
                 }
             case "write":
                 this.requireArgs(expr, obj.spec.fields.length)
-                let tmpreg: ValueDesc
                 let off = 0
-                wr.push()
                 let sz = 0
                 for (const f of obj.spec.fields) sz += Math.abs(f.storage)
-                wr.emitOp(Op.SETUP_BUFFER, 0, 0, sz)
+                wr.emitSync(OpSync.SETUP_BUFFER, sz)
                 for (let i = 0; i < expr.arguments.length; ++i) {
-                    let v = this.emitExpr(expr.arguments[i])
-                    if (v.kind == ValueKind.JD_CURR_BUFFER) {
+                    let v = this.emitExprInto(expr.arguments[i], this.destReg)
+                    if (v.kind == CellType.JD_CURR_BUFFER) {
                         if (i != expr.arguments.length - 1)
                             this.throwError(
                                 expr.arguments[i + 1],
@@ -1134,41 +1220,43 @@ class Program {
                             )
                         break
                     }
-                    if (v.kind != ValueKind.REG) {
-                        if (!tmpreg) tmpreg = wr.allocReg()
-                        wr.emitLoad(tmpreg, v)
-                        v = tmpreg
-                    }
+                    this.writer.assign(this.destReg, v)
                     const f = obj.spec.fields[i]
-                    wr.emitBufOp(Op.SET_BUFFER, v, off, f)
+                    wr.emitBufOp(OpTop.STORE_CELL, this.destReg, off, f)
                     off += Math.abs(f.storage)
                     assert(off <= sz)
                 }
-                wr.emitOp(Op.SET_REG, 0, 0, regcode)
-                wr.pop()
+                wr.emitAsync(
+                    OpAsync.SET_REG,
+                    role.encode(),
+                    obj.spec.identifier
+                )
                 return values.zero
         }
         this.throwError(expr, `events don't have property ${prop}`)
     }
 
     private multExpr(v: ValueDesc, scale: number) {
-        if (v.litValue !== undefined)
-            return this.writer.emitLiteral(v.litValue * scale)
-        const r = this.writer.allocReg()
-        this.writer.emitBin(OpBinary.MUL, r, v, this.writer.emitLiteral(scale))
-        return r
+        if (v.kind == CellType.X_FLOAT) return floatVal(v.index * scale)
+        this.writer.emitBin(OpBinary.MUL, v, floatVal(scale))
+        return v
     }
 
-    private emitArgs(args: (estree.Expression | estree.SpreadElement)[]) {
+    private emitArgs(args: Expr[]) {
         const wr = this.writer
         const regs = wr.allocArgs(args.length)
         wr.push()
         for (let i = 0; i < args.length; i++) {
-            wr.push()
-            wr.emitLoad(regs[i], this.emitExpr(args[i]))
-            wr.pop()
+            this.emitSimpleValue(args[i], regs[i])
         }
         wr.pop()
+    }
+
+    private litValue(expr: Expr) {
+        const tmp = this.emitExpr(expr)
+        if (tmp.kind != CellType.X_FLOAT)
+            this.throwError(expr, "number literal expected")
+        return tmp.index
     }
 
     private emitCallExpression(expr: estree.CallExpression): ValueDesc {
@@ -1178,19 +1266,17 @@ class Program {
             const prop = idName(expr.callee.property)
             const obj = this.emitExpr(expr.callee.object)
             switch (obj.kind) {
-                case ValueKind.JD_EVENT:
+                case CellType.JD_EVENT:
                     return this.emitEventCall(expr, obj, prop)
-                case ValueKind.JD_REG:
+                case CellType.JD_REG:
                     return this.emitRegisterCall(expr, obj, prop)
             }
         }
         switch (idName(expr.callee)) {
             case "wait": {
                 this.requireArgs(expr, 1)
-                let time = this.emitExpr(expr.arguments[0])
-                time = this.multExpr(time, 1000)
-                wr.emitSetTimeout(time)
-                wr.emitOp(Op.YIELD)
+                const time = this.litValue(expr.arguments[0]) * 1000
+                wr.emitAsync(OpAsync.YIELD, (time | 0) + 1)
                 return values.zero
             }
             case "upload": {
@@ -1198,14 +1284,14 @@ class Program {
                     this.throwError(expr, "upload() requires args")
                 wr.push()
                 const lbl = this.emitExpr(expr.arguments[0])
-                if (lbl.kind != ValueKind.JD_CURR_BUFFER)
+                if (lbl.kind != CellType.JD_CURR_BUFFER)
                     this.throwError(
                         expr.arguments[0],
                         "expecting buffer (string) here; got " +
                             stringifyValueKind(lbl.kind)
                     )
                 this.emitArgs(expr.arguments.slice(1))
-                wr.emitCallRt(RtFunction.CloudUpload, numargs - 1)
+                wr.emitAsync(OpAsync.CLOUD_UPLOAD, numargs - 1)
                 wr.pop()
                 return values.zero
             }
@@ -1213,15 +1299,10 @@ class Program {
                 const arg0 = expr.arguments[0]
                 if (arg0?.type != "Literal" || typeof arg0.value != "string")
                     this.throwError(expr, "format() requires string arg")
-
                 this.emitArgs(expr.arguments.slice(1))
                 const r = wr.allocBuf()
                 const vd = wr.emitString(arg0.value)
-                wr.emitInstr(
-                    wr.mkOp(Op.FORMAT, OpFormat.CurlyAlpha, numargs - 1) |
-                        (vd.index << 8) |
-                        0
-                )
+                wr.emitSync(OpSync.FORMAT, vd.index, numargs - 1)
                 return r
             }
         }
@@ -1242,7 +1323,7 @@ class Program {
 
     private emitMemberExpression(expr: estree.MemberExpression): ValueDesc {
         const obj = this.emitExpr(expr.object)
-        if (obj.kind == ValueKind.JD_ROLE) {
+        if (obj.kind == CellType.JD_ROLE) {
             assert(obj.cell instanceof Role)
             const role = obj.cell as Role
             const id = this.forceName(expr.property)
@@ -1261,12 +1342,12 @@ class Program {
                 ) {
                     if (isRegister(p)) {
                         assert(!r)
-                        r = mkValue(ValueKind.JD_REG, p.identifier, role)
+                        r = mkValue(CellType.JD_REG, p.identifier, role)
                         r.spec = p
                     }
                     if (isEvent(p)) {
                         assert(!r)
-                        r = mkValue(ValueKind.JD_EVENT, p.identifier, role)
+                        r = mkValue(CellType.JD_EVENT, p.identifier, role)
                         r.spec = p
                     }
                 }
@@ -1302,13 +1383,11 @@ class Program {
         if (typeof v == "string") {
             const r = wr.allocBuf()
             const vd = wr.emitString(v)
-            wr.emitInstr(
-                wr.mkOp(Op.FORMAT, OpFormat.None, 0) | (vd.index << 8) | 0
-            )
+            wr.emitSync(OpSync.MEMCPY, vd.index)
             return r
         }
 
-        if (typeof v == "number") return wr.emitLiteral(v)
+        if (typeof v == "number") return floatVal(v)
         this.throwError(expr, "unhandled literal: " + v)
     }
 
@@ -1326,21 +1405,21 @@ class Program {
         return r
     }
 
-    private emitSimpleValue(expr: estree.Expression) {
-        const r = this.emitExpr(expr)
-        this.requireRuntimeValue(expr, r)
-        return r
+    private emitSimpleValue(expr: Expr, dest?: ValueDesc) {
+        const val = dest ? this.emitExprInto(expr, dest) : this.emitExpr(expr)
+        this.requireRuntimeValue(expr, val)
+        this.writer.assign(dest, val)
+        return dest
     }
 
     private requireRuntimeValue(node: estree.BaseNode, v: ValueDesc) {
         switch (v.kind) {
-            case ValueKind.REG:
-            case ValueKind.LOCAL:
-            case ValueKind.GLOBAL:
-            case ValueKind.FLOAT:
-            case ValueKind.INT:
-            case ValueKind.SPECIAL:
-            case ValueKind.SMALL_INT:
+            case CellType.X_FP_REG:
+            case CellType.LOCAL:
+            case CellType.GLOBAL:
+            case CellType.FLOAT_CONST:
+            case CellType.IDENTITY:
+            case CellType.X_FLOAT:
                 break
             default:
                 this.throwError(node, "value required here")
@@ -1354,7 +1433,7 @@ class Program {
         const wr = this.writer
         let left = expr.left
         if (left.type == "ArrayPattern") {
-            if (src.kind == ValueKind.JD_VALUE_SEQ) {
+            if (src.kind == CellType.JD_VALUE_SEQ) {
                 let off = 0
                 wr.push()
                 const tmpreg = wr.allocReg()
@@ -1414,23 +1493,33 @@ class Program {
         if (op2 === undefined) this.throwError(expr, "unhandled operator")
 
         const wr = this.writer
-        const res = wr.allocReg()
-        wr.push()
-        const a = this.emitSimpleValue(expr.left)
-        const b = this.emitSimpleValue(expr.right)
-        if (swap) wr.emitBin(op2, res, b, a)
-        else wr.emitBin(op2, res, a, b)
-        wr.pop()
-        return res
+        try {
+            wr.push()
+            if (swap) {
+                const a = this.emitSimpleValue(expr.left)
+                const b = this.emitSimpleValue(expr.right, this.destReg)
+                assert(b == this.destReg)
+                wr.emitBin(op2, b, a)
+                return b
+            } else {
+                const a = this.emitSimpleValue(expr.left, this.destReg)
+                const b = this.emitSimpleValue(expr.right)
+                assert(a == this.destReg)
+                wr.emitBin(op2, a, b)
+                return a
+            }
+        } finally {
+            wr.pop()
+        }
     }
 
     private emitUnaryExpression(expr: estree.UnaryExpression): ValueDesc {
         this.throwError(expr, "unhandled operator")
     }
 
-    private expectExpr(expr: estree.Expression, kind: ValueKind): ValueDesc {
+    private expectExpr(expr: estree.Expression, kind: CellType): ValueDesc {
         const r = this.emitExpr(expr)
-        if (r.kind != kind && r.kind != ValueKind.ERROR)
+        if (r.kind != kind && r.kind != CellType.ERROR)
             return this.throwError(
                 expr,
                 `expecting ${stringifyValueKind(
@@ -1440,27 +1529,38 @@ class Program {
         return r
     }
 
-    private emitExpr(
-        expr: estree.Expression | estree.Super | estree.SpreadElement
-    ): ValueDesc {
-        switch (expr.type) {
-            case "CallExpression":
-                return this.emitCallExpression(expr)
-            case "Identifier":
-                return this.emitIdentifier(expr)
-            case "MemberExpression":
-                return this.emitMemberExpression(expr)
-            case "Literal":
-                return this.emitLiteral(expr)
-            case "AssignmentExpression":
-                return this.emitAssignmentExpression(expr)
-            case "BinaryExpression":
-                return this.emitBinaryExpression(expr)
-            case "UnaryExpression":
-                return this.emitUnaryExpression(expr)
-            default:
-                console.log(expr)
-                return this.throwError(expr, "unhandled expr: " + expr.type)
+    private emitExpr(expr: Expr): ValueDesc {
+        const reg = this.writer.allocReg()
+        const res = this.emitExprInto(expr, reg)
+        if (res != reg) this.writer._freeReg(reg)
+        return res
+    }
+
+    private emitExprInto(expr: Expr, dest: ValueDesc): ValueDesc {
+        const prevDest = this.destReg
+        this.destReg = dest
+        try {
+            switch (expr.type) {
+                case "CallExpression":
+                    return this.emitCallExpression(expr)
+                case "Identifier":
+                    return this.emitIdentifier(expr)
+                case "MemberExpression":
+                    return this.emitMemberExpression(expr)
+                case "Literal":
+                    return this.emitLiteral(expr)
+                case "AssignmentExpression":
+                    return this.emitAssignmentExpression(expr)
+                case "BinaryExpression":
+                    return this.emitBinaryExpression(expr)
+                case "UnaryExpression":
+                    return this.emitUnaryExpression(expr)
+                default:
+                    console.log(expr)
+                    return this.throwError(expr, "unhandled expr: " + expr.type)
+            }
+        } finally {
+            this.destReg = prevDest
         }
     }
 
