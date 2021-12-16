@@ -1,13 +1,13 @@
 import JDBus from "../jdom/bus"
 import { JDClient } from "../jdom/client"
-import { JoystickVariant } from "../jdom/constants"
+import { GamepadVariant } from "../jdom/constants"
 import JDServerServiceProvider from "../jdom/servers/serverserviceprovider"
-import JoystickServer, { JOYSTICK_ARCADE_BUTTONS } from "./joystickserver"
+import GamepadServer, { GAMEPAD_ARCADE_BUTTONS } from "./gamepadserver"
 
 export default class GamepadHostManager extends JDClient {
     private providers: {
         deviceProvider: JDServerServiceProvider
-        service: JoystickServer
+        service: GamepadServer
         timestamp: number
     }[] = []
     private ticking = false
@@ -98,9 +98,9 @@ export default class GamepadHostManager extends JDClient {
             // allocated host if needed
             let host = this.providers[i]
             if (!host) {
-                const service = new JoystickServer({
-                    variant: JoystickVariant.Gamepad,
-                    buttonsAvailable: JOYSTICK_ARCADE_BUTTONS,
+                const service = new GamepadServer({
+                    variant: GamepadVariant.Gamepad,
+                    buttonsAvailable: GAMEPAD_ARCADE_BUTTONS,
                 })
                 const deviceHost = new JDServerServiceProvider("gamepad", [
                     service,

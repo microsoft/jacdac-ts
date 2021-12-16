@@ -1,10 +1,9 @@
 import {
-    CHANGE,
-    JoystickButtons,
-    JoystickEvent,
-    JoystickReg,
-    JoystickVariant,
-    SRV_JOYSTICK,
+    GamepadButtons,
+    GamepadEvent,
+    GamepadReg,
+    GamepadVariant,
+    SRV_GAMEPAD,
 } from "../jdom/constants"
 import { jdpack } from "../jdom/pack"
 import JDRegisterServer from "../jdom/servers/registerserver"
@@ -13,96 +12,96 @@ import SensorServer from "./sensorserver"
 /**
  * @internal
  */
-export const JOYSTICK_DPAD_BUTTONS =
-    JoystickButtons.Left |
-    JoystickButtons.Right |
-    JoystickButtons.Up |
-    JoystickButtons.Down
+export const GAMEPAD_DPAD_BUTTONS =
+    GamepadButtons.Left |
+    GamepadButtons.Right |
+    GamepadButtons.Up |
+    GamepadButtons.Down
 
 /**
  * @internal
  */
-export const JOYSTICK_ARCADE_BUTTONS =
-    JOYSTICK_DPAD_BUTTONS |
-    JoystickButtons.A |
-    JoystickButtons.B |
-    JoystickButtons.Menu |
-    JoystickButtons.Select |
-    JoystickButtons.Exit
+export const GAMEPAD_ARCADE_BUTTONS =
+    GAMEPAD_DPAD_BUTTONS |
+    GamepadButtons.A |
+    GamepadButtons.B |
+    GamepadButtons.Menu |
+    GamepadButtons.Select |
+    GamepadButtons.Exit
 
 /**
  * @internal
  */
-export const JOYSTICK_DPAD_A_BUTTONS = JOYSTICK_DPAD_BUTTONS | JoystickButtons.A
+export const GAMEPAD_DPAD_A_BUTTONS = GAMEPAD_DPAD_BUTTONS | GamepadButtons.A
 
 /**
  * @internal
  */
-export const JOYSTICK_DPAD_AB_BUTTONS =
-    JOYSTICK_DPAD_A_BUTTONS | JoystickButtons.B
+export const GAMEPAD_DPAD_AB_BUTTONS =
+    GAMEPAD_DPAD_A_BUTTONS | GamepadButtons.B
 
 /**
  * @internal
  */
-export const JOYSTICK_GAMEPAD_EXTRA_BUTTONS =
-    JoystickButtons.B |
-    JoystickButtons.Select |
-    JoystickButtons.Menu |
-    JoystickButtons.Reset
+export const GAMEPAD_GAMEPAD_EXTRA_BUTTONS =
+    GamepadButtons.B |
+    GamepadButtons.Select |
+    GamepadButtons.Menu |
+    GamepadButtons.Reset
 
 // https://w3c.github.io/gamepad/#remapping
 const standardGamepadMapping = [
-    [JoystickButtons.Left, 14],
-    [JoystickButtons.Right, 15],
-    [JoystickButtons.Up, 12],
-    [JoystickButtons.Down, 13],
-    [JoystickButtons.A, 0],
-    [JoystickButtons.B, 1],
-    [JoystickButtons.Select, 8],
-    [JoystickButtons.Menu, 9],
+    [GamepadButtons.Left, 14],
+    [GamepadButtons.Right, 15],
+    [GamepadButtons.Up, 12],
+    [GamepadButtons.Down, 13],
+    [GamepadButtons.A, 0],
+    [GamepadButtons.B, 1],
+    [GamepadButtons.Select, 8],
+    [GamepadButtons.Menu, 9],
 ]
 
-export default class JoystickServer extends SensorServer<
-    [JoystickButtons, number, number]
+export default class GamepadServer extends SensorServer<
+    [GamepadButtons, number, number]
 > {
-    readonly variant: JDRegisterServer<[JoystickVariant]>
-    readonly buttonsAvailable: JDRegisterServer<[JoystickButtons]>
+    readonly variant: JDRegisterServer<[GamepadVariant]>
+    readonly buttonsAvailable: JDRegisterServer<[GamepadButtons]>
 
     constructor(options?: {
         instanceName?: string
-        variant?: JoystickVariant
-        buttonsAvailable?: JoystickButtons
+        variant?: GamepadVariant
+        buttonsAvailable?: GamepadButtons
     }) {
-        super(SRV_JOYSTICK, {
+        super(SRV_GAMEPAD, {
             instanceName: options?.instanceName,
             readingValues: [0, 0, 0],
             streamingInterval: 50,
         })
-        const { variant = JoystickVariant.Thumb, buttonsAvailable = 0 } =
+        const { variant = GamepadVariant.Thumb, buttonsAvailable = 0 } =
             options || {}
 
-        this.variant = this.addRegister<[JoystickVariant]>(
-            JoystickReg.Variant,
+        this.variant = this.addRegister<[GamepadVariant]>(
+            GamepadReg.Variant,
             [variant]
         )
-        this.buttonsAvailable = this.addRegister<[JoystickButtons]>(
-            JoystickReg.ButtonsAvailable,
+        this.buttonsAvailable = this.addRegister<[GamepadButtons]>(
+            GamepadReg.ButtonsAvailable,
             [buttonsAvailable]
         )
     }
 
     get isAnalog() {
         const [value] = this.buttonsAvailable.values()
-        return !(value & JOYSTICK_DPAD_BUTTONS)
+        return !(value & GAMEPAD_DPAD_BUTTONS)
     }
 
-    async down(buttons: JoystickButtons) {
+    async down(buttons: GamepadButtons) {
         const [currentButtons, x, y] = this.reading.values()
         const newButtons = currentButtons | buttons
         await this.updateReading(newButtons, x, y)
     }
 
-    async up(buttons: JoystickButtons) {
+    async up(buttons: GamepadButtons) {
         const [currentButtons, x, y] = this.reading.values()
         const newButtons = currentButtons & ~buttons
         await this.updateReading(newButtons, x, y)
@@ -121,7 +120,7 @@ export default class JoystickServer extends SensorServer<
         const { buttons, axes } = gamepad
         const [buttonsAvailable] = this.buttonsAvailable.values()
 
-        let newButtons: JoystickButtons = 0
+        let newButtons: GamepadButtons = 0
         for (const [b, id] of standardGamepadMapping) {
             if ((b & buttonsAvailable) == b && !!buttons[id].pressed) {
                 newButtons |= b
@@ -140,7 +139,7 @@ export default class JoystickServer extends SensorServer<
     }
 
     private async updateReading(
-        buttons: JoystickButtons,
+        buttons: GamepadButtons,
         x: number,
         y: number
     ) {
@@ -148,32 +147,32 @@ export default class JoystickServer extends SensorServer<
         let newButtons = buttons
         if (!this.isAnalog) {
             x =
-                buttons & JoystickButtons.Left
+                buttons & GamepadButtons.Left
                     ? -1
-                    : buttons & JoystickButtons.Right
+                    : buttons & GamepadButtons.Right
                     ? 1
                     : 0
             y =
-                buttons & JoystickButtons.Up
+                buttons & GamepadButtons.Up
                     ? -1
-                    : buttons & JoystickButtons.Down
+                    : buttons & GamepadButtons.Down
                     ? 1
                     : 0
         } else {
             const threshold = 0.4
             // clear events
-            const mask = ~JOYSTICK_DPAD_BUTTONS
+            const mask = ~GAMEPAD_DPAD_BUTTONS
             newButtons = buttons & mask
             // recompute
-            if (x < -threshold) newButtons |= JoystickButtons.Left
-            else if (x > threshold) newButtons |= JoystickButtons.Right
-            if (y < -threshold) newButtons |= JoystickButtons.Up
-            else if (y > threshold) newButtons |= JoystickButtons.Down
+            if (x < -threshold) newButtons |= GamepadButtons.Left
+            else if (x > threshold) newButtons |= GamepadButtons.Right
+            if (y < -threshold) newButtons |= GamepadButtons.Up
+            else if (y > threshold) newButtons |= GamepadButtons.Down
         }
         this.reading.setValues([newButtons, x, y])
         if (newButtons !== oldButtons) {
             await this.sendEvent(
-                JoystickEvent.ButtonsChanged,
+                GamepadEvent.ButtonsChanged,
                 jdpack<[number]>("u32", [newButtons])
             )
         }
