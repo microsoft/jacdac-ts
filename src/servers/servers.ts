@@ -652,7 +652,7 @@ function initProviders() {
                 ],
             },
             {
-                name: "joystick (stick + A + B)",
+                name: "gamepad (stick + A + B)",
                 serviceClasses: [SRV_GAMEPAD],
                 services: () => [
                     new GamepadServer({
@@ -662,7 +662,7 @@ function initProviders() {
                 ],
             },
             {
-                name: "joystick (stick)",
+                name: "gamepad (stick)",
                 serviceClasses: [SRV_GAMEPAD],
                 services: () => [
                     new GamepadServer({
@@ -671,7 +671,7 @@ function initProviders() {
                 ],
             },
             {
-                name: "joystick (stick+A)",
+                name: "gamepad (stick+A)",
                 serviceClasses: [SRV_GAMEPAD],
                 services: () => [
                     new GamepadServer({
@@ -681,7 +681,7 @@ function initProviders() {
                 ],
             },
             {
-                name: "joystick (Dpad + all buttons)",
+                name: "gamepad (Dpad + all buttons)",
                 serviceClasses: [SRV_GAMEPAD],
                 services: () => [
                     new GamepadServer({
@@ -691,7 +691,7 @@ function initProviders() {
                 ],
             },
             {
-                name: "joystick (only DPad+A/B)",
+                name: "gamepad (only DPad+A/B)",
                 serviceClasses: [SRV_GAMEPAD],
                 services: () => [
                     new GamepadServer({
