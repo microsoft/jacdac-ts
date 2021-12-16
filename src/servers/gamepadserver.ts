@@ -37,8 +37,7 @@ export const GAMEPAD_DPAD_A_BUTTONS = GAMEPAD_DPAD_BUTTONS | GamepadButtons.A
 /**
  * @internal
  */
-export const GAMEPAD_DPAD_AB_BUTTONS =
-    GAMEPAD_DPAD_A_BUTTONS | GamepadButtons.B
+export const GAMEPAD_DPAD_AB_BUTTONS = GAMEPAD_DPAD_A_BUTTONS | GamepadButtons.B
 
 /**
  * @internal
@@ -80,10 +79,9 @@ export default class GamepadServer extends SensorServer<
         const { variant = GamepadVariant.Thumb, buttonsAvailable = 0 } =
             options || {}
 
-        this.variant = this.addRegister<[GamepadVariant]>(
-            GamepadReg.Variant,
-            [variant]
-        )
+        this.variant = this.addRegister<[GamepadVariant]>(GamepadReg.Variant, [
+            variant,
+        ])
         this.buttonsAvailable = this.addRegister<[GamepadButtons]>(
             GamepadReg.ButtonsAvailable,
             [buttonsAvailable]
@@ -138,11 +136,7 @@ export default class GamepadServer extends SensorServer<
         await this.updateReading(newButtons, newX, newY)
     }
 
-    private async updateReading(
-        buttons: GamepadButtons,
-        x: number,
-        y: number
-    ) {
+    private async updateReading(buttons: GamepadButtons, x: number, y: number) {
         const [oldButtons] = this.reading.values()
         let newButtons = buttons
         if (!this.isAnalog) {

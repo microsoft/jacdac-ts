@@ -333,8 +333,7 @@ function compileFilter(props: PacketFilterProps) {
         )
     if (requiresAck !== undefined)
         filters.push(pkt => pkt.requiresAck === requiresAck)
-    if (ack !== undefined)
-        filters.push(pkt => pkt.isCRCAck === ack);
+    if (ack !== undefined) filters.push(pkt => pkt.isCRCAck === ack)
     if (flags) filters.push(pkt => hasAnyFlag(pkt))
     if (pipes !== undefined) filters.push(pkt => pkt.isPipe)
     if (port !== undefined) filters.push(pkt => pkt.pipePort === port)

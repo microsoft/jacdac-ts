@@ -162,7 +162,7 @@ export class Packet {
 
     get serviceClass(): number {
         if (this.isMultiCommand) return read32(this._header, 4)
-        if (this.serviceIndex === 0) return SRV_CONTROL;
+        if (this.serviceIndex === 0) return SRV_CONTROL
         return this.device?.serviceClassAt(this.serviceIndex)
     }
 
