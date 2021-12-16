@@ -1,4 +1,4 @@
-# Jacdac TypeScript
+# Jacdac for JavaScript/TypeScript
 
 **Jacdac** is a plug-and-play hardware/software stack
 for **microcontrollers** and their peripherals (sensors/actuators),
