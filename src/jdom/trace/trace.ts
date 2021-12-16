@@ -1,3 +1,4 @@
+import JDBus from "../bus"
 import { META_TRACE, META_TRACE_DESCRIPTION } from "../constants"
 import Packet from "../packet"
 import { printPacket } from "../pretty"
@@ -141,6 +142,11 @@ export class Trace {
             text.unshift("")
         }
         return text.join("\n")
+    }
+
+    resolveDevices(bus: JDBus) {
+        this.packets.filter(pkt => !pkt.device)
+            .forEach(pkt => pkt.assignDevice(bus));
     }
 }
 export default Trace
