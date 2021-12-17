@@ -32,7 +32,7 @@ export enum OpTop {
     LOAD_CELL = 7, // DST[4] A:OP[2] B:OFF[6]
     STORE_CELL = 8, // SRC[4] A:OP[2] B:OFF[6]
 
-    JMP = 9, // REG[4] BACK[1] IF_ZERO[1] B:OFF[6]
+    JUMP = 9, // REG[4] BACK[1] IF_ZERO[1] B:OFF[6]
     CALL = 10, // NUMREGS[4] BG[1] 0[1] B:OFF[6]
 
     SYNC = 11, // A:ARG[4] OP[8]
@@ -56,7 +56,7 @@ export enum OpSync {
     _LAST,
 }
 
-export enum CellType {
+export enum CellKind {
     LOCAL = 0,
     GLOBAL = 1,
     FLOAT_CONST = 2,
@@ -139,33 +139,37 @@ btnA.down.sub(() => {
 })
 `
 
-export function stringifyValueKind(vk: CellType) {
+export function stringifyCellKind(vk: CellKind) {
     switch (vk) {
-        case CellType.REG:
+        case CellKind.X_FP_REG:
             return "(reg)"
-        case CellType.LOCAL:
+        case CellKind.LOCAL:
             return "local variable"
-        case CellType.GLOBAL:
+        case CellKind.GLOBAL:
             return "global variable"
-        case CellType.FLOAT:
+        case CellKind.FLOAT_CONST:
             return "float literal"
-        case CellType.INT:
-            return "int literal"
-        case CellType.SPECIAL:
-            return "special value"
-        case CellType.RESERVED_6:
-            return "(reserved 6)"
-        case CellType.RESERVED_7:
-            return "(reserved 7)"
-        case CellType.SMALL_INT:
+        case CellKind.IDENTITY:
             return "small int literal"
-        case CellType.JD_EVENT:
+        case CellKind.SPECIAL:
+            return "special value"
+        case CellKind.BUFFER:
+            return "buffer access"
+        case CellKind.JD_VALUE_SEQ:
+            return "multi-field buffer"
+        case CellKind.JD_CURR_BUFFER:
+            return "current buffer"
+        case CellKind.X_STRING:
+            return "string literal"
+        case CellKind.X_FLOAT:
+            return "float literal (generic)"
+        case CellKind.JD_EVENT:
             return "Jacdac event"
-        case CellType.JD_REG:
+        case CellKind.JD_REG:
             return "Jacdac register"
-        case CellType.JD_ROLE:
+        case CellKind.JD_ROLE:
             return "Jacdac role"
-        case CellType.ERROR:
+        case CellKind.ERROR:
             return "(error node)"
         default:
             return "ValueKind: 0x" + (vk as number).toString(16)
@@ -173,9 +177,10 @@ export function stringifyValueKind(vk: CellType) {
 }
 
 export interface InstrArgResolver {
-    describeArg16(idx: number): string
+    describeCell(t: CellKind, idx: number): string
     funName(idx: number): string
     roleName(idx: number): string
+    resolverParams: number[]
 }
 
 export function bitSize(fmt: OpFmt) {
@@ -183,72 +188,97 @@ export function bitSize(fmt: OpFmt) {
 }
 
 export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
-    const op = instr >>> 24
-    const subop = (instr >>> 20) & 0xf
-    const dst = (instr >>> 16) & (NUM_REGS - 1)
-    const left = (instr >> 8) & 0xff
-    const right = (instr >> 0) & 0xff
-    const arg = (instr >> 0) & 0xffff
-    const offset = right
-    const roleidx = (instr >> 9) & 0x7f
-    const code = instr & 0x1ff
+    const op = instr >>> 12
+    const arg12 = instr & 0xfff
+    const arg10 = instr & 0x3ff
+    const arg8 = instr & 0xff
+    const arg6 = instr & 0x3f
+    const arg4 = instr & 0xf
+    const subop = arg12 >> 8
 
-    switch (op) {
-        case Op.BINARY:
-            return `R${dst} := ${arg8(left)} ${bincode()} ${arg8(right)}`
-        case Op.UNARY:
-            return `R${dst} := ${uncode()}${arg16(arg)}`
-        case Op.STORE:
-            return `${arg16(arg)} := R${dst}`
-        case Op.JUMP:
-            return "jmp " + jmpcode()
-        case Op.CALL:
-            return `call ${resolver.funName(right)}_F${right} #${dst}`
-        case Op.CALL_BG:
-            return `callbg ${resolver.funName(right)}_F${right} #${dst}`
-        case Op.CALL_RT:
-            return `callrt ${right} #${dst}`
-        case Op.RET:
-            return `ret`
-        case Op.FORMAT:
-            return `buf[${offset}...] := format/${subop}(str-${left}, R0, ..., R${
-                dst - 1
-            })`
-        case Op.SETUP_BUFFER:
-            return `clear buf[0...${offset}]`
-        case Op.SET_BUFFER:
-            return `buf[${offset}] @ ${numfmt()} := R${dst}`
-        case Op.GET_BUFFER:
-            return `R${dst} := buf[${offset}] @ ${numfmt()}`
-        case Op.GET_REG:
-            return `get_reg(${jdreg()}, refresh=${subop})`
-        case Op.SET_REG:
-            return `set_reg(${jdreg()})`
-        case Op.WAIT_REG:
-            return `wait ${jdreg()} refresh[${subop}]`
-        case Op.WAIT_PKT:
-            return `wait pkt from ${role()}`
-        case Op.SET_TIMEOUT:
-            return `set timeout ${arg16(arg)} ms`
-        case Op.YIELD:
-            return `yield`
-        default:
-            return `unknown (0x${op.toString(16)})`
+    const reg0 = `R${subop}`
+    const reg1 = `R${arg8 >> 4}`
+    const reg2 = `R${arg4}`
+
+    const abcd = ["A", "B", "C", "D"]
+
+    let params: number[] = [0, 0, 0, 0]
+
+    if (resolver?.resolverParams) params = resolver.resolverParams
+
+    let [a, b, c, d] = params
+
+    const res = doOp()
+
+    if (op > OpTop.SET_HIGH) a = b = c = d = 0
+    if (resolver) resolver.resolverParams = [a, b, c, d]
+
+    return res
+
+    function doOp() {
+        switch (op) {
+            case OpTop.SET_A: // ARG[12]
+            case OpTop.SET_B: // ARG[12]
+            case OpTop.SET_C: // ARG[12]
+            case OpTop.SET_D: // ARG[12]
+                params[op] = arg12
+                return `set ${abcd[op]} to ${arg12}`
+
+            case OpTop.SET_HIGH: // A/B/C/D[2] ARG[10]
+                params[arg12 >> 10] |= arg10 << 12
+                return `set upper ${abcd[arg12 >> 10]} to ${arg10}`
+
+            case OpTop.UNARY: // OP[4] DST[4] SRC[4]
+                return `${reg1} := ${uncode()} ${reg2}`
+
+            case OpTop.BINARY: // OP[4] DST[4] SRC[4]
+                return `${reg1} := ${reg1} ${bincode()} ${reg2}`
+
+            case OpTop.LOAD_CELL: // DST[4] A:OP[2] B:OFF[6]
+            case OpTop.STORE_CELL: // SRC[4] A:OP[2] B:OFF[6]
+                a = (a << 2) | (arg8 >> 6)
+                b = (b << 6) | arg6
+                return op == OpTop.LOAD_CELL
+                    ? `${reg0} := ${celldesc()}`
+                    : `${celldesc()} := ${reg0}`
+
+            case OpTop.JUMP: // REG[4] BACK[1] IF_ZERO[1] B:OFF[6]
+                b = (b << 6) | arg6
+                return (
+                    `jump ${arg8 << (1 << 7) ? "-" : "+"}${b}` +
+                    (arg8 << (1 << 6) ? ` if ${reg0} == 0` : ``)
+                )
+
+            case OpTop.CALL: // NUMREGS[4] BG[1] 0[1] B:OFF[6]
+                b = (b << 6) | arg6
+                return `call${arg8 << (1 << 7) ? " bg" : ""} ${resolver.funName(
+                    b
+                )}_F${b} #${subop}`
+
+            case OpTop.SYNC: // A:ARG[4] OP[8]
+                a = (a << 4) | subop
+                return `sync ${arg8} a=${a}`
+
+            case OpTop.ASYNC: // D:SAVE_REGS[4] OP[8]
+                d = (d << 4) | subop
+                return `async ${arg8} save=${a.toString(2)}`
+        }
     }
 
     function jdreg() {
-        return `${role()}.reg_0x${code.toString(16)}`
+        return `${role()}.reg_0x${b.toString(16)}`
     }
 
     function role() {
-        return (resolver?.roleName(roleidx) || "") + "_r" + roleidx
+        return (resolver?.roleName(a) || "") + "_r" + a
     }
 
-    function numfmt() {
-        const fmt = subop
+    function numfmt(v: number) {
+        const fmt = v & 0xf
         const bitsz = bitSize(fmt)
         const letter = ["u", "i", "f", "x"][fmt >> 2]
-        if (left) return letter + (bitsz - left) + "." + left
+        const shift = v >> 4
+        if (shift) return letter + (bitsz - shift) + "." + shift
         else return letter + bitsz
     }
 
@@ -290,34 +320,21 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
                 return "bin-" + subop
         }
     }
-    function jmpcode() {
-        const offset = (subop & 1 ? "-" : "+") + arg
-        switch (subop & ~1) {
-            case OpJump.FORWARD:
-                return offset
-            case OpJump.FORWARD_IF_ZERO:
-                return `${offset} if not R${dst}`
-            case OpJump.FORWARD_IF_NOT_ZERO:
-                return `${offset} if R${dst}`
-            default:
-                return `${offset} jmp-${subop} R${dst}`
-        }
-    }
-    function arg16(a: number) {
-        const idx = a & 0x0fff
-        const r = resolver?.describeArg16(a) || ""
-        switch (a >> 12) {
-            case CellType.REG:
-                return `R${idx}`
-            case CellType.LOCAL:
+    function celldesc() {
+        const idx = b
+        const r = resolver?.describeCell(a, b) || ""
+        switch (a) {
+            case CellKind.LOCAL:
                 return `${r}_L${idx}`
-            case CellType.GLOBAL:
+            case CellKind.GLOBAL:
                 return `${r}_G${idx}`
-            case CellType.FLOAT:
+            case CellKind.FLOAT_CONST:
                 return `${r}_F${idx}`
-            case CellType.INT:
-                return `${r}_I${idx}`
-            case CellType.SPECIAL:
+            case CellKind.IDENTITY:
+                return `${idx}`
+            case CellKind.BUFFER:
+                return `buf[${c} @ ${numfmt(idx)}]`
+            case CellKind.SPECIAL:
                 switch (idx) {
                     case ValueSpecial.NAN:
                         return "NAN"
@@ -330,16 +347,9 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
                     default:
                         return `${r}_SPEC[${idx}]`
                 }
-            case CellType.RESERVED_6:
-                return `X6[${idx}]`
-            case CellType.RESERVED_7:
-                return `X7[${idx}]`
             default:
-                return `${a & ~0x8000}`
+                return `C${a}[$idx]` // ??
         }
-    }
-    function arg8(a: number) {
-        return arg16(((a & 0xf0) << 8) | (a & 0x0f))
     }
 }
 
@@ -371,7 +381,7 @@ class Role extends Cell {
         assert(!!spec)
     }
     value(): ValueDesc {
-        return mkValue(CellType.JD_ROLE, this.index, this)
+        return mkValue(CellKind.JD_ROLE, this.index, this)
     }
     encode() {
         return this.index
@@ -385,13 +395,13 @@ class Variable extends Cell {
         super(definition, scope)
     }
     value(): ValueDesc {
-        const kind = this.isLocal ? CellType.LOCAL : CellType.GLOBAL
+        const kind = this.isLocal ? CellKind.LOCAL : CellKind.GLOBAL
         return mkValue(kind, this.index, this)
     }
 }
 
 interface ValueDesc {
-    kind: CellType
+    kind: CellKind
     index: number
     cell?: Cell
     spec?: jdspec.PacketInfo
@@ -411,7 +421,7 @@ function assertRange(min: number, v: number, max: number, desc = "value") {
     oops(`${desc}=${v} out of range [${min}, ${max}]`)
 }
 
-function mkValue(kind: CellType, index: number, cell?: Cell): ValueDesc {
+function mkValue(kind: CellKind, index: number, cell?: Cell): ValueDesc {
     return {
         kind,
         index,
@@ -420,7 +430,7 @@ function mkValue(kind: CellType, index: number, cell?: Cell): ValueDesc {
 }
 
 function floatVal(v: number) {
-    const r = mkValue(CellType.X_FLOAT, v)
+    const r = mkValue(CellKind.X_FLOAT, v)
     r.litValue = v
     return r
 }
@@ -440,12 +450,12 @@ function addUnique<T>(arr: T[], v: T) {
 }
 
 function specialVal(sp: ValueSpecial) {
-    return mkValue(CellType.SPECIAL, sp)
+    return mkValue(CellKind.SPECIAL, sp)
 }
 
 const values = {
     zero: floatVal(0),
-    error: mkValue(CellType.ERROR, 0),
+    error: mkValue(CellKind.ERROR, 0),
 }
 
 class Label {
@@ -475,20 +485,30 @@ class OpWriter {
         this.scopes.push([])
     }
 
-    pop() {
+    popExcept(save?: ValueDesc) {
         const scope = this.scopes.pop()
+        let found = false
         for (const r of scope) {
-            this._freeReg(r)
+            if (r == save) found = true
+            else this.freeReg(r)
         }
+        if (save) {
+            assert(found)
+            this.scopes[this.scopes.length - 1].push(save)
+        }
+    }
+
+    pop() {
+        this.popExcept(null)
     }
 
     allocBuf(): ValueDesc {
         if (this.allocatedRegsMask & (1 << BUFFER_REG))
             this.parent.parent.throwError(null, "buffer already in use")
-        return this.doAlloc(BUFFER_REG, CellType.JD_CURR_BUFFER)
+        return this.doAlloc(BUFFER_REG, CellKind.JD_CURR_BUFFER)
     }
 
-    private doAlloc(regno: number, kind = CellType.X_FP_REG) {
+    private doAlloc(regno: number, kind = CellKind.X_FP_REG) {
         assert(regno != -1)
         if (this.allocatedRegsMask & (1 << regno))
             this.parent.parent.throwError(
@@ -517,7 +537,7 @@ class OpWriter {
         return this.doAlloc(regno)
     }
 
-    _freeReg(v: ValueDesc) {
+    freeReg(v: ValueDesc) {
         const idx = this.allocatedRegs.indexOf(v)
         assert(idx >= 0)
         this.allocatedRegs.splice(idx, 1)
@@ -526,64 +546,26 @@ class OpWriter {
 
     emitString(s: string) {
         return mkValue(
-            CellType.X_STRING,
+            CellKind.X_STRING,
             addUnique(this.parent.parent.stringLiterals, s)
         )
-    }
-
-    emitLiteral(dest: ValueDesc, v: number) {
-        assert(this.isReg(dest))
-
-        let r: ValueDesc
-        if (isNaN(v)) {
-            r = specialVal(ValueSpecial.NAN)
-        } else if ((v | 0) == v) {
-            if (0 <= v && v <= 0x7fff) {
-                r = mkValue(CellType.SMALL_INT, v)
-            } else {
-                r = mkValue(
-                    CellType.INT,
-                    addUnique(this.parent.parent.intLiterals, v)
-                )
-            }
-        } else {
-            r = mkValue(
-                CellType.FLOAT,
-                addUnique(this.parent.parent.floatLiterals, v)
-            )
-        }
-
-        r.litValue = v
-        return r
-    }
-
-    arg16(v: ValueDesc) {
-        if (v.kind < CellType.SMALL_INT) {
-            assertRange(0, v.index, 0x0fff)
-            return (v.kind << 12) | v.index
-        } else if (v.kind == CellType.SMALL_INT) {
-            assertRange(0, v.index, 0x7fff)
-            return 0x8000 | v.index
-        } else {
-            if (v.kind == CellType.ERROR) return 0 // error already emitted
-            oops("cannot emit " + stringifyValueKind(v.kind))
-        }
-    }
-
-    isArg8(v: ValueDesc) {
-        return (this.arg16(v) & 0x0ff0) == 0
     }
 
     isWritable(v: ValueDesc) {
         return (
             this.isReg(v) ||
-            v.kind == CellType.LOCAL ||
-            v.kind == CellType.GLOBAL
+            v.kind == CellKind.LOCAL ||
+            v.kind == CellKind.GLOBAL
         )
     }
 
     isReg(v: ValueDesc) {
-        return v.kind == CellType.X_FP_REG
+        if (v.kind == CellKind.X_FP_REG) {
+            assert((this.allocatedRegsMask & (1 << v.index)) != 0)
+            return true
+        } else {
+            return false
+        }
     }
 
     emitRaw(op: OpTop, arg: number) {
@@ -629,6 +611,13 @@ class OpWriter {
         this.emitRaw(OpTop.UNARY, (OpUnary.ID << 8) | (dst << 4) | src)
     }
 
+    forceReg(v: ValueDesc) {
+        if (this.isReg(v)) return v
+        const r = this.allocReg()
+        this.assign(r, v)
+        return r
+    }
+
     assign(dst: ValueDesc, src: ValueDesc) {
         if (src == dst) return
         if (this.isReg(dst)) {
@@ -636,45 +625,46 @@ class OpWriter {
         } else if (this.isReg(src)) {
             this.emitStoreCell(dst.kind, dst.index, src)
         } else {
+            this.push()
             const r = this.allocReg()
             this.assign(r, src)
             this.assign(dst, r)
-            this._freeReg(r)
+            this.pop()
         }
     }
 
     private emitFloatLiteral(dst: ValueDesc, v: number) {
         if (isNaN(v)) {
-            this.emitLoadCell(dst, CellType.SPECIAL, ValueSpecial.NAN)
+            this.emitLoadCell(dst, CellKind.SPECIAL, ValueSpecial.NAN)
         } else if ((v | 0) == v && 0 <= v && v <= 0xffff) {
-            this.emitLoadCell(dst, CellType.IDENTITY, v)
+            this.emitLoadCell(dst, CellKind.IDENTITY, v)
         } else {
             this.emitLoadCell(
                 dst,
-                CellType.FLOAT_CONST,
+                CellKind.FLOAT_CONST,
                 addUnique(this.parent.parent.floatLiterals, v)
             )
         }
     }
 
-    emitLoadCell(dst: ValueDesc, celltype: CellType, idx: number) {
+    emitLoadCell(dst: ValueDesc, celltype: CellKind, idx: number) {
         assert(this.isReg(dst))
         switch (celltype) {
-            case CellType.LOCAL:
-            case CellType.GLOBAL:
-            case CellType.FLOAT_CONST:
-            case CellType.IDENTITY:
-            case CellType.BUFFER:
-            case CellType.SPECIAL:
+            case CellKind.LOCAL:
+            case CellKind.GLOBAL:
+            case CellKind.FLOAT_CONST:
+            case CellKind.IDENTITY:
+            case CellKind.BUFFER:
+            case CellKind.SPECIAL:
                 this.emitLoadStoreCell(OpTop.LOAD_CELL, dst, celltype, idx)
                 break
-            case CellType.X_FP_REG:
+            case CellKind.X_FP_REG:
                 this.emitMov(dst.index, idx)
                 break
-            case CellType.X_FLOAT:
+            case CellKind.X_FLOAT:
                 this.emitFloatLiteral(dst, idx)
                 break
-            case CellType.ERROR:
+            case CellKind.ERROR:
                 // ignore
                 break
             default:
@@ -683,17 +673,17 @@ class OpWriter {
         }
     }
 
-    emitStoreCell(celltype: CellType, idx: number, src: ValueDesc) {
+    emitStoreCell(celltype: CellKind, idx: number, src: ValueDesc) {
         switch (celltype) {
-            case CellType.LOCAL:
-            case CellType.GLOBAL:
-            case CellType.BUFFER:
+            case CellKind.LOCAL:
+            case CellKind.GLOBAL:
+            case CellKind.BUFFER:
                 this.emitLoadStoreCell(OpTop.STORE_CELL, src, celltype, idx)
                 break
-            case CellType.X_FP_REG:
+            case CellKind.X_FP_REG:
                 this.emitMov(idx, src.index)
                 break
-            case CellType.ERROR:
+            case CellKind.ERROR:
                 // ignore
                 break
             default:
@@ -705,7 +695,7 @@ class OpWriter {
     private emitLoadStoreCell(
         op: OpTop,
         dst: ValueDesc,
-        celltype: CellType,
+        celltype: CellKind,
         idx: number,
         argC = 0
     ) {
@@ -717,16 +707,6 @@ class OpWriter {
             op,
             (dst.index << 8) | ((celltype & 0x3) << 6) | (idx & 0x3f)
         )
-    }
-
-    emitOp(op: Op, subop: number = 0, dst: number = 0, arg: number = 0) {
-        const instr = this.mkOp(op, subop, dst)
-        assertRange(0, arg, 0xffff)
-        this.emitInstr(instr | arg)
-    }
-
-    emitSetTimeout(time: ValueDesc) {
-        this.emitOp(Op.SET_TIMEOUT, 0, 0, this.arg16(time))
     }
 
     emitBufOp(
@@ -765,7 +745,7 @@ class OpWriter {
         this.emitLoadStoreCell(
             op,
             dst,
-            CellType.BUFFER,
+            CellKind.BUFFER,
             fmt | (shift << 4),
             off
         )
@@ -844,47 +824,43 @@ class OpWriter {
         right: ValueDesc
     ) {
         this.push()
-        const cmp = this.allocReg()
-        this.emitBin(subop, cmp, left, right)
-        this.emitJump(label, OpJump.FORWARD_IF_ZERO, cmp.index)
+        const l = this.forceReg(left)
+        const r = this.forceReg(right)
+        this.emitBin(subop, l, r)
+        this.emitJump(label, l.index)
         this.pop()
     }
 
-    emitJump(label: Label, cond: OpJump = OpJump.FORWARD, dst: number = -1) {
-        switch (cond) {
-            case OpJump.FORWARD:
-                assert(dst == -1)
-                dst = 0
-                break
-            case OpJump.FORWARD_IF_NOT_ZERO:
-            case OpJump.FORWARD_IF_ZERO:
-                assert(dst != -1)
-                break
-            default:
-                oops("invalid jmp")
-        }
-        label.uses.push(this.binary.length)
+    emitJump(label: Label, cond: number = -1) {
+        // JMP = 9, // REG[4] BACK[1] IF_ZERO[1] B:OFF[6]
         this.emitComment("jump " + label.name)
-        this.emitInstr(this.mkOp(Op.JUMP, cond, dst))
+        label.uses.push(this.binary.length)
+        this.emitRaw(OpTop.SET_B, 0)
+        this.emitRaw(OpTop.JUMP, cond == -1 ? 0 : (cond << 8) | (1 << 6))
     }
 
     patchLabels() {
         for (const l of this.labels) {
             assert(l.offset != -1)
             for (const u of l.uses) {
-                let op = this.binary[u]
-                assert(op >> 24 == Op.JUMP)
+                let op0 = this.binary[u]
+                let op1 = this.binary[u + 1]
+                assert(op0 >> 12 == OpTop.SET_B)
+                assert(op1 >> 12 == OpTop.JUMP)
                 let off = l.offset - u
                 assert(off != 0)
                 if (off < 0) {
                     off = -off
-                    op |= this.mkOp(Op.JUMP, OpJump.BACK)
+                    op1 |= 1 << 7
                 }
-                assert((op & 0xffff) == 0)
+                assert((op0 & 0xfff) == 0)
+                assert((op1 & 0x3f) == 0)
                 off -= 1
-                assertRange(0, off, 0xffff)
-                op |= off
-                this.binary[u] = op >>> 0
+                assertRange(0, off, 0x3ffff)
+                op0 |= off >> 6
+                op1 |= off & 0x3f
+                this.binary[u] = op0 >>> 0
+                this.binary[u + 1] = op1 >>> 0
             }
         }
     }
@@ -959,7 +935,7 @@ enum RefreshMS {
 
 type Expr = estree.Expression | estree.Super | estree.SpreadElement
 
-class Program {
+class Program implements InstrArgResolver {
     roles = new VariableScope(null)
     globals = new VariableScope(this.roles)
     locals = new VariableScope(this.globals)
@@ -972,7 +948,7 @@ class Program {
     proc: Procedure
     sysSpec = serviceSpecificationFromName("_system")
     refreshMS: number[] = [0, 500]
-    destReg: ValueDesc
+    resolverParams: number[]
 
     constructor(public source: string) {}
 
@@ -996,13 +972,13 @@ class Program {
         return values.error
     }
 
-    describeCell(t: CellType, idx: number): string {
+    describeCell(t: CellKind, idx: number): string {
         switch (t) {
-            case CellType.LOCAL:
+            case CellKind.LOCAL:
                 return this.locals.describeIndex(idx)
-            case CellType.GLOBAL:
+            case CellKind.GLOBAL:
                 return this.globals.describeIndex(idx)
-            case CellType.FLOAT_CONST:
+            case CellKind.FLOAT_CONST:
                 return this.floatLiterals[idx] + ""
             default:
                 return undefined
@@ -1178,7 +1154,6 @@ class Program {
     ): ValueDesc {
         const role = obj.cell as Role
         assertRange(0, obj.spec.identifier, 0x1ff)
-        const regcode = role.encode() | obj.spec.identifier
         const refresh =
             obj.spec.kind == "const" ? RefreshMS.Never : RefreshMS.Normal
         const wr = this.writer
@@ -1192,15 +1167,11 @@ class Program {
                     refresh
                 )
                 if (obj.spec.fields.length == 1) {
-                    wr.emitBufOp(
-                        OpTop.LOAD_CELL,
-                        this.destReg,
-                        0,
-                        obj.spec.fields[0]
-                    )
-                    return this.destReg
+                    const r = wr.allocReg()
+                    wr.emitBufOp(OpTop.LOAD_CELL, r, 0, obj.spec.fields[0])
+                    return r
                 } else {
-                    const r = mkValue(CellType.JD_VALUE_SEQ, 0, role)
+                    const r = mkValue(CellKind.JD_VALUE_SEQ, 0, role)
                     r.spec = obj.spec
                     return r
                 }
@@ -1211,8 +1182,9 @@ class Program {
                 for (const f of obj.spec.fields) sz += Math.abs(f.storage)
                 wr.emitSync(OpSync.SETUP_BUFFER, sz)
                 for (let i = 0; i < expr.arguments.length; ++i) {
-                    let v = this.emitExprInto(expr.arguments[i], this.destReg)
-                    if (v.kind == CellType.JD_CURR_BUFFER) {
+                    wr.push()
+                    let v = this.emitExpr(expr.arguments[i])
+                    if (v.kind == CellKind.JD_CURR_BUFFER) {
                         if (i != expr.arguments.length - 1)
                             this.throwError(
                                 expr.arguments[i + 1],
@@ -1220,11 +1192,12 @@ class Program {
                             )
                         break
                     }
-                    this.writer.assign(this.destReg, v)
+                    v = wr.forceReg(v)
                     const f = obj.spec.fields[i]
-                    wr.emitBufOp(OpTop.STORE_CELL, this.destReg, off, f)
+                    wr.emitBufOp(OpTop.STORE_CELL, v, off, f)
                     off += Math.abs(f.storage)
                     assert(off <= sz)
+                    wr.pop()
                 }
                 wr.emitAsync(
                     OpAsync.SET_REG,
@@ -1237,7 +1210,7 @@ class Program {
     }
 
     private multExpr(v: ValueDesc, scale: number) {
-        if (v.kind == CellType.X_FLOAT) return floatVal(v.index * scale)
+        if (v.kind == CellKind.X_FLOAT) return floatVal(v.index * scale)
         this.writer.emitBin(OpBinary.MUL, v, floatVal(scale))
         return v
     }
@@ -1245,16 +1218,16 @@ class Program {
     private emitArgs(args: Expr[]) {
         const wr = this.writer
         const regs = wr.allocArgs(args.length)
-        wr.push()
         for (let i = 0; i < args.length; i++) {
-            this.emitSimpleValue(args[i], regs[i])
+            wr.push()
+            wr.assign(regs[i], this.emitExpr(args[i]))
+            wr.pop()
         }
-        wr.pop()
     }
 
     private litValue(expr: Expr) {
         const tmp = this.emitExpr(expr)
-        if (tmp.kind != CellType.X_FLOAT)
+        if (tmp.kind != CellKind.X_FLOAT)
             this.throwError(expr, "number literal expected")
         return tmp.index
     }
@@ -1266,9 +1239,9 @@ class Program {
             const prop = idName(expr.callee.property)
             const obj = this.emitExpr(expr.callee.object)
             switch (obj.kind) {
-                case CellType.JD_EVENT:
+                case CellKind.JD_EVENT:
                     return this.emitEventCall(expr, obj, prop)
-                case CellType.JD_REG:
+                case CellKind.JD_REG:
                     return this.emitRegisterCall(expr, obj, prop)
             }
         }
@@ -1284,11 +1257,11 @@ class Program {
                     this.throwError(expr, "upload() requires args")
                 wr.push()
                 const lbl = this.emitExpr(expr.arguments[0])
-                if (lbl.kind != CellType.JD_CURR_BUFFER)
+                if (lbl.kind != CellKind.JD_CURR_BUFFER)
                     this.throwError(
                         expr.arguments[0],
                         "expecting buffer (string) here; got " +
-                            stringifyValueKind(lbl.kind)
+                            stringifyCellKind(lbl.kind)
                     )
                 this.emitArgs(expr.arguments.slice(1))
                 wr.emitAsync(OpAsync.CLOUD_UPLOAD, numargs - 1)
@@ -1323,7 +1296,7 @@ class Program {
 
     private emitMemberExpression(expr: estree.MemberExpression): ValueDesc {
         const obj = this.emitExpr(expr.object)
-        if (obj.kind == CellType.JD_ROLE) {
+        if (obj.kind == CellKind.JD_ROLE) {
             assert(obj.cell instanceof Role)
             const role = obj.cell as Role
             const id = this.forceName(expr.property)
@@ -1342,12 +1315,12 @@ class Program {
                 ) {
                     if (isRegister(p)) {
                         assert(!r)
-                        r = mkValue(CellType.JD_REG, p.identifier, role)
+                        r = mkValue(CellKind.JD_REG, p.identifier, role)
                         r.spec = p
                     }
                     if (isEvent(p)) {
                         assert(!r)
-                        r = mkValue(CellType.JD_EVENT, p.identifier, role)
+                        r = mkValue(CellKind.JD_EVENT, p.identifier, role)
                         r.spec = p
                     }
                 }
@@ -1405,21 +1378,20 @@ class Program {
         return r
     }
 
-    private emitSimpleValue(expr: Expr, dest?: ValueDesc) {
-        const val = dest ? this.emitExprInto(expr, dest) : this.emitExpr(expr)
+    private emitSimpleValue(expr: Expr) {
+        const val = this.emitExpr(expr)
         this.requireRuntimeValue(expr, val)
-        this.writer.assign(dest, val)
-        return dest
+        return this.writer.forceReg(val)
     }
 
     private requireRuntimeValue(node: estree.BaseNode, v: ValueDesc) {
         switch (v.kind) {
-            case CellType.X_FP_REG:
-            case CellType.LOCAL:
-            case CellType.GLOBAL:
-            case CellType.FLOAT_CONST:
-            case CellType.IDENTITY:
-            case CellType.X_FLOAT:
+            case CellKind.X_FP_REG:
+            case CellKind.LOCAL:
+            case CellKind.GLOBAL:
+            case CellKind.FLOAT_CONST:
+            case CellKind.IDENTITY:
+            case CellKind.X_FLOAT:
                 break
             default:
                 this.throwError(node, "value required here")
@@ -1433,7 +1405,7 @@ class Program {
         const wr = this.writer
         let left = expr.left
         if (left.type == "ArrayPattern") {
-            if (src.kind == CellType.JD_VALUE_SEQ) {
+            if (src.kind == CellKind.JD_VALUE_SEQ) {
                 let off = 0
                 wr.push()
                 const tmpreg = wr.allocReg()
@@ -1445,7 +1417,7 @@ class Program {
                             pat,
                             `not enough fields in ${src.spec.name}`
                         )
-                    wr.emitBufOp(Op.GET_BUFFER, tmpreg, off, f)
+                    wr.emitBufOp(OpTop.LOAD_CELL, tmpreg, off, f)
                     off += Math.abs(f.storage)
                     this.emitStore(this.lookupVar(pat), tmpreg)
                 }
@@ -1493,74 +1465,52 @@ class Program {
         if (op2 === undefined) this.throwError(expr, "unhandled operator")
 
         const wr = this.writer
-        try {
-            wr.push()
-            if (swap) {
-                const a = this.emitSimpleValue(expr.left)
-                const b = this.emitSimpleValue(expr.right, this.destReg)
-                assert(b == this.destReg)
-                wr.emitBin(op2, b, a)
-                return b
-            } else {
-                const a = this.emitSimpleValue(expr.left, this.destReg)
-                const b = this.emitSimpleValue(expr.right)
-                assert(a == this.destReg)
-                wr.emitBin(op2, a, b)
-                return a
-            }
-        } finally {
-            wr.pop()
-        }
+
+        wr.push()
+        let a = this.emitSimpleValue(expr.left)
+        let b = this.emitSimpleValue(expr.right)
+        if (swap) [a, b] = [b, a]
+        wr.emitBin(op2, a, b)
+        wr.popExcept(a)
+
+        return a
     }
 
     private emitUnaryExpression(expr: estree.UnaryExpression): ValueDesc {
         this.throwError(expr, "unhandled operator")
     }
 
-    private expectExpr(expr: estree.Expression, kind: CellType): ValueDesc {
+    private expectExpr(expr: estree.Expression, kind: CellKind): ValueDesc {
         const r = this.emitExpr(expr)
-        if (r.kind != kind && r.kind != CellType.ERROR)
+        if (r.kind != kind && r.kind != CellKind.ERROR)
             return this.throwError(
                 expr,
-                `expecting ${stringifyValueKind(
-                    kind
-                )}; got ${stringifyValueKind(r.kind)}`
+                `expecting ${stringifyCellKind(kind)}; got ${stringifyCellKind(
+                    r.kind
+                )}`
             )
         return r
     }
 
     private emitExpr(expr: Expr): ValueDesc {
-        const reg = this.writer.allocReg()
-        const res = this.emitExprInto(expr, reg)
-        if (res != reg) this.writer._freeReg(reg)
-        return res
-    }
-
-    private emitExprInto(expr: Expr, dest: ValueDesc): ValueDesc {
-        const prevDest = this.destReg
-        this.destReg = dest
-        try {
-            switch (expr.type) {
-                case "CallExpression":
-                    return this.emitCallExpression(expr)
-                case "Identifier":
-                    return this.emitIdentifier(expr)
-                case "MemberExpression":
-                    return this.emitMemberExpression(expr)
-                case "Literal":
-                    return this.emitLiteral(expr)
-                case "AssignmentExpression":
-                    return this.emitAssignmentExpression(expr)
-                case "BinaryExpression":
-                    return this.emitBinaryExpression(expr)
-                case "UnaryExpression":
-                    return this.emitUnaryExpression(expr)
-                default:
-                    console.log(expr)
-                    return this.throwError(expr, "unhandled expr: " + expr.type)
-            }
-        } finally {
-            this.destReg = prevDest
+        switch (expr.type) {
+            case "CallExpression":
+                return this.emitCallExpression(expr)
+            case "Identifier":
+                return this.emitIdentifier(expr)
+            case "MemberExpression":
+                return this.emitMemberExpression(expr)
+            case "Literal":
+                return this.emitLiteral(expr)
+            case "AssignmentExpression":
+                return this.emitAssignmentExpression(expr)
+            case "BinaryExpression":
+                return this.emitBinaryExpression(expr)
+            case "UnaryExpression":
+                return this.emitUnaryExpression(expr)
+            default:
+                console.log(expr)
+                return this.throwError(expr, "unhandled expr: " + expr.type)
         }
     }
 
