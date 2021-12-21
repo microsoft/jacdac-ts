@@ -11,6 +11,7 @@ export enum BinFmt {
     FixHeaderSize = 64,
     SectionHeaderSize = 8,
     FunctionHeaderSize = 16,
+    RoleHeaderSize = 8,
 }
 
 export interface SMap<T> {
@@ -240,7 +241,7 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
                 b = (b << 6) | arg6
                 return `call${arg8 << (1 << 7) ? " bg" : ""} ${resolver.funName(
                     b
-                )}_F${b} #${subop}`
+                ) || ""}_F${b} #${subop}`
 
             case OpTop.SYNC: // A:ARG[4] OP[8]
                 a = (a << 4) | subop
@@ -370,4 +371,24 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
                 return `Async_0x${arg8.toString(16)}`
         }
     }
+}
+
+export interface FunctionDebugInfo {
+    name: string
+    // format is (line-number, start, len)
+    // start is offset in halfwords from the start of the function
+    // len is in halfwords
+    srcmap: number[]
+    locals: CellDebugInfo[]
+}
+
+export interface CellDebugInfo {
+    name: string
+}
+
+export interface DebugInfo {
+    functions: FunctionDebugInfo[]
+    roles: CellDebugInfo[]
+    globals: CellDebugInfo[]
+    source: string
 }

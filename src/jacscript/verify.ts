@@ -13,6 +13,8 @@ import {
     BinFmt,
     bitSize,
     CellKind,
+    DebugInfo,
+    FunctionDebugInfo,
     InstrArgResolver,
     isPrefixInstr,
     NUM_REGS,
@@ -63,7 +65,7 @@ class BinSection {
     }
 
     asBuffer() {
-        return this.buf.slice(this.start, this.end)
+        return this.buf.slice(this.start, this.end).buffer
     }
 
     mustContain(pos: number, off: number | BinSection) {
@@ -77,11 +79,42 @@ class BinSection {
     }
 }
 
-export function verifyBinary(bin: Uint8Array) {
+class Resolver implements InstrArgResolver {
+    constructor(private floats: Float64Array, private dbg: DebugInfo) {}
+    resolverParams: number[]
+    describeCell(t: CellKind, idx: number): string {
+        switch (t) {
+            case CellKind.GLOBAL:
+                return this.dbg.globals[idx]?.name
+            case CellKind.FLOAT_CONST:
+                return this.floats[idx] + ""
+            default:
+                return undefined
+        }
+    }
+    funName(idx: number): string {
+        return this.dbg.functions[idx]?.name
+    }
+    roleName(idx: number): string {
+        return this.dbg.roles[idx]?.name
+    }
+}
+
+export function verifyBinary(bin: Uint8Array, dbg?: DebugInfo) {
     const hd = bin.slice(0, BinFmt.FixHeaderSize)
     assert(0, read32(hd, 0) == BinFmt.Magic0, "magic 0")
     assert(4, read32(hd, 4) == BinFmt.Magic1, "magic 1")
-    const sects = range(5).map(
+
+    if (!dbg)
+        dbg = {
+            functions: [],
+            globals: [],
+            roles: [],
+            source: "",
+        }
+    const sourceLines = dbg.source.split(/\n/)
+
+    const sects = range(6).map(
         idx =>
             new BinSection(
                 bin,
@@ -97,9 +130,19 @@ export function verifyBinary(bin: Uint8Array) {
                 "section in order"
             )
     }
-    const [funDesc, funData, floatData, strDesc, strData] = sects
+    const [funDesc, funData, floatData, roleData, strDesc, strData] = sects
+
+    assert(
+        floatData.offset,
+        (floatData.length & 7) == 0,
+        "float data 8-aligned"
+    )
+    const floats = new Float64Array(floatData.asBuffer())
+
+    const resolver = new Resolver(floats, dbg)
 
     let prevProc = funData.start
+    let idx = 0
     for (
         let ptr = funDesc.start;
         ptr < funDesc.end;
@@ -109,10 +152,11 @@ export function verifyBinary(bin: Uint8Array) {
         assert(ptr, funSect.start == prevProc, "func in order")
         funData.mustContain(ptr, funSect)
         prevProc = funSect.end
-        verifyFunction(ptr, funSect)
+        verifyFunction(ptr, funSect, dbg.functions[idx])
+        idx++
     }
 
-    let idx = 0
+    idx = 0
     for (
         let ptr = strDesc.start;
         ptr < strDesc.end;
@@ -120,12 +164,47 @@ export function verifyBinary(bin: Uint8Array) {
     ) {
         const strSect = new BinSection(bin, ptr)
         strData.mustContain(ptr, strSect)
-        const str = fromUTF8(uint8ArrayToString(strSect.asBuffer()))
-        console.log(`str #${idx++} = ${JSON.stringify(str)}`)
+        const str = fromUTF8(
+            uint8ArrayToString(new Uint8Array(strSect.asBuffer()))
+        )
+        console.log(`str #${idx} = ${JSON.stringify(str)}`)
+        idx++
     }
 
-    function verifyFunction(hd: number, f: BinSection) {
+    idx = 0
+    for (
+        let ptr = roleData.start;
+        ptr < roleData.end;
+        ptr += BinFmt.RoleHeaderSize
+    ) {
+        const cl = read32(bin, ptr)
+        console.log(`role #${idx} = ${hex(cl)} ${dbg.roles[idx]?.name || ""}`)
+        idx++
+    }
+
+    for (let i = 0; i < floats.length; ++i)
+        console.log(`float #${i} = ${floats[i]}`)
+
+    function verifyFunction(hd: number, f: BinSection, dbg: FunctionDebugInfo) {
         assert(hd, f.length > 0, "func size > 0")
-        console.log(`fun ${f}`)
+        const funcode = new Uint16Array(f.asBuffer())
+        console.log(`fun ${f} ${dbg?.name}`)
+        const srcmap = dbg?.srcmap || []
+        let srcmapPtr = 0
+        let prevLine = -1
+        for (let pc = 0; pc < funcode.length; ++pc) {
+            while (pc >= srcmap[srcmapPtr + 1] + srcmap[srcmapPtr + 2])
+                srcmapPtr += 3
+            if (prevLine != srcmap[srcmapPtr]) {
+                prevLine = srcmap[srcmapPtr]
+                if (prevLine)
+                    console.log(
+                        `; (${prevLine}): ${sourceLines[prevLine - 1] || ""}`
+                    )
+            }
+            const instr = funcode[pc]
+            const pref = isPrefixInstr(instr) ? "    " : "             "
+            console.log(pref + stringifyInstr(instr, resolver))
+        }
     }
 }

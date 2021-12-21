@@ -4,7 +4,10 @@ import * as estree from "estree"
 import {
     BinFmt,
     bitSize,
+    CellDebugInfo,
     CellKind,
+    DebugInfo,
+    FunctionDebugInfo,
     InstrArgResolver,
     isPrefixInstr,
     NUM_REGS,
@@ -42,7 +45,7 @@ btnA.down.sub(() => {
   led.brightness.write(1)
   wait(0.1);
   [r, g, b] = color.reading.read()
-  tint = (r + g + 2 * b) / (r + g + b)
+  tint = (r + g + 2.3 * b) / (r + 2 * g + b)
   upload("color", r, g, b, tint)
   display.message.write(format("t={0} {1}", tint, r))
   led.brightness.write(0)
@@ -81,6 +84,11 @@ class Cell {
     getName() {
         return idName(this.definition.id)
     }
+    debugInfo(): CellDebugInfo {
+        return {
+            name: this.getName(),
+        }
+    }
 }
 
 class Role extends Cell {
@@ -99,6 +107,11 @@ class Role extends Cell {
     }
     encode() {
         return this.index
+    }
+    serialize() {
+        const r = new Uint8Array(BinFmt.RoleHeaderSize)
+        write32(r, 0, this.spec.classIdentifier)
+        return r
     }
 }
 
@@ -176,12 +189,24 @@ class OpWriter {
     top: Label
     private assembly: (string | number)[] = []
     private assemblyPtr = 0
+    private lineNo = -1
+    private lineNoStart = -1
     desc = new Uint8Array(BinFmt.FunctionHeaderSize)
     offsetInFuncs = -1
+    private srcmap: number[] = []
 
     constructor(public parent: Procedure) {
         this.top = this.mkLabel("top")
         this.emitLabel(this.top)
+    }
+
+    debugInfo(): FunctionDebugInfo {
+        this.forceFinStmt()
+        return {
+            name: this.parent.name,
+            srcmap: this.srcmap,
+            locals: this.parent.locals.list.map(v => v.debugInfo()),
+        }
     }
 
     serialize() {
@@ -205,6 +230,19 @@ class OpWriter {
 
     emitDbg(msg: string) {
         this.emitComment(msg)
+    }
+
+    private forceFinStmt() {
+        if (this.lineNo < 0) return
+        const len = this.binary.length - this.lineNoStart
+        if (len) this.srcmap.push(this.lineNo, this.lineNoStart, len)
+    }
+
+    stmtStart(lineNo: number) {
+        if (this.lineNo == lineNo) return
+        this.forceFinStmt()
+        this.lineNo = lineNo
+        this.lineNoStart = this.binary.length
     }
 
     stmtEnd() {
@@ -653,9 +691,11 @@ class Procedure {
     writer = new OpWriter(this)
     index: number
     numargs = 0
+    locals: VariableScope
     constructor(public parent: Program, public name: string) {
         this.index = this.parent.procs.length
         this.parent.procs.push(this)
+        this.locals = new VariableScope(this.parent.globals)
     }
     toString() {
         return `proc ${this.name}:\n${this.writer.getAssembly()}`
@@ -699,7 +739,6 @@ type Expr = estree.Expression | estree.Super | estree.SpreadElement
 class Program implements InstrArgResolver {
     roles = new VariableScope(null)
     globals = new VariableScope(this.roles)
-    locals = new VariableScope(this.globals)
     tree: estree.Program
     procs: Procedure[] = []
     floatLiterals: number[] = []
@@ -713,6 +752,11 @@ class Program implements InstrArgResolver {
     numErrors = 0
 
     constructor(public source: string) {}
+
+    indexToLine(idx: number) {
+        const s = this.source.slice(0, idx)
+        return s.replace(/[^\n]/g, "").length + 1
+    }
 
     indexToPos(idx: number) {
         const s = this.source.slice(0, idx)
@@ -737,8 +781,8 @@ class Program implements InstrArgResolver {
 
     describeCell(t: CellKind, idx: number): string {
         switch (t) {
-            case CellKind.LOCAL:
-                return this.locals.describeIndex(idx)
+            //case CellKind.LOCAL:
+            //    return this.proc.locals.describeIndex(idx)
             case CellKind.GLOBAL:
                 return this.globals.describeIndex(idx)
             case CellKind.FLOAT_CONST:
@@ -751,7 +795,6 @@ class Program implements InstrArgResolver {
     funName(idx: number): string {
         const p = this.procs[idx]
         if (p) return p.name
-        return undefined
     }
 
     roleName(idx: number): string {
@@ -1050,7 +1093,7 @@ class Program implements InstrArgResolver {
 
     private emitIdentifier(expr: estree.Identifier): ValueDesc {
         const id = this.forceName(expr)
-        const cell = this.locals.lookup(id)
+        const cell = this.proc.locals.lookup(id)
         if (!cell) this.throwError(expr, "unknown name: " + id)
         return cell.value()
     }
@@ -1132,7 +1175,7 @@ class Program implements InstrArgResolver {
 
     private lookupCell(expr: estree.Expression | estree.Pattern) {
         const name = this.forceName(expr)
-        const r = this.locals.lookup(name)
+        const r = this.proc.locals.lookup(name)
         if (!r) this.throwError(expr, `can't find '${name}'`)
         return r
     }
@@ -1296,6 +1339,8 @@ class Program implements InstrArgResolver {
         const wr = this.writer
         if (src) wr.emitComment(src)
 
+        wr.stmtStart(this.indexToLine(stmt.range[0]))
+
         const scopes = wr.numScopes()
         wr.push()
         try {
@@ -1354,10 +1399,18 @@ class Program implements InstrArgResolver {
         const funDesc = new BinSection()
         const funData = new BinSection()
         const floatData = new BinSection()
+        const roleData = new BinSection()
         const strDesc = new BinSection()
         const strData = new BinSection()
 
-        for (const s of [funDesc, funData, floatData, strDesc, strData]) {
+        for (const s of [
+            funDesc,
+            funData,
+            floatData,
+            roleData,
+            strDesc,
+            strData,
+        ]) {
             sectDescs.append(s.desc)
             sections.push(s)
         }
@@ -1373,6 +1426,10 @@ class Program implements InstrArgResolver {
         floatData.append(
             new Uint8Array(new Float64Array(this.floatLiterals).buffer)
         )
+
+        for (const r of this.roles.list) {
+            roleData.append((r as Role).serialize())
+        }
 
         const descs = this.stringLiterals.map(str => {
             const buf = stringToUint8Array(toUTF8(str) + "\u0000")
@@ -1431,8 +1488,14 @@ class Program implements InstrArgResolver {
         for (const p of this.procs) p.finalize()
 
         const b = this.serialize()
+        const dbg: DebugInfo = {
+            roles: this.roles.list.map(r => r.debugInfo()),
+            functions: this.procs.map(p => p.writer.debugInfo()),
+            globals: this.globals.list.map(r => r.debugInfo()),
+            source: this.source,
+        }
         require("fs").writeFileSync("dist/prog.jacs", b)
-        verifyBinary(b)
+        verifyBinary(b, dbg)
 
         // console.log(this.procs.map(p => p.toString()).join("\n"))
     }
