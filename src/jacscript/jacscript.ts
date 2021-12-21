@@ -658,7 +658,7 @@ class OpWriter {
     }
 }
 
-class BinSection {
+class SectionWriter {
     offset = -1
     currSize = 0
     data: Uint8Array[] = []
@@ -1389,9 +1389,9 @@ class Program implements InstrArgResolver {
         // serialization only works on little endian machines
         this.assertLittleEndian()
 
-        const fixHeader = new BinSection(BinFmt.FixHeaderSize)
-        const sectDescs = new BinSection()
-        const sections: BinSection[] = [fixHeader, sectDescs]
+        const fixHeader = new SectionWriter(BinFmt.FixHeaderSize)
+        const sectDescs = new SectionWriter()
+        const sections: SectionWriter[] = [fixHeader, sectDescs]
 
         const hd = new Uint8Array(BinFmt.FixHeaderSize)
         hd.set(
@@ -1403,12 +1403,12 @@ class Program implements InstrArgResolver {
         )
         fixHeader.append(hd)
 
-        const funDesc = new BinSection()
-        const funData = new BinSection()
-        const floatData = new BinSection()
-        const roleData = new BinSection()
-        const strDesc = new BinSection()
-        const strData = new BinSection()
+        const funDesc = new SectionWriter()
+        const funData = new SectionWriter()
+        const floatData = new SectionWriter()
+        const roleData = new SectionWriter()
+        const strDesc = new SectionWriter()
+        const strData = new SectionWriter()
 
         for (const s of [
             funDesc,

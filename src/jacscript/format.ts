@@ -52,8 +52,8 @@ export enum OpSync {
     RETURN,
     SETUP_BUFFER, // A-size
     OBSERVE_ROLE, // A-role
-    FORMAT, // A-string-index B-numargs
-    MEMCPY, // A-string-index
+    FORMAT, // A-string-index B-numargs C-offset
+    MEMCPY, // A-string-index C-offset
     _LAST,
 }
 
@@ -394,4 +394,13 @@ export interface DebugInfo {
     roles: CellDebugInfo[]
     globals: CellDebugInfo[]
     source: string
+}
+
+export function emptyDebugInfo(): DebugInfo {
+    return {
+        functions: [],
+        globals: [],
+        roles: [],
+        source: "",
+    }
 }

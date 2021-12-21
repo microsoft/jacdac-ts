@@ -10,11 +10,14 @@ import {
     write16,
     write32,
 } from "../jdom/utils"
+import { assertPos, BinSection, hex, loadImage, oopsPos } from "./executor"
 import {
     BinFmt,
     bitSize,
+    CellDebugInfo,
     CellKind,
     DebugInfo,
+    emptyDebugInfo,
     FunctionDebugInfo,
     InstrArgResolver,
     isPrefixInstr,
@@ -30,55 +33,6 @@ import {
     stringifyInstr,
     ValueSpecial,
 } from "./format"
-
-function oops(pos: number, msg: string): never {
-    throw new Error(`verification error at ${hex(pos)}: ${msg}`)
-}
-
-function assert(pos: number, cond: boolean, msg: string) {
-    if (!cond) oops(pos, msg)
-}
-
-function hex(n: number) {
-    return "0x" + n.toString(16)
-}
-
-class BinSection {
-    constructor(public buf: Uint8Array, public offset: number) {
-        assert(offset, (offset & 3) == 0, "binsect: offset aligned")
-        assert(offset, this.end <= this.buf.length, "binsect: end <= len")
-    }
-
-    toString() {
-        return `[${hex(this.start)}:${hex(this.end)}]`
-    }
-
-    get start() {
-        return read32(this.buf, this.offset)
-    }
-
-    get end() {
-        return this.start + this.length
-    }
-
-    get length() {
-        return read32(this.buf, this.offset + 4)
-    }
-
-    asBuffer() {
-        return this.buf.slice(this.start, this.end).buffer
-    }
-
-    mustContain(pos: number, off: number | BinSection) {
-        if (typeof off == "number") {
-            if (this.start <= off && off <= this.end) return
-            oops(pos, `${hex(off)} falls outside of ${this}`)
-        } else {
-            this.mustContain(pos, off.start)
-            this.mustContain(pos, off.end)
-        }
-    }
-}
 
 class Resolver implements InstrArgResolver {
     constructor(private floats: Float64Array, private dbg: DebugInfo) {}
@@ -101,45 +55,31 @@ class Resolver implements InstrArgResolver {
     }
 }
 
-export function verifyBinary(bin: Uint8Array, dbg?: DebugInfo) {
-    const hd = bin.slice(0, BinFmt.FixHeaderSize)
-
-    const [magic0, magic1, numGlobals] = jdunpack(
-        hd.slice(0, 10),
-        "u32 u32 u16"
-    )
-
-    assert(0, magic0 == BinFmt.Magic0, "magic 0")
-    assert(4, magic1 == BinFmt.Magic1, "magic 1")
-
-    if (!dbg)
-        dbg = {
-            functions: [],
-            globals: [],
-            roles: [],
-            source: "",
-        }
+export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
     const sourceLines = dbg.source.split(/\n/)
 
-    const sects = range(6).map(
-        idx =>
-            new BinSection(
-                bin,
-                BinFmt.FixHeaderSize + BinFmt.SectionHeaderSize * idx
-            )
-    )
+    const {
+        funDesc,
+        funData,
+        floatData,
+        roleData,
+        strDesc,
+        strData,
+        sects,
+        numGlobals,
+    } = loadImage(bin)
+
     for (let i = 0; i < sects.length; ++i) {
         console.log(`sect ${sects[i]}`)
         if (i > 0)
-            assert(
+            assertPos(
                 sects[i].offset,
                 sects[i - 1].end == sects[i].start,
                 "section in order"
             )
     }
-    const [funDesc, funData, floatData, roleData, strDesc, strData] = sects
 
-    assert(
+    assertPos(
         floatData.offset,
         (floatData.length & 7) == 0,
         "float data 8-aligned"
@@ -159,7 +99,7 @@ export function verifyBinary(bin: Uint8Array, dbg?: DebugInfo) {
         ptr += BinFmt.FunctionHeaderSize
     ) {
         const funSect = new BinSection(bin, ptr)
-        assert(ptr, funSect.start == prevProc, "func in order")
+        assertPos(ptr, funSect.start == prevProc, "func in order")
         funData.mustContain(ptr, funSect)
         prevProc = funSect.end
         verifyFunction(ptr, funSect, dbg.functions[idx])
@@ -189,7 +129,7 @@ export function verifyBinary(bin: Uint8Array, dbg?: DebugInfo) {
     ) {
         const cl = read32(bin, ptr)
         const top = cl >>> 28
-        assert(
+        assertPos(
             ptr,
             top == 0x1 || top == 0x2,
             "service class starts with 0x1 or 0x2 (mixin)"
@@ -202,7 +142,7 @@ export function verifyBinary(bin: Uint8Array, dbg?: DebugInfo) {
         console.log(`float #${i} = ${floats[i]}`)
 
     function verifyFunction(hd: number, f: BinSection, dbg: FunctionDebugInfo) {
-        assert(hd, f.length > 0, "func size > 0")
+        assertPos(hd, f.length > 0, "func size > 0")
         const funcode = new Uint16Array(f.asBuffer())
         console.log(`fun ${f} ${dbg?.name}`)
         const srcmap = dbg?.srcmap || []
@@ -388,7 +328,7 @@ export function verifyBinary(bin: Uint8Array, dbg?: DebugInfo) {
 
         function check(cond: boolean, msg: string) {
             if (!cond) {
-                oops(
+                oopsPos(
                     f.start + pc * 2,
                     "instruction verification failure: " + msg
                 )
