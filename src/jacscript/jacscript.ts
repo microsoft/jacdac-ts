@@ -211,7 +211,7 @@ class OpWriter {
     }
 
     serialize() {
-        if (this.binary.length & 1) this.binary.push(0)
+        if (this.binary.length & 1) this.emitSync(OpSync.RETURN)
         return new Uint8Array(new Uint16Array(this.binary).buffer)
     }
 
@@ -882,6 +882,7 @@ class Program implements InstrArgResolver {
         const main = new Procedure(this, "main")
         this.withProcedure(main, () => {
             for (const s of prog.body) this.emitStmt(s)
+            this.writer.emitSync(OpSync.RETURN)
         })
     }
 
@@ -1504,7 +1505,6 @@ class Program implements InstrArgResolver {
         }
         require("fs").writeFileSync("dist/prog.jacs", b)
         verifyBinary(b, dbg)
-
     }
 }
 

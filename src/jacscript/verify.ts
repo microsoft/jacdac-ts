@@ -212,22 +212,29 @@ export function verifyBinary(bin: Uint8Array, dbg?: DebugInfo) {
         let [a, b, c, d] = params
         let writtenRegs = 0
         let pc = 0
+        let isJumpTarget: boolean[] = []
 
-        for (; pc < funcode.length; ++pc) {
-            while (pc >= srcmap[srcmapPtr + 1] + srcmap[srcmapPtr + 2])
-                srcmapPtr += 3
-            if (prevLine != srcmap[srcmapPtr]) {
-                prevLine = srcmap[srcmapPtr]
-                if (prevLine)
-                    console.log(
-                        `; (${prevLine}): ${sourceLines[prevLine - 1] || ""}`
-                    )
+        for (let pass = 0; pass < 2; ++pass) {
+            for (; pc < funcode.length; ++pc) {
+                while (pc >= srcmap[srcmapPtr + 1] + srcmap[srcmapPtr + 2])
+                    srcmapPtr += 3
+                if (prevLine != srcmap[srcmapPtr]) {
+                    prevLine = srcmap[srcmapPtr]
+                    if (prevLine)
+                        console.log(
+                            `; (${prevLine}): ${
+                                sourceLines[prevLine - 1] || ""
+                            }`
+                        )
+                }
+                const instr = funcode[pc]
+                const pref = isPrefixInstr(instr) ? "    " : "             "
+                console.log(pref + stringifyInstr(instr, resolver))
+
+                if (isJumpTarget[pc]) writtenRegs = 0
+
+                verifyInstr(instr)
             }
-            const instr = funcode[pc]
-            const pref = isPrefixInstr(instr) ? "    " : "             "
-            console.log(pref + stringifyInstr(instr, resolver))
-
-            verifyInstr(instr)
         }
 
         function verifyInstr(instr: number) {
@@ -242,6 +249,7 @@ export function verifyBinary(bin: Uint8Array, dbg?: DebugInfo) {
             const reg0 = subop
             const reg1 = arg8 >> 4
             const reg2 = arg4
+            let lastOK = false
 
             ;[a, b, c, d] = params
 
@@ -310,7 +318,9 @@ export function verifyBinary(bin: Uint8Array, dbg?: DebugInfo) {
                         pc2 == 0 || !isPrefixInstr(funcode[pc2 - 1]),
                         "jump into prefix"
                     )
+                    isJumpTarget[pc2] = true
                     if (arg8 & (1 << 6)) rdReg(reg0)
+                    else lastOK = true
                     break
 
                 case OpTop.CALL: // NUMREGS[4] BG[1] 0[1] B:OFF[6]
@@ -325,6 +335,7 @@ export function verifyBinary(bin: Uint8Array, dbg?: DebugInfo) {
                     a = (a << 4) | subop
                     switch (arg8) {
                         case OpSync.RETURN:
+                            lastOK = true
                             break
                         case OpSync.SETUP_BUFFER: // A-size
                             check(a <= 236, "setup buffer size in range")
@@ -364,10 +375,15 @@ export function verifyBinary(bin: Uint8Array, dbg?: DebugInfo) {
                             check(false, "invalid async code")
                             break
                     }
+                    writtenRegs = 0
                     break
             }
 
             if (!isPrefixInstr(instr)) params = [0, 0, 0, 0]
+
+            if (lastOK) writtenRegs = 0
+
+            check(lastOK || pc + 1 < funcode.length, "final fall-off")
         }
 
         function check(cond: boolean, msg: string) {
