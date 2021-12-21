@@ -86,6 +86,7 @@ export enum ValueSpecial {
     EV_CODE = 0x2, // or nan
     REG_CODE = 0x3, // or nan
     ROLE_ID = 0x4, // or nan
+    _LAST
 }
 
 export enum OpBinary {
@@ -99,12 +100,14 @@ export enum OpBinary {
     NE = 0x8,
     AND = 0x9,
     OR = 0xa,
+    _LAST
 }
 
 export enum OpUnary {
     ID = 0x0,
     NEG = 0x1,
     NOT = 0x2,
+    _LAST
 }
 
 // Size in bits is: 8 << (fmt & 0b11)
@@ -233,8 +236,8 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
             case OpTop.JUMP: // REG[4] BACK[1] IF_ZERO[1] B:OFF[6]
                 b = (b << 6) | arg6
                 return (
-                    `jump ${arg8 << (1 << 7) ? "-" : "+"}${b}` +
-                    (arg8 << (1 << 6) ? ` if ${reg0} == 0` : ``)
+                    `jump ${arg8 & (1 << 7) ? "-" : "+"}${b}` +
+                    (arg8 & (1 << 6) ? ` if ${reg0} == 0` : ``)
                 )
 
             case OpTop.CALL: // NUMREGS[4] BG[1] 0[1] B:OFF[6]
@@ -336,7 +339,7 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
                         return `${r}_SPEC[${idx}]`
                 }
             default:
-                return `C${a}[$idx]` // ??
+                return `C${a}[${idx}]` // ??
         }
     }
 

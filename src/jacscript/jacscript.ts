@@ -33,6 +33,7 @@ import {
 } from "../jdom/utils"
 import { serviceSpecificationFromName } from "../jdom/spec"
 import { verifyBinary } from "./verify"
+import { jdpack } from "../jdom/pack"
 
 const sample = `
 var btnA = roles.button()
@@ -624,7 +625,7 @@ class OpWriter {
                 }
                 assert((op0 & 0xfff) == 0)
                 assert((op1 & 0x3f) == 0)
-                off -= 1
+                off -= 2
                 assertRange(0, off, 0x3ffff)
                 op0 |= off >> 6
                 op1 |= off & 0x3f
@@ -1392,8 +1393,13 @@ class Program implements InstrArgResolver {
         const sections: BinSection[] = [fixHeader, sectDescs]
 
         const hd = new Uint8Array(BinFmt.FixHeaderSize)
-        write32(hd, 0, BinFmt.Magic0)
-        write32(hd, 4, BinFmt.Magic1)
+        hd.set(
+            jdpack("u32 u32 u16", [
+                BinFmt.Magic0,
+                BinFmt.Magic1,
+                this.globals.list.length,
+            ])
+        )
         fixHeader.append(hd)
 
         const funDesc = new BinSection()
@@ -1487,6 +1493,8 @@ class Program implements InstrArgResolver {
         this.finalizeDispatchers()
         for (const p of this.procs) p.finalize()
 
+        console.log(this.procs.map(p => p.toString()).join("\n"))
+
         const b = this.serialize()
         const dbg: DebugInfo = {
             roles: this.roles.list.map(r => r.debugInfo()),
@@ -1497,7 +1505,6 @@ class Program implements InstrArgResolver {
         require("fs").writeFileSync("dist/prog.jacs", b)
         verifyBinary(b, dbg)
 
-        // console.log(this.procs.map(p => p.toString()).join("\n"))
     }
 }
 

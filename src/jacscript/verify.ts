@@ -1,3 +1,4 @@
+import { jdunpack } from "../jdom/pack"
 import {
     fromUTF8,
     range,
@@ -102,8 +103,14 @@ class Resolver implements InstrArgResolver {
 
 export function verifyBinary(bin: Uint8Array, dbg?: DebugInfo) {
     const hd = bin.slice(0, BinFmt.FixHeaderSize)
-    assert(0, read32(hd, 0) == BinFmt.Magic0, "magic 0")
-    assert(4, read32(hd, 4) == BinFmt.Magic1, "magic 1")
+
+    const [magic0, magic1, numGlobals] = jdunpack(
+        hd.slice(0, 10),
+        "u32 u32 u16"
+    )
+
+    assert(0, magic0 == BinFmt.Magic0, "magic 0")
+    assert(4, magic1 == BinFmt.Magic1, "magic 1")
 
     if (!dbg)
         dbg = {
@@ -140,6 +147,7 @@ export function verifyBinary(bin: Uint8Array, dbg?: DebugInfo) {
     const floats = new Float64Array(floatData.asBuffer())
 
     const resolver = new Resolver(floats, dbg)
+    const numFuncs = funDesc.length / BinFmt.FunctionHeaderSize
 
     let prevProc = funData.start
     let idx = 0
@@ -178,6 +186,12 @@ export function verifyBinary(bin: Uint8Array, dbg?: DebugInfo) {
         ptr += BinFmt.RoleHeaderSize
     ) {
         const cl = read32(bin, ptr)
+        const top = cl >>> 28
+        assert(
+            ptr,
+            top == 0x1 || top == 0x2,
+            "service class starts with 0x1 or 0x2 (mixin)"
+        )
         console.log(`role #${idx} = ${hex(cl)} ${dbg.roles[idx]?.name || ""}`)
         idx++
     }
@@ -192,7 +206,12 @@ export function verifyBinary(bin: Uint8Array, dbg?: DebugInfo) {
         const srcmap = dbg?.srcmap || []
         let srcmapPtr = 0
         let prevLine = -1
-        for (let pc = 0; pc < funcode.length; ++pc) {
+        let params = [0, 0, 0, 0]
+        let [a, b, c, d] = params
+        let writtenRegs = 0
+        let pc = 0
+
+        for (; pc < funcode.length; ++pc) {
             while (pc >= srcmap[srcmapPtr + 1] + srcmap[srcmapPtr + 2])
                 srcmapPtr += 3
             if (prevLine != srcmap[srcmapPtr]) {
@@ -205,6 +224,179 @@ export function verifyBinary(bin: Uint8Array, dbg?: DebugInfo) {
             const instr = funcode[pc]
             const pref = isPrefixInstr(instr) ? "    " : "             "
             console.log(pref + stringifyInstr(instr, resolver))
+
+            verifyInstr(instr)
+        }
+
+        function verifyInstr(instr: number) {
+            const op = instr >> 12
+            const arg12 = instr & 0xfff
+            const arg10 = instr & 0x3ff
+            const arg8 = instr & 0xff
+            const arg6 = instr & 0x3f
+            const arg4 = instr & 0xf
+            const subop = arg12 >> 8
+
+            const reg0 = subop
+            const reg1 = arg8 >> 4
+            const reg2 = arg4
+
+            ;[a, b, c, d] = params
+
+            switch (op) {
+                case OpTop.LOAD_CELL:
+                case OpTop.STORE_CELL:
+                case OpTop.JUMP:
+                case OpTop.CALL:
+                    b = (b << 6) | arg6
+                    break
+            }
+
+            switch (op) {
+                case OpTop.LOAD_CELL:
+                case OpTop.STORE_CELL:
+                    a = (a << 2) | (arg8 >> 6)
+                    break
+            }
+
+            switch (op) {
+                case OpTop.SET_A:
+                case OpTop.SET_B:
+                case OpTop.SET_C:
+                case OpTop.SET_D:
+                    params[op] = arg12
+                    break
+
+                case OpTop.SET_HIGH:
+                    check(arg10 >> 4 == 0, "set_high only supported for 16 bit")
+                    params[arg12 >> 10] |= arg10 << 12
+                    break
+
+                case OpTop.UNARY: // OP[4] DST[4] SRC[4]
+                    rdReg(reg2)
+                    wrReg(reg1)
+                    check(subop < OpUnary._LAST, "valid uncode")
+                    break
+
+                case OpTop.BINARY: // OP[4] DST[4] SRC[4]
+                    rdReg(reg1)
+                    rdReg(reg2)
+                    wrReg(reg1)
+                    check(subop < OpBinary._LAST, "valid bincode")
+                    break
+
+                case OpTop.LOAD_CELL: // DST[4] A:OP[2] B:OFF[6]
+                    wrReg(reg0)
+                    verifyCell(a, b, false)
+                    break
+
+                case OpTop.STORE_CELL: // SRC[4] A:OP[2] B:OFF[6]
+                    rdReg(reg0)
+                    verifyCell(a, b, true)
+                    break
+
+                case OpTop.JUMP: // REG[4] BACK[1] IF_ZERO[1] B:OFF[6]
+                    let pc2 = pc + 1
+                    if (arg8 & (1 << 7)) {
+                        pc2 -= b
+                    } else {
+                        pc2 += b
+                    }
+                    check(pc2 >= 0, "jump before")
+                    check(pc2 < funcode.length, "jump after")
+                    check(
+                        pc2 == 0 || !isPrefixInstr(funcode[pc2 - 1]),
+                        "jump into prefix"
+                    )
+                    if (arg8 & (1 << 6)) rdReg(reg0)
+                    break
+
+                case OpTop.CALL: // NUMREGS[4] BG[1] 0[1] B:OFF[6]
+                    for (let i = 0; i < subop; ++i) rdReg(i)
+                    if (arg8 << (1 << 7)) {
+                        // bg
+                    }
+                    check(b < numFuncs, "call fn in range")
+                    break
+
+                case OpTop.SYNC: // A:ARG[4] OP[8]
+                    a = (a << 4) | subop
+                    switch (arg8) {
+                    }
+                    break
+
+                case OpTop.ASYNC: // D:SAVE_REGS[4] OP[8]
+                    d = (d << 4) | subop
+                    for (let i = 0; i < NUM_REGS; i++)
+                        if (d & (1 << i)) rdReg(i)
+                    switch (arg8) {
+                    }
+                    break
+            }
+
+            if (!isPrefixInstr(instr)) params = [0, 0, 0, 0]
+        }
+
+        function check(cond: boolean, msg: string) {
+            if (!cond) {
+                oops(
+                    f.start + pc * 2,
+                    "instruction verification failure: " + msg
+                )
+            }
+        }
+
+        function rdReg(idx: number) {
+            check((writtenRegs & (1 << idx)) != 0, "register was written")
+        }
+
+        function wrReg(idx: number) {
+            writtenRegs |= 1 << idx
+        }
+
+        function verifyCell(tp: CellKind, idx: number, write: boolean) {
+            check(idx >= 0, "idx pos")
+            switch (tp) {
+                case CellKind.LOCAL:
+                    // TODO
+                    break
+                case CellKind.GLOBAL:
+                    check(idx < numGlobals, "globals range")
+                    break
+                case CellKind.BUFFER: // arg=shift:numfmt, C=Offset
+                    const fmt: OpFmt = idx & 0xf
+                    check(
+                        fmt <= OpFmt.I64 ||
+                            fmt == OpFmt.F32 ||
+                            fmt == OpFmt.F64,
+                        "valid fmt"
+                    )
+                    const sz = bitSize(idx & 0xf)
+                    const shift = idx >> 4
+                    check(shift <= sz, "shift < sz")
+                    check(c <= 236 - sz / 8, "offset in range")
+                    break
+                case CellKind.FLOAT_CONST:
+                    check(idx < floats.length, "float const in range")
+                    break
+                case CellKind.IDENTITY:
+                    break
+                case CellKind.SPECIAL:
+                    check(idx < ValueSpecial._LAST, "special in range")
+                    break
+                default:
+                    check(false, "invalid cell kind")
+            }
+
+            switch (tp) {
+                case CellKind.LOCAL:
+                case CellKind.GLOBAL:
+                case CellKind.BUFFER:
+                    break
+                default:
+                    check(!write, "cell kind not writable")
+                    break
+            }
         }
     }
 }
