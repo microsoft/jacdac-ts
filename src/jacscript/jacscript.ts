@@ -33,7 +33,7 @@ export enum OpTop {
     STORE_CELL = 8, // SRC[4] A:OP[2] B:OFF[6]
 
     JUMP = 9, // REG[4] BACK[1] IF_ZERO[1] B:OFF[6]
-    CALL = 10, // NUMREGS[4] BG[1] 0[1] B:OFF[6]
+    CALL = 10, // NUMREGS[4] BG[1] 0[1] B:OFF[6] - TODO add save regs
 
     SYNC = 11, // A:ARG[4] OP[8]
     ASYNC = 12, // D:SAVE_REGS[4] OP[8]
@@ -187,6 +187,11 @@ export function bitSize(fmt: OpFmt) {
     return 8 << (fmt & 0b11)
 }
 
+export function isPrefixInstr(instr: number) {
+    const op = instr >>> 12
+    return op <= OpTop.SET_HIGH
+}
+
 export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
     const op = instr >>> 12
     const arg12 = instr & 0xfff
@@ -210,8 +215,8 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
 
     const res = doOp()
 
-    if (op > OpTop.SET_HIGH) a = b = c = d = 0
-    if (resolver) resolver.resolverParams = [a, b, c, d]
+    if (!isPrefixInstr(instr)) params = [0, 0, 0, 0]
+    if (resolver) resolver.resolverParams = params
 
     return res
 
@@ -222,11 +227,11 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
             case OpTop.SET_C: // ARG[12]
             case OpTop.SET_D: // ARG[12]
                 params[op] = arg12
-                return `set ${abcd[op]} to ${arg12}`
+                return `[${abcd[op]} 0x${arg12.toString(16)}] `
 
             case OpTop.SET_HIGH: // A/B/C/D[2] ARG[10]
                 params[arg12 >> 10] |= arg10 << 12
-                return `set upper ${abcd[arg12 >> 10]} to ${arg10}`
+                return `[upper ${abcd[arg12 >> 10]} 0x${arg10.toString(16)}] `
 
             case OpTop.UNARY: // OP[4] DST[4] SRC[4]
                 return `${reg1} := ${uncode()} ${reg2}`
@@ -257,11 +262,11 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
 
             case OpTop.SYNC: // A:ARG[4] OP[8]
                 a = (a << 4) | subop
-                return `sync ${arg8} a=${a}`
+                return `sync ${syncOp()}`
 
             case OpTop.ASYNC: // D:SAVE_REGS[4] OP[8]
                 d = (d << 4) | subop
-                return `async ${arg8} save=${a.toString(2)}`
+                return `async ${asyncOp()} save=${d.toString(2)}`
         }
     }
 
@@ -349,6 +354,38 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
                 }
             default:
                 return `C${a}[$idx]` // ??
+        }
+    }
+
+    function syncOp() {
+        switch (arg8) {
+            case OpSync.RETURN:
+                return `return`
+            case OpSync.SETUP_BUFFER: // A-size
+                return `setup_buffer(size=${a})`
+            case OpSync.OBSERVE_ROLE: // A-role
+                return `observe(${role()})`
+            case OpSync.FORMAT: // A-string-index B-numargs
+                return `format(str=${a} #${b})`
+            case OpSync.MEMCPY: // A-string-index
+                return `memcpy(str=${a})`
+            default:
+                return `Sync_0x${arg8.toString(16)}`
+        }
+    }
+
+    function asyncOp() {
+        switch (arg8) {
+            case OpAsync.YIELD: // A-timeout in ms
+                return `yield(wait=${a}ms)`
+            case OpAsync.CLOUD_UPLOAD: // A-numregs
+                return `upload(#${a})`
+            case OpAsync.QUERY_REG: // A-role, B-code, C-timeout
+                return `query(${jdreg()} timeout=${c}ms)`
+            case OpAsync.SET_REG: // A-role, B-code
+                return `set(${jdreg()})`
+            default:
+                return `Async_0x${arg8.toString(16)}`
         }
     }
 }
@@ -481,6 +518,27 @@ class OpWriter {
         this.emitLabel(this.top)
     }
 
+    numScopes() {
+        return this.scopes.length
+    }
+
+    numRegsInTopScope() {
+        return this.scopes[this.scopes.length - 1].length
+    }
+
+    emitDbg(msg: string) {
+        this.emitComment(msg)
+    }
+
+    stmtEnd() {
+        if (false)
+            this.emitDbg(
+                `reg=${this.allocatedRegsMask.toString(16)} ${
+                    this.scopes.length
+                } ${this.scopes.map(s => s.length).join(",")}`
+            )
+    }
+
     push() {
         this.scopes.push([])
     }
@@ -548,14 +606,6 @@ class OpWriter {
         return mkValue(
             CellKind.X_STRING,
             addUnique(this.parent.parent.stringLiterals, s)
-        )
-    }
-
-    isWritable(v: ValueDesc) {
-        return (
-            this.isReg(v) ||
-            v.kind == CellKind.LOCAL ||
-            v.kind == CellKind.GLOBAL
         )
     }
 
@@ -767,7 +817,10 @@ class OpWriter {
         let r = ""
         for (const ln of this.assembly) {
             if (typeof ln == "string") r += ln + "\n"
-            else r += stringifyInstr(this.binary[ln], this.parent.parent) + "\n"
+            else {
+                r += stringifyInstr(this.binary[ln], this.parent.parent)
+                if (!isPrefixInstr(this.binary[ln])) r += "\n"
+            }
         }
         return r
     }
@@ -949,6 +1002,7 @@ class Program implements InstrArgResolver {
     sysSpec = serviceSpecificationFromName("_system")
     refreshMS: number[] = [0, 500]
     resolverParams: number[]
+    numErrors = 0
 
     constructor(public source: string) {}
 
@@ -966,7 +1020,8 @@ class Program implements InstrArgResolver {
     }
 
     reportError(range: number[], msg: string): ValueDesc {
-        console.error(
+        this.numErrors++
+        console.log(
             `${this.indexToPos(range[0])}: ${msg} (${this.sourceFrag(range)})`
         )
         return values.error
@@ -1190,6 +1245,7 @@ class Program implements InstrArgResolver {
                                 expr.arguments[i + 1],
                                 "args can't follow a buffer"
                             )
+                        wr.pop()
                         break
                     }
                     v = wr.forceReg(v)
@@ -1264,18 +1320,20 @@ class Program implements InstrArgResolver {
                             stringifyCellKind(lbl.kind)
                     )
                 this.emitArgs(expr.arguments.slice(1))
+                wr.pop() // we don't need to save the argument registers
                 wr.emitAsync(OpAsync.CLOUD_UPLOAD, numargs - 1)
-                wr.pop()
                 return values.zero
             }
             case "format": {
                 const arg0 = expr.arguments[0]
                 if (arg0?.type != "Literal" || typeof arg0.value != "string")
                     this.throwError(expr, "format() requires string arg")
+                wr.push()
                 this.emitArgs(expr.arguments.slice(1))
                 const r = wr.allocBuf()
                 const vd = wr.emitString(arg0.value)
                 wr.emitSync(OpSync.FORMAT, vd.index, numargs - 1)
+                wr.popExcept(r)
                 return r
             }
         }
@@ -1527,8 +1585,11 @@ class Program implements InstrArgResolver {
 
     private emitStmt(stmt: estree.BaseStatement) {
         const src = this.sourceFrag(stmt.range)
-        if (src) this.writer.emitComment(src)
+        const wr = this.writer
+        if (src) wr.emitComment(src)
 
+        const scopes = wr.numScopes()
+        wr.push()
         try {
             switch (stmt.type) {
                 case "Program":
@@ -1542,7 +1603,7 @@ class Program implements InstrArgResolver {
                         stmt as estree.VariableDeclaration
                     )
                 default:
-                    console.error(stmt)
+                    console.log(stmt)
                     this.throwError(stmt, `unhandled type: ${stmt.type}`)
             }
         } catch (e) {
@@ -1551,7 +1612,15 @@ class Program implements InstrArgResolver {
                 this.reportError(node.range, e.message)
             } else {
                 this.reportError(stmt.range, "Internal error: " + e.message)
-                console.error(e.stack)
+                console.log(e.stack)
+            }
+        } finally {
+            wr.pop()
+            wr.stmtEnd()
+            if (wr.numScopes() != scopes) {
+                if (!this.numErrors)
+                    this.throwError(stmt, "push/pop mismatch; " + stmt.type)
+                while (wr.numScopes() > scopes) wr.pop()
             }
         }
     }
