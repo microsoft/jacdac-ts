@@ -2,6 +2,7 @@ import * as esprima from "esprima"
 
 import * as estree from "estree"
 import {
+    BinFmt,
     bitSize,
     CellKind,
     InstrArgResolver,
@@ -18,7 +19,13 @@ import {
     stringifyInstr,
     ValueSpecial,
 } from "./format"
-import { range } from "../jdom/utils"
+import {
+    range,
+    stringToUint8Array,
+    toUTF8,
+    write16,
+    write32,
+} from "../jdom/utils"
 import { serviceSpecificationFromName } from "../jdom/spec"
 
 const sample = `
@@ -161,10 +168,25 @@ class OpWriter {
     top: Label
     private assembly: (string | number)[] = []
     private assemblyPtr = 0
+    desc = new Uint8Array(BinFmt.FunctionHeaderSize)
+    offsetInFuncs = -1
 
     constructor(public parent: Procedure) {
         this.top = this.mkLabel("top")
         this.emitLabel(this.top)
+    }
+
+    serialize() {
+        if (this.binary.length & 1) this.binary.push(0)
+        const res = new Uint8Array(this.binary.length * 2)
+        for (let i = 0; i < this.binary.length; ++i)
+            write16(res, i * 2, this.binary[i])
+        return res
+    }
+
+    finalizeDesc(off: number) {
+        write16(this.desc, 0, off >> 2)
+        write16(this.desc, 2, (off + this.binary.length * 2) >> 2)
     }
 
     numScopes() {
@@ -480,6 +502,7 @@ class OpWriter {
 
     emitInstr(v: number) {
         v >>>= 0
+        assertRange(0, v, 0xffff)
         this.binary.push(v)
     }
 
@@ -587,6 +610,33 @@ class OpWriter {
         assert(this.isReg(right))
         assertRange(0, op, 0xf)
         this.emitRaw(OpTop.BINARY, (op << 8) | (left.index << 4) | right.index)
+    }
+}
+
+class BinSection {
+    offset = -1
+    currSize = 0
+    data: Uint8Array[] = []
+    desc = new Uint8Array(BinFmt.SectionHeaderSize)
+
+    constructor(public size = -1) {}
+
+    finalize(off: number) {
+        assert(this.offset == -1 || this.offset == off)
+        this.offset = off
+        if (this.size == -1) this.size = this.currSize
+        assert(this.size == this.currSize)
+        assert((this.offset & 3) == 0)
+        assert((this.size & 3) == 0)
+        write16(this.desc, 0, this.offset >> 2)
+        write16(this.desc, 2, this.size >> 2)
+    }
+
+    append(buf: Uint8Array) {
+        assert((buf.length & 3) == 0)
+        this.data.push(buf)
+        this.currSize += buf.length
+        if (this.size >= 0) assertRange(0, this.currSize, this.size)
     }
 }
 
@@ -1274,6 +1324,79 @@ class Program implements InstrArgResolver {
         }
     }
 
+    private serialize() {
+        const fixHeader = new BinSection(BinFmt.FixHeaderSize)
+        const sectDescs = new BinSection()
+        const sections: BinSection[] = [fixHeader, sectDescs]
+
+        const hd = new Uint8Array(BinFmt.FixHeaderSize)
+        write32(hd, 0, BinFmt.Magic0)
+        write32(hd, 4, BinFmt.Magic1)
+        fixHeader.append(hd)
+
+        const funDesc = new BinSection()
+        const funData = new BinSection()
+        const floatData = new BinSection()
+        const strDesc = new BinSection()
+        const strData = new BinSection()
+
+        for (const s of [funDesc, funData, floatData, strDesc, strData]) {
+            sectDescs.append(s.desc)
+            sections.push(s)
+        }
+
+        funDesc.size = BinFmt.FunctionHeaderSize * this.procs.length
+
+        for (const proc of this.procs) {
+            funDesc.append(proc.writer.desc)
+            proc.writer.offsetInFuncs = funData.currSize
+            funData.append(proc.writer.serialize())
+        }
+
+        floatData.append(
+            new Uint8Array(new Float64Array(this.floatLiterals).buffer)
+        )
+
+        const strs = this.stringLiterals.map(str => {
+            let encoded = toUTF8(str)
+            while (encoded.length & 3) encoded += "\u0000"
+            const s = new BinSection()
+            strDesc.append(s.desc)
+            const buf = stringToUint8Array(encoded)
+            s.append(buf)
+            strData.append(buf)
+            return s
+        })
+
+        let off = 0
+        for (const s of sections) {
+            s.finalize(off)
+            off += s.size
+        }
+
+        // strings nested in strData section; finalize them to get descriptors right
+        off = strData.offset
+        for (const s of strs) {
+            s.finalize(off)
+            off += s.size
+        }
+
+        for (const proc of this.procs) {
+            proc.writer.finalizeDesc(funData.offset + proc.writer.offsetInFuncs)
+        }
+
+        const outp = new Uint8Array(off)
+        off = 0
+        for (const s of sections) {
+            for (const d of s.data) {
+                outp.set(d, off)
+                off += d.length
+            }
+        }
+
+        return outp
+    }
+
     emit() {
         try {
             this.tree = esprima.parseScript(this.source, {
@@ -1290,6 +1413,8 @@ class Program implements InstrArgResolver {
 
         this.finalizeDispatchers()
         for (const p of this.procs) p.finalize()
+
+        require("fs").writeFileSync("dist/prog.jacs", this.serialize())
 
         console.log(this.procs.map(p => p.toString()).join("\n"))
     }

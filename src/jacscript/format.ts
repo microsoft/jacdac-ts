@@ -1,10 +1,19 @@
-
 /*
 
 - FORMAT should maybe set the buffer size?
 - get_reg option to return immediately
 
 */
+
+export enum BinFmt {
+    Magic0 = 0x5363614a,
+    Magic1 = 0x9a6a7e0a,
+    FixHeaderSize = 64,
+    SectionHeaderSize = 4,
+    NumSections = 16,
+    SectionDataStart = FixHeaderSize + NumSections * SectionHeaderSize,
+    FunctionHeaderSize = 16,
+}
 
 export interface SMap<T> {
     [k: string]: T
