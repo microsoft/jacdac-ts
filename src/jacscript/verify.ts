@@ -148,6 +148,8 @@ export function verifyBinary(bin: Uint8Array, dbg?: DebugInfo) {
 
     const resolver = new Resolver(floats, dbg)
     const numFuncs = funDesc.length / BinFmt.FunctionHeaderSize
+    const numRoles = roleData.length / BinFmt.RoleHeaderSize
+    const numStrings = strDesc.length / BinFmt.SectionHeaderSize
 
     let prevProc = funData.start
     let idx = 0
@@ -312,7 +314,7 @@ export function verifyBinary(bin: Uint8Array, dbg?: DebugInfo) {
                     break
 
                 case OpTop.CALL: // NUMREGS[4] BG[1] 0[1] B:OFF[6]
-                    for (let i = 0; i < subop; ++i) rdReg(i)
+                    rdRegs(subop)
                     if (arg8 << (1 << 7)) {
                         // bg
                     }
@@ -322,6 +324,24 @@ export function verifyBinary(bin: Uint8Array, dbg?: DebugInfo) {
                 case OpTop.SYNC: // A:ARG[4] OP[8]
                     a = (a << 4) | subop
                     switch (arg8) {
+                        case OpSync.RETURN:
+                            break
+                        case OpSync.SETUP_BUFFER: // A-size
+                            check(a <= 236, "setup buffer size in range")
+                            break
+                        case OpSync.OBSERVE_ROLE: // A-role
+                            check(a < numRoles, "role in range")
+                            break
+                        case OpSync.FORMAT: // A-string-index B-numargs
+                            rdRegs(b)
+                            check(a < numStrings, "str in range")
+                            break
+                        case OpSync.MEMCPY: // A-string-index
+                            check(a < numStrings, "str in range")
+                            break
+                        default:
+                            check(false, "invalid sync code")
+                            break
                     }
                     break
 
@@ -330,6 +350,19 @@ export function verifyBinary(bin: Uint8Array, dbg?: DebugInfo) {
                     for (let i = 0; i < NUM_REGS; i++)
                         if (d & (1 << i)) rdReg(i)
                     switch (arg8) {
+                        case OpAsync.YIELD: // A-timeout in ms
+                            break
+                        case OpAsync.CLOUD_UPLOAD: // A-numregs
+                            rdRegs(a)
+                            break
+                        case OpAsync.SET_REG: // A-role, B-code
+                        case OpAsync.QUERY_REG: // A-role, B-code, C-timeout
+                            check(a < numRoles, "role idx")
+                            check(b <= 0x1ff, "reg code")
+                            break
+                        default:
+                            check(false, "invalid async code")
+                            break
                     }
                     break
             }
@@ -348,6 +381,10 @@ export function verifyBinary(bin: Uint8Array, dbg?: DebugInfo) {
 
         function rdReg(idx: number) {
             check((writtenRegs & (1 << idx)) != 0, "register was written")
+        }
+
+        function rdRegs(num: number) {
+            for (let i = 0; i < num; i++) rdReg(i)
         }
 
         function wrReg(idx: number) {
