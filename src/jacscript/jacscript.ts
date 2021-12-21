@@ -21,12 +21,15 @@ import {
 } from "./format"
 import {
     range,
+    read32,
     stringToUint8Array,
+    toHex,
     toUTF8,
     write16,
     write32,
 } from "../jdom/utils"
 import { serviceSpecificationFromName } from "../jdom/spec"
+import { verifyBinary } from "./verify"
 
 const sample = `
 var btnA = roles.button()
@@ -45,6 +48,24 @@ btnA.down.sub(() => {
   led.brightness.write(0)
 })
 `
+
+export function oops(msg: string): never {
+    throw new Error(msg)
+}
+
+export function assert(cond: boolean, msg = "") {
+    if (!cond) oops("assertion failed" + (msg ? ": " + msg : ""))
+}
+
+export function assertRange(
+    min: number,
+    v: number,
+    max: number,
+    desc = "value"
+) {
+    if (min <= v && v <= max) return
+    oops(`${desc}=${v} out of range [${min}, ${max}]`)
+}
 
 class Cell {
     index: number
@@ -99,19 +120,6 @@ interface ValueDesc {
     cell?: Cell
     spec?: jdspec.PacketInfo
     litValue?: number
-}
-
-function oops(msg: string): never {
-    throw new Error(msg)
-}
-
-function assert(cond: boolean, msg = "") {
-    if (!cond) oops("assertion failed" + (msg ? ": " + msg : ""))
-}
-
-function assertRange(min: number, v: number, max: number, desc = "value") {
-    if (min <= v && v <= max) return
-    oops(`${desc}=${v} out of range [${min}, ${max}]`)
 }
 
 function mkValue(kind: CellKind, index: number, cell?: Cell): ValueDesc {
@@ -178,15 +186,13 @@ class OpWriter {
 
     serialize() {
         if (this.binary.length & 1) this.binary.push(0)
-        const res = new Uint8Array(this.binary.length * 2)
-        for (let i = 0; i < this.binary.length; ++i)
-            write16(res, i * 2, this.binary[i])
-        return res
+        return new Uint8Array(new Uint16Array(this.binary).buffer)
     }
 
     finalizeDesc(off: number) {
-        write16(this.desc, 0, off >> 2)
-        write16(this.desc, 2, (off + this.binary.length * 2) >> 2)
+        assert((this.binary.length & 1) == 0)
+        write32(this.desc, 0, off)
+        write32(this.desc, 4, this.binary.length * 2)
     }
 
     numScopes() {
@@ -628,12 +634,15 @@ class BinSection {
         assert(this.size == this.currSize)
         assert((this.offset & 3) == 0)
         assert((this.size & 3) == 0)
-        write16(this.desc, 0, this.offset >> 2)
-        write16(this.desc, 2, this.size >> 2)
+        write32(this.desc, 0, this.offset)
+        write32(this.desc, 4, this.size)
+    }
+
+    align() {
+        while (this.currSize & 3) this.append(new Uint8Array([0]))
     }
 
     append(buf: Uint8Array) {
-        assert((buf.length & 3) == 0)
         this.data.push(buf)
         this.currSize += buf.length
         if (this.size >= 0) assertRange(0, this.currSize, this.size)
@@ -1324,7 +1333,15 @@ class Program implements InstrArgResolver {
         }
     }
 
+    private assertLittleEndian() {
+        const test = new Uint16Array([0xd042])
+        assert(toHex(new Uint8Array(test.buffer)) == "42d0")
+    }
+
     private serialize() {
+        // serialization only works on little endian machines
+        this.assertLittleEndian()
+
         const fixHeader = new BinSection(BinFmt.FixHeaderSize)
         const sectDescs = new BinSection()
         const sections: BinSection[] = [fixHeader, sectDescs]
@@ -1357,35 +1374,33 @@ class Program implements InstrArgResolver {
             new Uint8Array(new Float64Array(this.floatLiterals).buffer)
         )
 
-        const strs = this.stringLiterals.map(str => {
-            let encoded = toUTF8(str)
-            while (encoded.length & 3) encoded += "\u0000"
-            const s = new BinSection()
-            strDesc.append(s.desc)
-            const buf = stringToUint8Array(encoded)
-            s.append(buf)
+        const descs = this.stringLiterals.map(str => {
+            const buf = stringToUint8Array(toUTF8(str) + "\u0000")
+            const desc = new Uint8Array(8)
+            write32(desc, 0, strData.currSize) // initially use offsets in strData section
+            write32(desc, 4, buf.length - 1)
             strData.append(buf)
-            return s
+            strDesc.append(desc)
+            return desc
         })
+        strData.align()
 
         let off = 0
         for (const s of sections) {
             s.finalize(off)
             off += s.size
         }
+        const outp = new Uint8Array(off)
 
-        // strings nested in strData section; finalize them to get descriptors right
-        off = strData.offset
-        for (const s of strs) {
-            s.finalize(off)
-            off += s.size
+        // shift offsets from strData-local to global
+        for (const d of descs) {
+            write32(d, 0, read32(d, 0) + strData.offset)
         }
 
         for (const proc of this.procs) {
             proc.writer.finalizeDesc(funData.offset + proc.writer.offsetInFuncs)
         }
 
-        const outp = new Uint8Array(off)
         off = 0
         for (const s of sections) {
             for (const d of s.data) {
@@ -1393,6 +1408,7 @@ class Program implements InstrArgResolver {
                 off += d.length
             }
         }
+        assert(off == outp.length)
 
         return outp
     }
@@ -1414,9 +1430,11 @@ class Program implements InstrArgResolver {
         this.finalizeDispatchers()
         for (const p of this.procs) p.finalize()
 
-        require("fs").writeFileSync("dist/prog.jacs", this.serialize())
+        const b = this.serialize()
+        require("fs").writeFileSync("dist/prog.jacs", b)
+        verifyBinary(b)
 
-        console.log(this.procs.map(p => p.toString()).join("\n"))
+        // console.log(this.procs.map(p => p.toString()).join("\n"))
     }
 }
 
