@@ -1,4 +1,10 @@
+import { JDBus, JDDevice } from "../jacdac"
 import { NumberFormat, setNumber } from "../jdom/buffer"
+import {
+    DEVICE_DISCONNECT,
+    PACKET_PROCESS,
+    SELF_ANNOUNCE,
+} from "../jdom/constants"
 import { jdunpack } from "../jdom/pack"
 import { Packet } from "../jdom/packet"
 import {
@@ -34,6 +40,8 @@ import {
     stringifyInstr,
     ValueSpecial,
 } from "./format"
+
+const MAX_STEPS = 128 * 1024
 
 export function oopsPos(pos: number, msg: string): never {
     throw new Error(`verification error at ${hex(pos)}: ${msg}`)
@@ -322,7 +330,7 @@ function loadCell(
                 case ValueSpecial.REG_CODE:
                     return nanify(ctx.pkt.registerIdentifier)
                 case ValueSpecial.ROLE_ID:
-                    return NaN // TODO
+                    return nanify(ctx.wakeRoleIdx)
                 default:
                     oops()
             }
@@ -378,12 +386,16 @@ class Activation {
         this.pc = info.startPC
     }
 
+    saveArgs(n: number) {
+        this.saveRegs((1 << n) - 1)
+    }
+
     private saveRegs(d: number) {
         let p = 0
         const r = this.fiber.ctx.registers
         for (let i = 0; i < NUM_REGS; i++) {
             if ((1 << i) & d) {
-                if (p >= this.info.numRegs) oops() // TODO verify this
+                if (p >= this.info.numRegs) oops()
                 this.locals[this.info.numLocals + p] = r[i]
                 p++
             }
@@ -391,7 +403,8 @@ class Activation {
         this.savedRegs = d
     }
 
-    private restoreRegs() {
+    restoreRegs() {
+        if (this.savedRegs == 0) return
         const r = this.fiber.ctx.registers
         let p = 0
         for (let i = 0; i < NUM_REGS; i++) {
@@ -400,16 +413,16 @@ class Activation {
                 p++
             }
         }
+        this.savedRegs = 0
     }
 
     private callFunction(info: FunctionInfo, numargs: number) {
         const callee = new Activation(this.fiber, info, this)
-        this.fiber.activation = callee
+        this.fiber.activate(callee)
     }
 
     private returnFromCall() {
-        this.fiber.activation = this.caller
-        this.caller.restoreRegs()
+        this.fiber.activate(this.caller)
     }
 
     step() {
@@ -507,7 +520,7 @@ class Activation {
                         ctx.pkt.data = new Uint8Array(a)
                         break
                     case OpSync.OBSERVE_ROLE: // A-role
-                        const r = ctx.info.roles[a]
+                        const r = ctx.roles[a]
                         this.fiber.waitingOn.push(r)
                         break
                     case OpSync.FORMAT: // A-string-index B-numargs C-offset
@@ -541,10 +554,10 @@ class Activation {
                         ctx.cloudUpload(a)
                         break
                     case OpAsync.SET_REG: // A-role, B-code
-                        ctx.setReg(ctx.info.roles[a], b)
+                        ctx.setReg(ctx.roles[a], b)
                         break
                     case OpAsync.QUERY_REG: // A-role, B-code, C-timeout
-                        ctx.getReg(ctx.info.roles[a], b, c)
+                        ctx.getReg(ctx.roles[a], b, c)
                         break
                     default:
                         oops()
@@ -558,34 +571,156 @@ class Activation {
 }
 
 class Fiber {
-    waitingOn: RoleInfo[]
+    waitingOn: Role[]
     wakeTime: number
     activation: Activation
+
     constructor(public ctx: Ctx) {}
+
+    resume() {
+        this.wakeTime = 0
+        this.waitingOn = []
+        this.ctx.currentFiber = this
+        this.activate(this.activation)
+    }
+
+    activate(a: Activation) {
+        this.activation = a
+        this.ctx.currentActivation = a
+        a.restoreRegs()
+    }
+}
+
+class Role {
+    device: JDDevice
+    serviceIndex: number
+
+    constructor(public info: RoleInfo) {}
 }
 
 class Ctx {
     pkt: Packet
+    wakeRoleIdx: number
     registers = new Float64Array(NUM_REGS)
     params = new Uint16Array(4)
     globals: Float64Array
     currentFiber: Fiber
     fibers: Fiber[] = []
+    currentActivation: Activation
+    roles: Role[]
+    wakeTimeout: any
 
-    constructor(public info: ImageInfo) {
+    constructor(public info: ImageInfo, public bus: JDBus) {
         this.globals = new Float64Array(this.info.numGlobals)
+        this.roles = info.roles.map(r => new Role(r))
+        bus.on(DEVICE_DISCONNECT, this.deviceDisconnect.bind(this))
+        bus.on(SELF_ANNOUNCE, () => this.autoBind(bus.devices()))
+        bus.on(PACKET_PROCESS, this.processPkt.bind(this))
+        this.checkWakeTimes = this.checkWakeTimes.bind(this)
     }
 
     now() {
-        return Date.now()
+        return this.bus.timestamp
+    }
+
+    startProgram() {
+        this.startFiber(this.info.functions[0], 0)
+    }
+
+    private scheduleCheckWakeTimes() {
+        if (this.wakeTimeout !== undefined) {
+            this.bus.scheduler.clearTimeout(this.wakeTimeout)
+            this.wakeTimeout = undefined
+        }
+
+        let minTime = Infinity
+        for (const f of this.fibers) {
+            if (f.wakeTime) minTime = Math.min(f.wakeTime, minTime)
+        }
+        if (minTime < Infinity) {
+            const delta = Math.max(0, minTime - this.now())
+            this.wakeTimeout = this.bus.scheduler.setTimeout(
+                this.checkWakeTimes,
+                delta
+            )
+        }
+    }
+
+    run(f: Fiber) {
+        f.resume()
+        let maxSteps = MAX_STEPS
+        while (this.currentActivation) {
+            this.currentActivation.step()
+            if (!--maxSteps) throw new Error("execution timeout")
+        }
+    }
+
+    private checkWakeTimes() {
+        const n = this.now()
+        let numRun = 0
+        for (const f of this.fibers)
+            if (f.wakeTime && n >= f.wakeTime) {
+                numRun++
+                this.run(f)
+            }
+        if (numRun) this.scheduleCheckWakeTimes()
+    }
+
+    private deviceDisconnect(dev: JDDevice) {
+        for (const r of this.roles) {
+            if (r.device == dev) {
+                r.device = null
+                r.serviceIndex = 0
+            }
+        }
+    }
+
+    private autoBind(devs: JDDevice[]) {
+        // TODO make it sort roles etc
+        for (const r of this.roles) {
+            if (!r.device)
+                for (const d of devs) {
+                    if (d.hasService(r.info.classId)) {
+                        r.device = d
+                        r.serviceIndex = d.serviceClasses.indexOf(
+                            r.info.classId
+                        )
+                    }
+                }
+        }
+    }
+
+    private processPkt(pkt: Packet) {
+        this.pkt = pkt
+        let idx = 0
+        let numRun = 0
+        for (const r of this.roles) {
+            if (r.device == pkt.device && r.serviceIndex == pkt.serviceIndex) {
+                for (const f of this.fibers)
+                    if (f.waitingOn.indexOf(r) >= 0) {
+                        this.wakeRoleIdx = idx
+                        this.run(f)
+                        this.wakeRoleIdx = null
+                        numRun++
+                    }
+            }
+            idx++
+        }
+        if (numRun) this.scheduleCheckWakeTimes()
     }
 
     doYield() {
         this.currentFiber = null
+        this.currentActivation = null
     }
 
     startFiber(info: FunctionInfo, numargs: number) {
-        //TODO
+        if (numargs > info.numRegs) oops()
+        const fiber = new Fiber(this)
+        fiber.activation = new Activation(fiber, info, null)
+        fiber.activation.saveArgs(numargs)
+        fiber.wakeTime = this.now()
+        this.fibers.push(fiber)
     }
 
     cloudUpload(numargs: number) {
@@ -607,12 +742,12 @@ class Ctx {
         }
     }
 
-    setReg(r: RoleInfo, code: number) {
+    setReg(r: Role, code: number) {
         //TODO
         this.doYield()
     }
 
-    getReg(r: RoleInfo, code: number, timeout: number) {
+    getReg(r: Role, code: number, timeout: number) {
         //TODO
         this.doYield()
     }
