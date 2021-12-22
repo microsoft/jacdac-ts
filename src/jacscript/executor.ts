@@ -128,23 +128,23 @@ class RoleInfo {
     }
 }
 
-class FunctionInfo {
+export class FunctionInfo {
     startPC: number
     numLocals: number
     numRegs: number
 
     constructor(
-        public parent: ImageInfo,
+        bin: Uint8Array,
         public offset: number,
         public dbg: FunctionDebugInfo
     ) {
         const [start, _len, numLocals, numRegs, _flags] = jdunpack(
-            parent.bin.slice(offset, offset + 12),
+            bin.slice(offset, offset + 12),
             "u32 u32 u16 u8 u8"
         )
         this.startPC = start >> 1
         this.numLocals = numLocals
-        this.numRegs = numRegs // TODO verify
+        this.numRegs = numRegs
     }
 }
 
@@ -183,7 +183,7 @@ class ImageInfo {
         ) {
             this.functions.push(
                 new FunctionInfo(
-                    this,
+                    this.bin,
                     ptr,
                     dbg.functions[this.functions.length]
                 )

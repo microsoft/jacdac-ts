@@ -10,7 +10,14 @@ import {
     write16,
     write32,
 } from "../jdom/utils"
-import { assertPos, BinSection, hex, loadImage, oopsPos } from "./executor"
+import {
+    assertPos,
+    BinSection,
+    FunctionInfo,
+    hex,
+    loadImage,
+    oopsPos,
+} from "./executor"
 import {
     BinFmt,
     bitSize,
@@ -53,6 +60,12 @@ class Resolver implements InstrArgResolver {
     roleName(idx: number): string {
         return this.dbg.roles[idx]?.name
     }
+}
+
+export function numSetBits(n: number) {
+    let r = 0
+    for (let i = 0; i < 32; ++i) if (n & (1 << i)) r++
+    return r
 }
 
 export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
@@ -153,6 +166,8 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
         let writtenRegs = 0
         let pc = 0
         let isJumpTarget: boolean[] = []
+
+        const info = new FunctionInfo(bin, hd, dbg)
 
         for (let pass = 0; pass < 2; ++pass) {
             for (; pc < funcode.length; ++pc) {
@@ -300,6 +315,10 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
                     d = (d << 4) | subop
                     for (let i = 0; i < NUM_REGS; i++)
                         if (d & (1 << i)) rdReg(i)
+                    check(
+                        numSetBits(d) <= info.numRegs,
+                        "allocated regs: " + info.numRegs
+                    )
                     switch (arg8) {
                         case OpAsync.YIELD: // A-timeout in ms
                             break
@@ -315,7 +334,7 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
                             check(false, "invalid async code")
                             break
                     }
-                    writtenRegs = 0
+                    writtenRegs &= d
                     break
             }
 

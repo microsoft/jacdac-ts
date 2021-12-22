@@ -32,7 +32,7 @@ import {
     write32,
 } from "../jdom/utils"
 import { serviceSpecificationFromName } from "../jdom/spec"
-import { verifyBinary } from "./verify"
+import { numSetBits, verifyBinary } from "./verify"
 import { jdpack } from "../jdom/pack"
 
 export function oops(msg: string): never {
@@ -176,6 +176,7 @@ class OpWriter {
     private lineNoStart = -1
     desc = new Uint8Array(BinFmt.FunctionHeaderSize)
     offsetInFuncs = -1
+    private maxRegs = 0
     private srcmap: number[] = []
 
     constructor(public parent: Procedure) {
@@ -199,8 +200,16 @@ class OpWriter {
 
     finalizeDesc(off: number) {
         assert((this.binary.length & 1) == 0)
-        write32(this.desc, 0, off)
-        write32(this.desc, 4, this.binary.length * 2)
+        const flags = 0
+        this.desc.set(
+            jdpack("u32 u32 u16 u8 u8", [
+                off,
+                this.binary.length * 2,
+                this.parent.locals.list.length,
+                this.maxRegs,
+                flags,
+            ])
+        )
     }
 
     numScopes() {
@@ -350,6 +359,8 @@ class OpWriter {
 
     emitAsync(op: OpAsync, a: number = 0, b: number = 0, c: number = 0) {
         const d = this.allocatedRegsMask & 0xffff
+        const regs = numSetBits(d)
+        if (regs > this.maxRegs) this.maxRegs = regs
         this.emitPrefix(a, b, c, d >> 4)
         assertRange(0, op, OpAsync._LAST)
         this.emitRaw(OpTop.ASYNC, ((d & 0xf) << 8) | op)
