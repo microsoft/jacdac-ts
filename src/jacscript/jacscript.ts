@@ -21,7 +21,8 @@ btnA.down.sub(() => {
 function mainTest() {
     compile(
         {
-            write: (fn, cont) => require("fs").writeFileSync(fn, cont),
+            write: (fn, cont) =>
+                require("fs").writeFileSync("dist/" + fn, cont),
         },
         sample
     )
