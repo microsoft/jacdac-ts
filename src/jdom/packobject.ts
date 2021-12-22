@@ -30,7 +30,7 @@ export function unpackedToObject(
 
         if (startRepeats) {
             const repeatFields = fields.slice(i)
-            console.log({ value, repeatFields, data })
+            //console.log({ value, repeatFields, data })
             r["repeat"] = value.map((rdata: PackedValues) => {
                 const r: PackedObject = {}
                 for (let i = 0; i < repeatFields.length; ++i) {

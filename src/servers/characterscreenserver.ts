@@ -2,7 +2,6 @@ import {
     CharacterScreenReg,
     CharacterScreenTextDirection,
     CharacterScreenVariant,
-    CharacterScreenCmd,
     SRV_CHARACTER_SCREEN,
 } from "../jdom/constants"
 import Packet from "../jdom/packet"
@@ -57,28 +56,5 @@ export default class CharacterScreenServer extends JDServiceServer {
             CharacterScreenReg.TextDirection,
             [textDirection || CharacterScreenTextDirection.LeftToRight]
         )
-
-        this.addCommand(
-            CharacterScreenCmd.SetLine,
-            this.handleSetLine.bind(this)
-        )
-        this.addCommand(CharacterScreenCmd.Clear, this.handleClear.bind(this))
-    }
-
-    handleClear() {
-        this.message.setValues([""])
-    }
-
-    handleSetLine(pkt: Packet) {
-        const [line, lineMessage] = pkt.jdunpack<[number, string]>("u16 s")
-        const [rows] = this.rows.values()
-        if (line >= rows) return
-        const [columns] = this.columns.values()
-
-        const [message = ""] = this.message.values()
-        const lines = message.split("\n")
-        lines[line] = lineMessage.slice(0, columns) // clip as needed
-        const newMessage = lines.map(l => l || "").join("\n")
-        this.message.setValues([newMessage])
     }
 }

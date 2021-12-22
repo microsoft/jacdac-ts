@@ -1,4 +1,5 @@
-import { META_TRACE } from "../constants"
+import JDBus from "../bus"
+import { META_TRACE, META_TRACE_DESCRIPTION } from "../constants"
 import Packet from "../packet"
 import { printPacket } from "../pretty"
 import { randomDeviceId } from "../random"
@@ -27,10 +28,12 @@ export function cleanStack(text: string) {
         .replace(/https:\/\/microsoft\.github\.io\/jacdac-docs/g, "")
 }
 
-export function serializeToTrace(pkt: Packet, start: number) {
+export function serializeToTrace(pkt: Packet, start?: number) {
     const data = toHex(pkt.toBuffer()).padEnd(84, " ")
-    const t = roundWithPrecision(pkt.timestamp - start, 3)
-    const descr = printPacket(pkt, {}).replace(/\r?\n/g, " ")
+    const t = roundWithPrecision(pkt.timestamp - (start || 0), 3)
+    const descr =
+        pkt.meta[META_TRACE_DESCRIPTION] ||
+        printPacket(pkt, {}).replace(/\r?\n/g, " ")
     let msg = `${t}\t${data}\t${descr}`
     const trace = pkt.meta[META_TRACE] as string
     if (trace) msg += "\n" + cleanStack(trace)
@@ -130,7 +133,7 @@ export class Trace {
      * @returns text where each line is a packet
      */
     serializeToText(length?: number) {
-        const start = this.packets[0]?.timestamp || 0
+        const start = this.startTimestamp
         let pkts = this.packets
         if (length > 0) pkts = pkts.slice(-length)
         const text = pkts.map(pkt => serializeToTrace(pkt, start))
@@ -139,6 +142,11 @@ export class Trace {
             text.unshift("")
         }
         return text.join("\n")
+    }
+
+    resolveDevices(bus: JDBus) {
+        this.packets.filter(pkt => !pkt.device)
+            .forEach(pkt => pkt.assignDevice(bus));
     }
 }
 export default Trace

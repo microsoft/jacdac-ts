@@ -4,7 +4,7 @@ import Packet from "./packet"
 import TracePlayer from "./trace/traceplayer"
 import Frame from "./frame"
 import Trace from "./trace/trace"
-import { META_TRACE } from "./constants"
+import { META_TRACE, META_TRACE_DESCRIPTION } from "./constants"
 
 /**
  * Parse a trace text file
@@ -37,7 +37,9 @@ export function parseTrace(contents: string): Trace {
         const timestamp = parseInt(m[1])
         const data = fromHex(m[2])
         // add to array
-        packets.push(Packet.fromBinary(data, timestamp))
+        const pkt = Packet.fromBinary(data, timestamp)
+        pkt.meta[META_TRACE_DESCRIPTION] = ln.substring(m[0].length).trim()
+        packets.push(pkt)
     })
     if (packets.length)
         return new Trace(packets, {

@@ -23,24 +23,24 @@ import {
     SRV_PROTO_TEST,
     SRV_RAIN_GAUGE,
     SRV_RELAY,
-    SRV_JOYSTICK,
+    SRV_GAMEPAD,
     SRV_ROTARY_ENCODER,
     SRV_SERVO,
     SRV_SETTINGS,
     SRV_SWITCH,
-    SRV_THERMOMETER,
+    SRV_TEMPERATURE,
     SRV_TRAFFIC_LIGHT,
     SRV_VIBRATION_MOTOR,
     SRV_TVOC,
     SRV_WIND_DIRECTION,
     SRV_WIND_SPEED,
     SwitchVariant,
-    ThermometerVariant,
+    TemperatureVariant,
     WindSpeedReg,
     ECO2Variant,
     SRV_SPEECH_SYNTHESIS,
     SRV_SOIL_MOISTURE,
-    JoystickVariant,
+    GamepadVariant,
     SRV_REAL_TIME_CLOCK,
     SRV_ILLUMINANCE,
     SRV_LIGHT_LEVEL,
@@ -65,10 +65,7 @@ import {
     SRV_DOT_MATRIX,
     SRV_RNG,
     SRV_COMPASS,
-    SRV_THERMOCOUPLE,
-    ThermocoupleVariant,
     SRV_GYROSCOPE,
-    SoundLevelReg,
     SRV_SOUND_SPECTRUM,
     SoundSpectrumReg,
     SRV_SOLENOID,
@@ -76,15 +73,12 @@ import {
     SRV_BIT_RADIO,
     SRV_POWER,
     CHANGE,
-    JoystickButtons,
+    GamepadButtons,
     SRV_HID_KEYBOARD,
     SRV_HID_MOUSE,
     //    SRV_AZURE_IOT_HUB,
-    SRV_DIMMER,
-    DimmerVariant,
     SRV_AZURE_IOT_HUB_HEALTH,
     DotMatrixVariant,
-    FlexVariant,
     SRV_FLEX,
     SRV_WIFI,
     SRV_LIGHT_BULB,
@@ -97,10 +91,10 @@ import JDServiceServer from "../jdom/servers/serviceserver"
 import ButtonServer from "./buttonserver"
 import BuzzerServer from "./buzzerserver"
 import CharacterScreenServer from "./characterscreenserver"
-import JoystickServer, {
-    JOYSTICK_ARCADE_BUTTONS,
-    JOYSTICK_DPAD_AB_BUTTONS,
-} from "./joystickserver"
+import GamepadServer, {
+    GAMEPAD_ARCADE_BUTTONS,
+    GAMEPAD_DPAD_AB_BUTTONS,
+} from "./gamepadserver"
 import DotMatrixServer from "./dotmatrixserver"
 import LedPixelServer from "./ledpixelserver"
 import MatrixKeypadServer from "./matrixkeypadserver"
@@ -129,8 +123,6 @@ import PowerServer from "./powerserver"
 import CapacitiveButtonServer from "./capacitivebuttonserver"
 import HIDKeyboardServer from "./hidkeyboardserver"
 import HIDMouseServer from "./hidmouseserver"
-//import AzureIoTHubServer from "./azureiothubserver"
-import DimmerServer from "./dimmerserver"
 import AzureIoTHubHealthServer from "./azureiothubhealthserver"
 import JDServiceProvider from "../jdom/servers/serviceprovider"
 import VibrationMotor from "./vibrationmotorserver"
@@ -146,7 +138,7 @@ const indoorThermometerOptions: AnalogSensorServerOptions = {
     minReading: -5,
     maxReading: 50,
     readingError: [0.25],
-    variant: ThermometerVariant.Indoor,
+    variant: TemperatureVariant.Indoor,
 }
 const outdoorThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "temperature",
@@ -155,13 +147,15 @@ const outdoorThermometerOptions: AnalogSensorServerOptions = {
     minReading: -40,
     maxReading: 120,
     readingError: [0.25],
-    variant: ThermometerVariant.Outdoor,
+    variant: TemperatureVariant.Outdoor,
 }
 const outdoorHumidityOptions: AnalogSensorServerOptions = {
     instanceName: "humidity",
     streamingInterval: 1000,
     readingValues: [40],
     readingError: [0.1],
+    minReading: 10,
+    maxReading: 99
 }
 const soilThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "temperature",
@@ -170,7 +164,7 @@ const soilThermometerOptions: AnalogSensorServerOptions = {
     minReading: -55,
     maxReading: 125,
     readingError: [0.5],
-    variant: ThermometerVariant.Outdoor,
+    variant: TemperatureVariant.Outdoor,
 }
 const medicalThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "medical",
@@ -179,7 +173,7 @@ const medicalThermometerOptions: AnalogSensorServerOptions = {
     minReading: 35,
     maxReading: 42,
     readingError: [0.5],
-    variant: ThermometerVariant.Body,
+    variant: TemperatureVariant.Body,
 }
 const barometerOptions: AnalogSensorServerOptions = {
     instanceName: "pressure",
@@ -261,16 +255,6 @@ const soundLevel: AnalogSensorServerOptions = {
     inactiveThreshold: 10,
     activeThreshold: 70,
     intensityValues: [false],
-    registerValues: [
-        {
-            code: SoundLevelReg.MinDecibels,
-            values: [-100],
-        },
-        {
-            code: SoundLevelReg.MaxDecibels,
-            values: [-30],
-        },
-    ],
 }
 const soundSpectrum: SensorServiceOptions<[Uint8Array]> = {
     readingValues: [new Uint8Array(0)],
@@ -541,20 +525,6 @@ function initProviders() {
                 services: () => [new CompassServer()],
             },
             {
-                name: "dimmer (fan)",
-                serviceClasses: [SRV_DIMMER],
-                services: () => [
-                    new DimmerServer("fan", { variant: DimmerVariant.Fan }),
-                ],
-            },
-            {
-                name: "dimmer (light)",
-                serviceClasses: [SRV_DIMMER],
-                services: () => [
-                    new DimmerServer("light", { variant: DimmerVariant.Light }),
-                ],
-            },
-            {
                 name: "distance (sonar)",
                 serviceClasses: [SRV_DISTANCE],
                 services: () => [
@@ -583,7 +553,7 @@ function initProviders() {
             },
             {
                 name: "eCO₂ + humidity + thermometer",
-                serviceClasses: [SRV_E_CO2, SRV_HUMIDITY, SRV_THERMOMETER],
+                serviceClasses: [SRV_E_CO2, SRV_HUMIDITY, SRV_TEMPERATURE],
                 services: () => [
                     new AnalogSensorServer(SRV_E_CO2, CO2Options),
                     new AnalogSensorServer(
@@ -591,17 +561,16 @@ function initProviders() {
                         outdoorHumidityOptions
                     ),
                     new AnalogSensorServer(
-                        SRV_THERMOMETER,
+                        SRV_TEMPERATURE,
                         indoorThermometerOptions
                     ),
                 ],
             },
             {
-                name: "flex sensor (2.2 inch)",
+                name: "flex sensor",
                 serviceClasses: [SRV_FLEX],
                 services: () => [
                     new AnalogSensorServer(SRV_FLEX, {
-                        variant: FlexVariant.Linear22Inch,
                         readingValues: [0.5],
                     }),
                 ],
@@ -638,10 +607,10 @@ function initProviders() {
             },
             {
                 name: "humidity + temperature",
-                serviceClasses: [SRV_HUMIDITY, SRV_THERMOMETER],
+                serviceClasses: [SRV_HUMIDITY, SRV_TEMPERATURE],
                 services: () => [
                     new AnalogSensorServer(
-                        SRV_THERMOMETER,
+                        SRV_TEMPERATURE,
                         outdoorThermometerOptions
                     ),
                     new AnalogSensorServer(
@@ -652,10 +621,10 @@ function initProviders() {
             },
             {
                 name: "humidity + temperature + barometer",
-                serviceClasses: [SRV_HUMIDITY, SRV_THERMOMETER, SRV_BAROMETER],
+                serviceClasses: [SRV_HUMIDITY, SRV_TEMPERATURE, SRV_BAROMETER],
                 services: () => [
                     new AnalogSensorServer(
-                        SRV_THERMOMETER,
+                        SRV_TEMPERATURE,
                         outdoorThermometerOptions
                     ),
                     new AnalogSensorServer(
@@ -685,51 +654,51 @@ function initProviders() {
                 ],
             },
             {
-                name: "joystick (stick + A + B)",
-                serviceClasses: [SRV_JOYSTICK],
+                name: "gamepad (stick + A + B)",
+                serviceClasses: [SRV_GAMEPAD],
                 services: () => [
-                    new JoystickServer({
-                        variant: JoystickVariant.Thumb,
-                        buttonsAvailable: JoystickButtons.A | JoystickButtons.B,
+                    new GamepadServer({
+                        variant: GamepadVariant.Thumb,
+                        buttonsAvailable: GamepadButtons.A | GamepadButtons.B,
                     }),
                 ],
             },
             {
-                name: "joystick (stick)",
-                serviceClasses: [SRV_JOYSTICK],
+                name: "gamepad (stick)",
+                serviceClasses: [SRV_GAMEPAD],
                 services: () => [
-                    new JoystickServer({
-                        variant: JoystickVariant.Thumb,
+                    new GamepadServer({
+                        variant: GamepadVariant.Thumb,
                     }),
                 ],
             },
             {
-                name: "joystick (stick+A)",
-                serviceClasses: [SRV_JOYSTICK],
+                name: "gamepad (stick+A)",
+                serviceClasses: [SRV_GAMEPAD],
                 services: () => [
-                    new JoystickServer({
-                        variant: JoystickVariant.Thumb,
-                        buttonsAvailable: JoystickButtons.A,
+                    new GamepadServer({
+                        variant: GamepadVariant.Thumb,
+                        buttonsAvailable: GamepadButtons.A,
                     }),
                 ],
             },
             {
-                name: "joystick (Dpad + all buttons)",
-                serviceClasses: [SRV_JOYSTICK],
+                name: "gamepad (Dpad + all buttons)",
+                serviceClasses: [SRV_GAMEPAD],
                 services: () => [
-                    new JoystickServer({
-                        variant: JoystickVariant.Gamepad,
-                        buttonsAvailable: JOYSTICK_ARCADE_BUTTONS,
+                    new GamepadServer({
+                        variant: GamepadVariant.Gamepad,
+                        buttonsAvailable: GAMEPAD_ARCADE_BUTTONS,
                     }),
                 ],
             },
             {
-                name: "joystick (only DPad+A/B)",
-                serviceClasses: [SRV_JOYSTICK],
+                name: "gamepad (only DPad+A/B)",
+                serviceClasses: [SRV_GAMEPAD],
                 services: () => [
-                    new JoystickServer({
-                        variant: JoystickVariant.Gamepad,
-                        buttonsAvailable: JOYSTICK_DPAD_AB_BUTTONS,
+                    new GamepadServer({
+                        variant: GamepadVariant.Gamepad,
+                        buttonsAvailable: GAMEPAD_DPAD_AB_BUTTONS,
                     }),
                 ],
             },
@@ -943,7 +912,7 @@ function initProviders() {
                         },
                         registerValues: [
                             {
-                                code: LightBulbReg.Dimmeable,
+                                code: LightBulbReg.Dimmable,
                                 values: [false],
                             },
                         ],
@@ -959,7 +928,7 @@ function initProviders() {
                         isActive: values => !!values?.[0],
                         registerValues: [
                             {
-                                code: LightBulbReg.Dimmeable,
+                                code: LightBulbReg.Dimmable,
                                 values: [true],
                             },
                         ],
@@ -1352,30 +1321,30 @@ function initProviders() {
             },
             {
                 name: "thermometer (outdoor)",
-                serviceClasses: [SRV_THERMOMETER],
+                serviceClasses: [SRV_TEMPERATURE],
                 services: () => [
                     new AnalogSensorServer(
-                        SRV_THERMOMETER,
+                        SRV_TEMPERATURE,
                         outdoorThermometerOptions
                     ),
                 ],
             },
             {
                 name: "thermometer (soil)",
-                serviceClasses: [SRV_THERMOMETER],
+                serviceClasses: [SRV_TEMPERATURE],
                 services: () => [
                     new AnalogSensorServer(
-                        SRV_THERMOMETER,
+                        SRV_TEMPERATURE,
                         soilThermometerOptions
                     ),
                 ],
             },
             {
                 name: "thermometer (medical)",
-                serviceClasses: [SRV_THERMOMETER],
+                serviceClasses: [SRV_TEMPERATURE],
                 services: () => [
                     new AnalogSensorServer(
-                        SRV_THERMOMETER,
+                        SRV_TEMPERATURE,
                         medicalThermometerOptions
                     ),
                 ],
@@ -1392,20 +1361,6 @@ function initProviders() {
                     Array(4)
                         .fill(0)
                         .map(_ => new TrafficLightServer()),
-            },
-            {
-                name: "thermocouple",
-                serviceClasses: [SRV_THERMOCOUPLE],
-                services: () => [
-                    new AnalogSensorServer(SRV_THERMOCOUPLE, {
-                        readingValues: [550],
-                        streamingInterval: 1000,
-                        minReading: 0,
-                        maxReading: 1100,
-                        readingError: [2.2],
-                        variant: ThermocoupleVariant.TypeB,
-                    }),
-                ],
             },
             {
                 name: "TVOC",
@@ -1582,7 +1537,7 @@ function initProviders() {
                     new AnalogSensorServer(SRV_SOUND_LEVEL, soundLevel),
                     new SensorServer(SRV_LIGHT_LEVEL, {
                         readingValues: [0.5],
-                        variant: LightLevelVariant.LEDMatrix,
+                        variant: LightLevelVariant.ReverseBiasedLED,
                     }),
                     new BuzzerServer(),
                     new SoundPlayerServer(microbitSounds),
