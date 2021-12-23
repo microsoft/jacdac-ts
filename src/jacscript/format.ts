@@ -34,7 +34,7 @@ export enum OpTop {
     STORE_CELL = 8, // SRC[4] A:OP[2] B:OFF[6]
 
     JUMP = 9, // REG[4] BACK[1] IF_ZERO[1] B:OFF[6]
-    CALL = 10, // NUMREGS[4] BG[1] 0[1] B:OFF[6] - TODO add save regs
+    CALL = 10, // NUMREGS[4] OPCALL[2] B:OFF[6] (D - saved regs)
 
     SYNC = 11, // A:ARG[4] OP[8]
     ASYNC = 12, // D:SAVE_REGS[4] OP[8]
@@ -55,6 +55,13 @@ export enum OpSync {
     FORMAT, // A-string-index B-numargs C-offset
     MEMCPY, // A-string-index C-offset
     _LAST,
+}
+
+export enum OpCall {
+    SYNC = 0,
+    BG = 1,
+    BG_MAX1 = 2,
+    RESERVED = 3,
 }
 
 export enum CellKind {
@@ -86,7 +93,7 @@ export enum ValueSpecial {
     EV_CODE = 0x2, // or nan
     REG_CODE = 0x3, // or nan
     ROLE_ID = 0x4, // or nan
-    _LAST
+    _LAST,
 }
 
 export enum OpBinary {
@@ -100,14 +107,14 @@ export enum OpBinary {
     NE = 0x8,
     AND = 0x9,
     OR = 0xa,
-    _LAST
+    _LAST,
 }
 
 export enum OpUnary {
     ID = 0x0,
     NEG = 0x1,
     NOT = 0x2,
-    _LAST
+    _LAST,
 }
 
 // Size in bits is: 8 << (fmt & 0b11)
@@ -240,11 +247,11 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
                     (arg8 & (1 << 6) ? ` if ${reg0} == 0` : ``)
                 )
 
-            case OpTop.CALL: // NUMREGS[4] BG[1] 0[1] B:OFF[6]
+            case OpTop.CALL: // NUMREGS[4] OPCALL[2] B:OFF[6] (D - saved regs)
                 b = (b << 6) | arg6
-                return `call${arg8 << (1 << 7) ? " bg" : ""} ${resolver.funName(
-                    b
-                ) || ""}_F${b} #${subop}`
+                return `call${callop()} ${
+                    resolver.funName(b) || ""
+                }_F${b} #${subop} save=${d.toString(2)}`
 
             case OpTop.SYNC: // A:ARG[4] OP[8]
                 a = (a << 4) | subop
@@ -271,6 +278,19 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
         const shift = v >> 4
         if (shift) return letter + (bitsz - shift) + "." + shift
         else return letter + bitsz
+    }
+
+    function callop() {
+        switch (arg8 >> 6) {
+            case OpCall.SYNC:
+                return ""
+            case OpCall.BG:
+                return " bg"
+            case OpCall.BG_MAX1:
+                return " bg (max1)"
+            case OpCall.RESERVED:
+                return " ???"
+        }
     }
 
     function uncode() {

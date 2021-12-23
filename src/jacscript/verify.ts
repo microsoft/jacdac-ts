@@ -31,6 +31,7 @@ import {
     NUM_REGS,
     OpAsync,
     OpBinary,
+    OpCall,
     OpFmt,
     OpSync,
     OpTop,
@@ -278,10 +279,16 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
                     else lastOK = true
                     break
 
-                case OpTop.CALL: // NUMREGS[4] BG[1] 0[1] B:OFF[6]
+                case OpTop.CALL: // NUMREGS[4] OPCALL[2] B:OFF[6] (D - saved regs)
                     rdRegs(subop)
-                    if (arg8 << (1 << 7)) {
-                        // bg
+                    checkSaveRegs()
+                    switch (arg8 >> 2) {
+                        case OpCall.BG:
+                        case OpCall.BG_MAX1:
+                        case OpCall.SYNC:
+                            break
+                        default:
+                            check(false, "invalid callop")
                     }
                     check(b < numFuncs, "call fn in range")
                     break
@@ -313,12 +320,7 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
 
                 case OpTop.ASYNC: // D:SAVE_REGS[4] OP[8]
                     d = (d << 4) | subop
-                    for (let i = 0; i < NUM_REGS; i++)
-                        if (d & (1 << i)) rdReg(i)
-                    check(
-                        numSetBits(d) <= info.numRegs,
-                        "allocated regs: " + info.numRegs
-                    )
+                    checkSaveRegs()
                     switch (arg8) {
                         case OpAsync.YIELD: // A-timeout in ms
                             break
@@ -364,6 +366,14 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
 
         function wrReg(idx: number) {
             writtenRegs |= 1 << idx
+        }
+
+        function checkSaveRegs() {
+            for (let i = 0; i < NUM_REGS; i++) if (d & (1 << i)) rdReg(i)
+            check(
+                numSetBits(d) <= info.numRegs,
+                "allocated regs: " + info.numRegs
+            )
         }
 
         function verifyCell(tp: CellKind, idx: number, write: boolean) {

@@ -31,6 +31,7 @@ import {
     NUM_REGS,
     OpAsync,
     OpBinary,
+    OpCall,
     OpFmt,
     OpSync,
     OpTop,
@@ -500,13 +501,21 @@ class Activation {
                 }
                 break
 
-            case OpTop.CALL: // NUMREGS[4] BG[1] 0[1] B:OFF[6]
+            case OpTop.CALL: // NUMREGS[4] OPCALL[2] B:OFF[6] (D - saved regs)
                 this.saveRegs(d)
                 const finfo = ctx.info.functions[b]
-                if (arg8 << (1 << 7)) {
-                    ctx.startFiber(finfo, subop)
-                } else {
-                    this.callFunction(finfo, subop)
+                switch (arg8 >> 2) {
+                    case OpCall.SYNC:
+                        this.callFunction(finfo, subop)
+                        break
+                    case OpCall.BG:
+                        ctx.startFiber(finfo, subop, true)
+                        break
+                    case OpCall.BG_MAX1:
+                        ctx.startFiber(finfo, subop, true)
+                        break
+                    default:
+                        oops()
                 }
                 break
 
@@ -574,6 +583,7 @@ class Fiber {
     waitingOn: Role[]
     wakeTime: number
     activation: Activation
+    firstFun: FunctionInfo
 
     constructor(public ctx: Ctx) {}
 
@@ -588,6 +598,11 @@ class Fiber {
         this.activation = a
         this.ctx.currentActivation = a
         a.restoreRegs()
+    }
+
+    sleep(ms: number) {
+        this.wakeTime = this.ctx.now() + ms
+        this.ctx.doYield()
     }
 }
 
@@ -624,7 +639,7 @@ class Ctx {
     }
 
     startProgram() {
-        this.startFiber(this.info.functions[0], 0)
+        this.startFiber(this.info.functions[0], 0, false)
     }
 
     private scheduleCheckWakeTimes() {
@@ -714,18 +729,29 @@ class Ctx {
         this.currentActivation = null
     }
 
-    startFiber(info: FunctionInfo, numargs: number) {
+    startFiber(info: FunctionInfo, numargs: number, max1: boolean) {
         if (numargs > info.numRegs) oops()
+        if (max1)
+            for (const f of this.fibers) {
+                if (f.firstFun == info) return
+            }
         const fiber = new Fiber(this)
         fiber.activation = new Activation(fiber, info, null)
         fiber.activation.saveArgs(numargs)
+        fiber.firstFun = info
         fiber.wakeTime = this.now()
         this.fibers.push(fiber)
     }
 
+    private pktLabel() {
+        return fromUTF8(uint8ArrayToString(this.pkt.data))
+    }
+
     cloudUpload(numargs: number) {
-        //TODO
-        this.doYield()
+        const regs = this.registers.slice(0, numargs).join(", ")
+        console.log(`upload: ${this.pktLabel()} ${regs}`)
+        // TODO do actual upload
+        this.currentFiber.sleep(50 + Math.random() * 50)
     }
 
     setBuffer(b: Uint8Array, off: number) {
