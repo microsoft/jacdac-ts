@@ -1509,6 +1509,10 @@ class Program implements InstrArgResolver {
         this.host.write("prog.jacs", b)
         this.host.write("prog-dbg.json", JSON.stringify(dbg))
         verifyBinary(b, dbg)
+        return {
+            binary: b,
+            dbg: dbg,
+        }
     }
 }
 
@@ -1518,5 +1522,5 @@ export interface Host {
 
 export function compile(host: Host, code: string) {
     const p = new Program(host, code)
-    p.emit()
+    return p.emit()
 }

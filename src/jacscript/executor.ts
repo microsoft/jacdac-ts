@@ -157,6 +157,10 @@ export class FunctionInfo {
         this.numLocals = numLocals
         this.numRegs = numRegs
     }
+
+    toString() {
+        return this.dbg?.name || `FN${this.offset}`
+    }
 }
 
 class ImageInfo {
@@ -344,7 +348,7 @@ function loadCell(
 
 function clamp(nfmt: OpFmt, v: number) {
     const sz = bitSize(nfmt)
-    
+
     if (nfmt <= OpFmt.U64) {
         v = Math.round(v)
         if (v < 0) return 0
@@ -580,8 +584,7 @@ class Activation {
                 this.saveRegs(d)
                 switch (arg8) {
                     case OpAsync.YIELD: // A-timeout in ms
-                        if (a) this.fiber.wakeTime = ctx.now() + a
-                        else this.fiber.wakeTime = null
+                        this.fiber.setWakeTime(a ? ctx.now() + a : 0)
                         ctx.doYield()
                         break
                     case OpAsync.CLOUD_UPLOAD: // A-numregs
@@ -615,7 +618,7 @@ class Fiber {
     constructor(public ctx: Ctx) {}
 
     resume() {
-        this.wakeTime = 0
+        this.setWakeTime(0)
         this.waitingOn = []
         this.ctx.currentFiber = this
         this.activate(this.activation)
@@ -627,8 +630,13 @@ class Fiber {
         a.restoreRegs()
     }
 
+    setWakeTime(v: number) {
+        this.wakeTime = v
+        this.ctx.wakeTimesUpdated()
+    }
+
     sleep(ms: number) {
-        this.wakeTime = this.ctx.now() + ms
+        this.setWakeTime(this.ctx.now() + ms)
         this.ctx.doYield()
     }
 }
@@ -675,6 +683,7 @@ class Ctx {
     currentActivation: Activation
     roles: Role[]
     wakeTimeout: any
+    scheduleScheduled = false
 
     constructor(public info: ImageInfo, public bus: JDBus) {
         this.globals = new Float64Array(this.info.numGlobals)
@@ -683,6 +692,7 @@ class Ctx {
         bus.on(SELF_ANNOUNCE, () => this.autoBind(bus.devices()))
         bus.on(PACKET_PROCESS, this.processPkt.bind(this))
         this.checkWakeTimes = this.checkWakeTimes.bind(this)
+        this.scheduleCheckWakeTimes = this.scheduleCheckWakeTimes.bind(this)
     }
 
     now() {
@@ -693,7 +703,14 @@ class Ctx {
         this.startFiber(this.info.functions[0], 0, false)
     }
 
+    wakeTimesUpdated() {
+        if (this.scheduleScheduled) return
+        this.scheduleScheduled = true
+        this.bus.scheduler.setTimeout(this.scheduleCheckWakeTimes, 0)
+    }
+
     private scheduleCheckWakeTimes() {
+        this.scheduleScheduled = false
         if (this.wakeTimeout !== undefined) {
             this.bus.scheduler.clearTimeout(this.wakeTimeout)
             this.wakeTimeout = undefined
@@ -723,13 +740,8 @@ class Ctx {
 
     private checkWakeTimes() {
         const n = this.now()
-        let numRun = 0
         for (const f of this.fibers)
-            if (f.wakeTime && n >= f.wakeTime) {
-                numRun++
-                this.run(f)
-            }
-        if (numRun) this.scheduleCheckWakeTimes()
+            if (f.wakeTime && n >= f.wakeTime) this.run(f)
     }
 
     private deviceDisconnect(dev: JDDevice) {
@@ -756,7 +768,6 @@ class Ctx {
     private processPkt(pkt: Packet) {
         this.pkt = pkt
         let idx = 0
-        let numRun = 0
         for (const r of this.roles) {
             if (r.device == pkt.device && r.serviceIndex == pkt.serviceIndex) {
                 for (const f of this.fibers)
@@ -764,12 +775,10 @@ class Ctx {
                         this.wakeRoleIdx = idx
                         this.run(f)
                         this.wakeRoleIdx = null
-                        numRun++
                     }
             }
             idx++
         }
-        if (numRun) this.scheduleCheckWakeTimes()
     }
 
     doYield() {
@@ -779,17 +788,22 @@ class Ctx {
         return f
     }
 
+    log(msg: string) {
+        console.log(msg)
+    }
+
     startFiber(info: FunctionInfo, numargs: number, max1: boolean) {
         if (numargs > info.numRegs) oops()
         if (max1)
             for (const f of this.fibers) {
                 if (f.firstFun == info) return
             }
+        this.log(`start fiber: ${info}`)
         const fiber = new Fiber(this)
         fiber.activation = new Activation(fiber, info, null)
         fiber.activation.saveArgs(numargs)
         fiber.firstFun = info
-        fiber.wakeTime = this.now()
+        fiber.setWakeTime(this.now())
         this.fibers.push(fiber)
     }
 
@@ -851,4 +865,14 @@ class Ctx {
             })
         })
     }
+}
+
+export function runProgram(
+    bus: JDBus,
+    bin: Uint8Array,
+    dbg: DebugInfo = emptyDebugInfo()
+) {
+    const img = new ImageInfo(bin, dbg)
+    const ctx = new Ctx(img, bus)
+    bus.scheduler.setTimeout(() => ctx.startProgram(), 1100)
 }

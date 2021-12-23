@@ -1,32 +1,27 @@
+export * from "./format"
+export * from "./compiler"
+export * from "./executor"
+export * from "./verify"
+
+import { JDBus } from "../jdom/bus"
+import { createNodeSocketTransport } from "../jdom/transport/nodesocket"
 import { compile } from "./compiler"
-
-const sample = `
-var btnA = roles.button()
-var color = roles.color()
-var led = roles.lightBulb()
-var display = roles.characterScreen()
-var r, g, b, tint
-
-btnA.down.sub(() => {
-  led.brightness.write(1)
-  wait(0.1);
-  [r, g, b] = color.reading.read()
-  r = r + led.brightness.read()
-  tint = (r + g + 2.3 * b) / (r + 2 * g + b)
-  upload("color", r, g, b, tint)
-  display.message.write(format("t={0} {1}", tint, r))
-  led.brightness.write(0)
-})
-`
+import { runProgram } from "./executor"
 
 function mainTest() {
-    compile(
+    const fs = require("fs")
+    const f0 = process.argv[2]
+    const res = compile(
         {
-            write: (fn, cont) =>
-                require("fs").writeFileSync("dist/" + fn, cont),
+            write: (fn, cont) => fs.writeFileSync("dist/" + fn, cont),
         },
-        sample
+        fs.readFileSync(f0, "utf8")
     )
+
+    const bus = new JDBus([createNodeSocketTransport()])
+    bus.connect()
+
+    runProgram(bus, res.binary, res.dbg)
 }
 
 mainTest()
