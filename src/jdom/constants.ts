@@ -179,6 +179,7 @@ export const BLUETOOTH_TRANSPORT = "bluetooth"
 export const SERIAL_TRANSPORT = "serial"
 export const PACKETIO_TRANSPORT = "packetio"
 export const WEBSOCKET_TRANSPORT = "web"
+export const NODESOCKET_TRANSPORT = "tcp"
 
 export const HF2_TIMEOUT = 1000
 
