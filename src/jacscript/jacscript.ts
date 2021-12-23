@@ -18,6 +18,8 @@ function mainTest() {
         fs.readFileSync(f0, "utf8")
     )
 
+    if (!res.success) return
+
     const bus = new JDBus([createNodeSocketTransport()])
     bus.connect()
 

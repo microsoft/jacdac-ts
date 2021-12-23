@@ -1296,7 +1296,24 @@ class Program implements InstrArgResolver {
     }
 
     private emitUnaryExpression(expr: estree.UnaryExpression): ValueDesc {
-        this.throwError(expr, "unhandled operator")
+        const simpleOps: SMap<OpUnary> = {
+            "!": OpUnary.NOT,
+            "-": OpUnary.NEG,
+            "+": OpUnary.ID,
+        }
+
+        let op = expr.operator
+        const op2 = simpleOps[op]
+        if (op2 === undefined) this.throwError(expr, "unhandled operator")
+
+        const wr = this.writer
+
+        wr.push()
+        let a = this.emitSimpleValue(expr.argument)
+        wr.emitUnary(op2, a, a)
+        wr.popExcept(a)
+
+        return a
     }
 
     private expectExpr(expr: estree.Expression, kind: CellKind): ValueDesc {
@@ -1502,7 +1519,8 @@ class Program implements InstrArgResolver {
         this.finalizeDispatchers()
         for (const p of this.procs) p.finalize()
 
-        console.log(this.procs.map(p => p.toString()).join("\n"))
+        if (this.numErrors == 0)
+            console.log(this.procs.map(p => p.toString()).join("\n"))
 
         const b = this.serialize()
         const dbg: DebugInfo = {
@@ -1513,8 +1531,10 @@ class Program implements InstrArgResolver {
         }
         this.host.write("prog.jacs", b)
         this.host.write("prog-dbg.json", JSON.stringify(dbg))
-        verifyBinary(b, dbg)
+        if (this.numErrors == 0) verifyBinary(b, dbg)
+
         return {
+            success: this.numErrors == 0,
             binary: b,
             dbg: dbg,
         }
