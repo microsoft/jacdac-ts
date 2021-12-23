@@ -1,6 +1,7 @@
-import { JDBus, JDDevice } from "../jacdac"
+import { JDBus, JDDevice, JDRegister, JDService } from "../jacdac"
 import { NumberFormat, setNumber } from "../jdom/buffer"
 import {
+    CMD_GET_REG,
     DEVICE_DISCONNECT,
     PACKET_PROCESS,
     SELF_ANNOUNCE,
@@ -41,6 +42,7 @@ import {
     stringifyInstr,
     ValueSpecial,
 } from "./format"
+import { strformat } from "./strformat"
 
 const MAX_STEPS = 128 * 1024
 
@@ -340,6 +342,30 @@ function loadCell(
     }
 }
 
+function clamp(nfmt: OpFmt, v: number) {
+    const sz = bitSize(nfmt)
+    
+    if (nfmt <= OpFmt.U64) {
+        v = Math.round(v)
+        if (v < 0) return 0
+        const max = shiftVal(sz) - 1
+        if (v > max) return max
+        return v
+    }
+
+    if (nfmt <= OpFmt.I64) {
+        v = Math.round(v)
+        const min = -shiftVal(sz - 1)
+        if (v < min) return min
+        const max = -min - 1
+        if (v > max) return max
+        return v
+    }
+
+    // no clamping for floats
+    return v
+}
+
 function storeCell(
     ctx: Ctx,
     act: Activation,
@@ -360,8 +386,8 @@ function storeCell(
                 ctx.pkt.data,
                 toNumberFormat(idx & 0xf),
                 c,
-                Math.round(val * shiftVal(idx >> 4))
-            ) // TODO clamping
+                clamp(idx & 0xf, val * shiftVal(idx >> 4))
+            )
             break
         default:
             oops()
@@ -369,8 +395,7 @@ function storeCell(
 }
 
 function strFormat(fmt: Uint8Array, args: Float64Array) {
-    // TODO
-    return fmt.slice()
+    return stringToUint8Array(strformat(uint8ArrayToString(fmt), args))
 }
 
 class Activation {
@@ -582,6 +607,8 @@ class Activation {
 class Fiber {
     waitingOn: Role[]
     wakeTime: number
+    waitingOnGet: Role
+    waitingOnGetCode: number
     activation: Activation
     firstFun: FunctionInfo
 
@@ -609,8 +636,32 @@ class Fiber {
 class Role {
     device: JDDevice
     serviceIndex: number
+    awaiters: (() => void)[] = []
 
     constructor(public info: RoleInfo) {}
+
+    service() {
+        if (!this.device) return null
+        return this.device.service(this.serviceIndex)
+    }
+
+    serviceAsync() {
+        const s = this.service()
+        if (s) return Promise.resolve(s)
+        return new Promise<JDService>(resolve => {
+            this.awaiters.push(() => resolve(this.service()))
+        })
+    }
+
+    assign(d: JDDevice, idx: number) {
+        this.device = d
+        this.serviceIndex = idx
+        if (this.awaiters.length) {
+            const aa = this.awaiters
+            this.awaiters = []
+            for (const a of aa) a()
+        }
+    }
 }
 
 class Ctx {
@@ -684,22 +735,19 @@ class Ctx {
     private deviceDisconnect(dev: JDDevice) {
         for (const r of this.roles) {
             if (r.device == dev) {
-                r.device = null
-                r.serviceIndex = 0
+                r.assign(null, 0)
             }
         }
     }
 
     private autoBind(devs: JDDevice[]) {
         // TODO make it sort roles etc
+        // TODO prevent two roles binding to the same service idx
         for (const r of this.roles) {
             if (!r.device)
                 for (const d of devs) {
                     if (d.hasService(r.info.classId)) {
-                        r.device = d
-                        r.serviceIndex = d.serviceClasses.indexOf(
-                            r.info.classId
-                        )
+                        r.assign(d, d.serviceClasses.indexOf(r.info.classId))
                     }
                 }
         }
@@ -725,8 +773,10 @@ class Ctx {
     }
 
     doYield() {
+        const f = this.currentFiber
         this.currentFiber = null
         this.currentActivation = null
+        return f
     }
 
     startFiber(info: FunctionInfo, numargs: number, max1: boolean) {
@@ -769,12 +819,36 @@ class Ctx {
     }
 
     setReg(r: Role, code: number) {
-        //TODO
-        this.doYield()
+        const fib = this.doYield()
+        const val = this.pkt.data.slice()
+        r.serviceAsync().then(serv => {
+            serv.register(code).sendSetAsync(val)
+            this.run(fib)
+        })
     }
 
     getReg(r: Role, code: number, timeout: number) {
-        //TODO
-        this.doYield()
+        const setPkt = (reg: JDRegister) => {
+            this.pkt = Packet.from(CMD_GET_REG | code, reg.data)
+            this.pkt.deviceIdentifier = r.device.deviceId
+            this.pkt.serviceIndex = r.serviceIndex
+        }
+
+        const reg = r.service()?.register(code)
+        const ts = reg?.lastDataTimestamp
+
+        if (ts && this.bus.timestamp - ts < timeout) {
+            setPkt(reg)
+            return
+        }
+
+        const fib = this.doYield()
+        r.serviceAsync().then(serv => {
+            const reg = serv.register(code)
+            reg.refresh().then(() => {
+                setPkt(reg)
+                this.run(fib)
+            })
+        })
     }
 }

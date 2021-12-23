@@ -13,6 +13,7 @@ import {
     NUM_REGS,
     OpAsync,
     OpBinary,
+    OpCall,
     OpFmt,
     OpSync,
     OpTop,
@@ -357,10 +358,15 @@ class OpWriter {
         this.emitRaw(OpTop.SYNC, ((a & 0xf) << 8) | op)
     }
 
-    emitAsync(op: OpAsync, a: number = 0, b: number = 0, c: number = 0) {
+    private saveRegs() {
         const d = this.allocatedRegsMask & 0xffff
         const regs = numSetBits(d)
         if (regs > this.maxRegs) this.maxRegs = regs
+        return d
+    }
+
+    emitAsync(op: OpAsync, a: number = 0, b: number = 0, c: number = 0) {
+        const d = this.saveRegs()
         this.emitPrefix(a, b, c, d >> 4)
         assertRange(0, op, OpAsync._LAST)
         this.emitRaw(OpTop.ASYNC, ((d & 0xf) << 8) | op)
@@ -628,11 +634,13 @@ class OpWriter {
         }
     }
 
-    emitCall(proc: Procedure, isBg = false) {
-        this.emitPrefix(proc.index >> 6)
+    emitCall(proc: Procedure, op = OpCall.SYNC) {
+        let d = 0
+        if (op == OpCall.SYNC) d = this.saveRegs()
+        this.emitPrefix(proc.index >> 6, 0, 0, d)
         this.emitRaw(
             OpTop.CALL,
-            (proc.numargs << 8) | (isBg ? 1 << 7 : 0) | (proc.index & 0x3f)
+            (proc.numargs << 8) | (op << 6) | (proc.index & 0x3f)
         )
     }
 
@@ -933,7 +941,8 @@ class Program implements InstrArgResolver {
                     this.codeName(expr.callee),
                     expr.arguments[0]
                 )
-                this.withProcedure(this.roleDispatcher(role), wr => {
+                const disp = this.roleDispatcher(role)
+                this.withProcedure(disp, wr => {
                     wr.emitIf(
                         OpBinary.EQ,
                         specialVal(ValueSpecial.EV_CODE),
@@ -943,6 +952,7 @@ class Program implements InstrArgResolver {
                         }
                     )
                 })
+                this.writer.emitCall(disp, OpCall.BG_MAX1)
                 return values.zero
         }
         this.throwError(expr, `events don't have property ${prop}`)

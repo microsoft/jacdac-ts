@@ -282,9 +282,11 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
                 case OpTop.CALL: // NUMREGS[4] OPCALL[2] B:OFF[6] (D - saved regs)
                     rdRegs(subop)
                     checkSaveRegs()
-                    switch (arg8 >> 2) {
+                    switch (arg8 >> 6) {
                         case OpCall.BG:
                         case OpCall.BG_MAX1:
+                            check(d == 0, "save regs on bg call")
+                            break
                         case OpCall.SYNC:
                             break
                         default:
@@ -380,6 +382,7 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
             check(idx >= 0, "idx pos")
             switch (tp) {
                 case CellKind.LOCAL:
+                    check(false, "locals not supported yet")
                     // TODO
                     break
                 case CellKind.GLOBAL:
