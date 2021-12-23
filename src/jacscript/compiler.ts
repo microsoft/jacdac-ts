@@ -616,7 +616,7 @@ class OpWriter {
                 let op1 = this.binary[u + 1]
                 assert(op0 >> 12 == OpTop.SET_B)
                 assert(op1 >> 12 == OpTop.JUMP)
-                let off = l.offset - u
+                let off = l.offset - u - 2
                 assert(off != 0)
                 if (off < 0) {
                     off = -off
@@ -624,7 +624,6 @@ class OpWriter {
                 }
                 assert((op0 & 0xfff) == 0)
                 assert((op1 & 0x3f) == 0)
-                off -= 2
                 assertRange(0, off, 0x3ffff)
                 op0 |= off >> 6
                 op1 |= off & 0x3f
@@ -1057,7 +1056,8 @@ class Program implements InstrArgResolver {
                     return this.emitRegisterCall(expr, obj, prop)
             }
         }
-        switch (idName(expr.callee)) {
+        const funName = idName(expr.callee)
+        switch (funName) {
             case "wait": {
                 this.requireArgs(expr, 1)
                 const time = this.litValue(expr.arguments[0]) * 1000
@@ -1080,15 +1080,20 @@ class Program implements InstrArgResolver {
                 wr.emitAsync(OpAsync.CLOUD_UPLOAD, numargs - 1)
                 return values.zero
             }
+            case "print":
             case "format": {
                 const arg0 = expr.arguments[0]
                 if (arg0?.type != "Literal" || typeof arg0.value != "string")
-                    this.throwError(expr, "format() requires string arg")
+                    this.throwError(expr, `${funName}() requires string arg`)
                 wr.push()
                 this.emitArgs(expr.arguments.slice(1))
                 const r = wr.allocBuf()
-                const vd = wr.emitString(arg0.value)
-                wr.emitSync(OpSync.FORMAT, vd.index, numargs - 1)
+                const fmtString = wr.emitString(arg0.value)
+                wr.emitSync(
+                    funName == "print" ? OpSync.LOG_FORMAT : OpSync.FORMAT,
+                    fmtString.index,
+                    numargs - 1
+                )
                 wr.popExcept(r)
                 return r
             }

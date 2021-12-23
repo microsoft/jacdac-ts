@@ -14,6 +14,7 @@ import {
     read16,
     read32,
     stringToUint8Array,
+    toHex,
     toUTF8,
     uint8ArrayToString,
     write16,
@@ -56,6 +57,10 @@ export function assertPos(pos: number, cond: boolean, msg: string) {
 
 export function hex(n: number) {
     return "0x" + n.toString(16)
+}
+
+function log(msg: string) {
+    console.log("VM: " + msg)
 }
 
 export class BinSection {
@@ -136,6 +141,9 @@ class RoleInfo {
     ) {}
     get classId() {
         return read32(this.parent.bin, this.offset)
+    }
+    toString() {
+        return this.dbg?.name || `R${this.offset}`
     }
 }
 
@@ -386,12 +394,8 @@ function storeCell(
             ctx.globals[idx] = val
             break
         case CellKind.BUFFER: // arg=shift:numfmt, C=Offset
-            setNumber(
-                ctx.pkt.data,
-                toNumberFormat(idx & 0xf),
-                c,
-                clamp(idx & 0xf, val * shiftVal(idx >> 4))
-            )
+            const v = clamp(idx & 0xf, val * shiftVal(idx >> 4))
+            setNumber(ctx.pkt.data, toNumberFormat(idx & 0xf), c, v)
             break
         default:
             oops()
@@ -452,10 +456,24 @@ class Activation {
     }
 
     private returnFromCall() {
-        this.fiber.activate(this.caller)
+        if (this.caller) this.fiber.activate(this.caller)
+        else this.fiber.finish()
+    }
+
+    logInstr() {
+        const ctx = this.fiber.ctx
+        const [a, b, c, d] = ctx.params
+        const instr = ctx.info.code[this.pc]
+        log(
+            `run: ${this.pc}: ${stringifyInstr(instr, {
+                resolverParams: [a, b, c, d],
+            })}`
+        )
     }
 
     step() {
+        //this.logInstr()
+
         const ctx = this.fiber.ctx
         const instr = ctx.info.code[this.pc++]
 
@@ -514,11 +532,11 @@ class Activation {
                 break
 
             case OpTop.LOAD_CELL: // DST[4] A:OP[2] B:OFF[6]
-                ctx.registers[reg1] = loadCell(ctx, this, a, b, c)
+                ctx.registers[reg0] = loadCell(ctx, this, a, b, c)
                 break
 
             case OpTop.STORE_CELL: // SRC[4] A:OP[2] B:OFF[6]
-                storeCell(ctx, this, a, b, c, ctx.registers[reg1])
+                storeCell(ctx, this, a, b, c, ctx.registers[reg0])
                 break
 
             case OpTop.JUMP: // REG[4] BACK[1] IF_ZERO[1] B:OFF[6]
@@ -533,7 +551,7 @@ class Activation {
             case OpTop.CALL: // NUMREGS[4] OPCALL[2] B:OFF[6] (D - saved regs)
                 this.saveRegs(d)
                 const finfo = ctx.info.functions[b]
-                switch (arg8 >> 2) {
+                switch (arg8 >> 6) {
                     case OpCall.SYNC:
                         this.callFunction(finfo, subop)
                         break
@@ -572,6 +590,15 @@ class Activation {
                         break
                     case OpSync.MEMCPY: // A-string-index C-offset
                         ctx.setBuffer(ctx.info.stringLiterals[a], c)
+                        break
+                    case OpSync.LOG_FORMAT: // A-string-index B-numargs
+                        const msg = strFormat(
+                            ctx.info.stringLiterals[a],
+                            ctx.registers.slice(0, b)
+                        )
+                        console.log(
+                            "JSCR: " + fromUTF8(uint8ArrayToString(msg))
+                        )
                         break
                     default:
                         oops()
@@ -639,6 +666,14 @@ class Fiber {
         this.setWakeTime(this.ctx.now() + ms)
         this.ctx.doYield()
     }
+
+    finish() {
+        log(`finish ${this.firstFun}`)
+        const idx = this.ctx.fibers.indexOf(this)
+        if (idx < 0) oops()
+        this.ctx.fibers.splice(idx, 1)
+        this.ctx.doYield()
+    }
 }
 
 class Role {
@@ -662,6 +697,7 @@ class Role {
     }
 
     assign(d: JDDevice, idx: number) {
+        log(`role ${this.info} <-- ${d}:${idx}`)
         this.device = d
         this.serviceIndex = idx
         if (this.awaiters.length) {
@@ -773,6 +809,7 @@ class Ctx {
                 for (const f of this.fibers)
                     if (f.waitingOn.indexOf(r) >= 0) {
                         this.wakeRoleIdx = idx
+                        log(`run ${f.firstFun} ev=${this.pkt.eventCode}`)
                         this.run(f)
                         this.wakeRoleIdx = null
                     }
@@ -788,17 +825,13 @@ class Ctx {
         return f
     }
 
-    log(msg: string) {
-        console.log(msg)
-    }
-
     startFiber(info: FunctionInfo, numargs: number, max1: boolean) {
         if (numargs > info.numRegs) oops()
         if (max1)
             for (const f of this.fibers) {
                 if (f.firstFun == info) return
             }
-        this.log(`start fiber: ${info}`)
+        log(`start fiber: ${info}`)
         const fiber = new Fiber(this)
         fiber.activation = new Activation(fiber, info, null)
         fiber.activation.saveArgs(numargs)
@@ -836,7 +869,8 @@ class Ctx {
         const fib = this.doYield()
         const val = this.pkt.data.slice()
         r.serviceAsync().then(serv => {
-            serv.register(code).sendSetAsync(val)
+            log(`set ${r.info}.r${code} := ${toHex(val)}`)
+            serv.register(code).sendSetAsync(val, true)
             this.run(fib)
         })
     }

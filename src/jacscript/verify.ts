@@ -171,6 +171,8 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
         const info = new FunctionInfo(bin, hd, dbg)
 
         for (let pass = 0; pass < 2; ++pass) {
+            pc = 0
+            console.log(`### Pass ${pass}`)
             for (; pc < funcode.length; ++pc) {
                 while (pc >= srcmap[srcmapPtr + 1] + srcmap[srcmapPtr + 2])
                     srcmapPtr += 3
@@ -185,7 +187,14 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
                 }
                 const instr = funcode[pc]
                 const pref = isPrefixInstr(instr) ? "    " : "             "
-                console.log(pref + stringifyInstr(instr, resolver))
+                const pcglobal = pc + (f.start >> 1)
+                console.log(
+                    pcglobal +
+                        (isJumpTarget[pc] ? "*" : " ") +
+                        ": " +
+                        pref +
+                        stringifyInstr(instr, resolver)
+                )
 
                 if (isJumpTarget[pc]) writtenRegs = 0
 
@@ -307,7 +316,9 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
                         case OpSync.OBSERVE_ROLE: // A-role
                             check(a < numRoles, "role in range")
                             break
+                        case OpSync.LOG_FORMAT:
                         case OpSync.FORMAT: // A-string-index B-numargs
+                            check(c <= 236, "offset in range")
                             rdRegs(b)
                             check(a < numStrings, "str in range")
                             break

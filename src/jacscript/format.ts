@@ -54,6 +54,7 @@ export enum OpSync {
     OBSERVE_ROLE, // A-role
     FORMAT, // A-string-index B-numargs C-offset
     MEMCPY, // A-string-index C-offset
+    LOG_FORMAT, // A-string-index B-numargs
     _LAST,
 }
 
@@ -170,9 +171,9 @@ export function stringifyCellKind(vk: CellKind) {
 }
 
 export interface InstrArgResolver {
-    describeCell(t: CellKind, idx: number): string
-    funName(idx: number): string
-    roleName(idx: number): string
+    describeCell?(t: CellKind, idx: number): string
+    funName?(idx: number): string
+    roleName?(idx: number): string
     resolverParams: number[]
 }
 
@@ -200,9 +201,7 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
 
     const abcd = ["A", "B", "C", "D"]
 
-    let params: number[] = [0, 0, 0, 0]
-
-    if (resolver?.resolverParams) params = resolver.resolverParams
+    let params: number[] = resolver?.resolverParams || [0, 0, 0, 0]
 
     let [a, b, c, d] = params
 
@@ -250,7 +249,7 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
             case OpTop.CALL: // NUMREGS[4] OPCALL[2] B:OFF[6] (D - saved regs)
                 b = (b << 6) | arg6
                 return `call${callop()} ${
-                    resolver.funName(b) || ""
+                    resolver?.funName?.(b) || ""
                 }_F${b} #${subop} save=${d.toString(2)}`
 
             case OpTop.SYNC: // A:ARG[4] OP[8]
@@ -268,7 +267,7 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
     }
 
     function role() {
-        return (resolver?.roleName(a) || "") + "_r" + a
+        return (resolver?.roleName?.(a) || "") + "_r" + a
     }
 
     function numfmt(v: number) {
@@ -333,7 +332,7 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
     }
     function celldesc() {
         const idx = b
-        const r = resolver?.describeCell(a, b) || ""
+        const r = resolver?.describeCell?.(a, b) || ""
         switch (a) {
             case CellKind.LOCAL:
                 return `${r}_L${idx}`
@@ -372,7 +371,9 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
             case OpSync.OBSERVE_ROLE: // A-role
                 return `observe(${role()})`
             case OpSync.FORMAT: // A-string-index B-numargs
-                return `format(str=${a} #${b})`
+                return `format(str=${a} #${b}) @${c}`
+            case OpSync.LOG_FORMAT: // A-string-index B-numargs
+                return `log(str=${a} #${b})`
             case OpSync.MEMCPY: // A-string-index
                 return `memcpy(str=${a})`
             default:
