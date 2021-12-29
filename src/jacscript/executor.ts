@@ -757,7 +757,7 @@ class Ctx {
             if (f.wakeTime) minTime = Math.min(f.wakeTime, minTime)
         }
         if (minTime < Infinity) {
-            const delta = Math.max(0, minTime - this.now())
+            const delta = Math.max(0, minTime - this.now() + 1)
             this.wakeTimeout = this.bus.scheduler.setTimeout(
                 this.checkWakeTimes,
                 delta
@@ -778,6 +778,7 @@ class Ctx {
         const n = this.now()
         for (const f of this.fibers)
             if (f.wakeTime && n >= f.wakeTime) this.run(f)
+        this.wakeTimesUpdated() // make sure we're re-scheduled, especially in case this fired too early
     }
 
     private deviceDisconnect(dev: JDDevice) {
@@ -908,5 +909,6 @@ export function runProgram(
 ) {
     const img = new ImageInfo(bin, dbg)
     const ctx = new Ctx(img, bus)
+    console.log(ctx)
     bus.scheduler.setTimeout(() => ctx.startProgram(), 1100)
 }

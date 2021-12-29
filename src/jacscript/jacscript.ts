@@ -10,10 +10,12 @@ import { runProgram } from "./executor"
 
 function mainTest() {
     const fs = require("fs")
+    const path = require("path")
     const f0 = process.argv[2]
+    const pref = path.resolve(f0, "../../../../dist")
     const res = compile(
         {
-            write: (fn, cont) => fs.writeFileSync("dist/" + fn, cont),
+            write: (fn, cont) => fs.writeFileSync(path.join(pref, fn), cont),
         },
         fs.readFileSync(f0, "utf8")
     )
