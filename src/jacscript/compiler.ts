@@ -1082,7 +1082,7 @@ class Program implements InstrArgResolver {
                 const proc = this.emitHandler("every", expr.arguments[1], {
                     every: time,
                 })
-                wr.emitCall(proc, OpCall.BG_MAX1)
+                wr.emitCall(proc, OpCall.BG)
                 return values.zero
             }
             case "upload": {
@@ -1115,8 +1115,13 @@ class Program implements InstrArgResolver {
                     fmtString.index,
                     numargs - 1
                 )
-                wr.popExcept(r)
-                return r
+                if (funName == "print") {
+                    wr.pop()
+                    return values.zero
+                } else {
+                    wr.popExcept(r)
+                    return r
+                }
             }
         }
         this.throwError(expr, "unhandled call")
