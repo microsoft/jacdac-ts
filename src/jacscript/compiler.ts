@@ -171,6 +171,7 @@ class OpWriter {
     private binary: number[] = []
     private labels: Label[] = []
     top: Label
+    ret: Label
     private assembly: (string | number)[] = []
     private assemblyPtr = 0
     private lineNo = -1
@@ -182,6 +183,7 @@ class OpWriter {
 
     constructor(public parent: Procedure) {
         this.top = this.mkLabel("top")
+        this.ret = this.mkLabel("ret")
         this.emitLabel(this.top)
     }
 
@@ -610,6 +612,7 @@ class OpWriter {
 
     patchLabels() {
         for (const l of this.labels) {
+            if (l.uses.length == 0) continue
             assert(l.offset != -1)
             for (const u of l.uses) {
                 let op0 = this.binary[u]
@@ -895,16 +898,23 @@ class Program implements InstrArgResolver {
 
     private emitHandler(
         name: string,
-        func: estree.ArrowFunctionExpression
+        func: Expr,
+        options: { every?: number } = {}
     ): Procedure {
+        if (func.type != "ArrowFunctionExpression")
+            this.throwError(func, "arrow function expected here")
         const proc = new Procedure(this, name)
         this.withProcedure(proc, wr => {
+            if (options.every)
+                wr.emitAsync(OpAsync.YIELD, (options.every | 0) + 1)
             if (func.body.type == "BlockStatement") {
                 for (const stmt of func.body.body) this.emitStmt(stmt)
             } else {
                 this.ignore(this.emitExpr(func.body))
             }
-            wr.emitSync(OpSync.RETURN)
+            wr.emitLabel(wr.ret)
+            if (options.every) wr.emitJump(wr.top)
+            else wr.emitSync(OpSync.RETURN)
         })
         return proc
     }
@@ -932,11 +942,7 @@ class Program implements InstrArgResolver {
         const role = obj.cell as Role
         switch (prop) {
             case "sub":
-                if (
-                    expr.arguments.length != 1 ||
-                    expr.arguments[0].type != "ArrowFunctionExpression"
-                )
-                    this.throwError(expr, ".sub() requires a single handler")
+                this.requireArgs(expr, 1)
                 const handler = this.emitHandler(
                     this.codeName(expr.callee),
                     expr.arguments[0]
@@ -1063,6 +1069,20 @@ class Program implements InstrArgResolver {
                 this.requireArgs(expr, 1)
                 const time = this.litValue(expr.arguments[0]) * 1000
                 wr.emitAsync(OpAsync.YIELD, (time | 0) + 1)
+                return values.zero
+            }
+            case "every": {
+                this.requireArgs(expr, 2)
+                const time = Math.round(this.litValue(expr.arguments[0]) * 1000)
+                if (time < 20)
+                    this.throwError(
+                        expr,
+                        "minimum every() period is 0.02s (20ms)"
+                    )
+                const proc = this.emitHandler("every", expr.arguments[1], {
+                    every: time,
+                })
+                wr.emitCall(proc, OpCall.BG_MAX1)
                 return values.zero
             }
             case "upload": {
