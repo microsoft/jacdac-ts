@@ -43,6 +43,7 @@ import {
 } from "./format"
 
 class Resolver implements InstrArgResolver {
+    resolverPC: number
     constructor(private floats: Float64Array, private dbg: DebugInfo) {}
     resolverParams: number[]
     describeCell(t: CellKind, idx: number): string {
@@ -172,13 +173,12 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
 
         for (let pass = 0; pass < 2; ++pass) {
             pc = 0
-            console.log(`### Pass ${pass}`)
             for (; pc < funcode.length; ++pc) {
                 while (pc >= srcmap[srcmapPtr + 1] + srcmap[srcmapPtr + 2])
                     srcmapPtr += 3
                 if (prevLine != srcmap[srcmapPtr]) {
                     prevLine = srcmap[srcmapPtr]
-                    if (prevLine)
+                    if (prevLine && pass == 0)
                         console.log(
                             `; (${prevLine}): ${
                                 sourceLines[prevLine - 1] || ""
@@ -186,15 +186,10 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
                         )
                 }
                 const instr = funcode[pc]
-                const pref = isPrefixInstr(instr) ? "    " : "             "
-                const pcglobal = pc + (f.start >> 1)
-                console.log(
-                    pcglobal +
-                        (isJumpTarget[pc] ? "*" : " ") +
-                        ": " +
-                        pref +
-                        stringifyInstr(instr, resolver)
-                )
+                if (pass == 0) {
+                    resolver.resolverPC = pc + (f.start >> 1)
+                    console.log(stringifyInstr(instr, resolver))
+                }
 
                 if (isJumpTarget[pc]) writtenRegs = 0
 

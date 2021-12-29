@@ -533,8 +533,8 @@ class OpWriter {
         for (const ln of this.assembly) {
             if (typeof ln == "string") r += ln + "\n"
             else {
-                r += stringifyInstr(this.binary[ln], this.parent.parent)
-                if (!isPrefixInstr(this.binary[ln])) r += "\n"
+                this.parent.parent.resolverPC = ln
+                r += stringifyInstr(this.binary[ln], this.parent.parent) + "\n"
             }
         }
         return r
@@ -750,6 +750,7 @@ class Program implements InstrArgResolver {
     sysSpec = serviceSpecificationFromName("_system")
     refreshMS: number[] = [0, 500]
     resolverParams: number[]
+    resolverPC: number
     numErrors = 0
 
     constructor(public host: Host, public source: string) {}
@@ -1302,15 +1303,14 @@ class Program implements InstrArgResolver {
             "+": OpUnary.ID,
         }
 
-        let op = expr.operator
-        const op2 = simpleOps[op]
-        if (op2 === undefined) this.throwError(expr, "unhandled operator")
+        const op = simpleOps[expr.operator]
+        if (op === undefined) this.throwError(expr, "unhandled operator")
 
         const wr = this.writer
 
         wr.push()
-        let a = this.emitSimpleValue(expr.argument)
-        wr.emitUnary(op2, a, a)
+        const a = this.emitSimpleValue(expr.argument)
+        wr.emitUnary(op, a, a)
         wr.popExcept(a)
 
         return a

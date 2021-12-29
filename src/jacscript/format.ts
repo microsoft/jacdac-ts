@@ -174,6 +174,7 @@ export interface InstrArgResolver {
     describeCell?(t: CellKind, idx: number): string
     funName?(idx: number): string
     roleName?(idx: number): string
+    resolverPC?: number
     resolverParams: number[]
 }
 
@@ -205,10 +206,17 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
 
     let [a, b, c, d] = params
 
-    const res = doOp()
+    let res = "    " + doOp()
 
-    if (!isPrefixInstr(instr)) params = [0, 0, 0, 0]
+    if (!isPrefixInstr(instr)) {
+        res = "    " + res
+        params = [0, 0, 0, 0]
+    }
     if (resolver) resolver.resolverParams = params
+
+    const pc = resolver?.resolverPC
+    if (pc !== undefined)
+        res = (pc > 9999 ? pc : ("    " + pc).slice(-4)) + ": " + res
 
     return res
 
@@ -241,9 +249,14 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
 
             case OpTop.JUMP: // REG[4] BACK[1] IF_ZERO[1] B:OFF[6]
                 b = (b << 6) | arg6
+                const off = arg8 & (1 << 7) ? -b : b
+                const offs = (off >= 0 ? "+" : "") + off
+                const dst =
+                    resolver?.resolverPC === undefined
+                        ? offs
+                        : resolver?.resolverPC + 1 + off + (" (" + offs + ")")
                 return (
-                    `jump ${arg8 & (1 << 7) ? "-" : "+"}${b}` +
-                    (arg8 & (1 << 6) ? ` if ${reg0} == 0` : ``)
+                    `jump ${dst}` + (arg8 & (1 << 6) ? ` if ${reg0} == 0` : ``)
                 )
 
             case OpTop.CALL: // NUMREGS[4] OPCALL[2] B:OFF[6] (D - saved regs)
