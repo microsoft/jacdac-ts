@@ -248,6 +248,10 @@ function unop(op: OpUnary, v: number) {
             return -v
         case OpUnary.NOT:
             return v ? 0 : 1
+        case OpUnary.ABS:
+            return Math.abs(v)
+        case OpUnary.IS_NAN:
+            return isNaN(v) ? 1 : 0
         default:
             oops()
     }
@@ -342,8 +346,8 @@ function loadCell(
                     return ctx.pkt.size
                 case ValueSpecial.EV_CODE:
                     return nanify(ctx.pkt.eventCode)
-                case ValueSpecial.REG_CODE:
-                    return nanify(ctx.pkt.registerIdentifier)
+                case ValueSpecial.REG_GET_CODE:
+                    return ctx.pkt.isRegisterGet ? ctx.pkt.registerIdentifier : NaN
                 case ValueSpecial.ROLE_ID:
                     return nanify(ctx.wakeRoleIdx)
                 default:
@@ -810,7 +814,7 @@ class Ctx {
                 for (const f of this.fibers)
                     if (f.waitingOn.indexOf(r) >= 0) {
                         this.wakeRoleIdx = idx
-                        log(`run ${f.firstFun} ev=${this.pkt.eventCode}`)
+                        // log(`run ${f.firstFun} ev=${this.pkt.eventCode}`)
                         this.run(f)
                         this.wakeRoleIdx = null
                     }

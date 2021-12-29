@@ -388,8 +388,7 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
             check(idx >= 0, "idx pos")
             switch (tp) {
                 case CellKind.LOCAL:
-                    check(false, "locals not supported yet")
-                    // TODO
+                    check(idx < info.numLocals, "locals range")
                     break
                 case CellKind.GLOBAL:
                     check(idx < numGlobals, "globals range")

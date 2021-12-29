@@ -92,7 +92,7 @@ export enum ValueSpecial {
     // jd_packet accessors:
     SIZE = 0x1,
     EV_CODE = 0x2, // or nan
-    REG_CODE = 0x3, // or nan
+    REG_GET_CODE = 0x3, // or nan
     ROLE_ID = 0x4, // or nan
     _LAST,
 }
@@ -115,6 +115,8 @@ export enum OpUnary {
     ID = 0x0,
     NEG = 0x1,
     NOT = 0x2,
+    ABS = 0x3,
+    IS_NAN = 0x4,
     _LAST,
 }
 
@@ -313,6 +315,10 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
                 return "-"
             case OpUnary.NOT:
                 return "!"
+            case OpUnary.ABS:
+                return "abs "
+            case OpUnary.IS_NAN:
+                return "isNaN "
             default:
                 return "un-" + subop
         }
@@ -365,7 +371,7 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
                         return "SIZE"
                     case ValueSpecial.EV_CODE:
                         return "EV_CODE"
-                    case ValueSpecial.REG_CODE:
+                    case ValueSpecial.REG_GET_CODE:
                         return "REG_CODE"
                     default:
                         return `${r}_SPEC[${idx}]`

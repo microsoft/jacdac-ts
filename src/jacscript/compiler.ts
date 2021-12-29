@@ -56,6 +56,8 @@ export function assertRange(
 
 class Cell {
     index: number
+    _name: string
+
     constructor(
         public definition: estree.VariableDeclarator,
         public scope: VariableScope
@@ -66,7 +68,8 @@ class Cell {
         oops("on value() on generic Cell")
     }
     getName() {
-        return idName(this.definition.id)
+        if (!this._name) this._name = idName(this.definition.id)
+        return this._name
     }
     debugInfo(): CellDebugInfo {
         return {
@@ -707,6 +710,12 @@ class Procedure {
     finalize() {
         this.writer.patchLabels()
     }
+    mkTempLocal(name: string) {
+        const l = new Variable(null, this.locals)
+        l._name = name
+        l.isLocal = true
+        return l
+    }
 }
 
 class VariableScope {
@@ -723,7 +732,7 @@ class VariableScope {
     add(cell: Cell) {
         cell.index = this.list.length
         this.list.push(cell)
-        this.map[cell.getName()] = cell
+        if (cell.definition) this.map[cell.getName()] = cell
     }
 
     describeIndex(idx: number) {
@@ -934,6 +943,12 @@ class Program implements InstrArgResolver {
             )
     }
 
+    private emitInRoleDispatcher(role: Role, f: (wr: OpWriter) => void) {
+        const disp = this.roleDispatcher(role)
+        this.withProcedure(disp, f)
+        this.writer.emitCall(disp, OpCall.BG_MAX1) // TODO push all these to the program head?
+    }
+
     private emitEventCall(
         expr: estree.CallExpression,
         obj: ValueDesc,
@@ -947,8 +962,7 @@ class Program implements InstrArgResolver {
                     this.codeName(expr.callee),
                     expr.arguments[0]
                 )
-                const disp = this.roleDispatcher(role)
-                this.withProcedure(disp, wr => {
+                this.emitInRoleDispatcher(role, wr => {
                     wr.emitIf(
                         OpBinary.EQ,
                         specialVal(ValueSpecial.EV_CODE),
@@ -958,7 +972,6 @@ class Program implements InstrArgResolver {
                         }
                     )
                 })
-                this.writer.emitCall(disp, OpCall.BG_MAX1)
                 return values.zero
         }
         this.throwError(expr, `events don't have property ${prop}`)
@@ -971,27 +984,35 @@ class Program implements InstrArgResolver {
     ): ValueDesc {
         const role = obj.cell as Role
         assertRange(0, obj.spec.identifier, 0x1ff)
-        const refresh =
-            obj.spec.kind == "const" ? RefreshMS.Never : RefreshMS.Normal
+
+        const emitGet = (refresh: RefreshMS) => {
+            const wr = this.writer // this may be different than the outer writer
+            wr.emitAsync(
+                OpAsync.QUERY_REG,
+                role.encode(),
+                obj.spec.identifier,
+                refresh
+            )
+            if (obj.spec.fields.length == 1) {
+                const r = wr.allocReg()
+                wr.emitBufOp(OpTop.LOAD_CELL, r, 0, obj.spec.fields[0])
+                return r
+            } else {
+                const r = mkValue(CellKind.JD_VALUE_SEQ, 0, role)
+                r.spec = obj.spec
+                return r
+            }
+        }
+
         const wr = this.writer
         switch (prop) {
             case "read":
                 this.requireArgs(expr, 0)
-                wr.emitAsync(
-                    OpAsync.QUERY_REG,
-                    role.encode(),
-                    obj.spec.identifier,
-                    refresh
+                return emitGet(
+                    obj.spec.kind == "const"
+                        ? RefreshMS.Never
+                        : RefreshMS.Normal
                 )
-                if (obj.spec.fields.length == 1) {
-                    const r = wr.allocReg()
-                    wr.emitBufOp(OpTop.LOAD_CELL, r, 0, obj.spec.fields[0])
-                    return r
-                } else {
-                    const r = mkValue(CellKind.JD_VALUE_SEQ, 0, role)
-                    r.spec = obj.spec
-                    return r
-                }
             case "write":
                 this.requireArgs(expr, obj.spec.fields.length)
                 let off = 0
@@ -1022,6 +1043,43 @@ class Program implements InstrArgResolver {
                     role.encode(),
                     obj.spec.identifier
                 )
+                return values.zero
+            case "onChange":
+                this.requireArgs(expr, 2)
+                if (obj.spec.fields.length != 1)
+                    this.throwError(expr, "wrong register type")
+                const threshold = this.litValue(expr.arguments[0])
+                const name = role.getName() + "_chg_" + obj.spec.name
+                const handler = this.emitHandler(name, expr.arguments[1])
+                this.emitInRoleDispatcher(role, wr => {
+                    const cache = this.proc.mkTempLocal(name)
+                    wr.emitIf(
+                        OpBinary.EQ,
+                        specialVal(ValueSpecial.REG_GET_CODE),
+                        floatVal(obj.spec.identifier),
+                        () => {
+                            // get the cached value (TODO - better hint for that than never-refresh?)
+                            wr.push()
+                            const curr = emitGet(RefreshMS.Never)
+                            const prev = wr.forceReg(cache.value())
+                            wr.emitBin(OpBinary.SUB, prev, curr)
+                            wr.emitUnary(OpUnary.ABS, prev, prev)
+                            const thresholdReg = wr.forceReg(
+                                floatVal(threshold)
+                            )
+                            // if (! (Math.abs(prev-curr) <= threshold)) handler()
+                            // note that this also calls handler() if prev is NaN
+                            wr.emitBin(OpBinary.LE, prev, thresholdReg)
+                            wr.emitUnary(OpUnary.NOT, prev, prev)
+                            const skipHandler = wr.mkLabel("skipHandler")
+                            wr.emitJump(skipHandler, prev.index)
+                            wr.assign(cache.value(), curr)
+                            wr.pop()
+                            wr.emitCall(handler)
+                            wr.emitLabel(skipHandler)
+                        }
+                    )
+                })
                 return values.zero
         }
         this.throwError(expr, `events don't have property ${prop}`)
