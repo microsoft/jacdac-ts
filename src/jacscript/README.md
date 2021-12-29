@@ -1,5 +1,13 @@
 # JacScript
 
+## Design goals for Jacscript VM
+
+* secure - can predictably execute untrusted code (random bytes)
+* easy to analyze - should be possible to statically determine the set of APIs used
+* small memory (RAM) footprint
+* small code (flash) footprint
+* leave space for extensions in future
+
 ## JavaScript subset
 
 Global variables are supported (no `const` or `let`).
@@ -120,3 +128,23 @@ upload("potval", pot.reading.read())
 upload("color", r * 256, g * 256, b * 256)
 upload(format("X[{0}]", idx), x)
 ```
+
+## TODO
+
+* if stmt
+* return stmt
+* sending commands: `buzzer.play_note(freq, 0.9, time)`
+* responding to cloud messages: `onCloud("play_sound", (freq, time) => { ... })`
+* responding to twin updates: `onTwinUpdate("foo.bar", value => { ... })`; on boot as well
+* auto-upload of everything
+* specific uploads: `hum.autoUpload(5, 1) // 5s, 1%`
+* built-in math functions? (abs, min, max, log, log2, ...)
+* role mgr
+* implementing services in jacscript
+* some testing framework? (depends on services?)
+* more "debug" info in program - role names, ?
+
+### Debugger interface
+
+* fiber list, locals, globals
+* setting breakpoints - breakpoint instruction? (based on source code location)
