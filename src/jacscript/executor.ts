@@ -881,7 +881,7 @@ class Ctx {
     }
 
     getReg(r: Role, code: number, timeout: number) {
-        const setPkt = (reg: JDRegister) => {
+        const setPktInCtx = (reg: JDRegister) => {
             this.pkt = Packet.from(CMD_GET_REG | code, reg.data)
             this.pkt.deviceIdentifier = r.device.deviceId
             this.pkt.serviceIndex = r.serviceIndex
@@ -890,8 +890,8 @@ class Ctx {
         const reg = r.service()?.register(code)
         const ts = reg?.lastDataTimestamp
 
-        if (ts && this.bus.timestamp - ts < timeout) {
-            setPkt(reg)
+        if (ts && (!timeout || this.bus.timestamp - ts < timeout)) {
+            setPktInCtx(reg)
             return
         }
 
@@ -899,7 +899,7 @@ class Ctx {
         r.serviceAsync().then(serv => {
             const reg = serv.register(code)
             reg.refresh().then(() => {
-                setPkt(reg)
+                setPktInCtx(reg)
                 this.run(fib)
             })
         })
