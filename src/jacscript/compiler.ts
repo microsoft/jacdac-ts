@@ -567,17 +567,13 @@ class OpWriter {
         l.offset = this.binary.length
     }
 
-    emitIf(
-        subop: OpBinary,
-        left: ValueDesc,
-        right: ValueDesc,
-        thenBody: () => void,
-        elseBody?: () => void
-    ) {
+    emitIfAndPop(reg: ValueDesc, thenBody: () => void, elseBody?: () => void) {
+        assert(this.isReg(reg))
+        this.pop()
         if (elseBody) {
             const endIf = this.mkLabel("endif")
             const elseIf = this.mkLabel("elseif")
-            this.emitJumpIfFalse(elseIf, subop, left, right)
+            this.emitJump(elseIf, reg.index)
             thenBody()
             this.emitJump(endIf)
             this.emitLabel(elseIf)
@@ -585,24 +581,10 @@ class OpWriter {
             this.emitLabel(endIf)
         } else {
             const skipIf = this.mkLabel("skipif")
-            this.emitJumpIfFalse(skipIf, subop, left, right)
+            this.emitJump(skipIf, reg.index)
             thenBody()
             this.emitLabel(skipIf)
         }
-    }
-
-    emitJumpIfFalse(
-        label: Label,
-        subop: OpBinary,
-        left: ValueDesc,
-        right: ValueDesc
-    ) {
-        this.push()
-        const l = this.forceReg(left)
-        const r = this.forceReg(right)
-        this.emitBin(subop, l, r)
-        this.emitJump(label, l.index)
-        this.pop()
     }
 
     emitJump(label: Label, cond: number = -1) {
@@ -623,7 +605,7 @@ class OpWriter {
                 assert(op0 >> 12 == OpTop.SET_B)
                 assert(op1 >> 12 == OpTop.JUMP)
                 let off = l.offset - u - 2
-                assert(off != 0)
+                assert(off != -2) // avoid simple infinite loop
                 if (off < 0) {
                     off = -off
                     op1 |= 1 << 7
@@ -748,6 +730,7 @@ enum RefreshMS {
 }
 
 type Expr = estree.Expression | estree.Super | estree.SpreadElement
+type Stmt = estree.Statement | estree.Directive | estree.ModuleDeclaration
 
 class Program implements InstrArgResolver {
     roles = new VariableScope(null)
@@ -891,6 +874,17 @@ class Program implements InstrArgResolver {
         }
     }
 
+    private emitIfStatement(stmt: estree.IfStatement) {
+        const wr = this.writer
+        wr.push()
+        const cond = this.emitSimpleValue(stmt.test)
+        wr.emitIfAndPop(
+            cond,
+            () => this.emitStmt(stmt.consequent),
+            stmt.alternate ? () => this.emitStmt(stmt.alternate) : null
+        )
+    }
+
     private emitProgram(prog: estree.Program) {
         const main = new Procedure(this, "main")
         this.withProcedure(main, () => {
@@ -949,6 +943,14 @@ class Program implements InstrArgResolver {
         this.writer.emitCall(disp, OpCall.BG_MAX1) // TODO push all these to the program head?
     }
 
+    private inlineBin(subop: OpBinary, left: ValueDesc, right: ValueDesc) {
+        const wr = this.writer
+        const l = wr.forceReg(left)
+        const r = wr.forceReg(right)
+        wr.emitBin(subop, l, r)
+        return l
+    }
+
     private emitEventCall(
         expr: estree.CallExpression,
         obj: ValueDesc,
@@ -963,14 +965,13 @@ class Program implements InstrArgResolver {
                     expr.arguments[0]
                 )
                 this.emitInRoleDispatcher(role, wr => {
-                    wr.emitIf(
+                    wr.push()
+                    const cond = this.inlineBin(
                         OpBinary.EQ,
                         specialVal(ValueSpecial.EV_CODE),
-                        floatVal(obj.spec.identifier),
-                        () => {
-                            wr.emitCall(handler)
-                        }
+                        floatVal(obj.spec.identifier)
                     )
+                    wr.emitIfAndPop(cond, () => wr.emitCall(handler))
                 })
                 return values.zero
         }
@@ -1053,32 +1054,31 @@ class Program implements InstrArgResolver {
                 const handler = this.emitHandler(name, expr.arguments[1])
                 this.emitInRoleDispatcher(role, wr => {
                     const cache = this.proc.mkTempLocal(name)
-                    wr.emitIf(
+                    wr.push()
+                    const cond = this.inlineBin(
                         OpBinary.EQ,
                         specialVal(ValueSpecial.REG_GET_CODE),
-                        floatVal(obj.spec.identifier),
-                        () => {
-                            // get the cached value (TODO - better hint for that than never-refresh?)
-                            wr.push()
-                            const curr = emitGet(RefreshMS.Never)
-                            const prev = wr.forceReg(cache.value())
-                            wr.emitBin(OpBinary.SUB, prev, curr)
-                            wr.emitUnary(OpUnary.ABS, prev, prev)
-                            const thresholdReg = wr.forceReg(
-                                floatVal(threshold)
-                            )
-                            // if (! (Math.abs(prev-curr) <= threshold)) handler()
-                            // note that this also calls handler() if prev is NaN
-                            wr.emitBin(OpBinary.LE, prev, thresholdReg)
-                            wr.emitUnary(OpUnary.NOT, prev, prev)
-                            const skipHandler = wr.mkLabel("skipHandler")
-                            wr.emitJump(skipHandler, prev.index)
-                            wr.assign(cache.value(), curr)
-                            wr.pop()
-                            wr.emitCall(handler)
-                            wr.emitLabel(skipHandler)
-                        }
+                        floatVal(obj.spec.identifier)
                     )
+                    wr.emitIfAndPop(cond, () => {
+                        // get the cached value (TODO - better hint for that than never-refresh?)
+                        wr.push()
+                        const curr = emitGet(RefreshMS.Never)
+                        const prev = wr.forceReg(cache.value())
+                        wr.emitBin(OpBinary.SUB, prev, curr)
+                        wr.emitUnary(OpUnary.ABS, prev, prev)
+                        const thresholdReg = wr.forceReg(floatVal(threshold))
+                        // if (! (Math.abs(prev-curr) <= threshold)) handler()
+                        // note that this also calls handler() if prev is NaN
+                        wr.emitBin(OpBinary.LE, prev, thresholdReg)
+                        wr.emitUnary(OpUnary.NOT, prev, prev)
+                        const skipHandler = wr.mkLabel("skipHandler")
+                        wr.emitJump(skipHandler, prev.index)
+                        wr.assign(cache.value(), curr)
+                        wr.pop()
+                        wr.emitCall(handler)
+                        wr.emitLabel(skipHandler)
+                    })
                 })
                 return values.zero
         }
@@ -1444,7 +1444,7 @@ class Program implements InstrArgResolver {
         return null
     }
 
-    private emitStmt(stmt: estree.BaseStatement) {
+    private emitStmt(stmt: Stmt) {
         const src = this.sourceFrag(stmt.range)
         const wr = this.writer
         if (src) wr.emitComment(src)
@@ -1455,16 +1455,15 @@ class Program implements InstrArgResolver {
         wr.push()
         try {
             switch (stmt.type) {
-                case "Program":
-                    return this.emitProgram(stmt as estree.Program)
                 case "ExpressionStatement":
-                    return this.emitExpressionStatement(
-                        stmt as estree.ExpressionStatement
-                    )
+                    return this.emitExpressionStatement(stmt)
                 case "VariableDeclaration":
-                    return this.emitVariableDeclaration(
-                        stmt as estree.VariableDeclaration
-                    )
+                    return this.emitVariableDeclaration(stmt)
+                case "IfStatement":
+                    return this.emitIfStatement(stmt)
+                case "BlockStatement":
+                    stmt.body.forEach(s => this.emitStmt(s))
+                    return values.zero
                 default:
                     console.log(stmt)
                     this.throwError(stmt, `unhandled type: ${stmt.type}`)

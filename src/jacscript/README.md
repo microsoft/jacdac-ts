@@ -15,12 +15,18 @@ Local variables are not supported yet (TODO).
 
 All variables are numbers (64-bit IEEE floating point).
 Numeric binary and unary expressions are supported.
-Comparisons return `0.0` or `1.0`.
+Comparisons return `0.0` or `1.0` (in particular comparing anything to `NaN` returns `0.0`).
+`0.0` and `NaN` are considered falsy.
+TODO should compare with NaN return NaN?
 
 ```js
 var x, y
 x = pot.reading.read()
-y = x * 3
+if (x < 0.3) {
+    y = x * 3
+} else {
+    y = -x / 7
+}
 ```
 
 Some builtin functions only take literal arguments (especially strings, and time values).
@@ -131,8 +137,8 @@ upload(format("X[{0}]", idx), x)
 
 ## TODO
 
-* if stmt
 * return stmt
+* register reads may not be triggered enough for `onChange()` to work
 * sending commands: `buzzer.play_note(freq, 0.9, time)`
 * responding to cloud messages: `onCloud("play_sound", (freq, time) => { ... })`
 * responding to twin updates: `onTwinUpdate("foo.bar", value => { ... })`; on boot as well
