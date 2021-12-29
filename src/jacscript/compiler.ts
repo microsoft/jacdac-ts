@@ -877,12 +877,23 @@ class Program implements InstrArgResolver {
     private emitIfStatement(stmt: estree.IfStatement) {
         const wr = this.writer
         wr.push()
-        const cond = this.emitSimpleValue(stmt.test)
-        wr.emitIfAndPop(
-            cond,
-            () => this.emitStmt(stmt.consequent),
-            stmt.alternate ? () => this.emitStmt(stmt.alternate) : null
-        )
+
+        let cond = this.emitExpr(stmt.test)
+        this.requireRuntimeValue(stmt.test, cond)
+        if (cond.kind == CellKind.X_FLOAT) {
+            wr.pop()
+            if (cond.litValue) this.emitStmt(stmt.consequent)
+            else {
+                if (stmt.alternate) this.emitStmt(stmt.alternate)
+            }
+        } else {
+            cond = wr.forceReg(cond)
+            wr.emitIfAndPop(
+                cond,
+                () => this.emitStmt(stmt.consequent),
+                stmt.alternate ? () => this.emitStmt(stmt.alternate) : null
+            )
+        }
     }
 
     private emitProgram(prog: estree.Program) {
