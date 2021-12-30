@@ -1,7 +1,8 @@
-import { TRANSPORT_CLOSED_ERROR_CODE, WEBSOCKET_TRANSPORT } from "../constants"
-import JDError from "../error"
+import { PACKET_SEND_DISCONNECT, WEBSOCKET_TRANSPORT } from "../constants"
 import Packet from "../packet"
 import Transport, { TransportOptions } from "./transport"
+
+const RECONNECT_TIMEOUT = 5000
 
 /**
  * Transport creation options for web sockets
@@ -22,10 +23,20 @@ export function isWebSocketTransportSupported() {
 class WebSocketTransport extends Transport {
     private readonly protocols: string | string[]
     private ws: WebSocket
+    private lastConnectTimestamp = 0
 
     constructor(readonly url: string, options?: WebSocketTransportOptions) {
         super(WEBSOCKET_TRANSPORT, options)
         this.protocols = options?.protocols
+        this.on(PACKET_SEND_DISCONNECT, this.handleSendDisconnect)
+    }
+
+    private handleSendDisconnect() {
+        const now = this.bus.timestamp
+        if (now - this.lastConnectTimestamp > RECONNECT_TIMEOUT) {
+            this.lastConnectTimestamp = now
+            this.connect(true)
+        }
     }
 
     protected transportConnectAsync(background?: boolean): Promise<void> {
@@ -44,13 +55,10 @@ class WebSocketTransport extends Transport {
     }
 
     protected transportSendPacketAsync(p: Packet): Promise<void> {
-        if (this.ws?.readyState !== this.ws.OPEN)
-            throw new JDError(
-                "Trying to send message on closed transport",
-                TRANSPORT_CLOSED_ERROR_CODE
-            )
-        const data = p.toBuffer()
-        this.ws.send(data)
+        if (this.ws?.readyState === this.ws.OPEN) {
+            const data = p.toBuffer()
+            this.ws.send(data)
+        }
         return Promise.resolve()
     }
 
