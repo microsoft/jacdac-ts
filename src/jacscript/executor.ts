@@ -35,6 +35,8 @@ import {
     OpBinary,
     OpCall,
     OpFmt,
+    OpMath1,
+    OpMath2,
     OpSync,
     OpTop,
     OpUnary,
@@ -276,9 +278,39 @@ function binop(op: OpBinary, a: number, b: number) {
         case OpBinary.NE:
             return a != b ? 1 : 0
         case OpBinary.AND:
-            return a && b ? 1 : 0
+            return a ? b : a
         case OpBinary.OR:
-            return a || b ? 1 : 0
+            return a ? a : b
+        default:
+            oops()
+    }
+}
+
+function opMath1(op: OpMath1, a: number) {
+    switch (op) {
+        case OpMath1.FLOOR:
+            return Math.floor(a)
+        case OpMath1.ROUND:
+            return Math.round(a)
+        case OpMath1.CEIL:
+            return Math.ceil(a)
+        case OpMath1.LOG_E:
+            return Math.log(a)
+        case OpMath1.RANDOM:
+            return Math.random() * a
+        default:
+            oops()
+    }
+}
+
+function opMath2(op: OpMath2, a: number, b: number) {
+    switch (op) {
+        case OpMath2.MIN:
+            return Math.min(a, b)
+        case OpMath2.MAX:
+            return Math.max(a, b)
+        case OpMath2.POW:
+            return Math.pow(a, b)
         default:
             oops()
     }
@@ -347,7 +379,9 @@ function loadCell(
                 case ValueSpecial.EV_CODE:
                     return nanify(ctx.pkt.eventCode)
                 case ValueSpecial.REG_GET_CODE:
-                    return ctx.pkt.isRegisterGet ? ctx.pkt.registerIdentifier : NaN
+                    return ctx.pkt.isRegisterGet
+                        ? ctx.pkt.registerIdentifier
+                        : NaN
                 case ValueSpecial.ROLE_ID:
                     return nanify(ctx.wakeRoleIdx)
                 default:
@@ -604,6 +638,19 @@ class Activation {
                             "JSCR: " + fromUTF8(uint8ArrayToString(msg))
                         )
                         break
+                    case OpSync.MATH1:
+                        ctx.registers[0] = opMath1(a, ctx.registers[0])
+                        break
+                    case OpSync.MATH2:
+                        ctx.registers[0] = opMath2(
+                            a,
+                            ctx.registers[0],
+                            ctx.registers[1]
+                        )
+                        break
+                    case OpSync.PANIC:
+                        ctx.panic(a)
+                        break
                     default:
                         oops()
                         break
@@ -724,6 +771,7 @@ class Ctx {
     roles: Role[]
     wakeTimeout: any
     scheduleScheduled = false
+    panicCode = 0
 
     constructor(public info: ImageInfo, public bus: JDBus) {
         this.globals = new Float64Array(this.info.numGlobals)
@@ -749,6 +797,17 @@ class Ctx {
         this.bus.scheduler.setTimeout(this.scheduleCheckWakeTimes, 0)
     }
 
+    panic(code: number, exn?: Error) {
+        if (!this.panicCode) {
+            console.error(`PANIC ${code}`)
+            this.panicCode = code
+        }
+        this.scheduleCheckWakeTimes() // clears wake timer
+        if (!exn) exn = new Error("Panic")
+        ;(exn as any).panicCode = this.panicCode
+        throw exn
+    }
+
     private scheduleCheckWakeTimes() {
         this.scheduleScheduled = false
         if (this.wakeTimeout !== undefined) {
@@ -756,6 +815,7 @@ class Ctx {
             this.wakeTimeout = undefined
         }
 
+        if (this.panicCode) return
         let minTime = Infinity
         for (const f of this.fibers) {
             if (f.wakeTime) minTime = Math.min(f.wakeTime, minTime)
@@ -770,11 +830,16 @@ class Ctx {
     }
 
     run(f: Fiber) {
-        f.resume()
-        let maxSteps = MAX_STEPS
-        while (this.currentActivation) {
-            this.currentActivation.step()
-            if (!--maxSteps) throw new Error("execution timeout")
+        if (this.panicCode) return
+        try {
+            f.resume()
+            let maxSteps = MAX_STEPS
+            while (this.currentActivation) {
+                this.currentActivation.step()
+                if (!--maxSteps) throw new Error("execution timeout")
+            }
+        } catch (e) {
+            this.panic(-1)
         }
     }
 

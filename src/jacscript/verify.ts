@@ -33,6 +33,8 @@ import {
     OpBinary,
     OpCall,
     OpFmt,
+    OpMath1,
+    OpMath2,
     OpSync,
     OpTop,
     OpUnary,
@@ -319,6 +321,20 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
                             break
                         case OpSync.MEMCPY: // A-string-index
                             check(a < numStrings, "str in range")
+                            break
+                        case OpSync.MATH1:
+                            rdReg(0)
+                            wrReg(0)
+                            check(a < OpMath1._LAST, "math1 in range")
+                            break
+                        case OpSync.MATH2:
+                            rdReg(0)
+                            rdReg(1)
+                            wrReg(0)
+                            check(a < OpMath2._LAST, "math2 in range")
+                            break
+                        case OpSync.PANIC:
+                            lastOK = true
                             break
                         default:
                             check(false, "invalid sync code")

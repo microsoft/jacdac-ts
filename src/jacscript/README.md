@@ -31,6 +31,8 @@ if (x < 0.3) {
 
 Some builtin functions only take literal arguments (especially strings, and time values).
 
+The only jump statement supported is currently `return`. There are no loops.
+
 ## Logging and format strings
 
 The `print()` function takes a literal string, and optionally format arguments.
@@ -135,16 +137,44 @@ upload("color", r * 256, g * 256, b * 256)
 upload(format("X[{0}]", idx), x)
 ```
 
+### Math
+
+Arithmetic operators are supported: `+`, `-`, `*`, `/`, `**`, as well as unary `-` and `+`.
+
+Comparison operators `<`, `<=`, `>`, `>=`, `==`, `===`, `!=`, `!==` are supported (and return doubles).
+
+The operators `&&` and `||` are supported, but are currently **not lazy**.
+The boolean negation `!` is supported (returning `0` or `1`).
+
+The bitwise operators are not supported.
+
+The following math functions are supported:
+* `Math.floor`
+* `Math.round`
+* `Math.ceil`
+* `Math.log`
+* `Math.random`
+* `Math.max`
+* `Math.min`
+* `Math.pow`
+* `Math.sqrt`
+* `Math.cbrt`
+* `Math.exp`
+* `Math.log10`
+* `Math.log2`
+
+
 ## TODO
 
-* return stmt
+* locals
+* functions
 * register reads may not be triggered enough for `onChange()` to work
+* `role.isConnected()` or something; also `role.onConnected(() => { })`
 * sending commands: `buzzer.play_note(freq, 0.9, time)`
 * responding to cloud messages: `onCloud("play_sound", (freq, time) => { ... })`
 * responding to twin updates: `onTwinUpdate("foo.bar", value => { ... })`; on boot as well
 * auto-upload of everything
 * specific uploads: `hum.autoUpload(5, 1) // 5s, 1%`
-* built-in math functions? (abs, min, max, log, log2, ...)
 * role mgr
 * implementing services in jacscript
 * some testing framework? (depends on services?)

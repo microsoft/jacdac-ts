@@ -15,6 +15,8 @@ import {
     OpBinary,
     OpCall,
     OpFmt,
+    OpMath1,
+    OpMath2,
     OpSync,
     OpTop,
     OpUnary,
@@ -896,6 +898,10 @@ class Program implements InstrArgResolver {
         }
     }
 
+    private emitReturnStatement(stmt: estree.ReturnStatement) {
+        this.writer.emitJump(this.writer.ret)
+    }
+
     private emitProgram(prog: estree.Program) {
         const main = new Procedure(this, "main")
         this.withProcedure(main, () => {
@@ -1110,6 +1116,7 @@ class Program implements InstrArgResolver {
             wr.assign(regs[i], this.emitExpr(args[i]))
             wr.pop()
         }
+        return regs
     }
 
     private litValue(expr: Expr) {
@@ -1119,11 +1126,76 @@ class Program implements InstrArgResolver {
         return tmp.index
     }
 
+    private emitMath(expr: estree.CallExpression, fnName: string): ValueDesc {
+        interface Desc {
+            m1?: OpMath1
+            m2?: OpMath2
+            lastArg?: number
+            firstArg?: number
+            div?: number
+        }
+
+        const funs: SMap<Desc> = {
+            "Math.floor": { m1: OpMath1.FLOOR },
+            "Math.round": { m1: OpMath1.ROUND },
+            "Math.ceil": { m1: OpMath1.CEIL },
+            "Math.log": { m1: OpMath1.LOG_E },
+            "Math.random": { m1: OpMath1.RANDOM, lastArg: 1.0 },
+            "Math.max": { m2: OpMath2.MAX },
+            "Math.min": { m2: OpMath2.MIN },
+            "Math.pow": { m2: OpMath2.POW },
+            "Math.sqrt": { m2: OpMath2.POW, lastArg: 1 / 2 },
+            "Math.cbrt": { m2: OpMath2.POW, lastArg: 1 / 3 },
+            "Math.exp": { m2: OpMath2.POW, firstArg: Math.E },
+            "Math.log10": { m1: OpMath1.LOG_E, div: Math.log(10) },
+            "Math.log2": { m1: OpMath1.LOG_E, div: Math.log(2) },
+        }
+
+        const wr = this.writer
+        const f = funs[fnName]
+        if (!f) return null
+
+        let numArgs = f.m1 !== undefined ? 1 : f.m2 !== undefined ? 2 : NaN
+        const origArgs = numArgs
+        if (f.firstArg !== undefined) numArgs--
+        if (f.lastArg !== undefined) numArgs--
+        assert(!isNaN(numArgs))
+        this.requireArgs(expr, numArgs)
+
+        wr.push()
+        const args = expr.arguments.slice()
+        if (f.firstArg !== undefined) args.unshift(this.mkLiteral(f.firstArg))
+        if (f.lastArg !== undefined) args.push(this.mkLiteral(f.lastArg))
+        assert(args.length == origArgs)
+        const allArgs = this.emitArgs(args)
+        if (f.m1 !== undefined) wr.emitSync(OpSync.MATH1, f.m1)
+        else wr.emitSync(OpSync.MATH2, f.m2)
+        // don't return r0, as this will interfere with nested calls
+        const res = wr.allocReg()
+        wr.assign(res, allArgs[0])
+        wr.popExcept(res)
+
+        if (f.div !== undefined) {
+            wr.push()
+            const d = this.emitSimpleValue(this.mkLiteral(f.div))
+            wr.emitBin(OpBinary.DIV, res, d)
+            wr.pop()
+        }
+
+        return res
+    }
+
     private emitCallExpression(expr: estree.CallExpression): ValueDesc {
         const wr = this.writer
         const numargs = expr.arguments.length
         if (expr.callee.type == "MemberExpression") {
             const prop = idName(expr.callee.property)
+            const objName = idName(expr.callee.object)
+            if (objName) {
+                const fullName = objName + "." + prop
+                const r = this.emitMath(expr, fullName)
+                if (r) return r
+            }
             const obj = this.emitExpr(expr.callee.object)
             switch (obj.kind) {
                 case CellKind.JD_EVENT:
@@ -1259,6 +1331,13 @@ class Program implements InstrArgResolver {
         }
     }
 
+    private mkLiteral(v: number): estree.Literal {
+        return {
+            type: "Literal",
+            value: v,
+        }
+    }
+
     private emitLiteral(expr: estree.Literal): ValueDesc {
         let v = expr.value
         if (v === true) v = 1
@@ -1360,11 +1439,24 @@ class Program implements InstrArgResolver {
             "===": OpBinary.EQ,
             "!=": OpBinary.NE,
             "!==": OpBinary.NE,
-            "&": OpBinary.AND,
-            "|": OpBinary.OR,
+            "&&": OpBinary.AND,
+            "||": OpBinary.OR,
         }
 
         let op = expr.operator
+
+        if (op == "**")
+            return this.emitMath(
+                {
+                    type: "CallExpression",
+                    range: expr.range,
+                    callee: null,
+                    optional: false,
+                    arguments: [expr.left, expr.right],
+                },
+                "Math.pow"
+            )
+
         let swap = false
         if (op == ">") {
             op = "<"
@@ -1474,7 +1566,9 @@ class Program implements InstrArgResolver {
                     return this.emitIfStatement(stmt)
                 case "BlockStatement":
                     stmt.body.forEach(s => this.emitStmt(s))
-                    return values.zero
+                    return
+                case "ReturnStatement":
+                    return this.emitReturnStatement(stmt)
                 default:
                     console.log(stmt)
                     this.throwError(stmt, `unhandled type: ${stmt.type}`)

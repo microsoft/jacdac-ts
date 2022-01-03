@@ -55,6 +55,25 @@ export enum OpSync {
     FORMAT, // A-string-index B-numargs C-offset
     MEMCPY, // A-string-index C-offset
     LOG_FORMAT, // A-string-index B-numargs
+    MATH1, // A-OpMath1, R0 := op(R0)
+    MATH2, // A-OpMath2, R0 := op(R0, R1)
+    PANIC, // A-error code
+    _LAST,
+}
+
+export enum OpMath1 {
+    FLOOR,
+    ROUND,
+    CEIL,
+    LOG_E,
+    RANDOM, // value between 0 and R0
+    _LAST,
+}
+
+export enum OpMath2 {
+    MIN,
+    MAX,
+    POW,
     _LAST,
 }
 
@@ -349,6 +368,34 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
                 return "bin-" + subop
         }
     }
+    function math1code() {
+        switch (a) {
+            case OpMath1.FLOOR:
+                return "floor"
+            case OpMath1.ROUND:
+                return "round"
+            case OpMath1.CEIL:
+                return "ceil"
+            case OpMath1.LOG_E:
+                return "log_e"
+            case OpMath1.RANDOM:
+                return "random"
+            default:
+                return "m1-" + subop
+        }
+    }
+    function math2code() {
+        switch (a) {
+            case OpMath2.MIN:
+                return "min"
+            case OpMath2.MAX:
+                return "max"
+            case OpMath2.POW:
+                return "pow"
+            default:
+                return "m1-" + subop
+        }
+    }
     function celldesc() {
         const idx = b
         const r = resolver?.describeCell?.(a, b) || ""
@@ -395,6 +442,12 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
                 return `log(str=${a} #${b})`
             case OpSync.MEMCPY: // A-string-index
                 return `memcpy(str=${a})`
+            case OpSync.MATH1:
+                return `r0 := ${math1code()}(r0)`
+            case OpSync.MATH2:
+                return `r0 := ${math2code()}(r0, r1)`
+            case OpSync.PANIC:
+                return `panic(${a})`
             default:
                 return `Sync_0x${arg8.toString(16)}`
         }
