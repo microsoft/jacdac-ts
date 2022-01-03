@@ -102,6 +102,7 @@ export enum CellKind {
     X_STRING = 0x105,
     X_FP_REG = 0x106,
     X_FLOAT = 0x107,
+    X_FUNCTION = 0x108,
 
     ERROR = 0x200,
 }

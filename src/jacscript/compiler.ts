@@ -61,7 +61,10 @@ class Cell {
     _name: string
 
     constructor(
-        public definition: estree.VariableDeclarator,
+        public definition:
+            | estree.VariableDeclarator
+            | estree.FunctionDeclaration
+            | estree.Identifier,
         public scope: VariableScope
     ) {
         scope.add(this)
@@ -70,7 +73,11 @@ class Cell {
         oops("on value() on generic Cell")
     }
     getName() {
-        if (!this._name) this._name = idName(this.definition.id)
+        if (!this._name) {
+            if (this.definition.type == "Identifier")
+                this._name = idName(this.definition)
+            else this._name = idName(this.definition.id)
+        }
         return this._name
     }
     debugInfo(): CellDebugInfo {
@@ -107,12 +114,31 @@ class Role extends Cell {
 class Variable extends Cell {
     isLocal = false
 
-    constructor(definition: estree.VariableDeclarator, scope: VariableScope) {
+    constructor(
+        definition: estree.VariableDeclarator | estree.Identifier,
+        scope: VariableScope
+    ) {
         super(definition, scope)
     }
     value(): ValueDesc {
         const kind = this.isLocal ? CellKind.LOCAL : CellKind.GLOBAL
         return mkValue(kind, this.index, this)
+    }
+}
+
+class FunctionDecl extends Cell {
+    proc: Procedure
+    constructor(
+        parent: Program,
+        definition: estree.FunctionDeclaration,
+        scope: VariableScope
+    ) {
+        super(definition, scope)
+        this.proc = new Procedure(parent, this.getName())
+        this.proc.numargs = definition.params.length
+    }
+    value(): ValueDesc {
+        return mkValue(CellKind.X_FUNCTION, this.index, this)
     }
 }
 
@@ -154,6 +180,14 @@ function addUnique<T>(arr: T[], v: T) {
 
 function specialVal(sp: ValueSpecial) {
     return mkValue(CellKind.SPECIAL, sp)
+}
+
+const reservedFunctions: SMap<number> = {
+    wait: 1,
+    every: 1,
+    upload: 1,
+    print: 1,
+    format: 1,
 }
 
 const values = {
@@ -214,7 +248,7 @@ class OpWriter {
                 off,
                 this.binary.length * 2,
                 this.parent.locals.list.length,
-                this.maxRegs,
+                this.maxRegs | (this.parent.numargs << 4),
                 flags,
             ])
         )
@@ -736,6 +770,7 @@ type Stmt = estree.Statement | estree.Directive | estree.ModuleDeclaration
 
 class Program implements InstrArgResolver {
     roles = new VariableScope(null)
+    functions = new VariableScope(null)
     globals = new VariableScope(this.roles)
     tree: estree.Program
     procs: Procedure[] = []
@@ -899,11 +934,62 @@ class Program implements InstrArgResolver {
     }
 
     private emitReturnStatement(stmt: estree.ReturnStatement) {
+        const wr = this.writer
+        wr.push()
+        const r = wr.allocArgs(1)[0]
+        if (stmt.argument) {
+            const v = this.emitSimpleValue(stmt.argument)
+            wr.assign(r, v)
+        } else {
+            wr.assign(r, specialVal(ValueSpecial.NAN))
+        }
+        wr.pop()
         this.writer.emitJump(this.writer.ret)
+    }
+
+    private emitFunctionDeclaration(stmt: estree.FunctionDeclaration) {
+        const fundecl = this.functions.list.find(
+            f => f.definition === stmt
+        ) as FunctionDecl
+        if (!fundecl)
+            this.throwError(stmt, "only top-level functions are supported")
+        if (stmt.generator || stmt.async)
+            this.throwError(stmt, "async not supported")
+
+        this.withProcedure(fundecl.proc, wr => {
+            let idx = 0
+            wr.push()
+            wr.allocArgs(fundecl.proc.numargs) // these are implicitly allocated by the caller
+            for (const paramdef of stmt.params) {
+                if (paramdef.type != "Identifier")
+                    this.throwError(
+                        paramdef,
+                        "only simple identifiers supported as parameters"
+                    )
+                const v = new Variable(paramdef, fundecl.proc.locals)
+                v.isLocal = true
+                if (idx >= 8) this.throwError(paramdef, "too many arguments")
+                wr.assign(v.value(), mkValue(CellKind.X_FP_REG, idx++))
+            }
+            wr.pop()
+            this.emitStmt(stmt.body)
+            wr.emitLabel(wr.ret)
+            wr.emitSync(OpSync.RETURN)
+        })
     }
 
     private emitProgram(prog: estree.Program) {
         const main = new Procedure(this, "main")
+        // pre-declare all functions
+        // TODO should we do that also for global vars?
+        for (const s of prog.body) {
+            if (s.type == "FunctionDeclaration") {
+                const n = this.forceName(s.id)
+                if (reservedFunctions[n] == 1)
+                    this.throwError(s, `function name '${n}' is reserved`)
+                new FunctionDecl(this, s, this.functions)
+            }
+        }
         this.withProcedure(main, () => {
             for (const s of prog.body) this.emitStmt(s)
             this.writer.emitSync(OpSync.RETURN)
@@ -1204,7 +1290,23 @@ class Program implements InstrArgResolver {
                     return this.emitRegisterCall(expr, obj, prop)
             }
         }
+
         const funName = idName(expr.callee)
+        if (!reservedFunctions[funName]) {
+            const d = this.functions.lookup(funName) as FunctionDecl
+            if (d) {
+                this.requireArgs(expr, d.proc.numargs)
+                wr.push()
+                this.emitArgs(expr.arguments)
+                wr.pop()
+                wr.emitCall(d.proc)
+                const r0 = wr.allocArgs(1)[0]
+                return r0
+            } else {
+                this.throwError(expr, `can't find function '${funName}'`)
+            }
+        }
+
         switch (funName) {
             case "wait": {
                 this.requireArgs(expr, 1)
@@ -1569,6 +1671,8 @@ class Program implements InstrArgResolver {
                     return
                 case "ReturnStatement":
                     return this.emitReturnStatement(stmt)
+                case "FunctionDeclaration":
+                    return this.emitFunctionDeclaration(stmt)
                 default:
                     console.log(stmt)
                     this.throwError(stmt, `unhandled type: ${stmt.type}`)

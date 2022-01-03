@@ -108,6 +108,8 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
     const numRoles = roleData.length / BinFmt.RoleHeaderSize
     const numStrings = strDesc.length / BinFmt.SectionHeaderSize
 
+    const funs: FunctionInfo[] = []
+
     let prevProc = funData.start
     let idx = 0
     for (
@@ -119,7 +121,12 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
         assertPos(ptr, funSect.start == prevProc, "func in order")
         funData.mustContain(ptr, funSect)
         prevProc = funSect.end
-        verifyFunction(ptr, funSect, dbg.functions[idx])
+
+        assertPos(ptr, funSect.length > 0, "func size > 0")
+        const info = new FunctionInfo(bin, ptr, dbg.functions[idx])
+        funs.push(info)
+        info.section = funSect
+
         idx++
     }
 
@@ -158,8 +165,12 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
     for (let i = 0; i < floats.length; ++i)
         console.log(`float #${i} = ${floats[i]}`)
 
-    function verifyFunction(hd: number, f: BinSection, dbg: FunctionDebugInfo) {
-        assertPos(hd, f.length > 0, "func size > 0")
+    for (const info of funs) {
+        verifyFunction(info, info.section)
+    }
+
+    function verifyFunction(info: FunctionInfo, f: BinSection) {
+        const dbg = info.dbg
         const funcode = new Uint16Array(f.asBuffer())
         console.log(`fun ${f} ${dbg?.name}`)
         const srcmap = dbg?.srcmap || []
@@ -171,10 +182,9 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
         let pc = 0
         let isJumpTarget: boolean[] = []
 
-        const info = new FunctionInfo(bin, hd, dbg)
-
         for (let pass = 0; pass < 2; ++pass) {
             pc = 0
+            writtenRegs = (1 << info.numParams) - 1
             for (; pc < funcode.length; ++pc) {
                 while (pc >= srcmap[srcmapPtr + 1] + srcmap[srcmapPtr + 2])
                     srcmapPtr += 3
@@ -299,6 +309,7 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
                             check(false, "invalid callop")
                     }
                     check(b < numFuncs, "call fn in range")
+                    check(funs[b].numParams == subop, "correct num of args")
                     break
 
                 case OpTop.SYNC: // A:ARG[4] OP[8]

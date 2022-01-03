@@ -153,6 +153,8 @@ export class FunctionInfo {
     startPC: number
     numLocals: number
     numRegs: number
+    numParams: number
+    section: any
 
     constructor(
         bin: Uint8Array,
@@ -165,7 +167,8 @@ export class FunctionInfo {
         )
         this.startPC = start >> 1
         this.numLocals = numLocals
-        this.numRegs = numRegs
+        this.numRegs = numRegs & 0xf
+        this.numParams = numRegs >> 4
     }
 
     toString() {
@@ -210,7 +213,7 @@ class ImageInfo {
                 new FunctionInfo(
                     this.bin,
                     ptr,
-                    dbg.functions[this.functions.length]
+                    dbg.functions[this.functions.length],
                 )
             )
         }
@@ -978,6 +981,5 @@ export function runProgram(
 ) {
     const img = new ImageInfo(bin, dbg)
     const ctx = new Ctx(img, bus)
-    console.log(ctx)
     bus.scheduler.setTimeout(() => ctx.startProgram(), 1100)
 }

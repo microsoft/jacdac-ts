@@ -163,6 +163,15 @@ The following math functions are supported:
 * `Math.log10`
 * `Math.log2`
 
+### User-defined functions
+
+User-defined functions are allowed at the top-level, using `function foo(x, y) { ... }` syntax.
+They are also allowed as event handlers using arrow syntax (see above).
+Nested functions and real first-class functions are not supported.
+
+Functions can return values.
+A plain `return` is equivalent to `return NaN`.
+
 
 ## TODO
 
