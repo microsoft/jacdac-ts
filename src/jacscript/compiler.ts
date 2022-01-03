@@ -1177,8 +1177,8 @@ class Program implements InstrArgResolver {
 
         if (f.div !== undefined) {
             wr.push()
-            const d = this.emitSimpleValue(this.mkLiteral(f.div))
-            wr.emitBin(OpBinary.DIV, res, d)
+            const d = this.emitSimpleValue(this.mkLiteral(1 / f.div))
+            wr.emitBin(OpBinary.MUL, res, d)
             wr.pop()
         }
 
