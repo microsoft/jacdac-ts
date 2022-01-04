@@ -956,12 +956,13 @@ class Program implements InstrArgResolver {
     private emitReturnStatement(stmt: estree.ReturnStatement) {
         const wr = this.writer
         wr.push()
-        const r = wr.allocArgs(1)[0]
         if (stmt.argument) {
             const v = this.emitSimpleValue(stmt.argument)
+            const r = wr.allocArgs(1)[0]
             wr.assign(r, v)
         } else {
-            wr.assign(r, specialVal(ValueSpecial.NAN))
+            const r = wr.allocArgs(1)[0]
+            wr.assign(r, values.nan)
         }
         wr.pop()
         this.writer.emitJump(this.writer.ret)

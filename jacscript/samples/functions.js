@@ -67,12 +67,18 @@ function testMath() {
     isClose(Math.max(-1, -7), -1)
 
     isClose(fib(8), 21)
+    isClose(fibx(8), 21)
 }
 
 function fib(k) {
     if (k < 2) return k
     var r = fib(k - 1) + fib(k - 2)
     return r
+}
+
+function fibx(k) {
+    if (k < 2) return k
+    return fibx(k - 1) + fibx(k - 2)
 }
 
 testFlow()
