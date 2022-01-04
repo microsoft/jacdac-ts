@@ -5,6 +5,9 @@ function foo() {
 
     // roles are not first class values
     var btnACopy = btnA //! number required here
+
+    var q = 1 ^ 2 //! unhandled operator
+    var q1 = ~2 //! unhandled operator
 }
 
 async function bar() { } //! async not supported

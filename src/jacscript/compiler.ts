@@ -1711,18 +1711,6 @@ class Program implements InstrArgResolver {
         return a
     }
 
-    private expectExpr(expr: estree.Expression, kind: CellKind): ValueDesc {
-        const r = this.emitExpr(expr)
-        if (r.kind != kind && r.kind != CellKind.ERROR)
-            return this.throwError(
-                expr,
-                `expecting ${stringifyCellKind(kind)}; got ${stringifyCellKind(
-                    r.kind
-                )}`
-            )
-        return r
-    }
-
     private emitExpr(expr: Expr): ValueDesc {
         switch (expr.type) {
             case "CallExpression":
