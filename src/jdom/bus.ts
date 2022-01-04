@@ -1357,14 +1357,17 @@ ${dev
                 const streamingSamplesRegister = service.register(
                     SensorReg.StreamingSamples
                 )
-                const streamingSamplesAge =
-                    this.timestamp - streamingSamplesRegister.lastSetTimestamp
-                // need to figure out when we asked for streaming
-                const midSamplesAge = (interval * 0xff) >> 1
-                // compute if half aged
-                if (streamingSamplesAge > midSamplesAge) {
-                    //console.debug({ samplesAge, midSamplesAge, interval })
-                    streamingSamplesRegister.sendSetPackedAsync([0xff])
+                if (streamingSamplesRegister) {
+                    const streamingSamplesAge =
+                        this.timestamp -
+                        streamingSamplesRegister.lastSetTimestamp
+                    // need to figure out when we asked for streaming
+                    const midSamplesAge = (interval * 0xff) >> 1
+                    // compute if half aged
+                    if (streamingSamplesAge > midSamplesAge) {
+                        //console.debug({ samplesAge, midSamplesAge, interval })
+                        streamingSamplesRegister.sendSetPackedAsync([0xff])
+                    }
                 }
 
                 // first query, get data asap once per second
