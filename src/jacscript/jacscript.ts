@@ -6,7 +6,7 @@ export * from "./verify"
 import { JDBus } from "../jdom/bus"
 import { createNodeSocketTransport } from "../jdom/transport/nodesocket"
 import { compile } from "./compiler"
-import { runProgram } from "./executor"
+import { Runner } from "./executor"
 
 function mainTest() {
     const fs = require("fs")
@@ -29,7 +29,10 @@ function mainTest() {
     const bus = new JDBus([createNodeSocketTransport()])
     bus.connect()
 
-    runProgram(bus, res.binary, res.dbg)
+    const r = new Runner(bus, res.binary, res.dbg)
+    r.onError = () => process.exit(1)
+    r.onPanic = code => process.exit(code == 0 ? 0 : 2)
+    r.run()
 }
 
 mainTest()

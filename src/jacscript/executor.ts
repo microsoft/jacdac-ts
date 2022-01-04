@@ -213,7 +213,7 @@ class ImageInfo {
                 new FunctionInfo(
                     this.bin,
                     ptr,
-                    dbg.functions[this.functions.length],
+                    dbg.functions[this.functions.length]
                 )
             )
         }
@@ -762,6 +762,9 @@ class Role {
     }
 }
 
+const RESTART_PANIC_CODE = 0x100000
+const INTERNAL_ERROR_PANIC_CODE = 0x100001
+
 class Ctx {
     pkt: Packet
     wakeRoleIdx: number
@@ -775,6 +778,8 @@ class Ctx {
     wakeTimeout: any
     scheduleScheduled = false
     panicCode = 0
+    onPanic: (code: number) => void
+    onError: (err: Error) => void
 
     constructor(public info: ImageInfo, public bus: JDBus) {
         this.globals = new Float64Array(this.info.numGlobals)
@@ -795,14 +800,18 @@ class Ctx {
     }
 
     wakeTimesUpdated() {
-        if (this.scheduleScheduled) return
+        if (this.scheduleScheduled || this.panicCode) return
         this.scheduleScheduled = true
         this.bus.scheduler.setTimeout(this.scheduleCheckWakeTimes, 0)
     }
 
     panic(code: number, exn?: Error) {
+        if (!code) code = RESTART_PANIC_CODE
         if (!this.panicCode) {
-            console.error(`PANIC ${code}`)
+            if (code == RESTART_PANIC_CODE) console.error(`RESTART requested`)
+            else if (code == INTERNAL_ERROR_PANIC_CODE)
+                console.error(`INTERNAL ERROR`)
+            else console.error(`PANIC ${code}`)
             this.panicCode = code
         }
         this.scheduleCheckWakeTimes() // clears wake timer
@@ -832,7 +841,7 @@ class Ctx {
         }
     }
 
-    run(f: Fiber) {
+    private run(f: Fiber) {
         if (this.panicCode) return
         try {
             f.resume()
@@ -842,7 +851,15 @@ class Ctx {
                 if (!--maxSteps) throw new Error("execution timeout")
             }
         } catch (e) {
-            this.panic(-1)
+            if (this.panicCode) {
+                this.onPanic(this.panicCode)
+            } else {
+                try {
+                    // this will set this.panicCode, so we don't run any code anymore
+                    this.panic(INTERNAL_ERROR_PANIC_CODE)
+                } catch {}
+                this.onError(e)
+            }
         }
     }
 
@@ -875,9 +892,10 @@ class Ctx {
     }
 
     private processPkt(pkt: Packet) {
+        if (this.panicCode) return
         this.pkt = pkt
-        let idx = 0
-        for (const r of this.roles) {
+        for (let idx = 0; idx < this.roles.length; ++idx) {
+            const r = this.roles[idx]
             if (r.device == pkt.device && r.serviceIndex == pkt.serviceIndex) {
                 for (const f of this.fibers)
                     if (f.waitingOn.indexOf(r) >= 0) {
@@ -887,7 +905,6 @@ class Ctx {
                         this.wakeRoleIdx = null
                     }
             }
-            idx++
         }
     }
 
@@ -971,6 +988,48 @@ class Ctx {
                 this.run(fib)
             })
         })
+    }
+}
+
+export enum RunnerState {
+    Initializing,
+    Running,
+    Error,
+}
+
+export class Runner {
+    private ctx: Ctx
+    img: ImageInfo
+    allowRestart = false
+    state = RunnerState.Initializing
+    onError: (err: Error) => void
+    onPanic: (code: number) => void
+
+    constructor(
+        public bus: JDBus,
+        public bin: Uint8Array,
+        public dbg: DebugInfo = emptyDebugInfo()
+    ) {
+        this.img = new ImageInfo(bin, dbg)
+    }
+
+    run() {
+        this.ctx = new Ctx(this.img, this.bus)
+        this.ctx.onError = e => {
+            console.error("Internal error", e.stack)
+            this.state = RunnerState.Error
+            if (this.onError) this.onError(e)
+        }
+        this.ctx.onPanic = code => {
+            if (code == RESTART_PANIC_CODE) code = 0
+            if (code) console.error(`PANIC ${code}`)
+            if (this.onPanic) this.onPanic(code)
+            if (this.allowRestart) this.run()
+        }
+        this.bus.scheduler.setTimeout(() => {
+            this.state = RunnerState.Running
+            this.ctx.startProgram()
+        }, 1100)
     }
 }
 

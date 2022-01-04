@@ -32,3 +32,4 @@ declare function format(fmt: string, ...args: number[]): string
 declare function wait(seconds: number): void
 declare function every(seconds: number, callback: () => void): void
 declare function panic(code: number): never
+declare function reboot(): never

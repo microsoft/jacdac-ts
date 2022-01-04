@@ -189,6 +189,7 @@ const reservedFunctions: SMap<number> = {
     print: 1,
     format: 1,
     panic: 1,
+    reboot: 1,
     isNaN: 1,
 }
 
@@ -1361,6 +1362,11 @@ class Program implements InstrArgResolver {
                 const r = this.emitSimpleValue(expr.arguments[0])
                 wr.emitUnary(OpUnary.IS_NAN, r, r)
                 return r
+            }
+            case "reboot": {
+                this.requireArgs(expr, 0)
+                wr.emitSync(OpSync.PANIC, 0)
+                return values.zero
             }
             case "panic": {
                 this.requireArgs(expr, 1)

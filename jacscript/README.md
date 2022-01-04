@@ -175,10 +175,12 @@ The following math functions and constants are supported:
 
 ### Misc functions
 
-The `panic()` function takes a numeric error code and terminates the program.
+The `panic()` function takes a numeric error code and terminates or restarts the program.
+`reboot()` is similar, but doesn't print error message.
 
 ```js
 panic(348)
+reboot()
 ```
 
 ### User-defined functions
@@ -193,8 +195,7 @@ A plain `return` is equivalent to `return NaN`.
 
 ## TODO
 
-* locals
-* functions
+* change call to transfer regs to locals automatically?
 * register reads may not be triggered enough for `onChange()` to work
 * `role.isConnected()` or something; also `role.onConnected(() => { })`
 * sending commands: `buzzer.play_note(freq, 0.9, time)`
@@ -205,7 +206,7 @@ A plain `return` is equivalent to `return NaN`.
 * role mgr
 * implementing services in jacscript
 * some testing framework? (depends on services?)
-* more "debug" info in program - role names, ?
+* more "debug" info in compiled program - role names, ?
 
 ### Debugger interface
 
