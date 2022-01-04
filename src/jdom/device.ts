@@ -450,8 +450,8 @@ export class JDDevice extends JDNode {
     }
 
     private refreshFirmwareInfo() {
-        if (this.bus.passive) return;
-        
+        if (this.bus.passive) return
+
         const ctrl = this._services?.[0]
         if (!ctrl) return
 
