@@ -783,6 +783,19 @@ const mathConst: SMap<number> = {
     SQRT2: Math.SQRT2,
 }
 
+export interface JacError {
+    line: number
+    column: number
+    message: string
+    codeFragment: string
+}
+
+export function printJacError(err: JacError) {
+    let msg = `(${err.line},${err.column}): ${err.message}`
+    if (err.codeFragment) msg += ` (${err.codeFragment})`
+    console.error(msg)
+}
+
 class Program implements InstrArgResolver {
     roles = new VariableScope(null)
     functions = new VariableScope(null)
@@ -810,9 +823,9 @@ class Program implements InstrArgResolver {
 
     indexToPos(idx: number) {
         const s = this.source.slice(0, idx)
-        const ln = s.replace(/[^\n]/g, "").length + 1
-        const col = s.replace(/.*\n/, "").length + 1
-        return `(${ln},${col})`
+        const line = s.replace(/[^\n]/g, "").length + 1
+        const column = s.replace(/.*\n/, "").length + 1
+        return { line, column }
     }
 
     throwError(expr: estree.BaseNode, msg: string): never {
@@ -823,9 +836,12 @@ class Program implements InstrArgResolver {
 
     reportError(range: number[], msg: string): ValueDesc {
         this.numErrors++
-        console.log(
-            `${this.indexToPos(range[0])}: ${msg} (${this.sourceFrag(range)})`
-        )
+        const err: JacError = {
+            ...this.indexToPos(range[0]),
+            message: msg,
+            codeFragment: this.sourceFrag(range),
+        }
+        ;(this.host.error || printJacError)(err)
         return values.error
     }
 
@@ -910,11 +926,23 @@ class Program implements InstrArgResolver {
         this.writer.assign(trg.value(), src)
     }
 
+    private newDef(
+        decl: { id: estree.Identifier | estree.Pattern } & estree.BaseNode
+    ) {
+        const id = this.forceName(decl.id)
+        if (
+            this.roles.lookup(id) ||
+            (this.proc?.locals || this.globals).lookup(id) ||
+            this.functions.lookup(id)
+        )
+            this.throwError(decl, `name '${id}' already defined`)
+    }
+
     private emitVariableDeclaration(decls: estree.VariableDeclaration) {
         if (decls.kind != "var") this.throwError(decls, "only 'var' supported")
         const isTopLevel = this.proc == this.main
         for (const decl of decls.declarations) {
-            this.forceName(decl.id)
+            this.newDef(decl)
             const r = isTopLevel ? this.parseRole(decl) : null
             if (!r) {
                 const g = new Variable(
@@ -977,6 +1005,7 @@ class Program implements InstrArgResolver {
             this.throwError(stmt, "only top-level functions are supported")
         if (stmt.generator || stmt.async)
             this.throwError(stmt, "async not supported")
+        if (!fundecl && this.numErrors) return
 
         this.withProcedure(fundecl.proc, wr => {
             let idx = 0
@@ -1005,11 +1034,16 @@ class Program implements InstrArgResolver {
         // pre-declare all functions
         // TODO should we do that also for global vars?
         for (const s of prog.body) {
-            if (s.type == "FunctionDeclaration") {
-                const n = this.forceName(s.id)
-                if (reservedFunctions[n] == 1)
-                    this.throwError(s, `function name '${n}' is reserved`)
-                new FunctionDecl(this, s, this.functions)
+            try {
+                if (s.type == "FunctionDeclaration") {
+                    this.newDef(s)
+                    const n = this.forceName(s.id)
+                    if (reservedFunctions[n] == 1)
+                        this.throwError(s, `function name '${n}' is reserved`)
+                    new FunctionDecl(this, s, this.functions)
+                }
+            } catch (e) {
+                this.handleException(s, e)
             }
         }
         this.withProcedure(this.main, () => {
@@ -1560,7 +1594,7 @@ class Program implements InstrArgResolver {
             case CellKind.SPECIAL:
                 break
             default:
-                this.throwError(node, "value required here")
+                this.throwError(node, "a number required here")
         }
     }
 
@@ -1723,6 +1757,16 @@ class Program implements InstrArgResolver {
         return null
     }
 
+    private handleException(stmt: estree.BaseNode, e: any) {
+        if (e.sourceNode !== undefined) {
+            const node = e.sourceNode || stmt
+            this.reportError(node.range, e.message)
+        } else {
+            this.reportError(stmt.range, "Internal error: " + e.message)
+            console.log(e.stack)
+        }
+    }
+
     private emitStmt(stmt: Stmt) {
         const src = this.sourceFrag(stmt.range)
         const wr = this.writer
@@ -1752,13 +1796,7 @@ class Program implements InstrArgResolver {
                     this.throwError(stmt, `unhandled type: ${stmt.type}`)
             }
         } catch (e) {
-            if (e.sourceNode !== undefined) {
-                const node = e.sourceNode || stmt
-                this.reportError(node.range, e.message)
-            } else {
-                this.reportError(stmt.range, "Internal error: " + e.message)
-                console.log(e.stack)
-            }
+            this.handleException(stmt, e)
         } finally {
             wr.pop()
             wr.stmtEnd()
@@ -1908,9 +1946,51 @@ class Program implements InstrArgResolver {
 
 export interface Host {
     write(filename: string, contents: Uint8Array | string): void
+    error?(err: JacError): void
 }
 
 export function compile(host: Host, code: string) {
     const p = new Program(host, code)
     return p.emit()
+}
+
+export function testCompiler(code: string) {
+    const lines = code.split(/\r?\n/).map(s => {
+        const m = /\/\/\s*!\s*(.*)/.exec(s)
+        if (m) return m[1]
+        else return null
+    })
+    const numerr = lines.filter(s => !!s).length
+    let numExtra = 0
+    const p = new Program(
+        {
+            write: () => {},
+            error: err => {
+                const exp = lines[err.line - 1]
+                if (exp && err.message.indexOf(exp) >= 0)
+                    lines[err.line - 1] = null
+                else {
+                    numExtra++
+                    printJacError(err)
+                }
+            },
+        },
+        code
+    )
+    const r = p.emit()
+    let missingErrs = 0
+    for (let i = 0; i < lines.length; ++i) {
+        if (lines[i]) {
+            printJacError({
+                line: i + 1,
+                column: 1,
+                message: "missing error: " + lines[i],
+                codeFragment: "",
+            })
+            missingErrs++
+        }
+    }
+    if (missingErrs) throw new Error("some errors were not reported")
+    if (numExtra) throw new Error("extra errors reported")
+    if (numerr && r.success) throw new Error("unexpected success")
 }

@@ -18,6 +18,8 @@ function testFlow() {
     x = 1
     if (x != 1)
         panic(1)
+    if (x !== 1)
+        panic(1)
     if (x == 1) {
         x = 2
         if (x != 2)
@@ -25,6 +27,22 @@ function testFlow() {
     } else {
         panic(2)
     }
+    x = 1
+    if (x < 1)
+        panic(1)
+    if (x > 1)
+        panic(1)
+    if (x >= 1) { }
+    else panic(1)
+    if (x <= 1) { }
+    else panic(1)
+    if (x < 0.5) panic(1)
+    if (x > 1.5) panic(1)
+    if (0 <= x && x <= 2) { }
+    else panic(1)
+    if (0 <= x || x < 1) { }
+    else panic(1)
+    if (x < 0 || x > 10) panic(1)
     x = -1
     if (Math.abs(x) != 1)
         panic(4)
@@ -49,6 +67,7 @@ function testMath() {
     isClose(Math.log2(Math.PI), 1.651496129)
     isClose(Math.log10(Math.PI), 0.49714987269)
     isClose(Math.pow(2, 0.5), Math.SQRT2)
+    isClose(2 ** 0.5, Math.SQRT2)
     isClose(Math.sqrt(1 / 2), Math.SQRT1_2)
     isClose(Math.cbrt(27), 3)
     isClose(Math.exp(1), Math.E)

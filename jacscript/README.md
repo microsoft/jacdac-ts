@@ -143,7 +143,7 @@ Arithmetic operators are supported: `+`, `-`, `*`, `/`, `**`, as well as unary `
 
 Comparison operators `<`, `<=`, `>`, `>=`, `==`, `===`, `!=`, `!==` are supported (and return doubles).
 
-The operators `&&` and `||` are supported, but are currently **not lazy**.
+The operators `&&` and `||` are supported, but are **currently not lazy**.
 The boolean negation `!` is supported (returning `0` or `1`).
 
 The bitwise operators are not supported.

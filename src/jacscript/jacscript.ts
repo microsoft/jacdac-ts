@@ -5,13 +5,23 @@ export * from "./verify"
 
 import { JDBus } from "../jdom/bus"
 import { createNodeSocketTransport } from "../jdom/transport/nodesocket"
-import { compile } from "./compiler"
+import { compile, testCompiler } from "./compiler"
 import { Runner } from "./executor"
 
 function mainTest() {
     const fs = require("fs")
     const path = require("path")
-    const f0 = process.argv[2]
+    const args = process.argv.slice(2)
+    const f0 = args[0]
+
+    if (/compiler-test/.test(f0)) {
+        for (const fn of args) {
+            console.log(`*** test ${fn}`)
+            testCompiler(fs.readFileSync(fn, "utf8"))
+        }
+        return
+    }
+
     const distPath = path.join(path.dirname(f0), "dist")
     try {
         fs.mkdirSync(distPath)
