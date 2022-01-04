@@ -200,6 +200,7 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
                 const instr = funcode[pc]
                 if (pass == 0) {
                     resolver.resolverPC = pc + (f.start >> 1)
+                    resolver.resolverParams = params.slice()
                     console.log(stringifyInstr(instr, resolver))
                 }
 

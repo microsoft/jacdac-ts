@@ -323,7 +323,7 @@ class OpWriter {
         if (this.allocatedRegsMask & (1 << regno))
             this.parent.parent.throwError(
                 null,
-                `register ${regno} already allocated`
+                `expression too complex (R${regno} allocated)`
             )
         this.allocatedRegsMask |= 1 << regno
         const r = mkValue(kind, regno)
@@ -382,11 +382,11 @@ class OpWriter {
             const v = vals[i]
             if (!v) continue
             const high = v >> 12
+            this.emitRaw(OpTop.SET_A + i, v & 0xfff)
             if (high) {
                 assert(high >> 4 == 0)
                 this.emitRaw(OpTop.SET_HIGH, (i << 10) | high)
             }
-            this.emitRaw(OpTop.SET_A + i, v & 0xfff)
         }
     }
 
