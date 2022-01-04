@@ -148,7 +148,7 @@ The boolean negation `!` is supported (returning `0` or `1`).
 
 The bitwise operators are not supported.
 
-The following math functions are supported:
+The following math functions and constants are supported:
 * `Math.floor`
 * `Math.round`
 * `Math.ceil`
@@ -162,6 +162,24 @@ The following math functions are supported:
 * `Math.exp`
 * `Math.log10`
 * `Math.log2`
+* `Math.E`
+* `Math.PI`
+* `Math.LN10`
+* `Math.LN2`
+* `Math.LOG2E`
+* `Math.LOG10E`
+* `Math.SQRT1_2`
+* `Math.SQRT2`
+* `isNaN`
+* `NaN`
+
+### Misc functions
+
+The `panic()` function takes a numeric error code and terminates the program.
+
+```js
+panic(348)
+```
 
 ### User-defined functions
 

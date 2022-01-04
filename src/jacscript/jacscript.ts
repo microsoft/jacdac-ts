@@ -12,10 +12,14 @@ function mainTest() {
     const fs = require("fs")
     const path = require("path")
     const f0 = process.argv[2]
-    const pref = path.resolve(f0, "../../../../dist")
+    const distPath = path.join(path.dirname(f0), "dist")
+    try {
+        fs.mkdirSync(distPath)
+    } catch {}
     const res = compile(
         {
-            write: (fn, cont) => fs.writeFileSync(path.join(pref, fn), cont),
+            write: (fn, cont) =>
+                fs.writeFileSync(path.join(distPath, fn), cont),
         },
         fs.readFileSync(f0, "utf8")
     )

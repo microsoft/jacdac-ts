@@ -188,10 +188,13 @@ const reservedFunctions: SMap<number> = {
     upload: 1,
     print: 1,
     format: 1,
+    panic: 1,
+    isNaN: 1,
 }
 
 const values = {
     zero: floatVal(0),
+    nan: specialVal(ValueSpecial.NAN),
     error: mkValue(CellKind.ERROR, 0),
 }
 
@@ -413,7 +416,7 @@ class OpWriter {
         this.emitRaw(OpTop.ASYNC, ((d & 0xf) << 8) | op)
     }
 
-    private emitMov(dst: number, src: number) {
+    emitMov(dst: number, src: number) {
         this.emitRaw(OpTop.UNARY, (OpUnary.ID << 8) | (dst << 4) | src)
     }
 
@@ -768,6 +771,17 @@ enum RefreshMS {
 type Expr = estree.Expression | estree.Super | estree.SpreadElement
 type Stmt = estree.Statement | estree.Directive | estree.ModuleDeclaration
 
+const mathConst: SMap<number> = {
+    E: Math.E,
+    PI: Math.PI,
+    LN10: Math.LN10,
+    LN2: Math.LN2,
+    LOG2E: Math.LOG2E,
+    LOG10E: Math.LOG10E,
+    SQRT1_2: Math.SQRT1_2,
+    SQRT2: Math.SQRT2,
+}
+
 class Program implements InstrArgResolver {
     roles = new VariableScope(null)
     functions = new VariableScope(null)
@@ -784,6 +798,7 @@ class Program implements InstrArgResolver {
     resolverParams: number[]
     resolverPC: number
     numErrors = 0
+    main: Procedure
 
     constructor(public host: Host, public source: string) {}
 
@@ -896,11 +911,16 @@ class Program implements InstrArgResolver {
 
     private emitVariableDeclaration(decls: estree.VariableDeclaration) {
         if (decls.kind != "var") this.throwError(decls, "only 'var' supported")
+        const isTopLevel = this.proc == this.main
         for (const decl of decls.declarations) {
-            const id = this.forceName(decl.id)
-            const r = this.parseRole(decl)
+            this.forceName(decl.id)
+            const r = isTopLevel ? this.parseRole(decl) : null
             if (!r) {
-                const g = new Variable(decl, this.globals)
+                const g = new Variable(
+                    decl,
+                    isTopLevel ? this.globals : this.proc.locals
+                )
+                if (!isTopLevel) g.isLocal = true
                 this.writer.push()
                 this.emitStore(
                     g,
@@ -951,7 +971,7 @@ class Program implements InstrArgResolver {
         const fundecl = this.functions.list.find(
             f => f.definition === stmt
         ) as FunctionDecl
-        if (!fundecl)
+        if (this.proc != this.main)
             this.throwError(stmt, "only top-level functions are supported")
         if (stmt.generator || stmt.async)
             this.throwError(stmt, "async not supported")
@@ -979,7 +999,7 @@ class Program implements InstrArgResolver {
     }
 
     private emitProgram(prog: estree.Program) {
-        const main = new Procedure(this, "main")
+        this.main = new Procedure(this, "main")
         // pre-declare all functions
         // TODO should we do that also for global vars?
         for (const s of prog.body) {
@@ -990,7 +1010,7 @@ class Program implements InstrArgResolver {
                 new FunctionDecl(this, s, this.functions)
             }
         }
-        this.withProcedure(main, () => {
+        this.withProcedure(this.main, () => {
             for (const s of prog.body) this.emitStmt(s)
             this.writer.emitSync(OpSync.RETURN)
         })
@@ -1196,12 +1216,25 @@ class Program implements InstrArgResolver {
 
     private emitArgs(args: Expr[]) {
         const wr = this.writer
-        const regs = wr.allocArgs(args.length)
+        const tmpargs: number[] = []
+        wr.push()
         for (let i = 0; i < args.length; i++) {
             wr.push()
-            wr.assign(regs[i], this.emitExpr(args[i]))
-            wr.pop()
+            const r = this.emitSimpleValue(args[i])
+            wr.popExcept(r)
+            tmpargs.push(r.index)
         }
+        wr.pop()
+
+        if (tmpargs.some(idx => idx < args.length))
+            this.throwError(args[0], "args register clash")
+
+        const regs = wr.allocArgs(args.length)
+        for (let i = 0; i < regs.length; ++i) {
+            assert(regs[i].index == i)
+            wr.emitMov(i, tmpargs[i])
+        }
+
         return regs
     }
 
@@ -1235,6 +1268,7 @@ class Program implements InstrArgResolver {
             "Math.exp": { m2: OpMath2.POW, firstArg: Math.E },
             "Math.log10": { m1: OpMath1.LOG_E, div: Math.log(10) },
             "Math.log2": { m1: OpMath1.LOG_E, div: Math.log(2) },
+            "Math.abs": { m1: OpMath1._LAST },
         }
 
         const wr = this.writer
@@ -1247,6 +1281,12 @@ class Program implements InstrArgResolver {
         if (f.lastArg !== undefined) numArgs--
         assert(!isNaN(numArgs))
         this.requireArgs(expr, numArgs)
+
+        if (fnName == "Math.abs") {
+            const r = this.emitSimpleValue(expr.arguments[0])
+            wr.emitUnary(OpUnary.ABS, r, r)
+            return r
+        }
 
         wr.push()
         const args = expr.arguments.slice()
@@ -1300,8 +1340,9 @@ class Program implements InstrArgResolver {
                 this.emitArgs(expr.arguments)
                 wr.pop()
                 wr.emitCall(d.proc)
-                const r0 = wr.allocArgs(1)[0]
-                return r0
+                const r = wr.allocReg()
+                wr.emitMov(r.index, 0)
+                return r
             } else {
                 this.throwError(expr, `can't find function '${funName}'`)
             }
@@ -1312,6 +1353,23 @@ class Program implements InstrArgResolver {
                 this.requireArgs(expr, 1)
                 const time = this.litValue(expr.arguments[0]) * 1000
                 wr.emitAsync(OpAsync.YIELD, (time | 0) + 1)
+                return values.zero
+            }
+            case "isNaN": {
+                this.requireArgs(expr, 1)
+                const r = this.emitSimpleValue(expr.arguments[0])
+                wr.emitUnary(OpUnary.IS_NAN, r, r)
+                return r
+            }
+            case "panic": {
+                this.requireArgs(expr, 1)
+                const code = this.litValue(expr.arguments[0])
+                if ((code | 0) != code || code <= 0 || code > 9999)
+                    this.throwError(
+                        expr,
+                        "panic() code must be integer between 1 and 9999"
+                    )
+                wr.emitSync(OpSync.PANIC, code)
                 return values.zero
             }
             case "every": {
@@ -1372,6 +1430,7 @@ class Program implements InstrArgResolver {
 
     private emitIdentifier(expr: estree.Identifier): ValueDesc {
         const id = this.forceName(expr)
+        if (id == "NaN") return values.nan
         const cell = this.proc.locals.lookup(id)
         if (!cell) this.throwError(expr, "unknown name: " + id)
         return cell.value()
@@ -1383,6 +1442,10 @@ class Program implements InstrArgResolver {
     }
 
     private emitMemberExpression(expr: estree.MemberExpression): ValueDesc {
+        if (idName(expr.object) == "Math") {
+            const id = idName(expr.property)
+            if (mathConst.hasOwnProperty(id)) return floatVal(mathConst[id])
+        }
         const obj = this.emitExpr(expr.object)
         if (obj.kind == CellKind.JD_ROLE) {
             assert(obj.cell instanceof Role)
@@ -1487,6 +1550,7 @@ class Program implements InstrArgResolver {
             case CellKind.FLOAT_CONST:
             case CellKind.IDENTITY:
             case CellKind.X_FLOAT:
+            case CellKind.SPECIAL:
                 break
             default:
                 this.throwError(node, "value required here")
@@ -1529,7 +1593,9 @@ class Program implements InstrArgResolver {
         this.throwError(expr, "unhandled assignment")
     }
 
-    private emitBinaryExpression(expr: estree.BinaryExpression): ValueDesc {
+    private emitBinaryExpression(
+        expr: estree.BinaryExpression | estree.LogicalExpression
+    ): ValueDesc {
         const simpleOps: SMap<OpBinary> = {
             "+": OpBinary.ADD,
             "-": OpBinary.SUB,
@@ -1628,6 +1694,7 @@ class Program implements InstrArgResolver {
                 return this.emitLiteral(expr)
             case "AssignmentExpression":
                 return this.emitAssignmentExpression(expr)
+            case "LogicalExpression":
             case "BinaryExpression":
                 return this.emitBinaryExpression(expr)
             case "UnaryExpression":

@@ -304,6 +304,7 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
                             check(d == 0, "save regs on bg call")
                             break
                         case OpCall.SYNC:
+                            wrReg(0)
                             break
                         default:
                             check(false, "invalid callop")
