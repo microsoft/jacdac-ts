@@ -1,9 +1,9 @@
-var temp = roles.temperature()
+var thermometer = roles.temperature()
 var heater = roles.relay()
 var t
 
-temp.reading.onChange(5, () => {
-    t = temp.reading.read()
+thermometer.temperature.onChange(5, () => {
+    t = thermometer.temperature.read()
     if (t < 21) {
         heater.closed.write(1)
     } else {

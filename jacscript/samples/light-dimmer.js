@@ -4,13 +4,13 @@ var p
 
 if (false)
     every(0.5, () => {
-        p = pot.reading.read()
+        p = pot.position.read()
         print("tick {0}", p)
         led.brightness.write(2 * p)
     })
 
-pot.reading.onChange(0.02, () => {
-    p = pot.reading.read()
+pot.position.onChange(0.02, () => {
+    p = pot.position.read()
     print("tick {0}", p)
     led.brightness.write(2 * p)
 })

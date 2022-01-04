@@ -7,7 +7,7 @@ var r, g, b, tint
 btnA.down.sub(() => {
   led.brightness.write(1)
   wait(0.1);
-  [r, g, b] = color.reading.read()
+  [r, g, b] = color.color.read()
   r = r + led.brightness.read()
   tint = (r + g + 2.3 * b) / (r + 2 * g + b)
   upload("color", r, g, b, tint)
