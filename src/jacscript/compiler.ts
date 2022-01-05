@@ -8,8 +8,9 @@ import {
     CellKind,
     DebugInfo,
     FunctionDebugInfo,
+    Host,
     InstrArgResolver,
-    isPrefixInstr,
+    JacError,
     NUM_REGS,
     OpAsync,
     OpBinary,
@@ -20,6 +21,7 @@ import {
     OpSync,
     OpTop,
     OpUnary,
+    printJacError,
     SMap,
     stringifyCellKind,
     stringifyInstr,
@@ -781,19 +783,6 @@ const mathConst: SMap<number> = {
     LOG10E: Math.LOG10E,
     SQRT1_2: Math.SQRT1_2,
     SQRT2: Math.SQRT2,
-}
-
-export interface JacError {
-    line: number
-    column: number
-    message: string
-    codeFragment: string
-}
-
-export function printJacError(err: JacError) {
-    let msg = `(${err.line},${err.column}): ${err.message}`
-    if (err.codeFragment) msg += ` (${err.codeFragment})`
-    console.error(msg)
 }
 
 class Program implements InstrArgResolver {
@@ -1911,7 +1900,10 @@ class Program implements InstrArgResolver {
         for (const p of this.procs) p.finalize()
 
         if (this.numErrors == 0)
-            console.log(this.procs.map(p => p.toString()).join("\n"))
+            this.host.write(
+                "prog.jasm",
+                this.procs.map(p => p.toString()).join("\n")
+            )
 
         const b = this.serialize()
         const dbg: DebugInfo = {
@@ -1922,7 +1914,7 @@ class Program implements InstrArgResolver {
         }
         this.host.write("prog.jacs", b)
         this.host.write("prog-dbg.json", JSON.stringify(dbg))
-        if (this.numErrors == 0) verifyBinary(b, dbg)
+        if (this.numErrors == 0) verifyBinary(this.host, b, dbg)
 
         return {
             success: this.numErrors == 0,
@@ -1930,11 +1922,6 @@ class Program implements InstrArgResolver {
             dbg: dbg,
         }
     }
-}
-
-export interface Host {
-    write(filename: string, contents: Uint8Array | string): void
-    error?(err: JacError): void
 }
 
 export function compile(host: Host, code: string) {
@@ -1953,6 +1940,7 @@ export function testCompiler(code: string) {
     const p = new Program(
         {
             write: () => {},
+            log: msg => {},
             error: err => {
                 const exp = lines[err.line - 1]
                 if (exp && err.message.indexOf(exp) >= 0)

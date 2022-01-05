@@ -498,3 +498,22 @@ export function emptyDebugInfo(): DebugInfo {
         source: "",
     }
 }
+
+export interface Host {
+    write(filename: string, contents: Uint8Array | string): void
+    log(msg: string): void
+    error?(err: JacError): void
+}
+
+export interface JacError {
+    line: number
+    column: number
+    message: string
+    codeFragment: string
+}
+
+export function printJacError(err: JacError) {
+    let msg = `(${err.line},${err.column}): ${err.message}`
+    if (err.codeFragment) msg += ` (${err.codeFragment})`
+    console.error(msg)
+}

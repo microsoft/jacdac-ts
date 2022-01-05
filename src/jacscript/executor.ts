@@ -1002,8 +1002,8 @@ export class Runner {
     img: ImageInfo
     allowRestart = false
     state = RunnerState.Initializing
-    onError: (err: Error) => void
-    onPanic: (code: number) => void
+    onError: (err: Error) => void = null
+    onPanic: (code: number) => void = null
 
     constructor(
         public bus: JDBus,

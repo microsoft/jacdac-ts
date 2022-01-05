@@ -26,6 +26,7 @@ import {
     DebugInfo,
     emptyDebugInfo,
     FunctionDebugInfo,
+    Host,
     InstrArgResolver,
     isPrefixInstr,
     NUM_REGS,
@@ -72,7 +73,11 @@ export function numSetBits(n: number) {
     return r
 }
 
-export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
+export function verifyBinary(
+    host: Host,
+    bin: Uint8Array,
+    dbg = emptyDebugInfo()
+) {
     const sourceLines = dbg.source.split(/\n/)
 
     const {
@@ -87,7 +92,7 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
     } = loadImage(bin)
 
     for (let i = 0; i < sects.length; ++i) {
-        console.log(`sect ${sects[i]}`)
+        host.log(`sect ${sects[i]}`)
         if (i > 0)
             assertPos(
                 sects[i].offset,
@@ -141,7 +146,7 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
         const str = fromUTF8(
             uint8ArrayToString(new Uint8Array(strSect.asBuffer()))
         )
-        console.log(`str #${idx} = ${JSON.stringify(str)}`)
+        host.log(`str #${idx} = ${JSON.stringify(str)}`)
         idx++
     }
 
@@ -158,12 +163,12 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
             top == 0x1 || top == 0x2,
             "service class starts with 0x1 or 0x2 (mixin)"
         )
-        console.log(`role #${idx} = ${hex(cl)} ${dbg.roles[idx]?.name || ""}`)
+        host.log(`role #${idx} = ${hex(cl)} ${dbg.roles[idx]?.name || ""}`)
         idx++
     }
 
     for (let i = 0; i < floats.length; ++i)
-        console.log(`float #${i} = ${floats[i]}`)
+        host.log(`float #${i} = ${floats[i]}`)
 
     for (const info of funs) {
         verifyFunction(info, info.section)
@@ -172,7 +177,7 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
     function verifyFunction(info: FunctionInfo, f: BinSection) {
         const dbg = info.dbg
         const funcode = new Uint16Array(f.asBuffer())
-        console.log(`fun ${f} ${dbg?.name}`)
+        host.log(`fun ${f} ${dbg?.name}`)
         const srcmap = dbg?.srcmap || []
         let srcmapPtr = 0
         let prevLine = -1
@@ -191,7 +196,7 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
                 if (prevLine != srcmap[srcmapPtr]) {
                     prevLine = srcmap[srcmapPtr]
                     if (prevLine && pass == 0)
-                        console.log(
+                        host.log(
                             `; (${prevLine}): ${
                                 sourceLines[prevLine - 1] || ""
                             }`
@@ -201,7 +206,7 @@ export function verifyBinary(bin: Uint8Array, dbg = emptyDebugInfo()) {
                 if (pass == 0) {
                     resolver.resolverPC = pc + (f.start >> 1)
                     resolver.resolverParams = params.slice()
-                    console.log(stringifyInstr(instr, resolver))
+                    host.log(stringifyInstr(instr, resolver))
                 }
 
                 if (isJumpTarget[pc]) writtenRegs = 0

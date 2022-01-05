@@ -3,7 +3,7 @@
  * @param {number} y
  */
 function isClose(x, y) {
-    print("{0} == {1}?", x, y)
+    // print("{0} == {1}?", x, y)
     if (isNaN(x) && isNaN(y))
         return
     var d = Math.abs(x - y)
