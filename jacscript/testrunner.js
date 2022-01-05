@@ -3,57 +3,68 @@ const path = require("path")
 const jacscript = require("../dist/jacscript")
 
 const ctest = "compiler-tests"
+const samples = "samples"
 const rtest = "run-tests"
 const distPath = "dist"
 let verbose = false
+let bus = null
 
-const args = process.argv.slice(2)
-if (args[0] == "-v") {
-    args.shift()
-    verbose = true
+function runProgram(fn) {
+    console.log(`*** run ${fn}`)
+
+    try {
+        fs.mkdirSync(distPath)
+    } catch { }
+
+    const res = jacscript.compile(
+        {
+            write: (fn, cont) =>
+                fs.writeFileSync(path.join(distPath, fn), cont),
+            log: msg => { if (verbose) console.log(msg) },
+        },
+        fs.readFileSync(fn, "utf8")
+    )
+
+    if (!res.success) process.exit(1)
+
+    if (!bus) bus = jacscript.nodeBus()
+
+    return new Promise(resolve => {
+        const r = new jacscript.Runner(bus, res.binary, res.dbg)
+        r.onError = () => process.exit(1)
+        r.onPanic = code => {
+            if (code == 0)
+                resolve()
+            else
+                process.exit(2)
+        }
+        r.run()
+    })
+}
+
+function readdir(folder) {
+    return fs.readdirSync(folder).map(bn => path.join(folder, bn))
 }
 
 async function main() {
-    for (const bn of fs.readdirSync(ctest)) {
-        const fn = path.join(ctest, bn)
-        console.log(`*** test ${fn}`)
-        jacscript.testCompiler(fs.readFileSync(fn, "utf8"))
+    const args = process.argv.slice(2)
+    if (args[0] == "-v") {
+        args.shift()
+        verbose = true
     }
 
-    const bus = jacscript.nodeBus()
+    if (args.length) {
+        verbose = true
+        await runProgram(args[0])
+    } else {
+        for (const fn of readdir(ctest).concat(readdir(samples))) {
+            console.log(`*** test ${fn}`)
+            jacscript.testCompiler(fs.readFileSync(fn, "utf8"))
+        }
 
-    for (const bn of fs.readdirSync(rtest)) {
-        const fn = path.join(rtest, bn)
-        console.log(`*** run ${fn}`)
-
-        try {
-            fs.mkdirSync(distPath)
-        } catch { }
-
-        const res = jacscript.compile(
-            {
-                write: (fn, cont) =>
-                    fs.writeFileSync(path.join(distPath, fn), cont),
-                log: msg => { if (verbose) console.log(msg) },
-            },
-            fs.readFileSync(fn, "utf8")
-        )
-
-        if (!res.success) process.exit(1)
-
-        const p = new Promise(resolve => {
-            const r = new jacscript.Runner(bus, res.binary, res.dbg)
-            r.onError = () => process.exit(1)
-            r.onPanic = code => {
-                if (code == 0)
-                    resolve()
-                else
-                    process.exit(2)
-            }
-            r.run()
-        })
-
-        await p
+        for (const fn of readdir(rtest)) {
+            await runProgram(fn)
+        }
     }
 
     process.exit(0)

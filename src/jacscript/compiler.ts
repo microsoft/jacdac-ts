@@ -39,6 +39,7 @@ import {
 import { serviceSpecificationFromName } from "../jdom/spec"
 import { numSetBits, verifyBinary } from "./verify"
 import { jdpack } from "../jdom/pack"
+import { camelize } from "../jacdac"
 
 export function oops(msg: string): never {
     throw new Error(msg)
@@ -182,6 +183,10 @@ function addUnique<T>(arr: T[], v: T) {
 
 function specialVal(sp: ValueSpecial) {
     return mkValue(CellKind.SPECIAL, sp)
+}
+
+function matchesName(specName: string, jsName: string) {
+    return camelize(specName) == jsName
 }
 
 const reservedFunctions: SMap<number> = {
@@ -1126,6 +1131,43 @@ class Program implements InstrArgResolver {
         this.throwError(expr, `events don't have property ${prop}`)
     }
 
+    private emitRegGet(
+        obj: ValueDesc,
+        refresh?: RefreshMS,
+        field?: jdspec.PacketMember
+    ) {
+        if (refresh === undefined)
+            refresh =
+                obj.spec.kind == "const" ? RefreshMS.Never : RefreshMS.Normal
+        if (!field && obj.spec.fields.length == 1) field = obj.spec.fields[0]
+
+        const role = obj.cell as Role
+        const wr = this.writer
+        wr.emitAsync(
+            OpAsync.QUERY_REG,
+            role.encode(),
+            obj.spec.identifier,
+            refresh
+        )
+        if (field) {
+            const r = wr.allocReg()
+            let off = 0
+            for (const f of obj.spec.fields) {
+                if (f == field) {
+                    wr.emitBufOp(OpTop.LOAD_CELL, r, off, field)
+                    return r
+                } else {
+                    off += Math.abs(f.storage)
+                }
+            }
+            oops("field missing")
+        } else {
+            const r = mkValue(CellKind.JD_VALUE_SEQ, 0, role)
+            r.spec = obj.spec
+            return r
+        }
+    }
+
     private emitRegisterCall(
         expr: estree.CallExpression,
         obj: ValueDesc,
@@ -1134,34 +1176,11 @@ class Program implements InstrArgResolver {
         const role = obj.cell as Role
         assertRange(0, obj.spec.identifier, 0x1ff)
 
-        const emitGet = (refresh: RefreshMS) => {
-            const wr = this.writer // this may be different than the outer writer
-            wr.emitAsync(
-                OpAsync.QUERY_REG,
-                role.encode(),
-                obj.spec.identifier,
-                refresh
-            )
-            if (obj.spec.fields.length == 1) {
-                const r = wr.allocReg()
-                wr.emitBufOp(OpTop.LOAD_CELL, r, 0, obj.spec.fields[0])
-                return r
-            } else {
-                const r = mkValue(CellKind.JD_VALUE_SEQ, 0, role)
-                r.spec = obj.spec
-                return r
-            }
-        }
-
         const wr = this.writer
         switch (prop) {
             case "read":
                 this.requireArgs(expr, 0)
-                return emitGet(
-                    obj.spec.kind == "const"
-                        ? RefreshMS.Never
-                        : RefreshMS.Normal
-                )
+                return this.emitRegGet(obj)
             case "write":
                 this.requireArgs(expr, obj.spec.fields.length)
                 let off = 0
@@ -1211,7 +1230,7 @@ class Program implements InstrArgResolver {
                     wr.emitIfAndPop(cond, () => {
                         // get the cached value (TODO - better hint for that than never-refresh?)
                         wr.push()
-                        const curr = emitGet(RefreshMS.Never)
+                        const curr = this.emitRegGet(obj, RefreshMS.Never)
                         const prev = wr.forceReg(cache.value())
                         wr.emitBin(OpBinary.SUB, prev, curr)
                         wr.emitUnary(OpUnary.ABS, prev, prev)
@@ -1467,8 +1486,7 @@ class Program implements InstrArgResolver {
     }
 
     private matchesSpecName(pi: jdspec.PacketInfo, id: string) {
-        // TODO camel case
-        return pi.name == id
+        return matchesName(pi.name, id)
     }
 
     private emitMemberExpression(expr: estree.MemberExpression): ValueDesc {
@@ -1480,17 +1498,17 @@ class Program implements InstrArgResolver {
         if (obj.kind == CellKind.JD_ROLE) {
             assert(obj.cell instanceof Role)
             const role = obj.cell as Role
-            const id = this.forceName(expr.property)
+            const propName = this.forceName(expr.property)
             let r: ValueDesc
 
             let generic: jdspec.PacketInfo
             for (const p of this.sysSpec.packets) {
-                if (this.matchesSpecName(p, id)) generic = p
+                if (this.matchesSpecName(p, propName)) generic = p
             }
 
             for (const p of role.spec.packets) {
                 if (
-                    this.matchesSpecName(p, id) ||
+                    this.matchesSpecName(p, propName) ||
                     (generic?.identifier == p.identifier &&
                         generic?.kind == p.kind)
                 ) {
@@ -1510,9 +1528,27 @@ class Program implements InstrArgResolver {
             if (!r)
                 this.throwError(
                     expr,
-                    `role ${role.getName()} has no member ${id}`
+                    `role ${role.getName()} has no member ${propName}`
                 )
             return r
+        } else if (obj.kind == CellKind.JD_REG) {
+            const propName = this.forceName(expr.property)
+            if (obj.spec.fields.length > 1) {
+                const fld = obj.spec.fields.find(f =>
+                    matchesName(f.name, propName)
+                )
+                if (!fld)
+                    this.throwError(
+                        expr,
+                        `no field ${propName} in ${obj.spec.name}`
+                    )
+                return this.emitRegGet(obj, undefined, fld)
+            } else {
+                this.throwError(
+                    expr,
+                    `unhandled member ${propName}; use .read()`
+                )
+            }
         }
 
         this.throwError(expr, `unhandled member ${idName(expr.property)}`)
