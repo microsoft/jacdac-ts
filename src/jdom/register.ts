@@ -300,17 +300,17 @@ export class JDRegister extends JDServiceMemberNode {
 
     /**
      * Refresh the value of the register within a timeout
-     * @param skipIfValue don't refesh if any data if available
+     * @param skipIfValue don't refresh if any data if available
      * @returns
      * @category Data
      */
     refresh(skipIfValue?: boolean): Promise<void> {
         // don't refetch not implemented
-        if (this.notImplemented) return
+        if (this.notImplemented) return Promise.resolve()
         // don't refetch consts
         // don't refetch if already data
         if (!!this.data && (skipIfValue || isConstRegister(this.specification)))
-            return
+            return Promise.resolve()
 
         const bus = this.service.device.bus
         return bus.withTimeout(

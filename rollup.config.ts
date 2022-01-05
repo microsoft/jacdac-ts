@@ -44,6 +44,13 @@ export default [
         cjs: false,
         tsconfig: "src/worker/tsconfig.json",
     },
+    {
+        libraryName: "jacscript",
+        dir: "jacscript",
+        watch: "src/**",
+        external: ["jacdac", "esprima"],
+        web: true,
+    },
 ].map(({ libraryName, dir, external, watch, tsconfig, cjs, umd, web }) => {
     return {
         input: dir ? `src/${dir}/${libraryName}.ts` : `src/${libraryName}.ts`,
