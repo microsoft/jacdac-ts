@@ -1003,8 +1003,6 @@ class Program implements InstrArgResolver {
 
         this.withProcedure(fundecl.proc, wr => {
             let idx = 0
-            wr.push()
-            wr.allocArgs(fundecl.proc.numargs) // these are implicitly allocated by the caller
             for (const paramdef of stmt.params) {
                 if (paramdef.type != "Identifier")
                     this.throwError(
@@ -1014,9 +1012,7 @@ class Program implements InstrArgResolver {
                 const v = new Variable(paramdef, fundecl.proc.locals)
                 v.isLocal = true
                 if (idx >= 8) this.throwError(paramdef, "too many arguments")
-                wr.assign(v.value(), mkValue(CellKind.X_FP_REG, idx++))
             }
-            wr.pop()
             this.emitStmt(stmt.body)
             wr.emitLabel(wr.ret)
             wr.emitSync(OpSync.RETURN)

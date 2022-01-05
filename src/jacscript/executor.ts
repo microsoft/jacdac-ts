@@ -455,9 +455,12 @@ class Activation {
     constructor(
         public fiber: Fiber,
         public info: FunctionInfo,
-        public caller: Activation
+        public caller: Activation,
+        numargs: number
     ) {
         this.locals = new Float64Array(info.numLocals + info.numRegs)
+        for (let i = 0; i < numargs; ++i)
+            this.locals[i] = this.fiber.ctx.registers[i]
         this.pc = info.startPC
     }
 
@@ -492,7 +495,7 @@ class Activation {
     }
 
     private callFunction(info: FunctionInfo, numargs: number) {
-        const callee = new Activation(this.fiber, info, this)
+        const callee = new Activation(this.fiber, info, this, numargs)
         this.fiber.activate(callee)
     }
 
@@ -923,7 +926,7 @@ class Ctx {
             }
         log(`start fiber: ${info}`)
         const fiber = new Fiber(this)
-        fiber.activation = new Activation(fiber, info, null)
+        fiber.activation = new Activation(fiber, info, null, numargs)
         fiber.activation.saveArgs(numargs)
         fiber.firstFun = info
         fiber.setWakeTime(this.now())
@@ -1002,6 +1005,7 @@ export class Runner {
     img: ImageInfo
     allowRestart = false
     state = RunnerState.Initializing
+    startDelay = 1100
     onError: (err: Error) => void = null
     onPanic: (code: number) => void = null
 
@@ -1029,7 +1033,7 @@ export class Runner {
         this.bus.scheduler.setTimeout(() => {
             this.state = RunnerState.Running
             this.ctx.startProgram()
-        }, 1100)
+        }, this.startDelay)
     }
 }
 

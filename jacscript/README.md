@@ -195,7 +195,6 @@ A plain `return` is equivalent to `return NaN`.
 
 ## TODO
 
-* change call to transfer regs to locals automatically?
 * register reads may not be triggered enough for `onChange()` to work
 * `role.isConnected()` or something; also `role.onConnected(() => { })`
 * sending commands: `buzzer.play_note(freq, 0.9, time)`

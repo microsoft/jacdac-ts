@@ -9,7 +9,7 @@ const distPath = "dist"
 let verbose = false
 let bus = null
 
-function runProgram(fn) {
+function runProgram(fn, delay) {
     console.log(`*** run ${fn}`)
 
     try {
@@ -31,6 +31,8 @@ function runProgram(fn) {
 
     return new Promise(resolve => {
         const r = new jacscript.Runner(bus, res.binary, res.dbg)
+        if (delay !== undefined)
+            r.startDelay = delay
         r.onError = () => process.exit(1)
         r.onPanic = code => {
             if (code == 0)
@@ -63,7 +65,7 @@ async function main() {
         }
 
         for (const fn of readdir(rtest)) {
-            await runProgram(fn)
+            await runProgram(fn, 1)
         }
     }
 

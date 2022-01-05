@@ -187,9 +187,11 @@ export function verifyBinary(
         let pc = 0
         let isJumpTarget: boolean[] = []
 
+        check(info.numLocals >= info.numParams, "params fit in locals")
+
         for (let pass = 0; pass < 2; ++pass) {
             pc = 0
-            writtenRegs = (1 << info.numParams) - 1
+            writtenRegs = 0
             for (; pc < funcode.length; ++pc) {
                 while (pc >= srcmap[srcmapPtr + 1] + srcmap[srcmapPtr + 2])
                     srcmapPtr += 3
