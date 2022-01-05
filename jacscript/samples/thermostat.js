@@ -4,9 +4,10 @@ var t
 
 thermometer.temperature.onChange(5, () => {
     t = thermometer.temperature.read()
-    if (t < 21) {
-        heater.closed.write(1)
-    } else {
-        heater.closed.write(0)
-    }
+    if (heater.isConnected())
+        if (t < 21) {
+            heater.closed.write(1)
+        } else {
+            heater.closed.write(0)
+        }
 })

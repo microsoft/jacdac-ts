@@ -37,6 +37,7 @@ import {
     OpFmt,
     OpMath1,
     OpMath2,
+    OpRoleProperty,
     OpSync,
     OpTop,
     OpUnary,
@@ -387,6 +388,14 @@ function loadCell(
                         : NaN
                 case ValueSpecial.ROLE_ID:
                     return nanify(ctx.wakeRoleIdx)
+                default:
+                    oops()
+            }
+        case CellKind.ROLE_PROPERTY:
+            const role = ctx.roles[idx]
+            switch (c) {
+                case OpRoleProperty.IS_CONNECTED:
+                    return role.device ? 1 : 0
                 default:
                     oops()
             }

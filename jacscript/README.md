@@ -10,8 +10,7 @@
 
 ## JavaScript subset
 
-Global variables are supported (no `const` or `let`).
-Local variables are not supported yet (TODO).
+Global and local variables are supported (only `var`, no `const` or `let`).
 
 All variables are numbers (64-bit IEEE floating point).
 Numeric binary and unary expressions are supported.
@@ -60,7 +59,7 @@ charDisplay.message.write(format("X is {0}", x))
 
 Roles are defined by referencing a service name (in `roles` namespace).
 The same role can be referenced multiple times, and runtime makes sure not to assign
-multiple roles to the same service instance (TODO implemented this).
+multiple roles to the same service instance (TODO implement this).
 
 ```js
 var btnA = roles.button()
@@ -83,6 +82,7 @@ btnA.down.sub(() => {
 
 Registers are referenced as `myRole.regName`, where `regName` can also be the system-wide name,
 so both `pot.position` and `pot.reading` will work.
+TODO should we drop this, and only leave `pot.position` ?
 
 Registers have following methods - `.onChange()`, `.read()` and `.write()`.
 If register contains multiple fields, a tuple (array) is returned.
@@ -196,18 +196,21 @@ A plain `return` is equivalent to `return NaN`.
 ## TODO
 
 * register reads may not be triggered enough for `onChange()` to work
-* `role.isConnected()` or something; also `role.onConnected(() => { })`
+* `role.onConnected(() => { })`
 * sending commands: `buzzer.play_note(freq, 0.9, time)`
-* responding to cloud messages: `onCloud("play_sound", (freq, time) => { ... })`
-* responding to twin updates: `onTwinUpdate("foo.bar", value => { ... })`; on boot as well
-* auto-upload of everything
-* specific uploads: `hum.autoUpload(5, 1) // 5s, 1%`
 * role mgr
 * implementing services in jacscript
 * some testing framework? (depends on services?)
-* more "debug" info in compiled program - role names, ?
+
+### Cloud
+
+* responding to cloud messages: `onCloud("play_sound", (freq, time) => { ... })`
+* responding to twin updates: `onTwinUpdate("foo.bar", value => { ... })`; on boot as well
+* specific uploads: `hum.autoUpload(5, 1) // 5s, 1%`
+* auto-upload of everything
 
 ### Debugger interface
 
 * fiber list, locals, globals
 * setting breakpoints - breakpoint instruction? (based on source code location)
+* more "debug" info in compiled program - role names, etc for error messages?

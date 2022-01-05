@@ -36,6 +36,7 @@ import {
     OpFmt,
     OpMath1,
     OpMath2,
+    OpRoleProperty,
     OpSync,
     OpTop,
     OpUnary,
@@ -449,6 +450,10 @@ export function verifyBinary(
                     break
                 case CellKind.SPECIAL:
                     check(idx < ValueSpecial._LAST, "special in range")
+                    break
+                case CellKind.ROLE_PROPERTY:
+                    check(idx < numRoles, "role prop R range")
+                    check(c < OpRoleProperty._LAST, "role prop C range")
                     break
                 default:
                     check(false, "invalid cell kind")

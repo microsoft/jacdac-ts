@@ -18,6 +18,7 @@ import {
     OpFmt,
     OpMath1,
     OpMath2,
+    OpRoleProperty,
     OpSync,
     OpTop,
     OpUnary,
@@ -464,7 +465,7 @@ class OpWriter {
         }
     }
 
-    emitLoadCell(dst: ValueDesc, celltype: CellKind, idx: number) {
+    emitLoadCell(dst: ValueDesc, celltype: CellKind, idx: number, c = 0) {
         assert(this.isReg(dst))
         switch (celltype) {
             case CellKind.LOCAL:
@@ -473,7 +474,8 @@ class OpWriter {
             case CellKind.IDENTITY:
             case CellKind.BUFFER:
             case CellKind.SPECIAL:
-                this.emitLoadStoreCell(OpTop.LOAD_CELL, dst, celltype, idx)
+            case CellKind.ROLE_PROPERTY:
+                this.emitLoadStoreCell(OpTop.LOAD_CELL, dst, celltype, idx, c)
                 break
             case CellKind.X_FP_REG:
                 this.emitMov(dst.index, idx)
@@ -495,7 +497,7 @@ class OpWriter {
             case CellKind.LOCAL:
             case CellKind.GLOBAL:
             case CellKind.BUFFER:
-                this.emitLoadStoreCell(OpTop.STORE_CELL, src, celltype, idx)
+                this.emitLoadStoreCell(OpTop.STORE_CELL, src, celltype, idx, 0)
                 break
             case CellKind.X_FP_REG:
                 this.emitMov(idx, src.index)
@@ -514,11 +516,11 @@ class OpWriter {
         dst: ValueDesc,
         celltype: CellKind,
         idx: number,
-        argC = 0
+        argC: number
     ) {
         assert(this.isReg(dst))
         const [a, b] = [celltype, idx]
-        this.emitPrefix(a >> 2, b >> 6, argC)
+        this.emitPrefix(a >> 2, b >> 6, argC || 0)
         // DST[4] A:OP[2] B:OFF[6]
         this.emitRaw(
             op,
@@ -1164,6 +1166,29 @@ class Program implements InstrArgResolver {
         }
     }
 
+    private emitRoleCall(
+        expr: estree.CallExpression,
+        obj: ValueDesc,
+        prop: string
+    ): ValueDesc {
+        const role = obj.cell as Role
+        const wr = this.writer
+        switch (prop) {
+            case "isConnected":
+                this.requireArgs(expr, 0)
+                const r = wr.allocReg()
+                wr.emitLoadCell(
+                    r,
+                    CellKind.ROLE_PROPERTY,
+                    role.index,
+                    OpRoleProperty.IS_CONNECTED
+                )
+                return r
+            default:
+                this.throwError(expr, `roles don't have property ${prop}`)
+        }
+    }
+
     private emitRegisterCall(
         expr: estree.CallExpression,
         obj: ValueDesc,
@@ -1217,6 +1242,7 @@ class Program implements InstrArgResolver {
                 const handler = this.emitHandler(name, expr.arguments[1])
                 this.emitInRoleDispatcher(role, wr => {
                     const cache = this.proc.mkTempLocal(name)
+                    // TODO assign NaN to cache initially
                     wr.push()
                     const cond = this.inlineBin(
                         OpBinary.EQ,
@@ -1227,19 +1253,28 @@ class Program implements InstrArgResolver {
                         // get the cached value (TODO - better hint for that than never-refresh?)
                         wr.push()
                         const curr = this.emitRegGet(obj, RefreshMS.Never)
-                        const prev = wr.forceReg(cache.value())
+                        const skipHandler = wr.mkLabel("skipHandler")
+                        // if (isNaN(curr)) goto skip
+                        const prev = wr.allocReg()
+                        wr.emitUnary(OpUnary.IS_NAN, prev, curr)
+                        wr.emitUnary(OpUnary.NOT, prev, prev)
+                        wr.emitJump(skipHandler, prev.index)
+                        // prev := cache
+                        wr.assign(prev, cache.value())
+                        // if (Math.abs(prev-curr) <= threshold) goto skip
+                        // note that this also calls handler() if prev is NaN
                         wr.emitBin(OpBinary.SUB, prev, curr)
                         wr.emitUnary(OpUnary.ABS, prev, prev)
                         const thresholdReg = wr.forceReg(floatVal(threshold))
-                        // if (! (Math.abs(prev-curr) <= threshold)) handler()
-                        // note that this also calls handler() if prev is NaN
                         wr.emitBin(OpBinary.LE, prev, thresholdReg)
                         wr.emitUnary(OpUnary.NOT, prev, prev)
-                        const skipHandler = wr.mkLabel("skipHandler")
                         wr.emitJump(skipHandler, prev.index)
+                        // cache := curr
                         wr.assign(cache.value(), curr)
                         wr.pop()
+                        // handler()
                         wr.emitCall(handler)
+                        // skip:
                         wr.emitLabel(skipHandler)
                     })
                 })
@@ -1368,6 +1403,8 @@ class Program implements InstrArgResolver {
                     return this.emitEventCall(expr, obj, prop)
                 case CellKind.JD_REG:
                     return this.emitRegisterCall(expr, obj, prop)
+                case CellKind.JD_ROLE:
+                    return this.emitRoleCall(expr, obj, prop)
             }
         }
 

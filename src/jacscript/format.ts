@@ -92,6 +92,7 @@ export enum CellKind {
 
     BUFFER = 4, // arg=shift:numfmt, C=Offset
     SPECIAL = 5, // arg=nan, regcode, role, ...
+    ROLE_PROPERTY = 6, // arg=roleidx, B=OpRoleProperty
 
     // these cannot be emitted directly
     JD_EVENT = 0x100,
@@ -105,6 +106,11 @@ export enum CellKind {
     X_FUNCTION = 0x108,
 
     ERROR = 0x200,
+}
+
+export enum OpRoleProperty {
+    IS_CONNECTED = 0,
+    _LAST,
 }
 
 export enum ValueSpecial {
@@ -171,6 +177,8 @@ export function stringifyCellKind(vk: CellKind) {
             return "special value"
         case CellKind.BUFFER:
             return "buffer access"
+        case CellKind.ROLE_PROPERTY:
+            return "role property"
         case CellKind.JD_VALUE_SEQ:
             return "multi-field buffer"
         case CellKind.JD_CURR_BUFFER:
@@ -301,8 +309,8 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
         return `${role()}.reg_0x${b.toString(16)}`
     }
 
-    function role() {
-        return (resolver?.roleName?.(a) || "") + "_r" + a
+    function role(idx = a) {
+        return (resolver?.roleName?.(idx) || "") + "_r" + idx
     }
 
     function numfmt(v: number) {
@@ -423,6 +431,14 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
                         return "REG_CODE"
                     default:
                         return `${r}_SPEC[${idx}]`
+                }
+            case CellKind.ROLE_PROPERTY:
+                const rr = role(idx)
+                switch (c) {
+                    case OpRoleProperty.IS_CONNECTED:
+                        return `${rr}.isConnected`
+                    default:
+                        return `${rr}.prop${c}`
                 }
             default:
                 return `C${a}[${idx}]` // ??

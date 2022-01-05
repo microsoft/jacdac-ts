@@ -1,6 +1,8 @@
 /// <reference path="../jacdac-spec/dist/jacscript-spec.d.ts" />
 
-declare class Role {}
+declare class Role {
+    isConnected(): number
+}
 
 declare class JDPacketInfo {}
 
