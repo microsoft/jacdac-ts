@@ -155,7 +155,7 @@ const outdoorHumidityOptions: AnalogSensorServerOptions = {
     readingValues: [40],
     readingError: [0.1],
     minReading: 10,
-    maxReading: 99
+    maxReading: 99,
 }
 const soilThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "temperature",

@@ -450,7 +450,11 @@ export class JDDevice extends JDNode {
     }
 
     private refreshFirmwareInfo() {
+        if (this.bus.passive) return
+
         const ctrl = this._services?.[0]
+        if (!ctrl) return
+
         const firmwareRegs = [
             ControlReg.ProductIdentifier,
             ControlReg.FirmwareVersion,
@@ -459,6 +463,7 @@ export class JDDevice extends JDNode {
         ]
         firmwareRegs
             .map(code => ctrl.register(code))
+            .filter(reg => !!reg)
             .forEach(reg =>
                 reg.once(REPORT_UPDATE, () => {
                     this.emitPropagated(DEVICE_FIRMWARE_INFO)

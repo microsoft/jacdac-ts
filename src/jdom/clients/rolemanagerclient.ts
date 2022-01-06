@@ -124,7 +124,7 @@ export class RoleManagerClient extends JDServiceClient {
         try {
             const inp = new InPipeReader(this.bus)
             await this.service.sendPacketAsync(
-                inp.openCommand(RoleManagerCmd.ListRequiredRoles),
+                inp.openCommand(RoleManagerCmd.ListRoles),
                 true
             )
             // collect all roles

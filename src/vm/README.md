@@ -14,5 +14,3 @@ Currently, JdDSL does not support user-defined loops, functions, or data structu
 
 Each handler begins with a 
 
-
-# Implementation
