@@ -44,6 +44,7 @@ function processExpr(e: jsep.Expression): string {
             return `${ue.operator}${processExpr(ue.argument)}`
         }
         case "Identifier": {
+            // TODO: need to pattern match and look for special cases
             return (e as jsep.Identifier).name
         }
         case "Literal": {
