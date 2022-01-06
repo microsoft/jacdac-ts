@@ -91,6 +91,29 @@ btnA.down.sub(() => {
 })
 ```
 
+## Handlers and Fibers
+
+While handler registration (for events, register changes, device connect, etc.)
+looks dynamic, it is implemented statically.
+Thus handlers can be only registered at the top-level and un-conditionally.
+
+Every handler runs in its own fiber (lightweight thread).
+The scheduler is non-preemptive, meaning
+a fiber executes without interruption until it returns or hits an asynchronous operation.
+Example async operations are `wait()` and register read.
+The fiber is then suspended.
+Only one fiber executes at a time, while the other fibers are suspended.
+This is similar to modern JavaScript, but there's no `await` keyword.
+
+At any given time, there is at most one fiber (suspended or not) executing a given handler.
+If this is not desired, `bg(() => { ... })` syntax can be used to queue code execution
+in background, without limits of how many instances of it are running (TODO not impl yet).
+
+When the executor is woken up (typically due to an incoming packet or a timer expiring),
+it will execute all viable fibers until they are suspended.
+Executing a fiber may start another viable fiber, which would be also executed until suspension,
+before any more packets are processed.
+
 ## Registers
 
 Registers are referenced as `myRole.regName`, where `regName` can also be the system-wide name,
@@ -205,16 +228,41 @@ Nested functions and real first-class functions are not supported.
 Functions can return values.
 A plain `return` is equivalent to `return NaN`.
 
+## Random notes
+
+### Memory usage analysis
+
+Main dynamic memory usage - function activation records (and fibers).
+* `BG_MAX1` call frames can be only allocated once
+* whatever they call may need additional frames
+* can collect all register gets and estimate memory for them (do we need a size limit on these?)
+
 
 ## TODO
 
-* dispatcher assumes handlers don't mess up current packet; it shouldn't
+Which handlers require parameters:
+* events with arguments; also important not to drop these
+  - if we ignore args -> 1 pending should be enough?
+  - following services need events with args: -> ignore for now?
+    - barcodereader
+    - button timers
+* handling incoming packets for service impl.
+  - command
+  - reg get
+  - reg set
+
+Maybe queue packets not executions? could lead to weird end-user results
+
+* don't check timers in executor in `setTimeout()`; do it sync
+* add `OpCall.BG_MAX1_PEND1`; use for handlers
+* add `role.waitConnected()` or something?
 * add `bg(() => { ... })`, also `bg1()` ?
+* do fiber round-robin for yields?
 * register reads may not be triggered enough for `onChange()` to work
-* `role.onConnected(() => { })`
 * sending commands: `buzzer.play_note(freq, 0.9, time)`
 * role mgr
 * some testing framework? (depends on services?)
+* check that onEvent/onChange etc are only executed at the top-level - otherwise the semantics will not match
 
 ### Implementing services in jacscript
 
@@ -224,6 +272,7 @@ A plain `return` is equivalent to `return NaN`.
 * some way of building announce packets
 * handler when a packet is received
 * support 1 or more devices per VM instance?
+* add `try_again` report in addition to `command_not_implemented` ?
 
 ### Cloud
 
