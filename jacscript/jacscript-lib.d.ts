@@ -2,6 +2,8 @@
 
 declare class Role {
     isConnected(): number
+    onConnected(handler: () => void): void
+    onDisconnected(handler: () => void): void
 }
 
 declare class JDPacketInfo {}

@@ -1,4 +1,4 @@
-import { JDBus, JDDevice, JDRegister, JDService } from "../jacdac"
+import { JDBus, JDDevice, JDRegister, JDService, printPacket } from "../jacdac"
 import { NumberFormat, setNumber } from "../jdom/buffer"
 import {
     CMD_GET_REG,
@@ -882,10 +882,25 @@ class Ctx {
         this.wakeTimesUpdated() // make sure we're re-scheduled, especially in case this fired too early
     }
 
+    private wakeRole(idx: number) {
+        const r = this.roles[idx]
+        for (const f of this.fibers)
+            if (f.waitingOn.indexOf(r) >= 0) {
+                this.wakeRoleIdx = idx
+                // log(`run ${f.firstFun} ev=${this.pkt.eventCode}`)
+                this.run(f)
+                this.wakeRoleIdx = null
+            }
+    }
+
     private deviceDisconnect(dev: JDDevice) {
-        for (const r of this.roles) {
+        this.pkt = Packet.from(0xffff, new Uint8Array(0))
+        this.pkt.deviceIdentifier = dev.deviceId
+        for (let idx = 0; idx < this.roles.length; ++idx) {
+            const r = this.roles[idx]
             if (r.device == dev) {
                 r.assign(null, 0)
+                this.wakeRole(idx)
             }
         }
     }
@@ -906,17 +921,15 @@ class Ctx {
     private processPkt(pkt: Packet) {
         if (this.panicCode) return
         this.pkt = pkt
+        // console.log(new Date(), "process: " + printPacket(pkt))
         for (let idx = 0; idx < this.roles.length; ++idx) {
             const r = this.roles[idx]
-            if (r.device == pkt.device && r.serviceIndex == pkt.serviceIndex) {
-                for (const f of this.fibers)
-                    if (f.waitingOn.indexOf(r) >= 0) {
-                        this.wakeRoleIdx = idx
-                        // log(`run ${f.firstFun} ev=${this.pkt.eventCode}`)
-                        this.run(f)
-                        this.wakeRoleIdx = null
-                    }
-            }
+            if (
+                r.device == pkt.device &&
+                (r.serviceIndex == pkt.serviceIndex ||
+                    (pkt.serviceIndex == 0 && pkt.serviceCommand == 0))
+            )
+                this.wakeRole(idx)
         }
     }
 

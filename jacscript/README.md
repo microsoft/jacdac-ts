@@ -68,6 +68,19 @@ var pot = roles.potentiometer()
 var lamp = roles.lightBulb()
 ```
 
+You can check if role is currently assigned, and react to it being assigned or unassigned:
+
+```js
+if (heater.isConnected())
+    heater.active.write(1)
+heater.onConnected(() => {
+    // ...
+})
+heater.onDisconnected(() => {
+    // ...
+})
+```
+
 ## Events
 
 Events are referenced as `myRole.eventName`. They currently have one member function, `.sub()`.
@@ -195,12 +208,22 @@ A plain `return` is equivalent to `return NaN`.
 
 ## TODO
 
+* dispatcher assumes handlers don't mess up current packet; it shouldn't
+* add `bg(() => { ... })`, also `bg1()` ?
 * register reads may not be triggered enough for `onChange()` to work
 * `role.onConnected(() => { })`
 * sending commands: `buzzer.play_note(freq, 0.9, time)`
 * role mgr
-* implementing services in jacscript
 * some testing framework? (depends on services?)
+
+### Implementing services in jacscript
+
+* opcode to send current packet
+* opcode to set the command
+* opcode to set service number
+* some way of building announce packets
+* handler when a packet is received
+* support 1 or more devices per VM instance?
 
 ### Cloud
 

@@ -91,8 +91,57 @@ class Cell {
     }
 }
 
+class DelayedCodeSection {
+    startLabel: Label
+    returnLabel: Label
+    body: ((wr: OpWriter) => void)[] = []
+
+    constructor(public name: string, public parent: Procedure) {}
+
+    empty() {
+        return this.body.length == 0
+    }
+
+    emit(f: (wr: OpWriter) => void) {
+        this.body.push(f)
+    }
+
+    callHere() {
+        const wr = this.parent.writer
+        this.startLabel = wr.mkLabel(this.name + "Start")
+        this.returnLabel = wr.mkLabel(this.name + "Ret")
+        wr.emitJump(this.startLabel)
+        wr.emitLabel(this.returnLabel)
+    }
+
+    finalizeRaw() {
+        assert(this.parent.parent.proc == this.parent)
+        const wr = this.parent.writer
+        for (const b of this.body) b(wr)
+    }
+
+    finalize() {
+        if (this.empty()) {
+            this.startLabel.offset = this.returnLabel.offset
+            return
+        }
+        const wr = this.parent.writer
+        wr.emitLabel(this.startLabel)
+        this.finalizeRaw()
+        wr.emitJump(this.returnLabel)
+    }
+}
+
 class Role extends Cell {
-    dispatcher: Procedure
+    dispatcher: {
+        proc: Procedure
+        top: Label
+        init: DelayedCodeSection
+        checkConnected: DelayedCodeSection
+        connected: DelayedCodeSection
+        disconnected: DelayedCodeSection
+        wasConnected: Variable
+    }
 
     constructor(
         definition: estree.VariableDeclarator,
@@ -203,6 +252,7 @@ const reservedFunctions: SMap<number> = {
 
 const values = {
     zero: floatVal(0),
+    one: floatVal(1),
     nan: specialVal(ValueSpecial.NAN),
     error: mkValue(CellKind.ERROR, 0),
 }
@@ -647,7 +697,7 @@ class OpWriter {
     patchLabels() {
         for (const l of this.labels) {
             if (l.uses.length == 0) continue
-            assert(l.offset != -1)
+            assert(l.offset != -1, `label ${l.name} emitted`)
             for (const u of l.uses) {
                 let op0 = this.binary[u]
                 let op1 = this.binary[u + 1]
@@ -809,6 +859,7 @@ class Program implements InstrArgResolver {
     resolverPC: number
     numErrors = 0
     main: Procedure
+    startDispatchers: DelayedCodeSection
 
     constructor(public host: Host, public source: string) {}
 
@@ -863,24 +914,118 @@ class Program implements InstrArgResolver {
         return this.roles.describeIndex(idx)
     }
 
-    private roleDispatcher(r: Role) {
-        if (!r.dispatcher) {
-            r.dispatcher = new Procedure(this, r.getName() + "_disp")
-            this.withProcedure(r.dispatcher, () => {
-                this.writer.emitSync(OpSync.OBSERVE_ROLE, r.encode())
-                this.writer.emitAsync(OpAsync.YIELD)
+    private roleDispatcher(role: Role) {
+        if (!role.dispatcher) {
+            const proc = new Procedure(this, role.getName() + "_disp")
+            role.dispatcher = {
+                proc,
+                top: proc.writer.mkLabel("disp_top"),
+                init: new DelayedCodeSection("init", proc),
+                disconnected: new DelayedCodeSection("disconnected", proc),
+                connected: new DelayedCodeSection("connected", proc),
+                checkConnected: new DelayedCodeSection("checkConnected", proc),
+                wasConnected: proc.mkTempLocal("connected_" + role.getName()),
+            }
+            this.withProcedure(proc, wr => {
+                wr.push()
+                const conn = this.emitIsRoleConnected(role)
+                wr.assign(role.dispatcher.wasConnected.value(), conn)
+                wr.pop()
+                role.dispatcher.init.callHere()
+                wr.emitLabel(role.dispatcher.top)
+                wr.emitSync(OpSync.OBSERVE_ROLE, role.encode())
+                wr.emitAsync(OpAsync.YIELD)
+                role.dispatcher.checkConnected.callHere()
+            })
+
+            this.startDispatchers.emit(wr => {
+                wr.emitCall(proc, OpCall.BG_MAX1)
             })
         }
-        return r.dispatcher
+        return role.dispatcher
     }
 
     private finalizeDispatchers() {
-        for (const r of this.roles.list) {
-            const disp = (r as Role).dispatcher
+        for (const role of this.roles.list) {
+            const disp = (role as Role).dispatcher
             if (disp)
-                // forever!
-                this.withProcedure(disp, wr => {
-                    wr.emitJump(wr.top)
+                this.withProcedure(disp.proc, wr => {
+                    // forever!
+                    wr.emitJump(disp.top)
+
+                    // run init
+                    disp.init.finalize()
+
+                    // if any dis/connect handlers, do the checking
+                    if (!disp.connected.empty() || !disp.disconnected.empty()) {
+                        disp.checkConnected.body.push(wr => {
+                            wr.push()
+                            const connNow = this.emitIsRoleConnected(
+                                role as Role
+                            )
+                            wr.pop()
+                            const nowDis = wr.mkLabel("nowDis")
+                            wr.emitJump(nowDis, connNow.index)
+
+                            {
+                                // now==connected
+                                if (!disp.connected.empty()) {
+                                    wr.push()
+                                    const connPrev = wr.forceReg(
+                                        disp.wasConnected.value()
+                                    )
+                                    wr.emitUnary(
+                                        OpUnary.NOT,
+                                        connPrev,
+                                        connPrev
+                                    )
+                                    wr.pop()
+                                    wr.emitJump(
+                                        disp.checkConnected.returnLabel,
+                                        connPrev.index
+                                    )
+                                    // prev==disconnected
+
+                                    disp.connected.finalizeRaw()
+                                }
+                                wr.push()
+                                wr.assign(
+                                    disp.wasConnected.value(),
+                                    floatVal(1)
+                                )
+                                wr.pop()
+                                wr.emitJump(disp.checkConnected.returnLabel)
+                            }
+
+                            {
+                                // now==disconnected
+                                if (!disp.disconnected.empty()) {
+                                    wr.emitLabel(nowDis)
+                                    wr.push()
+                                    const connPrev = wr.forceReg(
+                                        disp.wasConnected.value()
+                                    )
+                                    wr.pop()
+                                    wr.emitJump(
+                                        disp.checkConnected.returnLabel,
+                                        connPrev.index
+                                    )
+                                    // prev==connected
+                                    disp.disconnected.finalizeRaw()
+                                }
+                                wr.push()
+                                wr.assign(
+                                    disp.wasConnected.value(),
+                                    values.zero
+                                )
+                                wr.pop()
+                                wr.emitJump(disp.checkConnected.returnLabel)
+                            }
+                        })
+                    }
+
+                    // either way, finalize checkConnected
+                    disp.checkConnected.finalize()
                 })
         }
     }
@@ -1023,6 +1168,10 @@ class Program implements InstrArgResolver {
 
     private emitProgram(prog: estree.Program) {
         this.main = new Procedure(this, "main")
+        this.startDispatchers = new DelayedCodeSection(
+            "startDispatchers",
+            this.main
+        )
         // pre-declare all functions
         // TODO should we do that also for global vars?
         for (const s of prog.body) {
@@ -1039,8 +1188,10 @@ class Program implements InstrArgResolver {
             }
         }
         this.withProcedure(this.main, () => {
+            this.startDispatchers.callHere()
             for (const s of prog.body) this.emitStmt(s)
             this.writer.emitSync(OpSync.RETURN)
+            this.startDispatchers.finalize()
         })
     }
 
@@ -1090,8 +1241,7 @@ class Program implements InstrArgResolver {
 
     private emitInRoleDispatcher(role: Role, f: (wr: OpWriter) => void) {
         const disp = this.roleDispatcher(role)
-        this.withProcedure(disp, f)
-        this.writer.emitCall(disp, OpCall.BG_MAX1) // TODO push all these to the program head?
+        this.withProcedure(disp.proc, f)
     }
 
     private inlineBin(subop: OpBinary, left: ValueDesc, right: ValueDesc) {
@@ -1166,24 +1316,48 @@ class Program implements InstrArgResolver {
         }
     }
 
+    private emitIsRoleConnected(role: Role) {
+        const wr = this.writer
+        const r = wr.allocReg()
+        wr.emitLoadCell(
+            r,
+            CellKind.ROLE_PROPERTY,
+            role.index,
+            OpRoleProperty.IS_CONNECTED
+        )
+        return r
+    }
+
     private emitRoleCall(
         expr: estree.CallExpression,
         obj: ValueDesc,
         prop: string
     ): ValueDesc {
         const role = obj.cell as Role
-        const wr = this.writer
         switch (prop) {
             case "isConnected":
                 this.requireArgs(expr, 0)
-                const r = wr.allocReg()
-                wr.emitLoadCell(
-                    r,
-                    CellKind.ROLE_PROPERTY,
-                    role.index,
-                    OpRoleProperty.IS_CONNECTED
-                )
-                return r
+                return this.emitIsRoleConnected(role)
+            case "onConnected":
+            case "onDisconnected":
+                this.requireArgs(expr, 1)
+                const name = role.getName() + "_" + prop
+                const handler = this.emitHandler(name, expr.arguments[0])
+                const disp = this.roleDispatcher(role)
+                const section =
+                    prop == "onConnected" ? disp.connected : disp.disconnected
+                section.emit(wr => {
+                    wr.emitCall(handler)
+                })
+                if (prop == "onConnected")
+                    disp.init.emit(wr => {
+                        wr.push()
+                        const r = wr.forceReg(disp.wasConnected.value())
+                        wr.emitIfAndPop(r, () => {
+                            wr.emitCall(handler)
+                        })
+                    })
+                return values.zero
             default:
                 this.throwError(expr, `roles don't have property ${prop}`)
         }
@@ -1242,7 +1416,9 @@ class Program implements InstrArgResolver {
                 const handler = this.emitHandler(name, expr.arguments[1])
                 this.emitInRoleDispatcher(role, wr => {
                     const cache = this.proc.mkTempLocal(name)
-                    // TODO assign NaN to cache initially
+                    role.dispatcher.init.emit(wr => {
+                        wr.assign(cache.value(), values.nan)
+                    })
                     wr.push()
                     const cond = this.inlineBin(
                         OpBinary.EQ,
