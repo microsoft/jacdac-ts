@@ -49,7 +49,7 @@ function processExpression(e: jsep.Expression, asRead = true): [string, string[]
                         } else
                             return `${first}.${second}.read()`
                     } else {
-                        return second
+                        return `${first}.${second}`
                     }
                 }
             }
@@ -84,16 +84,16 @@ function processHead(head: VMCommand): [string, string[]] {
     switch(inst) {
         case "awaitEvent": {
             const event = args[0] as jsep.MemberExpression
-            const [ev,vars] = processExpression(event)
+            const [ev,vars] = processExpression(event,false)
             return [`${ev}.sub(() => {`, vars]
         }
         case "awaitChange": {
-            const [reg, vars1] = processExpression(args[0])
-            const [delta, vars2] = processExpression(args[1])
+            const [reg, vars1] = processExpression(args[0],false)
+            const [delta, vars2] = processExpression(args[1], false)
             return  [`${reg}.onChange(${delta}, () => {`, [...vars1, ...vars2]]
         }
         case "awaitRegister": {
-            const [reg, vars] = processExpression(args[0])
+            const [reg, vars] = processExpression(args[0], false)
             return  [`${reg}.onChange(0, () => {`, vars]
         }
         case "roleBound": {
