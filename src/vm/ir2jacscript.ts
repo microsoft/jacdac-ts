@@ -17,41 +17,54 @@ function sanitize(s: string) {
     return s.replace(" ", "_")
 }
 
-function processExpr(e: jsep.Expression): string {
-    switch (e.type) {
-        case "ArrayExpression": {
-            const ae = e as jsep.ArrayExpression
-            return `[${ae.elements.map(processExpr).join(", ")}]`
+function processExpression(e: jsep.Expression): [string, string[]] {
+    const vars: string[] = []
+    return [processExpr(e), vars]
+
+    function processExpr(e: jsep.Expression): string {
+        switch (e.type) {
+            case "ArrayExpression": {
+                const ae = e as jsep.ArrayExpression
+                return `[${ae.elements.map(processExpr).join(", ")}]`
+            }
+            case "CallExpression": {
+                const caller = e as jsep.CallExpression
+                return `${processExpr(caller.callee)}(${caller.arguments
+                    .map(processExpr)
+                    .join(", ")})`
+            }
+            case "MemberExpression": {
+                const root = e as jsep.MemberExpression
+                if (root.computed) {
+                    return `${processExpr(root.object)}[${processExpr(root.property)}]`
+                } else {
+                    const first = `${processExpr(root.object)}`
+                    const second = `${processExpr(root.property)}`
+                    if (first.startsWith("$var")) {
+                        if (vars.indexOf(second) < 0)
+                            vars.push(second)
+                        return second
+                    } else
+                        return `${first}.${second}`
+                }
+            }
+            case "BinaryExpression": {
+                const be = e as any
+                return `(${processExpr(be.left)} ${be.operator} ${processExpr(be.right)})`
+            }
+            case "UnaryExpression": {
+                const ue = e as jsep.UnaryExpression
+                return `${ue.operator}${processExpr(ue.argument)}`
+            }
+            case "Identifier": {
+                return (e as jsep.Identifier).name
+            }
+            case "Literal": {
+                return (e as jsep.Literal).raw
+            }
+            default:
+                return "TODO"
         }
-        case "CallExpression": {
-            const caller = e as jsep.CallExpression
-            return `${processExpr(caller.callee)}(${caller.arguments
-                .map(processExpr)
-                .join(", ")})`
-        }
-        case "MemberExpression": {
-            const root = e as jsep.MemberExpression
-            return root.computed
-                ? `${processExpr(root.object)}[${processExpr(root.property)}]`
-                : `${processExpr(root.object)}.${processExpr(root.property)}`
-        }
-        case "BinaryExpression": {
-            const be = e as any
-            return `(${processExpr(be.left)} ${be.operator} ${processExpr(be.right)})`
-        }
-        case "UnaryExpression": {
-            const ue = e as jsep.UnaryExpression
-            return `${ue.operator}${processExpr(ue.argument)}`
-        }
-        case "Identifier": {
-            // TODO: need to pattern match and look for special cases
-            return (e as jsep.Identifier).name
-        }
-        case "Literal": {
-            return (e as jsep.Literal).raw
-        }
-        default:
-            return "TODO"
     }
 }
 
@@ -66,13 +79,17 @@ function processHead(head: VMCommand) {
     switch(inst) {
         case "awaitEvent": {
             const event = args[0] as jsep.MemberExpression
-            return `${processExpr(event)}.sub(() => {`
+            const [ev] = processExpression(event)
+            return `${ev}.sub(() => {`
         }
         case "awaitChange": {
-            return  `${processExpr(args[0])}.onChange(${processExpr(args[1])}, () => {`
+            const [reg] = processExpression(args[0])
+            const [delta] = processExpression(args[1])
+            return  `${reg}.onChange(${delta}, () => {`
         }
         case "awaitRegister": {
-            return  `${processExpr(args[0])}.onChange(0, () => {`
+            const [reg] = processExpression(args[0])
+            return  `${reg}.onChange(0, () => {`
         }
         case "roleBound": {
             break
@@ -87,41 +104,27 @@ function processHead(head: VMCommand) {
 function processCommand(cmd: VMCommand) {
     const args = cmd.command.arguments
     if (cmd.command.callee.type === "MemberExpression") {
-        // interpret as a service command (role.comand)
-        return ""
+        const exprs = args.map(a => processExpression(a)[0]).join(",")
+        return `${processExpression(cmd.command.callee as jsep.MemberExpression)[0]}(${exprs})`
     }
     const inst = getInst(cmd)
     switch (inst) {
-        case "writeRegister":
-        case "writeLocal":
+        case "writeRegister": {
+            const rest = cmd.command.arguments.slice(1)
+            const exprs = rest.map(a => processExpression(a)[0]).join(",")
+            return `${processExpression(args[0])[0]}.write(${exprs})`
+        }
+        case "writeLocal": {
+            // TODO
+            return ""
+        }
     }
-    return ""
+    return "ERROR"
 }
 
 /*
 public async evaluate(): Promise<VMInternalStatus> {
-        if (!this._started) {
-            const neededStart = await this.startAsync()
-            this._started = true
-            if (neededStart) return VMInternalStatus.Running
-        }
-        const args = this.cmd.command.arguments
-        if (this.cmd.command.callee.type === "MemberExpression") {
-            // interpret as a service command (role.comand)
-            const expr = this.newEval()
-            const values: atomic[] = []
-            for (const a of this.cmd.command.arguments) {
-                values.push(await expr.evalAsync(a))
-            }
-            await this.env.sendCommandAsync(
-                this.cmd.command.callee as jsep.MemberExpression,
-                values
-            )
-            return VMInternalStatus.Completed
-        }
         switch (this.inst) {
-
-            case "writeRegister":
             case "writeLocal": {
                 const expr = this.newEval()
                 const values: atomic[] = []
@@ -159,6 +162,8 @@ export function toJacScript({ roles, serverRoles, handlers }: VMProgram): JacScr
         )
         add(`var ${sanitize(r.role)} = roles.${spec.shortId}()`)
     })
+    // find the global variables
+
     handlers.forEach(h => {
         tab++
         handlerVisitor(h)
@@ -188,6 +193,7 @@ export function toJacScript({ roles, serverRoles, handlers }: VMProgram): JacScr
                 case "ite": {
                     const ite = base as VMIfThenElse
                     if (ite) {
+                        // TODO
                         add(`if (...) {`)
                         tab++
                         ite.then?.forEach(visitBase)
