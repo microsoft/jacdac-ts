@@ -9,7 +9,6 @@ import {
 } from "../utils"
 import Flags from "../flags"
 import JDError, { errorCode } from "../error"
-import { deviceCatalog } from "../catalog"
 import JDBus from "../bus"
 
 export default class WebSerialIO implements HF2_IO {
