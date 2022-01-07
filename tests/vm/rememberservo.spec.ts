@@ -2,7 +2,7 @@ import { suite, test } from "mocha"
 import { readFileSync } from "fs"
 import { VMProgram } from "../../src/vm/ir"
 import { VMProgramRunner } from "../../src/vm/runner"
-
+import { toJacScript } from "../../src/vm/ir2jacscript"
 import { makeTest } from "../jdom/fastforwardtester"
 import ButtonServer from "../../src/servers/buttonserver"
 import RoleManager from "../../src/jdom/rolemanager"
@@ -16,6 +16,10 @@ suite("remember servo", () => {
     const program: VMProgram = JSON.parse(
         readFileSync("vm/suites/rememberservo.json", "utf8")
     )
+
+    const jacscript = toJacScript(program)
+    // const output = jacscript.program.join("\n")
+    // console.log(output)
 
     function makeVmTest(
         testBody: (

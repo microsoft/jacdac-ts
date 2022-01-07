@@ -3,6 +3,7 @@ import { serviceSpecificationFromClassIdentifier } from "../jdom/spec"
 import { VMBase, VMCommand, VMHandler, VMIfThenElse, VMProgram } from "./ir"
 
 // TODO:
+// - insert read() after register in a read context
 // - write a register with fields
 
 export type JacScriptProgram = {
@@ -14,7 +15,7 @@ function sanitize(s: string) {
     return s.replace(" ", "_")
 }
 
-function processExpression(e: jsep.Expression): [string, string[]] {
+function processExpression(e: jsep.Expression, asRead = true): [string, string[]] {
     const vars: string[] = []
     return [processExpr(e), vars]
 
@@ -41,8 +42,15 @@ function processExpression(e: jsep.Expression): [string, string[]] {
                         if (vars.indexOf(second) < 0)
                             vars.push(second)
                         return second
-                    } else
-                        return `${first}.${second}`
+                    } else if (asRead) {
+                        if (second.indexOf(".") >0 ) {
+                            const [reg,field] = second.split(".")
+                            return `${reg}.read().${field}`
+                        } else
+                            return `${first}.${second}.read()`
+                    } else {
+                        return second
+                    }
                 }
             }
             case "BinaryExpression": {
@@ -102,8 +110,8 @@ function processHead(head: VMCommand): [string, string[]] {
 function processCommand(cmd: VMCommand): [string, string[]] {
     const args = cmd.command.arguments
     if (cmd.command.callee.type === "MemberExpression") {
-        const roleCall = processExpression(cmd.command.callee as jsep.MemberExpression)
-        const exprs = args.map(processExpression)
+        const roleCall = processExpression(cmd.command.callee as jsep.MemberExpression, false)
+        const exprs = args.map(a => processExpression(a))
         return [ `${roleCall[0]}(${exprs.map(p => p[0]).join(",")})`, 
                     [...roleCall[1], ...exprs.flatMap(p => p[1])] ]
     }
@@ -111,15 +119,15 @@ function processCommand(cmd: VMCommand): [string, string[]] {
     switch (inst) {
         case "writeRegister": {
             const rest = cmd.command.arguments.slice(1)
-            const exprs = rest.map(processExpression)
-            const reg = processExpression(args[0])
+            const exprs = rest.map(a => processExpression(a))
+            const reg = processExpression(args[0],false)
             return [ `${reg[0]}.write(${exprs.map(p => p[0]).join(",")})`,
                         [...reg[1], ...exprs.flatMap(p => p[1])] ]
         }
         case "writeLocal": {
-            const lhs = processExpression(args[0])
+            const lhs = processExpression(args[0],false)
             const rhs = processExpression(args[1])
-            return [ `${lhs} = ${rhs}})`, [...lhs[1], ...rhs[1] ] ]
+            return [ `${lhs[0]} = ${rhs[0]}`, [...lhs[1], ...rhs[1] ] ]
         }
     }
     return [ "ERROR", [] ]
