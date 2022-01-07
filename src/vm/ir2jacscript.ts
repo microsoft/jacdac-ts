@@ -73,23 +73,23 @@ function getInst(cmd: VMCommand) {
 }
 
 // these are waits
-function processHead(head: VMCommand) {
+function processHead(head: VMCommand): [string, string[]] {
     const args = head.command.arguments
     const inst = getInst(head)
     switch(inst) {
         case "awaitEvent": {
             const event = args[0] as jsep.MemberExpression
-            const [ev] = processExpression(event)
-            return `${ev}.sub(() => {`
+            const [ev,vars] = processExpression(event)
+            return [`${ev}.sub(() => {`, vars]
         }
         case "awaitChange": {
-            const [reg] = processExpression(args[0])
-            const [delta] = processExpression(args[1])
-            return  `${reg}.onChange(${delta}, () => {`
+            const [reg, vars1] = processExpression(args[0])
+            const [delta, vars2] = processExpression(args[1])
+            return  [`${reg}.onChange(${delta}, () => {`, [...vars1, ...vars2]]
         }
         case "awaitRegister": {
-            const [reg] = processExpression(args[0])
-            return  `${reg}.onChange(0, () => {`
+            const [reg, vars] = processExpression(args[0])
+            return  [`${reg}.onChange(0, () => {`, vars]
         }
         case "roleBound": {
             break
@@ -98,28 +98,31 @@ function processHead(head: VMCommand) {
             // ERROR
         }
     }
-    return ""
+    return ["", []]
 }
 
-function processCommand(cmd: VMCommand) {
+function processCommand(cmd: VMCommand): [string, string[]] {
     const args = cmd.command.arguments
     if (cmd.command.callee.type === "MemberExpression") {
-        const exprs = args.map(a => processExpression(a)[0]).join(",")
-        return `${processExpression(cmd.command.callee as jsep.MemberExpression)[0]}(${exprs})`
+        const roleCall = processExpression(cmd.command.callee as jsep.MemberExpression)
+        const exprs = args.map(processExpression)
+        return [ `${roleCall[0]}(${exprs.map(p => p[0]).join(",")})`, 
+                    [...roleCall[1], ...exprs.flatMap(p => p[1])] ]
     }
     const inst = getInst(cmd)
     switch (inst) {
         case "writeRegister": {
             const rest = cmd.command.arguments.slice(1)
-            const exprs = rest.map(a => processExpression(a)[0]).join(",")
-            return `${processExpression(args[0])[0]}.write(${exprs})`
+            const exprs = rest.map(processExpression)
+            const reg = processExpression(args[0])
+            return [ `${reg[0]}.write(${exprs.map(p => p[0]).join(",")})`,
+                        [...reg[1], ...exprs.flatMap(p => p[1])] ]
         }
         case "writeLocal": {
             // TODO
-            return ""
         }
     }
-    return "ERROR"
+    return [ "ERROR", [] ]
 }
 
 /*
@@ -151,24 +154,35 @@ public async evaluate(): Promise<VMInternalStatus> {
 export function toJacScript({ roles, serverRoles, handlers }: VMProgram): JacScriptProgram {
     const program: string[] = []
     const debug: string[] = []
+    const globals: string[] = []
     let tab = 0
-    const add = (s:string) => {
-        program.push(s)
+    const add = (code: string, vars: string[] = []) => {
+        vars.forEach(v => {
+            if (globals.indexOf(v) < 0)
+                globals.push(v)
+        })
+        program.push(code)
     }
-    // process start blocks
-    roles.forEach(r => {
-        const spec = serviceSpecificationFromClassIdentifier(
-            r.serviceClass
-        )
-        add(`var ${sanitize(r.role)} = roles.${spec.shortId}()`)
-    })
-    // find the global variables
-
+    
+    // pass over program
     handlers.forEach(h => {
         tab++
         handlerVisitor(h)
         tab--
     })
+
+    // process start blocks
+    roles.forEach(r => {
+        const spec = serviceSpecificationFromClassIdentifier(
+            r.serviceClass
+        )
+        program.unshift(`var ${sanitize(r.role)} = roles.${spec.shortId}()`)
+    })
+
+    globals.forEach(g => {
+        program.unshift(`var ${g}`)
+    })
+
     return { program, debug }
 
     function handlerVisitor(
@@ -178,7 +192,7 @@ export function toJacScript({ roles, serverRoles, handlers }: VMProgram): JacScr
             return
 
         const head = handler.commands[0]
-        add(processHead(head as VMCommand))
+        add(...processHead(head as VMCommand))
         tab++
         handler.commands.slice(1).forEach(visitBase)
         tab--
@@ -187,7 +201,7 @@ export function toJacScript({ roles, serverRoles, handlers }: VMProgram): JacScr
         function visitBase(base: VMBase) {
             switch (base.type) {
                 case "cmd": {
-                    add(processCommand(base as VMCommand))
+                    add(...processCommand(base as VMCommand))
                     break
                 }
                 case "ite": {
