@@ -51,6 +51,16 @@ class SpiTransport extends Transport
     }
 
     protected async transportConnectAsync(background?: boolean): Promise<void> {
+        try {
+            return this.internalTransportConnectAsync(background);
+        }   
+        catch(e) {
+            console.error("make sure to install rpio");
+            console.log(e);
+        }
+    }
+
+    private async internalTransportConnectAsync(background?: boolean): Promise<void> {
         console.log("connecting to jacdapter...");
 
         const {txReadyPin, rxReadyPin, resetPin} = this.options;
