@@ -119,37 +119,13 @@ function processCommand(cmd: VMCommand): [string, string[]] {
                         [...reg[1], ...exprs.flatMap(p => p[1])] ]
         }
         case "writeLocal": {
-            // TODO
+            const lhs = processExpression(args[0])
+            const rhs = processExpression(args[1])
+            return [ `${lhs} = ${rhs}})`, [...lhs[1], ...rhs[1] ] ]
         }
     }
     return [ "ERROR", [] ]
 }
-
-/*
-public async evaluate(): Promise<VMInternalStatus> {
-        switch (this.inst) {
-            case "writeLocal": {
-                const expr = this.newEval()
-                const values: atomic[] = []
-                for (const a of this.cmd.command.arguments.slice(1)) {
-                    values.push(await expr.evalAsync(a))
-                }
-                this.trace("eval-end", { expr: unparse(args[1]) })
-                const reg = args[0] as jsep.MemberExpression
-                if (this.inst === "writeRegister") {
-                    await this.env.writeRegisterAsync(reg, values)
-                    this.trace("write-after-wait", {
-                        reg: unparse(reg),
-                        expr: values[0],
-                    })
-                } else this.env.writeGlobal(reg, values[0])
-                return VMInternalStatus.Completed
-            }
-        }
-    }
-}
-
-*/
 
 export function toJacScript({ roles, serverRoles, handlers }: VMProgram): JacScriptProgram {
     const program: string[] = []
@@ -163,7 +139,7 @@ export function toJacScript({ roles, serverRoles, handlers }: VMProgram): JacScr
         })
         program.push(code)
     }
-    
+
     // pass over program
     handlers.forEach(h => {
         tab++
@@ -207,8 +183,8 @@ export function toJacScript({ roles, serverRoles, handlers }: VMProgram): JacScr
                 case "ite": {
                     const ite = base as VMIfThenElse
                     if (ite) {
-                        // TODO
-                        add(`if (...) {`)
+                        const [expr,vars] = processExpression(ite.expr)
+                        add(`if (${expr}) {`, vars)
                         tab++
                         ite.then?.forEach(visitBase)
                         if (ite.else) {
