@@ -68,7 +68,7 @@ export class JDEvent extends JDServiceMemberNode {
      * Gets the unpacked data attached to the last event packet, if the event specification is known.
      * @category Data
      */
-    get unpacked() {
+    get unpackedValue() {
         const { packFormat } = this.specification || {}
         return packFormat && this._lastReportPkt?.jdunpack(packFormat)
     }
