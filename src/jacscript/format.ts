@@ -78,10 +78,10 @@ export enum OpMath2 {
 }
 
 export enum OpCall {
-    SYNC = 0,
-    BG = 1,
-    BG_MAX1 = 2,
-    RESERVED = 3,
+    SYNC = 0, // regular call
+    BG = 1, // start new fiber
+    BG_MAX1 = 2, // ditto, unless one is already running
+    BG_MAX1_PEND1 = 3, // ditto, but if fiber already running, set flag for it to be re-run when it finishes
 }
 
 export enum CellKind {
@@ -330,8 +330,8 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
                 return " bg"
             case OpCall.BG_MAX1:
                 return " bg (max1)"
-            case OpCall.RESERVED:
-                return " ???"
+            case OpCall.BG_MAX1_PEND1:
+                return " bg (max1 pend1)"
         }
     }
 

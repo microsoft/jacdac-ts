@@ -310,6 +310,7 @@ export function verifyBinary(
                     switch (arg8 >> 6) {
                         case OpCall.BG:
                         case OpCall.BG_MAX1:
+                        case OpCall.BG_MAX1_PEND1:
                             check(d == 0, "save regs on bg call")
                             break
                         case OpCall.SYNC:
