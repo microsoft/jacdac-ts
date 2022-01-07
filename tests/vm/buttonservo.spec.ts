@@ -1,6 +1,7 @@
 import { suite, test } from "mocha"
 import { readFileSync } from "fs"
 import { VMProgram } from "../../src/vm/ir"
+import { toJacScript } from "../../src/vm/ir2jacscript"
 import { VMProgramRunner } from "../../src/vm/runner"
 
 import { makeTest } from "../jdom/fastforwardtester"
@@ -16,6 +17,10 @@ suite("button servo", () => {
     const program: VMProgram = JSON.parse(
         readFileSync("vm/suites/buttonservo.json", "utf8")
     )
+
+    const jacscript = toJacScript(program)
+    //const output = jacscript.program.join("\n")
+    //console.log(output)
 
     function makeVmTest(
         testBody: (

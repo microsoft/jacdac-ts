@@ -3,12 +3,9 @@ import { serviceSpecificationFromClassIdentifier } from "../jdom/spec"
 import { VMBase, VMCommand, VMHandler, VMIfThenElse, VMProgram } from "./ir"
 
 // TODO:
-// - deal with expressions and syntax for global variables
-// - need to make a pass over expressions to find global variables
-//   and declare them up front
-// - deal with access to fields of register
+// - write a register with fields
 
-type JacScriptProgram = {
+export type JacScriptProgram = {
     program: string[]
     debug: string[]
 }
@@ -57,7 +54,7 @@ function processExpression(e: jsep.Expression): [string, string[]] {
                 return `${ue.operator}${processExpr(ue.argument)}`
             }
             case "Identifier": {
-                return (e as jsep.Identifier).name
+                return sanitize((e as jsep.Identifier).name)
             }
             case "Literal": {
                 return (e as jsep.Literal).raw
@@ -92,6 +89,7 @@ function processHead(head: VMCommand): [string, string[]] {
             return  [`${reg}.onChange(0, () => {`, vars]
         }
         case "roleBound": {
+            // TODO
             break
         }
         default: {
@@ -137,15 +135,24 @@ export function toJacScript({ roles, serverRoles, handlers }: VMProgram): JacScr
             if (globals.indexOf(v) < 0)
                 globals.push(v)
         })
-        program.push(code)
+        program.push(`${" ".repeat(tab*4)}${code}`)
     }
 
     // pass over program
+    let startHandler: VMHandler = undefined
     handlers.forEach(h => {
-        tab++
-        handlerVisitor(h)
-        tab--
+        if (h.commands.length === 0)
+            return
+        const [head] = processHead(h.commands[0] as VMCommand)
+        if (head)
+          handlerVisitor(h)
+        else
+          startHandler = h
     })
+
+    if (startHandler) {
+        startHandler.commands.forEach(visitBase)
+    }
 
     // process start blocks
     roles.forEach(r => {
@@ -164,38 +171,35 @@ export function toJacScript({ roles, serverRoles, handlers }: VMProgram): JacScr
     function handlerVisitor(
         handler: VMHandler,
     ) {
-        if (handler.commands.length === 0)
-            return
-
         const head = handler.commands[0]
         add(...processHead(head as VMCommand))
         tab++
         handler.commands.slice(1).forEach(visitBase)
         tab--
-        add(`}`)
+        add(`})`)
+    }
 
-        function visitBase(base: VMBase) {
-            switch (base.type) {
-                case "cmd": {
-                    add(...processCommand(base as VMCommand))
-                    break
-                }
-                case "ite": {
-                    const ite = base as VMIfThenElse
-                    if (ite) {
-                        const [expr,vars] = processExpression(ite.expr)
-                        add(`if (${expr}) {`, vars)
+    function visitBase(base: VMBase) {
+        switch (base.type) {
+            case "cmd": {
+                add(...processCommand(base as VMCommand))
+                break
+            }
+            case "ite": {
+                const ite = base as VMIfThenElse
+                if (ite) {
+                    const [expr,vars] = processExpression(ite.expr)
+                    add(`if (${expr}) {`, vars)
+                    tab++
+                    ite.then?.forEach(visitBase)
+                    if (ite.else) {
+                        tab--
+                        add(`} else {`)
                         tab++
-                        ite.then?.forEach(visitBase)
-                        if (ite.else) {
-                            tab--
-                            add(`} else {`)
-                            tab++
-                            ite.else.forEach(visitBase)
-                            tab--
-                        }
-                        add(`}`)
+                        ite.else.forEach(visitBase)
+                        tab--
                     }
+                    add(`}`)
                 }
             }
         }
