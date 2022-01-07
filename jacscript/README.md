@@ -251,10 +251,6 @@ Which handlers require parameters:
   - reg get
   - reg set
 
-Maybe queue packets not executions? could lead to weird end-user results
-
-* don't check timers in executor in `setTimeout()`; do it sync
-* add `OpCall.BG_MAX1_PEND1`; use for handlers
 * add `role.waitConnected()` or something?
 * add `bg(() => { ... })`, also `bg1()` ?
 * do fiber round-robin for yields?

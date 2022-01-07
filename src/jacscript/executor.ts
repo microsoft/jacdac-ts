@@ -473,8 +473,8 @@ class Activation {
         this.pc = info.startPC
     }
 
-    saveArgs(n: number) {
-        this.saveRegs((1 << n) - 1)
+    restart() {
+        this.pc = this.info.startPC
     }
 
     private saveRegs(d: number) {
@@ -609,10 +609,9 @@ class Activation {
                         this.callFunction(finfo, subop)
                         break
                     case OpCall.BG:
-                        ctx.startFiber(finfo, subop, true)
-                        break
                     case OpCall.BG_MAX1:
-                        ctx.startFiber(finfo, subop, true)
+                    case OpCall.BG_MAX1_PEND1:
+                        ctx.startFiber(finfo, subop, arg8 >> 6)
                         break
                     default:
                         oops()
@@ -701,12 +700,13 @@ class Activation {
 }
 
 class Fiber {
-    waitingOn: Role[]
+    waitingOn: Role[] = []
     wakeTime: number
     waitingOnGet: Role
     waitingOnGetCode: number
     activation: Activation
     firstFun: FunctionInfo
+    pending: boolean
 
     constructor(public ctx: Ctx) {}
 
@@ -734,11 +734,16 @@ class Fiber {
     }
 
     finish() {
-        log(`finish ${this.firstFun}`)
-        const idx = this.ctx.fibers.indexOf(this)
-        if (idx < 0) oops()
-        this.ctx.fibers.splice(idx, 1)
-        this.ctx.doYield()
+        log(`finish ${this.firstFun} ${this.pending ? " +pending" : ""}`)
+        if (this.pending) {
+            this.pending = false
+            this.activation.restart()
+        } else {
+            const idx = this.ctx.fibers.indexOf(this)
+            if (idx < 0) oops()
+            this.ctx.fibers.splice(idx, 1)
+            this.ctx.doYield()
+        }
     }
 }
 
@@ -788,7 +793,7 @@ class Ctx {
     currentActivation: Activation
     roles: Role[]
     wakeTimeout: any
-    scheduleScheduled = false
+    wakeUpdated = false
     panicCode = 0
     onPanic: (code: number) => void
     onError: (err: Error) => void
@@ -799,8 +804,7 @@ class Ctx {
         bus.on(DEVICE_DISCONNECT, this.deviceDisconnect.bind(this))
         bus.on(SELF_ANNOUNCE, () => this.autoBind(bus.devices()))
         bus.on(PACKET_PROCESS, this.processPkt.bind(this))
-        this.checkWakeTimes = this.checkWakeTimes.bind(this)
-        this.scheduleCheckWakeTimes = this.scheduleCheckWakeTimes.bind(this)
+        this.wakeFibers = this.wakeFibers.bind(this)
     }
 
     now() {
@@ -808,13 +812,11 @@ class Ctx {
     }
 
     startProgram() {
-        this.startFiber(this.info.functions[0], 0, false)
+        this.startFiber(this.info.functions[0], 0, OpCall.BG)
     }
 
     wakeTimesUpdated() {
-        if (this.scheduleScheduled || this.panicCode) return
-        this.scheduleScheduled = true
-        this.bus.scheduler.setTimeout(this.scheduleCheckWakeTimes, 0)
+        this.wakeUpdated = true
     }
 
     panic(code: number, exn?: Error) {
@@ -826,30 +828,16 @@ class Ctx {
             else console.error(`PANIC ${code}`)
             this.panicCode = code
         }
-        this.scheduleCheckWakeTimes() // clears wake timer
+        this.clearWakeTimer()
         if (!exn) exn = new Error("Panic")
         ;(exn as any).panicCode = this.panicCode
         throw exn
     }
 
-    private scheduleCheckWakeTimes() {
-        this.scheduleScheduled = false
+    private clearWakeTimer() {
         if (this.wakeTimeout !== undefined) {
             this.bus.scheduler.clearTimeout(this.wakeTimeout)
             this.wakeTimeout = undefined
-        }
-
-        if (this.panicCode) return
-        let minTime = Infinity
-        for (const f of this.fibers) {
-            if (f.wakeTime) minTime = Math.min(f.wakeTime, minTime)
-        }
-        if (minTime < Infinity) {
-            const delta = Math.max(0, minTime - this.now() + 1)
-            this.wakeTimeout = this.bus.scheduler.setTimeout(
-                this.checkWakeTimes,
-                delta
-            )
         }
     }
 
@@ -875,11 +863,44 @@ class Ctx {
         }
     }
 
-    private checkWakeTimes() {
-        const n = this.now()
-        for (const f of this.fibers)
-            if (f.wakeTime && n >= f.wakeTime) this.run(f)
-        this.wakeTimesUpdated() // make sure we're re-scheduled, especially in case this fired too early
+    private pokeFibers() {
+        if (this.wakeUpdated) this.wakeFibers()
+    }
+
+    private wakeFibers() {
+        if (this.panicCode) return
+
+        let minTime = 0
+
+        this.clearWakeTimer()
+
+        for (;;) {
+            let numRun = 0
+            const now = this.now()
+            minTime = Infinity
+            for (const f of this.fibers) {
+                if (!f.wakeTime) continue
+                const wakeTime = f.wakeTime
+                if (now >= wakeTime) {
+                    this.run(f)
+                    if (this.panicCode) return
+                    numRun++
+                } else {
+                    minTime = Math.min(wakeTime, minTime)
+                }
+            }
+
+            if (numRun == 0 && minTime > this.now()) break
+        }
+
+        this.wakeUpdated = false
+        if (minTime < Infinity) {
+            const delta = Math.max(0, minTime - this.now())
+            this.wakeTimeout = this.bus.scheduler.setTimeout(
+                this.wakeFibers,
+                delta
+            )
+        }
     }
 
     private wakeRole(idx: number) {
@@ -903,6 +924,7 @@ class Ctx {
                 this.wakeRole(idx)
             }
         }
+        this.pokeFibers()
     }
 
     private autoBind(devs: JDDevice[]) {
@@ -931,6 +953,7 @@ class Ctx {
             )
                 this.wakeRole(idx)
         }
+        this.pokeFibers()
     }
 
     doYield() {
@@ -940,16 +963,18 @@ class Ctx {
         return f
     }
 
-    startFiber(info: FunctionInfo, numargs: number, max1: boolean) {
+    startFiber(info: FunctionInfo, numargs: number, op: OpCall) {
         if (numargs > info.numRegs) oops()
-        if (max1)
+        if (op != OpCall.BG)
             for (const f of this.fibers) {
-                if (f.firstFun == info) return
+                if (f.firstFun == info) {
+                    if (op == OpCall.BG_MAX1_PEND1) f.pending = true
+                    return
+                }
             }
         log(`start fiber: ${info}`)
         const fiber = new Fiber(this)
         fiber.activation = new Activation(fiber, info, null, numargs)
-        fiber.activation.saveArgs(numargs)
         fiber.firstFun = info
         fiber.setWakeTime(this.now())
         this.fibers.push(fiber)
@@ -987,6 +1012,7 @@ class Ctx {
             log(`set ${r.info}.r${code} := ${toHex(val)}`)
             serv.register(code).sendSetAsync(val, true)
             this.run(fib)
+            this.pokeFibers()
         })
     }
 
@@ -1011,6 +1037,7 @@ class Ctx {
             reg.refresh().then(() => {
                 setPktInCtx(reg)
                 this.run(fib)
+                this.pokeFibers()
             })
         })
     }
@@ -1057,14 +1084,4 @@ export class Runner {
             this.ctx.startProgram()
         }, this.startDelay)
     }
-}
-
-export function runProgram(
-    bus: JDBus,
-    bin: Uint8Array,
-    dbg: DebugInfo = emptyDebugInfo()
-) {
-    const img = new ImageInfo(bin, dbg)
-    const ctx = new Ctx(img, bus)
-    bus.scheduler.setTimeout(() => ctx.startProgram(), 1100)
 }
