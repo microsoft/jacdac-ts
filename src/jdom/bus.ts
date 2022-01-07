@@ -121,6 +121,11 @@ export interface BusOptions {
      * This bus is a dashboard
      */
     dashboard?: boolean
+
+    /**
+     * This bus is a proxy
+     */
+    proxy?: boolean
 }
 
 /**
@@ -166,6 +171,7 @@ export class JDBus extends JDNode {
     private _passive = false
     private _client = false
     private _dashboard = false
+    private _proxy = false
 
     /**
      * the device catalog
@@ -194,6 +200,7 @@ export class JDBus extends JDNode {
             client,
             disableRoleManager,
             dashboard,
+            proxy
         } = options || {}
 
         this._roleManagerClient = disableRoleManager ? null : undefined
@@ -202,6 +209,7 @@ export class JDBus extends JDNode {
         this.parentOrigin = parentOrigin || "*"
         this._client = !!client
         this._dashboard = !!dashboard
+        this._proxy = !!proxy
         this.stats = new BusStatsMonitor(this)
         this.deviceCatalog = new DeviceCatalog()
 
@@ -1158,6 +1166,7 @@ ${dev
                 [
                     [SRV_INFRASTRUCTURE],
                     this._dashboard ? [SRV_DASHBOARD] : undefined,
+                    this._proxy ? [SRV_PROXY] : undefined,
                 ].filter(sc => !!sc),
             ]
         )
