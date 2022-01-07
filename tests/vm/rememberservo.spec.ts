@@ -3,6 +3,8 @@ import { readFileSync } from "fs"
 import { VMProgram } from "../../src/vm/ir"
 import { VMProgramRunner } from "../../src/vm/runner"
 import { toJacScript } from "../../src/vm/ir2jacscript"
+import { compile } from "../../src/jacscript/compiler"
+
 import { makeTest } from "../jdom/fastforwardtester"
 import ButtonServer from "../../src/servers/buttonserver"
 import RoleManager from "../../src/jdom/rolemanager"
@@ -18,8 +20,15 @@ suite("remember servo", () => {
     )
 
     const jacscript = toJacScript(program)
-    // const output = jacscript.program.join("\n")
-    // console.log(output)
+    const output = jacscript.program.join("\n")
+    console.log(output)
+    const res = compile(
+        {
+            write: (fn, cont) => {},
+            log: msg => { console.log(msg) },
+        },
+        output
+    )
 
     function makeVmTest(
         testBody: (
