@@ -939,6 +939,7 @@ class Program implements InstrArgResolver {
             })
 
             this.startDispatchers.emit(wr => {
+                // this is only executed once, but with BG_MAX1 is easier to naively analyze memory usage
                 wr.emitCall(proc, OpCall.BG_MAX1)
             })
         }
@@ -1272,7 +1273,7 @@ class Program implements InstrArgResolver {
                         specialVal(ValueSpecial.EV_CODE),
                         floatVal(obj.spec.identifier)
                     )
-                    wr.emitIfAndPop(cond, () => wr.emitCall(handler))
+                    wr.emitIfAndPop(cond, () => wr.emitCall(handler, OpCall.BG_MAX1_PEND1))
                 })
                 return values.zero
         }
@@ -1347,14 +1348,14 @@ class Program implements InstrArgResolver {
                 const section =
                     prop == "onConnected" ? disp.connected : disp.disconnected
                 section.emit(wr => {
-                    wr.emitCall(handler)
+                    wr.emitCall(handler, OpCall.BG_MAX1_PEND1)
                 })
                 if (prop == "onConnected")
                     disp.init.emit(wr => {
                         wr.push()
                         const r = wr.forceReg(disp.wasConnected.value())
                         wr.emitIfAndPop(r, () => {
-                            wr.emitCall(handler)
+                            wr.emitCall(handler, OpCall.BG_MAX1)
                         })
                     })
                 return values.zero
@@ -1449,7 +1450,7 @@ class Program implements InstrArgResolver {
                         wr.assign(cache.value(), curr)
                         wr.pop()
                         // handler()
-                        wr.emitCall(handler)
+                        wr.emitCall(handler, OpCall.BG_MAX1_PEND1)
                         // skip:
                         wr.emitLabel(skipHandler)
                     })
