@@ -200,7 +200,7 @@ export class JDBus extends JDNode {
             client,
             disableRoleManager,
             dashboard,
-            proxy
+            proxy,
         } = options || {}
 
         this._roleManagerClient = disableRoleManager ? null : undefined

@@ -1273,7 +1273,9 @@ class Program implements InstrArgResolver {
                         specialVal(ValueSpecial.EV_CODE),
                         floatVal(obj.spec.identifier)
                     )
-                    wr.emitIfAndPop(cond, () => wr.emitCall(handler, OpCall.BG_MAX1_PEND1))
+                    wr.emitIfAndPop(cond, () =>
+                        wr.emitCall(handler, OpCall.BG_MAX1_PEND1)
+                    )
                 })
                 return values.zero
         }
