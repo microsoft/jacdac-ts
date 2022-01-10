@@ -2,6 +2,19 @@ import * as esprima from "esprima"
 
 import * as estree from "estree"
 import {
+    range,
+    read32,
+    stringToUint8Array,
+    toHex,
+    toUTF8,
+    write16,
+    write32,
+    serviceSpecificationFromName,
+    jdpack,
+    camelize,
+} from "jacdac-ts"
+
+import {
     BinFmt,
     bitSize,
     CellDebugInfo,
@@ -28,19 +41,7 @@ import {
     stringifyInstr,
     ValueSpecial,
 } from "./format"
-import {
-    range,
-    read32,
-    stringToUint8Array,
-    toHex,
-    toUTF8,
-    write16,
-    write32,
-} from "../jdom/utils"
-import { serviceSpecificationFromName } from "../jdom/spec"
 import { numSetBits, verifyBinary } from "./verify"
-import { jdpack } from "../jdom/pack"
-import { camelize } from "../jacdac"
 
 export function oops(msg: string): never {
     throw new Error(msg)
@@ -1046,7 +1047,7 @@ class Program implements InstrArgResolver {
         }
     }
 
-    private forceName(pat: estree.Expression | estree.Pattern) {
+    private forceName(pat: estree.Expression | estree.Pattern | estree.PrivateIdentifier) {
         const r = idName(pat)
         if (!r) this.throwError(pat, "only simple identifiers supported")
         return (pat as estree.Identifier).name

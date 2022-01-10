@@ -1,14 +1,17 @@
-import { JDBus, JDDevice, JDRegister, JDService, printPacket } from "../jacdac"
-import { NumberFormat, setNumber } from "../jdom/buffer"
 import {
+    JDBus,
+    JDDevice,
+    JDRegister,
+    JDService,
+    printPacket,
+    NumberFormat,
+    setNumber,
     CMD_GET_REG,
     DEVICE_DISCONNECT,
     PACKET_PROCESS,
     SELF_ANNOUNCE,
-} from "../jdom/constants"
-import { jdunpack } from "../jdom/pack"
-import { Packet } from "../jdom/packet"
-import {
+    jdunpack,
+    Packet,
     fromUTF8,
     range,
     read16,
@@ -19,7 +22,7 @@ import {
     uint8ArrayToString,
     write16,
     write32,
-} from "../jdom/utils"
+} from "jacdac-ts"
 import {
     BinFmt,
     bitSize,

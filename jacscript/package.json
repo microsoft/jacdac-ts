@@ -1,0 +1,20 @@
+{
+  "name": "jacscript",
+  "version": "0.0.0",
+  "description": "Jacscript VM",
+  "main": "./dist/jacscript.umd.js",
+  "module": "./dist/jacscript.module.js",
+  "exports": "./dist/jacscript.modern.js",
+  "scripts": {
+    "build": "tsc && esbuild src/jacscript.ts --bundle --outfile=dist/jacscript.js --external:jacdac-ts --analyze",
+    "test": "node testrunner.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@types/esprima": "^4.0.3",
+    "esbuild": "^0.14.11",
+    "esprima": "^4.0.1",
+    "jacdac-ts": "^1.24.4",
+    "typescript": "^4.5.4"
+  }
+}

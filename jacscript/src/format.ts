@@ -45,6 +45,7 @@ export enum OpAsync {
     CLOUD_UPLOAD, // A-numregs
     QUERY_REG, // A-role, B-code, C-timeout
     SET_REG, // A-role, B-code
+    QUERY_IDX_REG, // A-role, B-STRIDX:CMD[8], C-timeout
     _LAST,
 }
 
@@ -92,7 +93,7 @@ export enum CellKind {
 
     BUFFER = 4, // arg=shift:numfmt, C=Offset
     SPECIAL = 5, // arg=nan, regcode, role, ...
-    ROLE_PROPERTY = 6, // arg=roleidx, B=OpRoleProperty
+    ROLE_PROPERTY = 6, // arg=roleidx, C=OpRoleProperty
 
     // these cannot be emitted directly
     JD_EVENT = 0x100,

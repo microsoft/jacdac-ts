@@ -1,6 +1,6 @@
 const fs = require("fs")
 const path = require("path")
-const jacscript = require("../dist/jacscript")
+const jacscript = require("./dist/jacscript")
 
 const ctest = "compiler-tests"
 const samples = "samples"

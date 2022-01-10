@@ -1,4 +1,3 @@
-import { jdunpack } from "../jdom/pack"
 import {
     fromUTF8,
     range,
@@ -9,7 +8,7 @@ import {
     uint8ArrayToString,
     write16,
     write32,
-} from "../jdom/utils"
+} from "jacdac-ts"
 import {
     assertPos,
     BinSection,
