@@ -99,20 +99,24 @@ Thus handlers can be only registered at the top-level and un-conditionally.
 
 Every handler runs in its own fiber (lightweight thread).
 The scheduler is non-preemptive, meaning
-a fiber executes without interruption until it returns or hits an asynchronous operation.
+a fiber executes without interruption until it returns or hits an asynchronous operation,
+upon which point it's suspended.
 Example async operations are `wait()` and register read.
-The fiber is then suspended.
 Only one fiber executes at a time, while the other fibers are suspended.
 This is similar to modern JavaScript, but there's no `await` keyword.
 
-At any given time, there is at most one fiber (suspended or not) executing a given handler.
-If this is not desired, `bg(() => { ... })` syntax can be used to queue code execution
-in background, without limits of how many instances of it are running (TODO not impl yet).
-
 When the executor is woken up (typically due to an incoming packet or a timer expiring),
-it will execute all viable fibers until they are suspended.
+it will execute all viable fibers until they become suspended.
 Executing a fiber may start another viable fiber, which would be also executed until suspension,
 before any more packets are processed.
+
+### Handler-pending model
+
+At any given time, there is at most one fiber (which could be suspended) executing a given handler.
+If this is not desired, `bg(() => { ... })` syntax can be used to queue code execution
+in background, without limits of how many instances of it are running (TODO not impl yet).
+If a handler is triggered again, while it is still executing, a boolean flag is set on it,
+so that it starts again (once) after the current execution finishes.
 
 ## Registers
 
@@ -240,17 +244,11 @@ Main dynamic memory usage - function activation records (and fibers).
 
 ## TODO
 
-Which handlers require parameters:
-* events with arguments; also important not to drop these
-  - if we ignore args -> 1 pending should be enough?
-  - following services need events with args: -> ignore for now?
-    - barcodereader
-    - button timers
-* handling incoming packets for service impl.
-  - command
-  - reg get
-  - reg set
-
+* extend format strings to include numfmt
+* `memcmp()` opcode
+* shift buffer opcode?
+* implement `QUERY_IDX_REG`
+* somehow deal with events with legit args (button and barcode reader currently) - doesn't work so well in handler-pending model
 * add `role.waitConnected()` or something?
 * add `bg(() => { ... })`, also `bg1()` ?
 * do fiber round-robin for yields?
@@ -262,6 +260,7 @@ Which handlers require parameters:
 
 ### Implementing services in jacscript
 
+* this generally doesn't work with handler-pending model
 * opcode to send current packet
 * opcode to set the command
 * opcode to set service number
