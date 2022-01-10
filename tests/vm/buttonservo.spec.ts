@@ -46,8 +46,8 @@ suite("button servo", () => {
             })
             const roleMgr = new RoleManager(tester.bus)
             bindRoles(roleMgr, program, {
-                "button 1": button.service,
-                "servo 1": servo.service,
+                "button_1": button.service,
+                "servo_1": servo.service,
             })
 
             const runner = new VMProgramRunner(roleMgr, program)

@@ -46,17 +46,19 @@ export function bindRoles(
     )
 
     const serverRolesMap = program.roles.map(vmRole => {
+        const sanitize = (s:string) => s.replace(" ","_")
+        const role = sanitize(vmRole.role)
         assert(
-            vmRole.role in servers,
+            role in servers,
             `servers missing role ${vmRole.role} required by program`
         )
-        const service = servers[vmRole.role]
+        const service = servers[role]
         assert(
             service.serviceClass == vmRole.serviceClass,
             `serviceClass of ${vmRole.role} different than program`
         )
         return {
-            role: vmRole.role,
+            role,
             serviceClass: vmRole.serviceClass,
             preferredDeviceId: service.device.deviceId,
             service: service,

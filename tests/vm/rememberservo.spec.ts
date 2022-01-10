@@ -16,7 +16,7 @@ import { RegisterTester } from "../../src/tstester/registerwrapper"
 import { ServoReg } from "../../jacdac-spec/dist/specconstants"
 import { JDBus } from "../../src/jacdac"
 
-function runProgram(fn: string, bus: JDBus, delay = 0) {
+function runProgram(fn: string, bus: JDBus, delay: number = undefined) {
     console.log(`*** run ${fn}`)
 
     const res = compile(
@@ -71,12 +71,12 @@ suite("remember servo", () => {
             bindRoles(roleMgr, program, {
                 recall: recall.service,
                 set: set.service,
-                "servo 1": servo.service,
+                "servo_1": servo.service,
             })
 
-            const runner = new VMProgramRunner(roleMgr, program)
-            await runner.startAsync()
-            // await runProgram(output, tester.bus)
+            //const runner = new VMProgramRunner(roleMgr, program)
+            //await runner.startAsync()
+            await runProgram(output, tester.bus)
 
             const servoReg = new RegisterTester(
                 servo.service.register(ServoReg.Angle)
