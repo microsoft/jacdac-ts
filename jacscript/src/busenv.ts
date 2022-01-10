@@ -6,6 +6,7 @@ import {
     JDDevice,
     Packet,
     PACKET_PROCESS,
+    printPacket,
     Scheduler,
 } from "jacdac-ts"
 
@@ -19,6 +20,8 @@ export class JDBusJacsEnv implements JacsEnv {
         this.bus.on(PACKET_PROCESS, pkt => this.onPacket?.(pkt))
     }
     send(pkt: Packet): void {
+        pkt = pkt.clone()
+        // console.log("send", printPacket(pkt))
         this.bus.sendPacketAsync(pkt)
     }
     devices(): JDDevice[] {

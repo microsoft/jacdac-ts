@@ -754,7 +754,7 @@ class Fiber {
         }
 
         const pkt = this.ctx.pkt
-        if (pkt.serviceCommand == this.commandCode) {
+        if (pkt.isReport && pkt.serviceCommand == this.commandCode) {
             let val = pkt.data
             if (this.commandArg) {
                 const arg = this.ctx.info.stringLiterals[this.commandArg]
@@ -856,6 +856,7 @@ class Role {
     mkCmd(serviceCommand: number, payload?: Uint8Array) {
         const p = Packet.from(serviceCommand, payload || new Uint8Array(0))
         p.device = this.device
+        p.deviceIdentifier = this.device.deviceId
         p.serviceIndex = this.serviceIndex
         p.isCommand = true
         return p
