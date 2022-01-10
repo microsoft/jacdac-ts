@@ -1405,6 +1405,7 @@ ${dev
         }
 
         // apply streaming samples to service provider
+        this.emit(REFRESH);
         this._serviceProviders.map(host => host.emit(REFRESH))
     }
 
