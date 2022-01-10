@@ -256,7 +256,6 @@ Main dynamic memory usage - function activation records (and fibers).
 * add `role.waitConnected()` or something?
 * add `bg(() => { ... })`, also `bg1()` ?
 * do fiber round-robin for yields?
-* register reads may not be triggered enough for `onChange()` to work
 * sending commands: `buzzer.play_note(freq, 0.9, time)`
 * role mgr
 * some testing framework? (depends on services?)
