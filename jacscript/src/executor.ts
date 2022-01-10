@@ -755,27 +755,11 @@ class Fiber {
 
         const pkt = this.ctx.pkt
         if (pkt.isReport && pkt.serviceCommand == this.commandCode) {
-            let val = pkt.data
-            if (this.commandArg) {
-                const arg = this.ctx.info.stringLiterals[this.commandArg]
-                if (
-                    pkt.data.length >= arg.length + 1 &&
-                    pkt.data[arg.length] == 0 &&
-                    memcmp(pkt.data, arg, arg.length) == 0
-                ) {
-                    val = pkt.data.slice(arg.length + 1)
-                } else {
-                    val = null
-                }
-            }
-            if (val) {
-                const c = new CachedRegister()
-                c.value = val
-                c.code = pkt.serviceCommand
-                c.argument = this.commandArg
-                c.last_refresh_time = this.ctx.now()
-                c.role = role
-                c.dead = false
+            const c = new CachedRegister()
+            c.code = pkt.serviceCommand
+            c.argument = this.commandArg
+            c.role = role
+            if (c.updateWith(role, pkt, this.ctx)) {
                 this.ctx.regs.add(c)
                 this.commandCode = 0
                 return false
@@ -884,7 +868,34 @@ class CachedRegister {
 
     expired(now: number, validity: number) {
         if (!validity) validity = 15 * 60 * 1000
-        return this.last_refresh_time + validity >= now
+        return this.last_refresh_time + validity <= now
+    }
+
+    updateWith(role: Role, pkt: Packet, ctx: Ctx) {
+        if (this.dead) return false
+        if (this.role != role) return false
+        if (this.code != pkt.serviceCommand) return false
+        if (!pkt.isReport) return false
+        let val = pkt.data
+        if (this.argument) {
+            const arg = ctx.info.stringLiterals[this.argument]
+            if (
+                pkt.data.length >= arg.length + 1 &&
+                pkt.data[arg.length] == 0 &&
+                memcmp(pkt.data, arg, arg.length) == 0
+            ) {
+                val = pkt.data.slice(arg.length + 1)
+            } else {
+                val = null
+            }
+        }
+        if (val) {
+            this.last_refresh_time = ctx.now()
+            this.value = val.slice()
+            return true
+        } else {
+            return false
+        }
     }
 }
 
@@ -906,6 +917,9 @@ class RegisterCache {
     }
     detachRole(role: Role) {
         for (const r of this.regs) if (r.role == role) r.dead = true
+    }
+    updateWith(role: Role, pkt: Packet, ctx: Ctx) {
+        for (const r of this.regs) r.updateWith(role, pkt, ctx)
     }
     add(c: CachedRegister) {
         if (this.regs.length >= MAX_REG_CACHE) {
@@ -1111,8 +1125,10 @@ class Ctx {
                 r.device == pkt.device &&
                 (r.serviceIndex == pkt.serviceIndex ||
                     (pkt.serviceIndex == 0 && pkt.serviceCommand == 0))
-            )
+            ) {
+                this.regs.updateWith(r, pkt, this)
                 this.wakeRole(idx)
+            }
         }
         this.pokeFibers()
     }
