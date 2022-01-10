@@ -12,6 +12,7 @@ import {
     serviceSpecificationFromName,
     jdpack,
     camelize,
+    CMD_SET_REG,
 } from "jacdac-ts"
 
 import {
@@ -1047,7 +1048,9 @@ class Program implements InstrArgResolver {
         }
     }
 
-    private forceName(pat: estree.Expression | estree.Pattern | estree.PrivateIdentifier) {
+    private forceName(
+        pat: estree.Expression | estree.Pattern | estree.PrivateIdentifier
+    ) {
         const r = idName(pat)
         if (!r) this.throwError(pat, "only simple identifiers supported")
         return (pat as estree.Identifier).name
@@ -1406,9 +1409,9 @@ class Program implements InstrArgResolver {
                     wr.pop()
                 }
                 wr.emitAsync(
-                    OpAsync.SET_REG,
+                    OpAsync.SEND_CMD,
                     role.encode(),
-                    obj.spec.identifier
+                    obj.spec.identifier | CMD_SET_REG
                 )
                 return values.zero
             case "onChange":

@@ -244,6 +244,10 @@ Main dynamic memory usage - function activation records (and fibers).
 
 ## TODO
 
+* add special condition roles - always bound, can send packets on them and wait on them
+* is timeout in yield needed?
+* run Role.attach() callbacks after full auto-bind
+* onChange() -> issue register reads periodically (if needed?)
 * extend format strings to include numfmt
 * `memcmp()` opcode
 * shift buffer opcode?

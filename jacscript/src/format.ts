@@ -44,7 +44,7 @@ export enum OpAsync {
     YIELD, // A-timeout in ms
     CLOUD_UPLOAD, // A-numregs
     QUERY_REG, // A-role, B-code, C-timeout
-    SET_REG, // A-role, B-code
+    SEND_CMD, // A-role, B-code
     QUERY_IDX_REG, // A-role, B-STRIDX:CMD[8], C-timeout
     _LAST,
 }
@@ -479,8 +479,8 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
                 return `upload(#${a})`
             case OpAsync.QUERY_REG: // A-role, B-code, C-timeout
                 return `query(${jdreg()} timeout=${c}ms)`
-            case OpAsync.SET_REG: // A-role, B-code
-                return `set(${jdreg()})`
+            case OpAsync.SEND_CMD: // A-role, B-code
+                return `send(${jdreg()})`
             default:
                 return `Async_0x${arg8.toString(16)}`
         }

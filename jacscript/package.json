@@ -8,7 +8,7 @@
     "build": "tsc && yarn buildnode && yarn buildbrowser",
     "buildbrowser": "esbuild src/jacscript.ts --bundle --outfile=dist/jacscript.bundle.js --external:jacdac-ts",
     "buildnode": "esbuild src/jacscript.ts --bundle --outfile=dist/jacscript.node.js --external:jacdac-ts --platform=node --target=node12",
-    "test": "node testrunner.js"
+    "test": "yarn buildnode && node testrunner.js"
   },
   "license": "MIT",
   "dependencies": {

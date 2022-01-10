@@ -1,14 +1,45 @@
 import { JacsEnv } from "./env"
-import { JDBus, JDDevice, Packet } from "jacdac-ts"
-
+import {
+    DEVICE_CONNECT,
+    DEVICE_DISCONNECT,
+    JDBus,
+    JDDevice,
+    Packet,
+    PACKET_PROCESS,
+    Scheduler,
+} from "jacdac-ts"
 
 export class JDBusJacsEnv implements JacsEnv {
-    constructor(private bus: JDBus) {}
+    private scheduler: Scheduler
+
+    constructor(private bus: JDBus) {
+        this.scheduler = this.bus.scheduler
+        this.bus.on(DEVICE_DISCONNECT, dev => this.onDisconnect?.(dev))
+        this.bus.on(DEVICE_CONNECT, dev => this.onConnect?.(dev))
+        this.bus.on(PACKET_PROCESS, pkt => this.onPacket?.(pkt))
+    }
+    send(pkt: Packet): void {
+        this.bus.sendPacketAsync(pkt)
+    }
+    devices(): JDDevice[] {
+        return this.bus.devices()
+    }
+
+    setTimeout(handler: () => void, delay: number) {
+        return this.scheduler.setTimeout(handler, delay)
+    }
+    clearTimeout(handle: any): void {
+        return this.scheduler.clearTimeout(handle)
+    }
 
     now(): number {
-        throw new Error("Method not implemented.")
+        return this.scheduler.timestamp
     }
-    selfDevice: JDDevice
+
+    get selfDevice(): JDDevice {
+        return this.bus.selfDevice
+    }
+
     onDisconnect: (dev: JDDevice) => void
     onConnect: (dev: JDDevice) => void
     onPacket: (pkt: Packet) => void
