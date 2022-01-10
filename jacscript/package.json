@@ -2,11 +2,12 @@
   "name": "jacscript",
   "version": "0.0.0",
   "description": "Jacscript VM",
-  "main": "./dist/jacscript.umd.js",
-  "module": "./dist/jacscript.module.js",
-  "exports": "./dist/jacscript.modern.js",
+  "main": "./dist/jacscript.node.js",
+  "module": "./dist/jacscript.js",
   "scripts": {
-    "build": "tsc && esbuild src/jacscript.ts --bundle --outfile=dist/jacscript.js --external:jacdac-ts --analyze",
+    "build": "tsc && yarn buildnode && yarn buildbrowser",
+    "buildbrowser": "esbuild src/jacscript.ts --bundle --outfile=dist/jacscript.bundle.js --external:jacdac-ts",
+    "buildnode": "esbuild src/jacscript.ts --bundle --outfile=dist/jacscript.node.js --external:jacdac-ts --platform=node --target=node12",
     "test": "node testrunner.js"
   },
   "license": "MIT",

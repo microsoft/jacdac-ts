@@ -816,6 +816,7 @@ class Ctx {
 
     startProgram() {
         this.startFiber(this.info.functions[0], 0, OpCall.BG)
+        this.pokeFibers()
     }
 
     wakeTimesUpdated() {
