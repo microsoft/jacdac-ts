@@ -3,13 +3,6 @@ var led = roles.lightBulb()
 var relay = roles.relay()
 var p
 
-if (false)
-    every(0.5, () => {
-        p = pot.position.read()
-        print("tick {0}", p)
-        led.brightness.write(2 * p)
-    })
-
 pot.position.onChange(0.02, () => {
     p = pot.position.read()
     print("tick {0}", p)

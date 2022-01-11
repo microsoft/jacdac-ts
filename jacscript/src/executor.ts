@@ -738,11 +738,14 @@ class Fiber {
     }
 
     private prelude() {
+        const resumeUserCode = false
+        const keepWaiting = true
+
         if (!this.commandCode) return false
         const role = this.waitingOnRole
         if (!role.device) {
             this.setWakeTime(0)
-            return true // unbound, keep waiting, no timeout
+            return keepWaiting // unbound, keep waiting, no timeout
         }
 
         if (this.cmdPayload) {
@@ -751,10 +754,11 @@ class Fiber {
             this.ctx.env.send(pkt)
             this.commandCode = 0
             this.cmdPayload = null
-            return false
+            return resumeUserCode
         }
 
         const pkt = this.ctx.pkt
+
         if (pkt.isReport && pkt.serviceCommand == this.commandCode) {
             const c = new CachedRegister()
             c.code = pkt.serviceCommand
@@ -763,7 +767,7 @@ class Fiber {
             if (c.updateWith(role, pkt, this.ctx)) {
                 this.ctx.regs.add(c)
                 this.commandCode = 0
-                return false
+                return resumeUserCode
             }
         }
         if (this.ctx.now() >= this.wakeTime) {
@@ -774,7 +778,7 @@ class Fiber {
             if (this.resendTimeout < 1000) this.resendTimeout *= 2
             this.sleep(this.resendTimeout)
         }
-        return true
+        return keepWaiting
     }
 
     activate(a: Activation) {

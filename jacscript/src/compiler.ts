@@ -1406,6 +1406,22 @@ class Program implements InstrArgResolver {
                     )
                 })
                 return values.zero
+            case "wait":
+                this.requireArgs(expr, 0)
+                const wr = this.writer
+                const lbl = wr.mkLabel("wait")
+                wr.emitLabel(lbl)
+                wr.emitSync(OpSync.OBSERVE_ROLE, role.encode())
+                wr.emitAsync(OpAsync.YIELD)
+                wr.push()
+                const cond = this.inlineBin(
+                    OpBinary.EQ,
+                    specialVal(ValueSpecial.EV_CODE),
+                    floatVal(obj.spec.identifier)
+                )
+                wr.pop()
+                wr.emitJump(lbl, cond.index)
+                return values.zero
         }
         this.throwError(expr, `events don't have property ${prop}`)
     }

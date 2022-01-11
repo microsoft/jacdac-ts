@@ -83,12 +83,16 @@ heater.onDisconnected(() => {
 
 ## Events
 
-Events are referenced as `myRole.eventName`. They currently have one member function, `.sub()`.
+Events are referenced as `myRole.eventName`. They currently have two member functions, `.wait()` and `.sub()`.
 
 ```js
 btnA.down.sub(() => {
     print("button down!")
 })
+
+// ...
+btnA.up.wait()
+// ...
 ```
 
 ## Handlers and Fibers
