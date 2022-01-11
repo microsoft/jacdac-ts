@@ -101,10 +101,12 @@ export enum CellKind {
     JD_ROLE = 0x102,
     JD_VALUE_SEQ = 0x103,
     JD_CURR_BUFFER = 0x104,
-    X_STRING = 0x105,
-    X_FP_REG = 0x106,
-    X_FLOAT = 0x107,
-    X_FUNCTION = 0x108,
+    JD_COMMAND = 0x105,
+
+    X_STRING = 0x120,
+    X_FP_REG = 0x121,
+    X_FLOAT = 0x122,
+    X_FUNCTION = 0x123,
 
     ERROR = 0x200,
 }
@@ -189,6 +191,8 @@ export function stringifyCellKind(vk: CellKind) {
             return "float literal (generic)"
         case CellKind.JD_EVENT:
             return "Jacdac event"
+        case CellKind.JD_COMMAND:
+            return "Jacdac command"
         case CellKind.JD_REG:
             return "Jacdac register"
         case CellKind.JD_ROLE:

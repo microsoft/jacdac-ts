@@ -31,6 +31,12 @@ declare class JDEvent extends JDPacketInfo {
     sub(handler: () => void): void
 }
 
+declare class Condition {
+    signal(): void
+    wait(): void
+}
+declare function condition(): Condition
+
 declare function upload(label: string, ...args: number[]): void
 declare function print(fmt: string, ...args: number[]): void
 declare function format(fmt: string, ...args: number[]): string

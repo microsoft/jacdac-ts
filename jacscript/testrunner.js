@@ -55,18 +55,23 @@ async function main() {
         verbose = true
     }
 
-    if (args.length) {
-        verbose = true
-        await runProgram(args[0])
-    } else {
-        for (const fn of readdir(ctest).concat(readdir(samples))) {
-            console.log(`*** test ${fn}`)
-            jacscript.testCompiler(fs.readFileSync(fn, "utf8"))
-        }
+    try {
+        if (args.length) {
+            verbose = true
+            await runProgram(args[0])
+        } else {
+            for (const fn of readdir(ctest).concat(readdir(samples))) {
+                console.log(`*** test ${fn}`)
+                jacscript.testCompiler(fs.readFileSync(fn, "utf8"))
+            }
 
-        for (const fn of readdir(rtest)) {
-            await runProgram(fn, 1)
+            for (const fn of readdir(rtest)) {
+                await runProgram(fn, 1)
+            }
         }
+    } catch (e) {
+        console.error(e.stack)
+        process.exit(2)
     }
 
     process.exit(0)

@@ -25,6 +25,7 @@ import {
     CMD_SET_REG,
     sizeOfNumberFormat,
     strcmp,
+    SRV_JACSCRIPT_CONDITION,
 } from "jacdac-ts"
 import { JDBusJacsEnv } from "./busenv"
 import { JacsEnv } from "./env"
@@ -403,7 +404,7 @@ function loadCell(
             const role = ctx.roles[idx]
             switch (c) {
                 case OpRoleProperty.IS_CONNECTED:
-                    return role.device ? 1 : 0
+                    return role.isAttached() ? 1 : 0
                 default:
                     oops()
             }
@@ -533,7 +534,7 @@ class Activation {
     }
 
     step() {
-        //this.logInstr()
+        // this.logInstr()
 
         const ctx = this.fiber.ctx
         const instr = ctx.info.code[this.pc++]
@@ -734,6 +735,7 @@ class Fiber {
         this.setWakeTime(0)
         this.waitingOnRole = null
         this.ctx.currentFiber = this
+        this.ctx.params.fill(0)
         this.activate(this.activation)
     }
 
@@ -743,7 +745,7 @@ class Fiber {
 
         if (!this.commandCode) return false
         const role = this.waitingOnRole
-        if (!role.device) {
+        if (!role.isAttached()) {
             this.setWakeTime(0)
             return keepWaiting // unbound, keep waiting, no timeout
         }
@@ -817,11 +819,6 @@ class Role {
 
     constructor(public info: RoleInfo) {}
 
-    service() {
-        if (!this.device) return null
-        return this.device.service(this.serviceIndex)
-    }
-
     assign(d: JDDevice, idx: number) {
         log(`role ${this.info} <-- ${d}:${idx}`)
         this.device = d
@@ -835,6 +832,14 @@ class Role {
         p.serviceIndex = this.serviceIndex
         p.isCommand = true
         return p
+    }
+
+    isAttached() {
+        return this.isCondition() || !!this.device
+    }
+
+    isCondition() {
+        return this.info.classId == SRV_JACSCRIPT_CONDITION
     }
 }
 
@@ -1067,11 +1072,15 @@ class Ctx {
         }
     }
 
-    private wakeRole(idx: number) {
-        const role = this.roles[idx]
+    private wakeRole(role: Role) {
         for (const f of this.fibers)
             if (f.waitingOnRole == role) {
-                // log(`run ${f.firstFun} ev=${this.pkt.eventCode}`)
+                if (false)
+                    log(
+                        `wake ${f.firstFun} r=${
+                            role.info
+                        } pkt=${this.pkt.toString()}`
+                    )
                 this.run(f)
             }
     }
@@ -1084,7 +1093,7 @@ class Ctx {
             if (r.device == dev) {
                 r.assign(null, 0)
                 this.regs.detachRole(r)
-                this.wakeRole(idx)
+                this.wakeRole(r)
             }
         }
         this.pokeFibers()
@@ -1104,10 +1113,9 @@ class Ctx {
         if (numUnbound == 0) return
 
         devs.sort((a, b) => strcmp(a.deviceId, b.deviceId))
-        let assignedRoles: number[] = []
-        let idx = 0
+        let assignedRoles: Role[] = []
         for (const r of this.roles) {
-            if (!r.device)
+            if (!r.isAttached())
                 for (const d of devs) {
                     const len = Math.min(d.serviceLength, 32)
                     for (let i = 1; i < len; ++i) {
@@ -1117,11 +1125,10 @@ class Ctx {
                         ) {
                             d._jacsUsedRoles |= 1 << i
                             r.assign(d, i)
-                            assignedRoles.push(idx)
+                            assignedRoles.push(r)
                         }
                     }
                 }
-            idx++
         }
 
         if (assignedRoles.length) {
@@ -1142,7 +1149,7 @@ class Ctx {
                     (pkt.serviceIndex == 0 && pkt.serviceCommand == 0))
             ) {
                 this.regs.updateWith(r, pkt, this)
-                this.wakeRole(idx)
+                this.wakeRole(r)
             }
         }
         this.pokeFibers()
@@ -1207,6 +1214,13 @@ class Ctx {
         }
 
         const fib = this.currentFiber
+        if (role.isCondition()) {
+            fib.sleep(0)
+            log(`wake condition ${role.info}`)
+            this.wakeRole(role)
+            return
+        }
+
         fib.waitingOnRole = role
         fib.commandCode = code
         fib.resendTimeout = 20

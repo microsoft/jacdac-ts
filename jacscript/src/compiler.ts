@@ -16,6 +16,7 @@ import {
     strcmp,
     SystemReg,
     CMD_GET_REG,
+    SRV_JACSCRIPT_CONDITION,
 } from "jacdac-ts"
 
 import {
@@ -175,6 +176,9 @@ class Role extends Cell {
         return this.spec.packets.some(
             p => p.identifier == SystemReg.StreamingSamples
         )
+    }
+    isCondition() {
+        return this.spec.classIdentifier == SRV_JACSCRIPT_CONDITION
     }
 }
 
@@ -1137,6 +1141,14 @@ class Program implements InstrArgResolver {
     private parseRole(decl: estree.VariableDeclarator) {
         const expr = decl.init
         if (expr?.type != "CallExpression") return null
+        if (idName(expr.callee) == "condition") {
+            this.requireArgs(expr, 0)
+            return new Role(
+                decl,
+                this.roles,
+                serviceSpecificationFromName("jacscriptcondition")
+            )
+        }
         if (expr.callee.type != "MemberExpression") return null
         if (idName(expr.callee.object) != "roles") return null
         const serv = this.forceName(expr.callee.property)
@@ -1426,6 +1438,52 @@ class Program implements InstrArgResolver {
         this.throwError(expr, `events don't have property ${prop}`)
     }
 
+    private emitCommandCall(
+        expr: estree.CallExpression,
+        obj: ValueDesc,
+        prop: string
+    ): ValueDesc {
+        const role = obj.cell as Role
+        switch (prop) {
+            case "sub":
+                this.requireTopLevel(expr)
+                this.requireArgs(expr, 1)
+                const handler = this.emitHandler(
+                    this.codeName(expr.callee),
+                    expr.arguments[0]
+                )
+                this.emitInRoleDispatcher(role, wr => {
+                    wr.push()
+                    const cond = this.inlineBin(
+                        OpBinary.EQ,
+                        specialVal(ValueSpecial.EV_CODE),
+                        floatVal(obj.spec.identifier)
+                    )
+                    wr.emitIfAndPop(cond, () =>
+                        wr.emitCall(handler, OpCall.BG_MAX1_PEND1)
+                    )
+                })
+                return values.zero
+            case "wait":
+                this.requireArgs(expr, 0)
+                const wr = this.writer
+                const lbl = wr.mkLabel("wait")
+                wr.emitLabel(lbl)
+                wr.emitSync(OpSync.OBSERVE_ROLE, role.encode())
+                wr.emitAsync(OpAsync.YIELD)
+                wr.push()
+                const cond = this.inlineBin(
+                    OpBinary.EQ,
+                    specialVal(ValueSpecial.EV_CODE),
+                    floatVal(obj.spec.identifier)
+                )
+                wr.pop()
+                wr.emitJump(lbl, cond.index)
+                return values.zero
+        }
+        this.throwError(expr, `events don't have property ${prop}`)
+    }
+
     private extractRegField(obj: ValueDesc, field: jdspec.PacketMember) {
         const wr = this.writer
         const r = wr.allocReg()
@@ -1486,6 +1544,8 @@ class Program implements InstrArgResolver {
         prop: string
     ): ValueDesc {
         const role = obj.cell as Role
+        const wr = this.writer
+        if (expr.callee.type != "MemberExpression") oops("")
         switch (prop) {
             case "isConnected":
                 this.requireArgs(expr, 0)
@@ -1511,8 +1571,57 @@ class Program implements InstrArgResolver {
                         })
                     })
                 return values.zero
+            case "wait":
+                if (!role.isCondition())
+                    this.throwError(expr, "only condition()s have wait()")
+                this.requireArgs(expr, 0)
+                wr.emitSync(OpSync.OBSERVE_ROLE, role.encode())
+                wr.emitAsync(OpAsync.YIELD)
+                return values.zero
             default:
-                this.throwError(expr, `roles don't have property ${prop}`)
+                const v = this.emitRoleMember(expr.callee, obj)
+                if (v.kind == CellKind.JD_COMMAND) {
+                    this.emitPackArgs(expr, v)
+                    this.writer.emitAsync(
+                        OpAsync.SEND_CMD,
+                        role.encode(),
+                        v.spec.identifier
+                    )
+                } else if (v.kind != CellKind.ERROR) {
+                    this.throwError(
+                        expr,
+                        `${stringifyCellKind(v.kind)} can't be called`
+                    )
+                }
+                return values.zero
+        }
+    }
+
+    private emitPackArgs(expr: estree.CallExpression, obj: ValueDesc) {
+        const wr = this.writer
+        this.requireArgs(expr, obj.spec.fields.length)
+        let off = 0
+        let sz = 0
+        for (const f of obj.spec.fields) sz += Math.abs(f.storage)
+        wr.emitSync(OpSync.SETUP_BUFFER, sz)
+        for (let i = 0; i < expr.arguments.length; ++i) {
+            wr.push()
+            let v = this.emitExpr(expr.arguments[i])
+            if (v.kind == CellKind.JD_CURR_BUFFER) {
+                if (i != expr.arguments.length - 1)
+                    this.throwError(
+                        expr.arguments[i + 1],
+                        "args can't follow a buffer"
+                    )
+                wr.pop()
+                break
+            }
+            v = wr.forceReg(v)
+            const f = obj.spec.fields[i]
+            wr.emitBufOp(OpTop.STORE_CELL, v, off, f)
+            off += Math.abs(f.storage)
+            assert(off <= sz)
+            wr.pop()
         }
     }
 
@@ -1530,30 +1639,7 @@ class Program implements InstrArgResolver {
                 this.requireArgs(expr, 0)
                 return this.emitRegGet(obj)
             case "write":
-                this.requireArgs(expr, obj.spec.fields.length)
-                let off = 0
-                let sz = 0
-                for (const f of obj.spec.fields) sz += Math.abs(f.storage)
-                wr.emitSync(OpSync.SETUP_BUFFER, sz)
-                for (let i = 0; i < expr.arguments.length; ++i) {
-                    wr.push()
-                    let v = this.emitExpr(expr.arguments[i])
-                    if (v.kind == CellKind.JD_CURR_BUFFER) {
-                        if (i != expr.arguments.length - 1)
-                            this.throwError(
-                                expr.arguments[i + 1],
-                                "args can't follow a buffer"
-                            )
-                        wr.pop()
-                        break
-                    }
-                    v = wr.forceReg(v)
-                    const f = obj.spec.fields[i]
-                    wr.emitBufOp(OpTop.STORE_CELL, v, off, f)
-                    off += Math.abs(f.storage)
-                    assert(off <= sz)
-                    wr.pop()
-                }
+                this.emitPackArgs(expr, obj)
                 wr.emitAsync(
                     OpAsync.SEND_CMD,
                     role.encode(),
@@ -1858,6 +1944,60 @@ class Program implements InstrArgResolver {
         return matchesName(pi.name, id)
     }
 
+    private emitRoleMember(expr: estree.MemberExpression, obj: ValueDesc) {
+        assert(obj.cell instanceof Role)
+        const role = obj.cell as Role
+        const propName = this.forceName(expr.property)
+        let r: ValueDesc
+
+        let generic: jdspec.PacketInfo
+        for (const p of this.sysSpec.packets) {
+            if (this.matchesSpecName(p, propName)) generic = p
+        }
+
+        for (const p of role.spec.packets) {
+            if (
+                this.matchesSpecName(p, propName) ||
+                (generic?.identifier == p.identifier && generic?.kind == p.kind)
+            ) {
+                if (isRegister(p)) {
+                    assert(!r)
+                    r = mkValue(CellKind.JD_REG, p.identifier, role)
+                    r.spec = p
+                }
+                if (isEvent(p)) {
+                    assert(!r)
+                    r = mkValue(CellKind.JD_EVENT, p.identifier, role)
+                    r.spec = p
+                }
+                if (isCommand(p)) {
+                    assert(!r)
+                    r = mkValue(CellKind.JD_COMMAND, p.identifier, role)
+                    r.spec = p
+                }
+            }
+        }
+
+        if (!r)
+            this.throwError(
+                expr,
+                `role ${role.getName()} has no member ${propName}`
+            )
+        return r
+
+        function isRegister(pi: jdspec.PacketInfo) {
+            return pi.kind == "ro" || pi.kind == "rw" || pi.kind == "const"
+        }
+
+        function isEvent(pi: jdspec.PacketInfo) {
+            return pi.kind == "event"
+        }
+
+        function isCommand(pi: jdspec.PacketInfo) {
+            return pi.kind == "command"
+        }
+    }
+
     private emitMemberExpression(expr: estree.MemberExpression): ValueDesc {
         if (idName(expr.object) == "Math") {
             const id = idName(expr.property)
@@ -1865,41 +2005,7 @@ class Program implements InstrArgResolver {
         }
         const obj = this.emitExpr(expr.object)
         if (obj.kind == CellKind.JD_ROLE) {
-            assert(obj.cell instanceof Role)
-            const role = obj.cell as Role
-            const propName = this.forceName(expr.property)
-            let r: ValueDesc
-
-            let generic: jdspec.PacketInfo
-            for (const p of this.sysSpec.packets) {
-                if (this.matchesSpecName(p, propName)) generic = p
-            }
-
-            for (const p of role.spec.packets) {
-                if (
-                    this.matchesSpecName(p, propName) ||
-                    (generic?.identifier == p.identifier &&
-                        generic?.kind == p.kind)
-                ) {
-                    if (isRegister(p)) {
-                        assert(!r)
-                        r = mkValue(CellKind.JD_REG, p.identifier, role)
-                        r.spec = p
-                    }
-                    if (isEvent(p)) {
-                        assert(!r)
-                        r = mkValue(CellKind.JD_EVENT, p.identifier, role)
-                        r.spec = p
-                    }
-                }
-            }
-
-            if (!r)
-                this.throwError(
-                    expr,
-                    `role ${role.getName()} has no member ${propName}`
-                )
-            return r
+            return this.emitRoleMember(expr, obj)
         } else if (obj.kind == CellKind.JD_REG) {
             const propName = this.forceName(expr.property)
             if (obj.spec.fields.length > 1) {
@@ -1921,14 +2027,6 @@ class Program implements InstrArgResolver {
         }
 
         this.throwError(expr, `unhandled member ${idName(expr.property)}`)
-
-        function isRegister(pi: jdspec.PacketInfo) {
-            return pi.kind == "ro" || pi.kind == "rw" || pi.kind == "const"
-        }
-
-        function isEvent(pi: jdspec.PacketInfo) {
-            return pi.kind == "event"
-        }
     }
 
     private mkLiteral(v: number): estree.Literal {

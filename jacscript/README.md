@@ -249,7 +249,6 @@ Main dynamic memory usage - function activation records (and fibers).
 ## TODO
 
 * add opcode to cache current packet (in onChanged())
-* add special condition roles - always bound, can send packets on them and wait on them
 * is timeout in yield needed?
 * extend format strings to include numfmt
 * `memcmp()` opcode
@@ -259,7 +258,6 @@ Main dynamic memory usage - function activation records (and fibers).
 * add `role.waitConnected()` or something?
 * add `bg(() => { ... })`, also `bg1()` ?
 * do fiber round-robin for yields?
-* sending commands: `buzzer.play_note(freq, 0.9, time)`
 * role mgr interface and storage
 * some testing framework? (depends on services?)
 
