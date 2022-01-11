@@ -1495,7 +1495,7 @@ class Program implements InstrArgResolver {
                         floatVal(obj.spec.identifier)
                     )
                     wr.emitIfAndPop(cond, () => {
-                        // get the cached value (TODO - better hint for that than never-refresh?)
+                        // get the cached value
                         wr.push()
                         const curr = this.emitRegGet(obj, RefreshMS.Never)
                         const skipHandler = wr.mkLabel("skipHandler")

@@ -59,7 +59,7 @@ charDisplay.message.write(format("X is {0}", x))
 
 Roles are defined by referencing a service name (in `roles` namespace).
 The same role can be referenced multiple times, and runtime makes sure not to assign
-multiple roles to the same service instance (TODO implement this).
+multiple roles to the same service instance.
 
 ```js
 var btnA = roles.button()
@@ -244,6 +244,7 @@ Main dynamic memory usage - function activation records (and fibers).
 
 ## TODO
 
+* regGet refresh time/type - in particular onChanged() wants cached value
 * add special condition roles - always bound, can send packets on them and wait on them
 * is timeout in yield needed?
 * onChange() -> issue register reads periodically (if needed?)

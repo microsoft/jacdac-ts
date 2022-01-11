@@ -849,7 +849,7 @@ class CachedRegister {
     role: Role
     code: number
     argument: number
-    last_access_idx: number // TODO
+    last_access_idx: number
     last_refresh_time: number
     value: Uint8Array
     dead: boolean
