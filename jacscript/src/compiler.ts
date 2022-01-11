@@ -13,6 +13,7 @@ import {
     jdpack,
     camelize,
     CMD_SET_REG,
+    strcmp,
 } from "jacdac-ts"
 
 import {
@@ -164,6 +165,9 @@ class Role extends Cell {
         write32(r, 0, this.spec.classIdentifier)
         return r
     }
+    toString() {
+        return `role ${this.getName()}`
+    }
 }
 
 class Variable extends Cell {
@@ -178,6 +182,9 @@ class Variable extends Cell {
     value(): ValueDesc {
         const kind = this.isLocal ? CellKind.LOCAL : CellKind.GLOBAL
         return mkValue(kind, this.index, this)
+    }
+    toString() {
+        return `var ${this.getName()}`
     }
 }
 
@@ -194,6 +201,9 @@ class FunctionDecl extends Cell {
     }
     value(): ValueDesc {
         return mkValue(CellKind.X_FUNCTION, this.index, this)
+    }
+    toString() {
+        return `function ${this.getName()}`
     }
 }
 
@@ -823,6 +833,11 @@ class VariableScope {
         if (v) return v.getName()
         return undefined
     }
+
+    sort() {
+        this.list.sort((a, b) => strcmp(a.getName(), b.getName()))
+        for (let i = 0; i < this.list.length; ++i) this.list[i].index = i
+    }
 }
 
 enum RefreshMS {
@@ -1086,21 +1101,25 @@ class Program implements InstrArgResolver {
 
     private emitVariableDeclaration(decls: estree.VariableDeclaration) {
         if (decls.kind != "var") this.throwError(decls, "only 'var' supported")
-        const isTopLevel = this.proc == this.main
         for (const decl of decls.declarations) {
-            this.newDef(decl)
-            const r = isTopLevel ? this.parseRole(decl) : null
-            if (!r) {
-                const g = new Variable(
-                    decl,
-                    isTopLevel ? this.globals : this.proc.locals
-                )
-                if (!isTopLevel) g.isLocal = true
+            let g: Variable
+            if (this.isTopLevel(decl)) {
+                const tmp = this.globals.lookup(this.forceName(decl.id))
+                if (tmp instanceof Role) continue
+                if (tmp instanceof Variable) g = tmp
+                else {
+                    if (this.numErrors == 0) oops("invalid var: " + tmp)
+                    else continue
+                }
+            } else {
+                this.newDef(decl)
+                g = new Variable(decl, this.proc.locals)
+                g.isLocal = true
+            }
+
+            if (decl.init) {
                 this.writer.push()
-                this.emitStore(
-                    g,
-                    decl.init ? this.emitSimpleValue(decl.init) : values.zero
-                )
+                this.emitStore(g, this.emitSimpleValue(decl.init))
                 this.writer.pop()
             }
         }
@@ -1171,33 +1190,66 @@ class Program implements InstrArgResolver {
         })
     }
 
+    private isTopLevel(node: estree.Node) {
+        return !!(node as any)._jacsIsTopLevel
+    }
+
     private emitProgram(prog: estree.Program) {
         this.main = new Procedure(this, "main")
         this.startDispatchers = new DelayedCodeSection(
             "startDispatchers",
             this.main
         )
+        prog.body.forEach(markTopLevel)
         // pre-declare all functions
         // TODO should we do that also for global vars?
         for (const s of prog.body) {
             try {
-                if (s.type == "FunctionDeclaration") {
-                    this.newDef(s)
-                    const n = this.forceName(s.id)
-                    if (reservedFunctions[n] == 1)
-                        this.throwError(s, `function name '${n}' is reserved`)
-                    new FunctionDecl(this, s, this.functions)
+                switch (s.type) {
+                    case "FunctionDeclaration":
+                        this.newDef(s)
+                        const n = this.forceName(s.id)
+                        if (reservedFunctions[n] == 1)
+                            this.throwError(
+                                s,
+                                `function name '${n}' is reserved`
+                            )
+                        new FunctionDecl(this, s, this.functions)
+                        break
+                    case "VariableDeclaration":
+                        for (const decl of s.declarations) {
+                            this.newDef(decl)
+                            if (!this.parseRole(decl)) {
+                                new Variable(decl, this.globals)
+                            }
+                        }
+                        break
                 }
             } catch (e) {
                 this.handleException(s, e)
             }
         }
+
+        this.roles.sort()
+
         this.withProcedure(this.main, () => {
             this.startDispatchers.callHere()
             for (const s of prog.body) this.emitStmt(s)
             this.writer.emitSync(OpSync.RETURN)
             this.startDispatchers.finalize()
         })
+
+        function markTopLevel(node: estree.Node) {
+            ;(node as any)._jacsIsTopLevel = true
+            switch (node.type) {
+                case "ExpressionStatement":
+                    markTopLevel(node.expression)
+                    break
+                case "VariableDeclaration":
+                    node.declarations.forEach(markTopLevel)
+                    break
+            }
+        }
     }
 
     private ignore(val: ValueDesc) {}
