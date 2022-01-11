@@ -1166,7 +1166,7 @@ class Program implements InstrArgResolver {
         const fundecl = this.functions.list.find(
             f => f.definition === stmt
         ) as FunctionDecl
-        if (this.proc != this.main)
+        if (!this.isTopLevel(stmt))
             this.throwError(stmt, "only top-level functions are supported")
         if (stmt.generator || stmt.async)
             this.throwError(stmt, "async not supported")
@@ -1201,8 +1201,7 @@ class Program implements InstrArgResolver {
             this.main
         )
         prog.body.forEach(markTopLevel)
-        // pre-declare all functions
-        // TODO should we do that also for global vars?
+        // pre-declare all functions and globals
         for (const s of prog.body) {
             try {
                 switch (s.type) {
@@ -1309,6 +1308,14 @@ class Program implements InstrArgResolver {
         return l
     }
 
+    private requireTopLevel(expr: estree.CallExpression) {
+        if (!this.isTopLevel(expr))
+            this.throwError(
+                expr,
+                "this can only be done at the top-level of the program"
+            )
+    }
+
     private emitEventCall(
         expr: estree.CallExpression,
         obj: ValueDesc,
@@ -1317,6 +1324,7 @@ class Program implements InstrArgResolver {
         const role = obj.cell as Role
         switch (prop) {
             case "sub":
+                this.requireTopLevel(expr)
                 this.requireArgs(expr, 1)
                 const handler = this.emitHandler(
                     this.codeName(expr.callee),
@@ -1399,6 +1407,7 @@ class Program implements InstrArgResolver {
                 return this.emitIsRoleConnected(role)
             case "onConnected":
             case "onDisconnected":
+                this.requireTopLevel(expr)
                 this.requireArgs(expr, 1)
                 const name = role.getName() + "_" + prop
                 const handler = this.emitHandler(name, expr.arguments[0])
@@ -1468,6 +1477,7 @@ class Program implements InstrArgResolver {
                 return values.zero
             case "onChange":
                 this.requireArgs(expr, 2)
+                this.requireTopLevel(expr)
                 if (obj.spec.fields.length != 1)
                     this.throwError(expr, "wrong register type")
                 const threshold = this.litValue(expr.arguments[0])
@@ -1690,6 +1700,7 @@ class Program implements InstrArgResolver {
                 return values.zero
             }
             case "every": {
+                this.requireTopLevel(expr)
                 this.requireArgs(expr, 2)
                 const time = Math.round(this.litValue(expr.arguments[0]) * 1000)
                 if (time < 20)

@@ -5,7 +5,7 @@
   "main": "./dist/jacscript.node.js",
   "module": "./dist/jacscript.js",
   "scripts": {
-    "build": "tsc && yarn buildnode && yarn buildbrowser",
+    "build": "tsc -p src/tsconfig.json && yarn buildnode && yarn buildbrowser",
     "buildbrowser": "esbuild src/jacscript.ts --bundle --outfile=dist/jacscript.bundle.js --external:jacdac-ts",
     "buildnode": "esbuild src/jacscript.ts --bundle --outfile=dist/jacscript.node.js --external:jacdac-ts --platform=node --target=node12",
     "test": "yarn buildnode && node testrunner.js"

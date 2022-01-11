@@ -21,16 +21,16 @@
     "isolatedModules": true,
     "noImplicitAny": true,
     "esModuleInterop": true,
-    "declarationDir": "dist/types",
+    "declarationDir": "../dist/types",
     "resolveJsonModule": true,
-    "outDir": "dist",
+    "outDir": "../dist",
     "pretty": true,
     "newLine": "LF",
     "typeRoots": [
-      "node_modules/@types"
+      "../node_modules/@types"
     ]
   },
   "include": [
-    "src"
+    "."
   ]
 }
