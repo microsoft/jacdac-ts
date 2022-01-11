@@ -396,8 +396,6 @@ function loadCell(
                     return ctx.pkt.isRegisterGet
                         ? ctx.pkt.registerIdentifier
                         : NaN
-                case ValueSpecial.ROLE_ID:
-                    return nanify(ctx.wakeRoleIdx)
                 default:
                     oops()
             }
@@ -939,7 +937,6 @@ const INTERNAL_ERROR_PANIC_CODE = 0x100001
 
 class Ctx {
     pkt: Packet
-    wakeRoleIdx: number
     registers = new Float64Array(NUM_REGS)
     params = new Uint16Array(4)
     globals: Float64Array
@@ -1071,10 +1068,8 @@ class Ctx {
         const role = this.roles[idx]
         for (const f of this.fibers)
             if (f.waitingOnRole == role) {
-                this.wakeRoleIdx = idx
                 // log(`run ${f.firstFun} ev=${this.pkt.eventCode}`)
                 this.run(f)
-                this.wakeRoleIdx = null
             }
     }
 

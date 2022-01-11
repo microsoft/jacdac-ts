@@ -120,7 +120,6 @@ export enum ValueSpecial {
     SIZE = 0x1,
     EV_CODE = 0x2, // or nan
     REG_GET_CODE = 0x3, // or nan
-    ROLE_ID = 0x4, // or nan
     _LAST,
 }
 
