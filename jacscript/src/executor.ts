@@ -23,6 +23,8 @@ import {
     write16,
     write32,
     CMD_SET_REG,
+    sizeOfNumberFormat,
+    strcmp,
 } from "jacdac-ts"
 import { JDBusJacsEnv } from "./busenv"
 import { JacsEnv } from "./env"
@@ -373,7 +375,9 @@ function loadCell(
         case CellKind.GLOBAL:
             return ctx.globals[idx]
         case CellKind.BUFFER: // arg=shift:numfmt, C=Offset
-            const v = ctx.pkt.getNumber(toNumberFormat(idx & 0xf), c)
+            const fmt = toNumberFormat(idx & 0xf)
+            if (sizeOfNumberFormat(fmt) + c > ctx.pkt.size) return NaN
+            const v = ctx.pkt.getNumber(fmt, c)
             if (v === undefined) return NaN
             return v / shiftVal(idx >> 4)
         case CellKind.FLOAT_CONST:
@@ -809,7 +813,6 @@ class Fiber {
 class Role {
     device: JDDevice
     serviceIndex: number
-    awaiters: (() => void)[] = []
 
     constructor(public info: RoleInfo) {}
 
@@ -818,23 +821,10 @@ class Role {
         return this.device.service(this.serviceIndex)
     }
 
-    serviceAsync() {
-        const s = this.service()
-        if (s) return Promise.resolve(s)
-        return new Promise<JDService>(resolve => {
-            this.awaiters.push(() => resolve(this.service()))
-        })
-    }
-
     assign(d: JDDevice, idx: number) {
         log(`role ${this.info} <-- ${d}:${idx}`)
         this.device = d
         this.serviceIndex = idx
-        if (this.awaiters.length) {
-            const aa = this.awaiters
-            this.awaiters = []
-            for (const a of aa) a()
-        }
     }
 
     mkCmd(serviceCommand: number, payload?: Uint8Array) {
@@ -1102,16 +1092,43 @@ class Ctx {
         this.pokeFibers()
     }
 
-    private autoBind(devs: JDDevice[]) {
-        // TODO make it sort roles etc
-        // TODO prevent two roles binding to the same service idx
+    private autoBind(devs_: JDDevice[]) {
+        type Dev = JDDevice & { _jacsUsedRoles: number }
+        const devs = devs_ as Dev[]
+        for (const d of devs) d._jacsUsedRoles = 0
+        let numUnbound = 0
+        for (const r of this.roles) {
+            if (r.serviceIndex >= 32) oops()
+            const d = r.device as Dev
+            if (d) d._jacsUsedRoles |= 1 << r.serviceIndex
+            else numUnbound++
+        }
+        if (numUnbound == 0) return
+
+        devs.sort((a, b) => strcmp(a.deviceId, b.deviceId))
+        let assignedRoles: number[] = []
+        let idx = 0
         for (const r of this.roles) {
             if (!r.device)
                 for (const d of devs) {
-                    if (d.hasService(r.info.classId)) {
-                        r.assign(d, d.serviceClasses.indexOf(r.info.classId))
+                    const len = Math.min(d.serviceLength, 32)
+                    for (let i = 1; i < len; ++i) {
+                        if (
+                            r.info.classId == d.serviceClassAt(i) &&
+                            (d._jacsUsedRoles & (1 << i)) == 0
+                        ) {
+                            d._jacsUsedRoles |= 1 << i
+                            r.assign(d, i)
+                            assignedRoles.push(idx)
+                        }
                     }
                 }
+            idx++
+        }
+
+        if (assignedRoles.length) {
+            for (const r of assignedRoles) this.wakeRole(r)
+            this.pokeFibers()
         }
     }
 

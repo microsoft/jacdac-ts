@@ -246,7 +246,6 @@ Main dynamic memory usage - function activation records (and fibers).
 
 * add special condition roles - always bound, can send packets on them and wait on them
 * is timeout in yield needed?
-* run Role.attach() callbacks after full auto-bind
 * onChange() -> issue register reads periodically (if needed?)
 * extend format strings to include numfmt
 * `memcmp()` opcode
@@ -257,7 +256,7 @@ Main dynamic memory usage - function activation records (and fibers).
 * add `bg(() => { ... })`, also `bg1()` ?
 * do fiber round-robin for yields?
 * sending commands: `buzzer.play_note(freq, 0.9, time)`
-* role mgr
+* role mgr interface and storage
 * some testing framework? (depends on services?)
 * check that onEvent/onChange etc are only executed at the top-level - otherwise the semantics will not match
 
