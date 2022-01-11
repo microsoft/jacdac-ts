@@ -747,8 +747,7 @@ class Fiber {
 
         if (this.cmdPayload) {
             const pkt = role.mkCmd(this.commandCode, this.cmdPayload)
-            const regCode = (this.commandCode & ~CMD_SET_REG).toString(16)
-            log(`set ${role.info}.r${regCode} := ${toHex(this.cmdPayload)}`)
+            log(`send ${role.info} ${printPacket(pkt)}`)
             this.ctx.env.send(pkt)
             this.commandCode = 0
             this.cmdPayload = null

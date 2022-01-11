@@ -14,6 +14,8 @@ import {
     camelize,
     CMD_SET_REG,
     strcmp,
+    SystemReg,
+    CMD_GET_REG,
 } from "jacdac-ts"
 
 import {
@@ -145,6 +147,7 @@ class Role extends Cell {
         disconnected: DelayedCodeSection
         wasConnected: Variable
     }
+    autoRefreshRegs: jdspec.PacketInfo[] = []
 
     constructor(
         definition: estree.VariableDeclarator,
@@ -167,6 +170,11 @@ class Role extends Cell {
     }
     toString() {
         return `role ${this.getName()}`
+    }
+    isSensor() {
+        return this.spec.packets.some(
+            p => p.identifier == SystemReg.StreamingSamples
+        )
     }
 }
 
@@ -587,6 +595,18 @@ class OpWriter {
         this.emitRaw(
             op,
             (dst.index << 8) | ((celltype & 0x3) << 6) | (idx & 0x3f)
+        )
+    }
+
+    emitStoreByte(src: ValueDesc, off = 0) {
+        assert(this.isReg(src))
+        assertRange(0, off, 0xff)
+        this.emitLoadStoreCell(
+            OpTop.STORE_CELL,
+            src,
+            CellKind.BUFFER,
+            OpFmt.U8,
+            off
         )
     }
 
@@ -1048,6 +1068,49 @@ class Program implements InstrArgResolver {
         }
     }
 
+    private finalizeAutoRefresh() {
+        const proc = new Procedure(this, "_autoRefresh_")
+        const period = 521
+        this.withProcedure(proc, wr => {
+            for (const role_ of this.roles.list) {
+                const role = role_ as Role
+                if (role.autoRefreshRegs.length == 0) continue
+                wr.push()
+                const isConn = this.emitIsRoleConnected(role)
+                wr.emitIfAndPop(isConn, () => {
+                    for (const reg of role.autoRefreshRegs) {
+                        if (
+                            reg.identifier == SystemReg.Reading &&
+                            role.isSensor()
+                        ) {
+                            wr.push()
+                            wr.emitSync(OpSync.SETUP_BUFFER, 1)
+                            const v = wr.forceReg(floatVal(199))
+                            wr.emitStoreByte(v, 0)
+                            wr.pop()
+                            wr.emitAsync(
+                                OpAsync.SEND_CMD,
+                                role.encode(),
+                                SystemReg.StreamingSamples | CMD_SET_REG
+                            )
+                        } else {
+                            wr.emitSync(OpSync.SETUP_BUFFER, 0)
+                            wr.emitAsync(
+                                OpAsync.SEND_CMD,
+                                role.encode(),
+                                reg.identifier | CMD_GET_REG
+                            )
+                        }
+                    }
+                })
+            }
+            wr.emitAsync(OpAsync.YIELD, period)
+            wr.emitJump(wr.top)
+        })
+
+        this.startDispatchers.emit(wr => wr.emitCall(proc, OpCall.BG_MAX1))
+    }
+
     private withProcedure<T>(proc: Procedure, f: (wr: OpWriter) => T) {
         assert(!!proc)
         const prevProc = this.proc
@@ -1235,6 +1298,7 @@ class Program implements InstrArgResolver {
             this.startDispatchers.callHere()
             for (const s of prog.body) this.emitStmt(s)
             this.writer.emitSync(OpSync.RETURN)
+            this.finalizeAutoRefresh()
             this.startDispatchers.finalize()
         })
 
@@ -1346,6 +1410,21 @@ class Program implements InstrArgResolver {
         this.throwError(expr, `events don't have property ${prop}`)
     }
 
+    private extractRegField(obj: ValueDesc, field: jdspec.PacketMember) {
+        const wr = this.writer
+        const r = wr.allocReg()
+        let off = 0
+        for (const f of obj.spec.fields) {
+            if (f == field) {
+                wr.emitBufOp(OpTop.LOAD_CELL, r, off, field)
+                return r
+            } else {
+                off += Math.abs(f.storage)
+            }
+        }
+        oops("field missing")
+    }
+
     private emitRegGet(
         obj: ValueDesc,
         refresh?: RefreshMS,
@@ -1365,17 +1444,7 @@ class Program implements InstrArgResolver {
             refresh
         )
         if (field) {
-            const r = wr.allocReg()
-            let off = 0
-            for (const f of obj.spec.fields) {
-                if (f == field) {
-                    wr.emitBufOp(OpTop.LOAD_CELL, r, off, field)
-                    return r
-                } else {
-                    off += Math.abs(f.storage)
-                }
-            }
-            oops("field missing")
+            return this.extractRegField(obj, field)
         } else {
             const r = mkValue(CellKind.JD_VALUE_SEQ, 0, role)
             r.spec = obj.spec
@@ -1483,6 +1552,8 @@ class Program implements InstrArgResolver {
                 const threshold = this.litValue(expr.arguments[0])
                 const name = role.getName() + "_chg_" + obj.spec.name
                 const handler = this.emitHandler(name, expr.arguments[1])
+                if (role.autoRefreshRegs.indexOf(obj.spec) < 0)
+                    role.autoRefreshRegs.push(obj.spec)
                 this.emitInRoleDispatcher(role, wr => {
                     const cache = this.proc.mkTempLocal(name)
                     role.dispatcher.init.emit(wr => {
@@ -1495,25 +1566,28 @@ class Program implements InstrArgResolver {
                         floatVal(obj.spec.identifier)
                     )
                     wr.emitIfAndPop(cond, () => {
-                        // get the cached value
+                        // get the reg value from current packet
                         wr.push()
-                        const curr = this.emitRegGet(obj, RefreshMS.Never)
+                        const curr = this.extractRegField(
+                            obj,
+                            obj.spec.fields[0]
+                        )
                         const skipHandler = wr.mkLabel("skipHandler")
-                        // if (isNaN(curr)) goto skip
-                        const prev = wr.allocReg()
-                        wr.emitUnary(OpUnary.IS_NAN, prev, curr)
-                        wr.emitUnary(OpUnary.NOT, prev, prev)
-                        wr.emitJump(skipHandler, prev.index)
-                        // prev := cache
-                        wr.assign(prev, cache.value())
-                        // if (Math.abs(prev-curr) <= threshold) goto skip
-                        // note that this also calls handler() if prev is NaN
-                        wr.emitBin(OpBinary.SUB, prev, curr)
-                        wr.emitUnary(OpUnary.ABS, prev, prev)
+                        // if (isNaN(curr)) goto skip (shouldn't really happen unless service is misbehaving)
+                        const tmp = wr.allocReg()
+                        wr.emitUnary(OpUnary.IS_NAN, tmp, curr)
+                        wr.emitUnary(OpUnary.NOT, tmp, tmp)
+                        wr.emitJump(skipHandler, tmp.index)
+                        // tmp := cache
+                        wr.assign(tmp, cache.value())
+                        // if (Math.abs(tmp-curr) <= threshold) goto skip
+                        // note that this also calls handler() if cache was NaN
+                        wr.emitBin(OpBinary.SUB, tmp, curr)
+                        wr.emitUnary(OpUnary.ABS, tmp, tmp)
                         const thresholdReg = wr.forceReg(floatVal(threshold))
-                        wr.emitBin(OpBinary.LE, prev, thresholdReg)
-                        wr.emitUnary(OpUnary.NOT, prev, prev)
-                        wr.emitJump(skipHandler, prev.index)
+                        wr.emitBin(OpBinary.LE, tmp, thresholdReg)
+                        wr.emitUnary(OpUnary.NOT, tmp, tmp)
+                        wr.emitJump(skipHandler, tmp.index)
                         // cache := curr
                         wr.assign(cache.value(), curr)
                         wr.pop()

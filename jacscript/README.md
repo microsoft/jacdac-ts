@@ -244,10 +244,9 @@ Main dynamic memory usage - function activation records (and fibers).
 
 ## TODO
 
-* regGet refresh time/type - in particular onChanged() wants cached value
+* add opcode to cache current packet (in onChanged())
 * add special condition roles - always bound, can send packets on them and wait on them
 * is timeout in yield needed?
-* onChange() -> issue register reads periodically (if needed?)
 * extend format strings to include numfmt
 * `memcmp()` opcode
 * shift buffer opcode?
