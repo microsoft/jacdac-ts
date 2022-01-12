@@ -1,4 +1,3 @@
-import { jdunpack } from "../jdom/pack"
 import {
     fromUTF8,
     range,
@@ -9,7 +8,7 @@ import {
     uint8ArrayToString,
     write16,
     write32,
-} from "../jdom/utils"
+} from "jacdac-ts"
 import {
     assertPos,
     BinSection,
@@ -373,7 +372,10 @@ export function verifyBinary(
                         case OpAsync.CLOUD_UPLOAD: // A-numregs
                             rdRegs(a)
                             break
-                        case OpAsync.SET_REG: // A-role, B-code
+                        case OpAsync.SEND_CMD: // A-role, B-code
+                            check(a < numRoles, "role idx")
+                            check(b <= 0xffff, "cmd code")
+                            break
                         case OpAsync.QUERY_REG: // A-role, B-code, C-timeout
                             check(a < numRoles, "role idx")
                             check(b <= 0x1ff, "reg code")

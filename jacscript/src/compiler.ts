@@ -2,6 +2,24 @@ import * as esprima from "esprima"
 
 import * as estree from "estree"
 import {
+    range,
+    read32,
+    stringToUint8Array,
+    toHex,
+    toUTF8,
+    write16,
+    write32,
+    serviceSpecificationFromName,
+    jdpack,
+    camelize,
+    CMD_SET_REG,
+    strcmp,
+    SystemReg,
+    CMD_GET_REG,
+    SRV_JACSCRIPT_CONDITION,
+} from "jacdac-ts"
+
+import {
     BinFmt,
     bitSize,
     CellDebugInfo,
@@ -28,19 +46,7 @@ import {
     stringifyInstr,
     ValueSpecial,
 } from "./format"
-import {
-    range,
-    read32,
-    stringToUint8Array,
-    toHex,
-    toUTF8,
-    write16,
-    write32,
-} from "../jdom/utils"
-import { serviceSpecificationFromName } from "../jdom/spec"
 import { numSetBits, verifyBinary } from "./verify"
-import { jdpack } from "../jdom/pack"
-import { camelize } from "../jacdac"
 
 export function oops(msg: string): never {
     throw new Error(msg)
@@ -142,6 +148,7 @@ class Role extends Cell {
         disconnected: DelayedCodeSection
         wasConnected: Variable
     }
+    autoRefreshRegs: jdspec.PacketInfo[] = []
 
     constructor(
         definition: estree.VariableDeclarator,
@@ -162,6 +169,17 @@ class Role extends Cell {
         write32(r, 0, this.spec.classIdentifier)
         return r
     }
+    toString() {
+        return `role ${this.getName()}`
+    }
+    isSensor() {
+        return this.spec.packets.some(
+            p => p.identifier == SystemReg.StreamingSamples
+        )
+    }
+    isCondition() {
+        return this.spec.classIdentifier == SRV_JACSCRIPT_CONDITION
+    }
 }
 
 class Variable extends Cell {
@@ -176,6 +194,9 @@ class Variable extends Cell {
     value(): ValueDesc {
         const kind = this.isLocal ? CellKind.LOCAL : CellKind.GLOBAL
         return mkValue(kind, this.index, this)
+    }
+    toString() {
+        return `var ${this.getName()}`
     }
 }
 
@@ -192,6 +213,9 @@ class FunctionDecl extends Cell {
     }
     value(): ValueDesc {
         return mkValue(CellKind.X_FUNCTION, this.index, this)
+    }
+    toString() {
+        return `function ${this.getName()}`
     }
 }
 
@@ -578,6 +602,18 @@ class OpWriter {
         )
     }
 
+    emitStoreByte(src: ValueDesc, off = 0) {
+        assert(this.isReg(src))
+        assertRange(0, off, 0xff)
+        this.emitLoadStoreCell(
+            OpTop.STORE_CELL,
+            src,
+            CellKind.BUFFER,
+            OpFmt.U8,
+            off
+        )
+    }
+
     emitBufOp(
         op: OpTop,
         dst: ValueDesc,
@@ -821,6 +857,11 @@ class VariableScope {
         if (v) return v.getName()
         return undefined
     }
+
+    sort() {
+        this.list.sort((a, b) => strcmp(a.getName(), b.getName()))
+        for (let i = 0; i < this.list.length; ++i) this.list[i].index = i
+    }
 }
 
 enum RefreshMS {
@@ -1031,6 +1072,49 @@ class Program implements InstrArgResolver {
         }
     }
 
+    private finalizeAutoRefresh() {
+        const proc = new Procedure(this, "_autoRefresh_")
+        const period = 521
+        this.withProcedure(proc, wr => {
+            for (const role_ of this.roles.list) {
+                const role = role_ as Role
+                if (role.autoRefreshRegs.length == 0) continue
+                wr.push()
+                const isConn = this.emitIsRoleConnected(role)
+                wr.emitIfAndPop(isConn, () => {
+                    for (const reg of role.autoRefreshRegs) {
+                        if (
+                            reg.identifier == SystemReg.Reading &&
+                            role.isSensor()
+                        ) {
+                            wr.push()
+                            wr.emitSync(OpSync.SETUP_BUFFER, 1)
+                            const v = wr.forceReg(floatVal(199))
+                            wr.emitStoreByte(v, 0)
+                            wr.pop()
+                            wr.emitAsync(
+                                OpAsync.SEND_CMD,
+                                role.encode(),
+                                SystemReg.StreamingSamples | CMD_SET_REG
+                            )
+                        } else {
+                            wr.emitSync(OpSync.SETUP_BUFFER, 0)
+                            wr.emitAsync(
+                                OpAsync.SEND_CMD,
+                                role.encode(),
+                                reg.identifier | CMD_GET_REG
+                            )
+                        }
+                    }
+                })
+            }
+            wr.emitAsync(OpAsync.YIELD, period)
+            wr.emitJump(wr.top)
+        })
+
+        this.startDispatchers.emit(wr => wr.emitCall(proc, OpCall.BG_MAX1))
+    }
+
     private withProcedure<T>(proc: Procedure, f: (wr: OpWriter) => T) {
         assert(!!proc)
         const prevProc = this.proc
@@ -1046,7 +1130,9 @@ class Program implements InstrArgResolver {
         }
     }
 
-    private forceName(pat: estree.Expression | estree.Pattern) {
+    private forceName(
+        pat: estree.Expression | estree.Pattern | estree.PrivateIdentifier
+    ) {
         const r = idName(pat)
         if (!r) this.throwError(pat, "only simple identifiers supported")
         return (pat as estree.Identifier).name
@@ -1055,6 +1141,14 @@ class Program implements InstrArgResolver {
     private parseRole(decl: estree.VariableDeclarator) {
         const expr = decl.init
         if (expr?.type != "CallExpression") return null
+        if (idName(expr.callee) == "condition") {
+            this.requireArgs(expr, 0)
+            return new Role(
+                decl,
+                this.roles,
+                serviceSpecificationFromName("jacscriptcondition")
+            )
+        }
         if (expr.callee.type != "MemberExpression") return null
         if (idName(expr.callee.object) != "roles") return null
         const serv = this.forceName(expr.callee.property)
@@ -1082,21 +1176,25 @@ class Program implements InstrArgResolver {
 
     private emitVariableDeclaration(decls: estree.VariableDeclaration) {
         if (decls.kind != "var") this.throwError(decls, "only 'var' supported")
-        const isTopLevel = this.proc == this.main
         for (const decl of decls.declarations) {
-            this.newDef(decl)
-            const r = isTopLevel ? this.parseRole(decl) : null
-            if (!r) {
-                const g = new Variable(
-                    decl,
-                    isTopLevel ? this.globals : this.proc.locals
-                )
-                if (!isTopLevel) g.isLocal = true
+            let g: Variable
+            if (this.isTopLevel(decl)) {
+                const tmp = this.globals.lookup(this.forceName(decl.id))
+                if (tmp instanceof Role) continue
+                if (tmp instanceof Variable) g = tmp
+                else {
+                    if (this.numErrors == 0) oops("invalid var: " + tmp)
+                    else continue
+                }
+            } else {
+                this.newDef(decl)
+                g = new Variable(decl, this.proc.locals)
+                g.isLocal = true
+            }
+
+            if (decl.init) {
                 this.writer.push()
-                this.emitStore(
-                    g,
-                    decl.init ? this.emitSimpleValue(decl.init) : values.zero
-                )
+                this.emitStore(g, this.emitSimpleValue(decl.init))
                 this.writer.pop()
             }
         }
@@ -1143,7 +1241,7 @@ class Program implements InstrArgResolver {
         const fundecl = this.functions.list.find(
             f => f.definition === stmt
         ) as FunctionDecl
-        if (this.proc != this.main)
+        if (!this.isTopLevel(stmt))
             this.throwError(stmt, "only top-level functions are supported")
         if (stmt.generator || stmt.async)
             this.throwError(stmt, "async not supported")
@@ -1167,33 +1265,66 @@ class Program implements InstrArgResolver {
         })
     }
 
+    private isTopLevel(node: estree.Node) {
+        return !!(node as any)._jacsIsTopLevel
+    }
+
     private emitProgram(prog: estree.Program) {
         this.main = new Procedure(this, "main")
         this.startDispatchers = new DelayedCodeSection(
             "startDispatchers",
             this.main
         )
-        // pre-declare all functions
-        // TODO should we do that also for global vars?
+        prog.body.forEach(markTopLevel)
+        // pre-declare all functions and globals
         for (const s of prog.body) {
             try {
-                if (s.type == "FunctionDeclaration") {
-                    this.newDef(s)
-                    const n = this.forceName(s.id)
-                    if (reservedFunctions[n] == 1)
-                        this.throwError(s, `function name '${n}' is reserved`)
-                    new FunctionDecl(this, s, this.functions)
+                switch (s.type) {
+                    case "FunctionDeclaration":
+                        this.newDef(s)
+                        const n = this.forceName(s.id)
+                        if (reservedFunctions[n] == 1)
+                            this.throwError(
+                                s,
+                                `function name '${n}' is reserved`
+                            )
+                        new FunctionDecl(this, s, this.functions)
+                        break
+                    case "VariableDeclaration":
+                        for (const decl of s.declarations) {
+                            this.newDef(decl)
+                            if (!this.parseRole(decl)) {
+                                new Variable(decl, this.globals)
+                            }
+                        }
+                        break
                 }
             } catch (e) {
                 this.handleException(s, e)
             }
         }
+
+        this.roles.sort()
+
         this.withProcedure(this.main, () => {
             this.startDispatchers.callHere()
             for (const s of prog.body) this.emitStmt(s)
             this.writer.emitSync(OpSync.RETURN)
+            this.finalizeAutoRefresh()
             this.startDispatchers.finalize()
         })
+
+        function markTopLevel(node: estree.Node) {
+            ;(node as any)._jacsIsTopLevel = true
+            switch (node.type) {
+                case "ExpressionStatement":
+                    markTopLevel(node.expression)
+                    break
+                case "VariableDeclaration":
+                    node.declarations.forEach(markTopLevel)
+                    break
+            }
+        }
     }
 
     private ignore(val: ValueDesc) {}
@@ -1253,6 +1384,14 @@ class Program implements InstrArgResolver {
         return l
     }
 
+    private requireTopLevel(expr: estree.CallExpression) {
+        if (!this.isTopLevel(expr))
+            this.throwError(
+                expr,
+                "this can only be done at the top-level of the program"
+            )
+    }
+
     private emitEventCall(
         expr: estree.CallExpression,
         obj: ValueDesc,
@@ -1261,6 +1400,7 @@ class Program implements InstrArgResolver {
         const role = obj.cell as Role
         switch (prop) {
             case "sub":
+                this.requireTopLevel(expr)
                 this.requireArgs(expr, 1)
                 const handler = this.emitHandler(
                     this.codeName(expr.callee),
@@ -1278,8 +1418,85 @@ class Program implements InstrArgResolver {
                     )
                 })
                 return values.zero
+            case "wait":
+                this.requireArgs(expr, 0)
+                const wr = this.writer
+                const lbl = wr.mkLabel("wait")
+                wr.emitLabel(lbl)
+                wr.emitSync(OpSync.OBSERVE_ROLE, role.encode())
+                wr.emitAsync(OpAsync.YIELD)
+                wr.push()
+                const cond = this.inlineBin(
+                    OpBinary.EQ,
+                    specialVal(ValueSpecial.EV_CODE),
+                    floatVal(obj.spec.identifier)
+                )
+                wr.pop()
+                wr.emitJump(lbl, cond.index)
+                return values.zero
         }
         this.throwError(expr, `events don't have property ${prop}`)
+    }
+
+    private emitCommandCall(
+        expr: estree.CallExpression,
+        obj: ValueDesc,
+        prop: string
+    ): ValueDesc {
+        const role = obj.cell as Role
+        switch (prop) {
+            case "sub":
+                this.requireTopLevel(expr)
+                this.requireArgs(expr, 1)
+                const handler = this.emitHandler(
+                    this.codeName(expr.callee),
+                    expr.arguments[0]
+                )
+                this.emitInRoleDispatcher(role, wr => {
+                    wr.push()
+                    const cond = this.inlineBin(
+                        OpBinary.EQ,
+                        specialVal(ValueSpecial.EV_CODE),
+                        floatVal(obj.spec.identifier)
+                    )
+                    wr.emitIfAndPop(cond, () =>
+                        wr.emitCall(handler, OpCall.BG_MAX1_PEND1)
+                    )
+                })
+                return values.zero
+            case "wait":
+                this.requireArgs(expr, 0)
+                const wr = this.writer
+                const lbl = wr.mkLabel("wait")
+                wr.emitLabel(lbl)
+                wr.emitSync(OpSync.OBSERVE_ROLE, role.encode())
+                wr.emitAsync(OpAsync.YIELD)
+                wr.push()
+                const cond = this.inlineBin(
+                    OpBinary.EQ,
+                    specialVal(ValueSpecial.EV_CODE),
+                    floatVal(obj.spec.identifier)
+                )
+                wr.pop()
+                wr.emitJump(lbl, cond.index)
+                return values.zero
+        }
+        this.throwError(expr, `events don't have property ${prop}`)
+    }
+
+    private extractRegField(obj: ValueDesc, field: jdspec.PacketMember) {
+        const wr = this.writer
+        const r = wr.allocReg()
+        let off = 0
+        for (const f of obj.spec.fields) {
+            if (f == field) {
+                wr.emitBufOp(OpTop.LOAD_CELL, r, off, field)
+                return r
+            } else {
+                off += Math.abs(f.storage)
+            }
+        }
+        oops("field missing")
     }
 
     private emitRegGet(
@@ -1301,17 +1518,7 @@ class Program implements InstrArgResolver {
             refresh
         )
         if (field) {
-            const r = wr.allocReg()
-            let off = 0
-            for (const f of obj.spec.fields) {
-                if (f == field) {
-                    wr.emitBufOp(OpTop.LOAD_CELL, r, off, field)
-                    return r
-                } else {
-                    off += Math.abs(f.storage)
-                }
-            }
-            oops("field missing")
+            return this.extractRegField(obj, field)
         } else {
             const r = mkValue(CellKind.JD_VALUE_SEQ, 0, role)
             r.spec = obj.spec
@@ -1337,12 +1544,15 @@ class Program implements InstrArgResolver {
         prop: string
     ): ValueDesc {
         const role = obj.cell as Role
+        const wr = this.writer
+        if (expr.callee.type != "MemberExpression") oops("")
         switch (prop) {
             case "isConnected":
                 this.requireArgs(expr, 0)
                 return this.emitIsRoleConnected(role)
             case "onConnected":
             case "onDisconnected":
+                this.requireTopLevel(expr)
                 this.requireArgs(expr, 1)
                 const name = role.getName() + "_" + prop
                 const handler = this.emitHandler(name, expr.arguments[0])
@@ -1361,8 +1571,57 @@ class Program implements InstrArgResolver {
                         })
                     })
                 return values.zero
+            case "wait":
+                if (!role.isCondition())
+                    this.throwError(expr, "only condition()s have wait()")
+                this.requireArgs(expr, 0)
+                wr.emitSync(OpSync.OBSERVE_ROLE, role.encode())
+                wr.emitAsync(OpAsync.YIELD)
+                return values.zero
             default:
-                this.throwError(expr, `roles don't have property ${prop}`)
+                const v = this.emitRoleMember(expr.callee, obj)
+                if (v.kind == CellKind.JD_COMMAND) {
+                    this.emitPackArgs(expr, v)
+                    this.writer.emitAsync(
+                        OpAsync.SEND_CMD,
+                        role.encode(),
+                        v.spec.identifier
+                    )
+                } else if (v.kind != CellKind.ERROR) {
+                    this.throwError(
+                        expr,
+                        `${stringifyCellKind(v.kind)} can't be called`
+                    )
+                }
+                return values.zero
+        }
+    }
+
+    private emitPackArgs(expr: estree.CallExpression, obj: ValueDesc) {
+        const wr = this.writer
+        this.requireArgs(expr, obj.spec.fields.length)
+        let off = 0
+        let sz = 0
+        for (const f of obj.spec.fields) sz += Math.abs(f.storage)
+        wr.emitSync(OpSync.SETUP_BUFFER, sz)
+        for (let i = 0; i < expr.arguments.length; ++i) {
+            wr.push()
+            let v = this.emitExpr(expr.arguments[i])
+            if (v.kind == CellKind.JD_CURR_BUFFER) {
+                if (i != expr.arguments.length - 1)
+                    this.throwError(
+                        expr.arguments[i + 1],
+                        "args can't follow a buffer"
+                    )
+                wr.pop()
+                break
+            }
+            v = wr.forceReg(v)
+            const f = obj.spec.fields[i]
+            wr.emitBufOp(OpTop.STORE_CELL, v, off, f)
+            off += Math.abs(f.storage)
+            assert(off <= sz)
+            wr.pop()
         }
     }
 
@@ -1380,43 +1639,23 @@ class Program implements InstrArgResolver {
                 this.requireArgs(expr, 0)
                 return this.emitRegGet(obj)
             case "write":
-                this.requireArgs(expr, obj.spec.fields.length)
-                let off = 0
-                let sz = 0
-                for (const f of obj.spec.fields) sz += Math.abs(f.storage)
-                wr.emitSync(OpSync.SETUP_BUFFER, sz)
-                for (let i = 0; i < expr.arguments.length; ++i) {
-                    wr.push()
-                    let v = this.emitExpr(expr.arguments[i])
-                    if (v.kind == CellKind.JD_CURR_BUFFER) {
-                        if (i != expr.arguments.length - 1)
-                            this.throwError(
-                                expr.arguments[i + 1],
-                                "args can't follow a buffer"
-                            )
-                        wr.pop()
-                        break
-                    }
-                    v = wr.forceReg(v)
-                    const f = obj.spec.fields[i]
-                    wr.emitBufOp(OpTop.STORE_CELL, v, off, f)
-                    off += Math.abs(f.storage)
-                    assert(off <= sz)
-                    wr.pop()
-                }
+                this.emitPackArgs(expr, obj)
                 wr.emitAsync(
-                    OpAsync.SET_REG,
+                    OpAsync.SEND_CMD,
                     role.encode(),
-                    obj.spec.identifier
+                    obj.spec.identifier | CMD_SET_REG
                 )
                 return values.zero
             case "onChange":
                 this.requireArgs(expr, 2)
+                this.requireTopLevel(expr)
                 if (obj.spec.fields.length != 1)
                     this.throwError(expr, "wrong register type")
                 const threshold = this.litValue(expr.arguments[0])
                 const name = role.getName() + "_chg_" + obj.spec.name
                 const handler = this.emitHandler(name, expr.arguments[1])
+                if (role.autoRefreshRegs.indexOf(obj.spec) < 0)
+                    role.autoRefreshRegs.push(obj.spec)
                 this.emitInRoleDispatcher(role, wr => {
                     const cache = this.proc.mkTempLocal(name)
                     role.dispatcher.init.emit(wr => {
@@ -1429,25 +1668,28 @@ class Program implements InstrArgResolver {
                         floatVal(obj.spec.identifier)
                     )
                     wr.emitIfAndPop(cond, () => {
-                        // get the cached value (TODO - better hint for that than never-refresh?)
+                        // get the reg value from current packet
                         wr.push()
-                        const curr = this.emitRegGet(obj, RefreshMS.Never)
+                        const curr = this.extractRegField(
+                            obj,
+                            obj.spec.fields[0]
+                        )
                         const skipHandler = wr.mkLabel("skipHandler")
-                        // if (isNaN(curr)) goto skip
-                        const prev = wr.allocReg()
-                        wr.emitUnary(OpUnary.IS_NAN, prev, curr)
-                        wr.emitUnary(OpUnary.NOT, prev, prev)
-                        wr.emitJump(skipHandler, prev.index)
-                        // prev := cache
-                        wr.assign(prev, cache.value())
-                        // if (Math.abs(prev-curr) <= threshold) goto skip
-                        // note that this also calls handler() if prev is NaN
-                        wr.emitBin(OpBinary.SUB, prev, curr)
-                        wr.emitUnary(OpUnary.ABS, prev, prev)
+                        // if (isNaN(curr)) goto skip (shouldn't really happen unless service is misbehaving)
+                        const tmp = wr.allocReg()
+                        wr.emitUnary(OpUnary.IS_NAN, tmp, curr)
+                        wr.emitUnary(OpUnary.NOT, tmp, tmp)
+                        wr.emitJump(skipHandler, tmp.index)
+                        // tmp := cache
+                        wr.assign(tmp, cache.value())
+                        // if (Math.abs(tmp-curr) <= threshold) goto skip
+                        // note that this also calls handler() if cache was NaN
+                        wr.emitBin(OpBinary.SUB, tmp, curr)
+                        wr.emitUnary(OpUnary.ABS, tmp, tmp)
                         const thresholdReg = wr.forceReg(floatVal(threshold))
-                        wr.emitBin(OpBinary.LE, prev, thresholdReg)
-                        wr.emitUnary(OpUnary.NOT, prev, prev)
-                        wr.emitJump(skipHandler, prev.index)
+                        wr.emitBin(OpBinary.LE, tmp, thresholdReg)
+                        wr.emitUnary(OpUnary.NOT, tmp, tmp)
+                        wr.emitJump(skipHandler, tmp.index)
                         // cache := curr
                         wr.assign(cache.value(), curr)
                         wr.pop()
@@ -1634,6 +1876,7 @@ class Program implements InstrArgResolver {
                 return values.zero
             }
             case "every": {
+                this.requireTopLevel(expr)
                 this.requireArgs(expr, 2)
                 const time = Math.round(this.litValue(expr.arguments[0]) * 1000)
                 if (time < 20)
@@ -1701,6 +1944,60 @@ class Program implements InstrArgResolver {
         return matchesName(pi.name, id)
     }
 
+    private emitRoleMember(expr: estree.MemberExpression, obj: ValueDesc) {
+        assert(obj.cell instanceof Role)
+        const role = obj.cell as Role
+        const propName = this.forceName(expr.property)
+        let r: ValueDesc
+
+        let generic: jdspec.PacketInfo
+        for (const p of this.sysSpec.packets) {
+            if (this.matchesSpecName(p, propName)) generic = p
+        }
+
+        for (const p of role.spec.packets) {
+            if (
+                this.matchesSpecName(p, propName) ||
+                (generic?.identifier == p.identifier && generic?.kind == p.kind)
+            ) {
+                if (isRegister(p)) {
+                    assert(!r)
+                    r = mkValue(CellKind.JD_REG, p.identifier, role)
+                    r.spec = p
+                }
+                if (isEvent(p)) {
+                    assert(!r)
+                    r = mkValue(CellKind.JD_EVENT, p.identifier, role)
+                    r.spec = p
+                }
+                if (isCommand(p)) {
+                    assert(!r)
+                    r = mkValue(CellKind.JD_COMMAND, p.identifier, role)
+                    r.spec = p
+                }
+            }
+        }
+
+        if (!r)
+            this.throwError(
+                expr,
+                `role ${role.getName()} has no member ${propName}`
+            )
+        return r
+
+        function isRegister(pi: jdspec.PacketInfo) {
+            return pi.kind == "ro" || pi.kind == "rw" || pi.kind == "const"
+        }
+
+        function isEvent(pi: jdspec.PacketInfo) {
+            return pi.kind == "event"
+        }
+
+        function isCommand(pi: jdspec.PacketInfo) {
+            return pi.kind == "command"
+        }
+    }
+
     private emitMemberExpression(expr: estree.MemberExpression): ValueDesc {
         if (idName(expr.object) == "Math") {
             const id = idName(expr.property)
@@ -1708,41 +2005,7 @@ class Program implements InstrArgResolver {
         }
         const obj = this.emitExpr(expr.object)
         if (obj.kind == CellKind.JD_ROLE) {
-            assert(obj.cell instanceof Role)
-            const role = obj.cell as Role
-            const propName = this.forceName(expr.property)
-            let r: ValueDesc
-
-            let generic: jdspec.PacketInfo
-            for (const p of this.sysSpec.packets) {
-                if (this.matchesSpecName(p, propName)) generic = p
-            }
-
-            for (const p of role.spec.packets) {
-                if (
-                    this.matchesSpecName(p, propName) ||
-                    (generic?.identifier == p.identifier &&
-                        generic?.kind == p.kind)
-                ) {
-                    if (isRegister(p)) {
-                        assert(!r)
-                        r = mkValue(CellKind.JD_REG, p.identifier, role)
-                        r.spec = p
-                    }
-                    if (isEvent(p)) {
-                        assert(!r)
-                        r = mkValue(CellKind.JD_EVENT, p.identifier, role)
-                        r.spec = p
-                    }
-                }
-            }
-
-            if (!r)
-                this.throwError(
-                    expr,
-                    `role ${role.getName()} has no member ${propName}`
-                )
-            return r
+            return this.emitRoleMember(expr, obj)
         } else if (obj.kind == CellKind.JD_REG) {
             const propName = this.forceName(expr.property)
             if (obj.spec.fields.length > 1) {
@@ -1764,14 +2027,6 @@ class Program implements InstrArgResolver {
         }
 
         this.throwError(expr, `unhandled member ${idName(expr.property)}`)
-
-        function isRegister(pi: jdspec.PacketInfo) {
-            return pi.kind == "ro" || pi.kind == "rw" || pi.kind == "const"
-        }
-
-        function isEvent(pi: jdspec.PacketInfo) {
-            return pi.kind == "event"
-        }
     }
 
     private mkLiteral(v: number): estree.Literal {
