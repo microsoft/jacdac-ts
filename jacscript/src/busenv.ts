@@ -1,5 +1,7 @@
-import { JacsEnv } from "./env"
+import { JacsEnv, JacsRoleMgr } from "./env"
 import {
+    addServiceProvider,
+    CHANGE,
     DEVICE_CONNECT,
     DEVICE_DISCONNECT,
     JDBus,
@@ -8,17 +10,31 @@ import {
     PACKET_PROCESS,
     printPacket,
     Scheduler,
+    SRV_ROLE_MANAGER,
 } from "jacdac-ts"
+import { RoleManagerServer } from "./rolemanagerserver"
 
 export class JDBusJacsEnv implements JacsEnv {
     private scheduler: Scheduler
+    roleManager: JacsRoleMgr
 
     constructor(private bus: JDBus) {
         this.scheduler = this.bus.scheduler
         this.bus.on(DEVICE_DISCONNECT, dev => this.onDisconnect?.(dev))
         this.bus.on(DEVICE_CONNECT, dev => this.onConnect?.(dev))
         this.bus.on(PACKET_PROCESS, pkt => this.onPacket?.(pkt))
+
+        addServiceProvider(this.bus, {
+            name: "JacScript Helper",
+            serviceClasses: [SRV_ROLE_MANAGER],
+            services: () => {
+                const serv = new RoleManagerServer("jacsRoles")
+                this.roleManager = new BusRoleManager(serv)
+                return [serv]
+            },
+        })
     }
+
     send(pkt: Packet): void {
         pkt = pkt.clone()
         console.log(new Date(), "SEND", printPacket(pkt))
@@ -46,4 +62,30 @@ export class JDBusJacsEnv implements JacsEnv {
     onDisconnect: (dev: JDDevice) => void
     onConnect: (dev: JDDevice) => void
     onPacket: (pkt: Packet) => void
+}
+
+export class BusRoleManager implements JacsRoleMgr {
+    onAssignmentsChanged: () => void
+
+    constructor(private rolemgr: RoleManagerServer) {
+        this.rolemgr.on(CHANGE, () => this.onAssignmentsChanged?.())
+    }
+
+    setRoles(roles: JacsRole[]): void {
+        const prev = this.onAssignmentsChanged
+        this.onAssignmentsChanged = null
+        for (const r of roles) this.rolemgr.addRole(r.name, r.classIdenitifer)
+        this.onAssignmentsChanged = prev
+    }
+
+    getRole(
+        name: string
+    ): { device: JDDevice; serviceIndex: number } | undefined {
+        return this.rolemgr.getRole(name)
+    }
+}
+
+export interface JacsRole {
+    name: string
+    classIdenitifer: number
 }
