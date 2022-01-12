@@ -1438,52 +1438,6 @@ class Program implements InstrArgResolver {
         this.throwError(expr, `events don't have property ${prop}`)
     }
 
-    private emitCommandCall(
-        expr: estree.CallExpression,
-        obj: ValueDesc,
-        prop: string
-    ): ValueDesc {
-        const role = obj.cell as Role
-        switch (prop) {
-            case "sub":
-                this.requireTopLevel(expr)
-                this.requireArgs(expr, 1)
-                const handler = this.emitHandler(
-                    this.codeName(expr.callee),
-                    expr.arguments[0]
-                )
-                this.emitInRoleDispatcher(role, wr => {
-                    wr.push()
-                    const cond = this.inlineBin(
-                        OpBinary.EQ,
-                        specialVal(ValueSpecial.EV_CODE),
-                        floatVal(obj.spec.identifier)
-                    )
-                    wr.emitIfAndPop(cond, () =>
-                        wr.emitCall(handler, OpCall.BG_MAX1_PEND1)
-                    )
-                })
-                return values.zero
-            case "wait":
-                this.requireArgs(expr, 0)
-                const wr = this.writer
-                const lbl = wr.mkLabel("wait")
-                wr.emitLabel(lbl)
-                wr.emitSync(OpSync.OBSERVE_ROLE, role.encode())
-                wr.emitAsync(OpAsync.YIELD)
-                wr.push()
-                const cond = this.inlineBin(
-                    OpBinary.EQ,
-                    specialVal(ValueSpecial.EV_CODE),
-                    floatVal(obj.spec.identifier)
-                )
-                wr.pop()
-                wr.emitJump(lbl, cond.index)
-                return values.zero
-        }
-        this.throwError(expr, `events don't have property ${prop}`)
-    }
-
     private extractRegField(obj: ValueDesc, field: jdspec.PacketMember) {
         const wr = this.writer
         const r = wr.allocReg()
