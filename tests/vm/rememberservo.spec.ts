@@ -3,8 +3,7 @@ import { readFileSync } from "fs"
 import { VMProgram } from "../../src/vm/ir"
 import { VMProgramRunner } from "../../src/vm/runner"
 import { toJacScript } from "../../src/vm/ir2jacscript"
-import { compile } from "../../src/jacscript/compiler"
-import { Runner } from "../../src/jacscript/executor"
+
 
 import { makeTest } from "../jdom/fastforwardtester"
 import ButtonServer from "../../src/servers/buttonserver"
@@ -14,35 +13,7 @@ import { bindRoles } from "./vmtester"
 import { FastForwardTester } from "../jdom/fastforwardtester"
 import { RegisterTester } from "../../src/tstester/registerwrapper"
 import { ServoReg } from "../../jacdac-spec/dist/specconstants"
-import { JDBus } from "../../src/jacdac"
-
-function runProgram(fn: string, bus: JDBus, delay: number = undefined) {
-    console.log(`*** run ${fn}`)
-
-    const res = compile(
-        {
-            write: (fn, cont) => {},
-            log: msg => { console.log(msg) },
-        },
-        fn
-    )
-
-    if (!res.success) process.exit(1)
-
-    return new Promise<void>(resolve => {
-        const r = new Runner(bus, res.binary, res.dbg)
-        if (delay !== undefined)
-            r.startDelay = delay
-        r.onError = () => process.exit(1)
-        r.onPanic = code => {
-            if (code == 0)
-                resolve()
-            else
-                process.exit(2)
-        }
-        r.run()
-    })
-}
+import { runJacScriptProgram } from "./util"
 
 suite("remember servo", () => {
     const program: VMProgram = JSON.parse(
@@ -62,6 +33,9 @@ suite("remember servo", () => {
         ) => void
     ) {
         return makeTest(async tester => {
+
+            await runJacScriptProgram(output, tester.bus)
+
             const { recall, set, servo } = await tester.createServices({
                 recall: new ButtonServer("button", false),
                 set: new ButtonServer("button", false),
@@ -76,7 +50,6 @@ suite("remember servo", () => {
 
             //const runner = new VMProgramRunner(roleMgr, program)
             //await runner.startAsync()
-            await runProgram(output, tester.bus)
 
             const servoReg = new RegisterTester(
                 servo.service.register(ServoReg.Angle)

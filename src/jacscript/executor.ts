@@ -928,6 +928,7 @@ class Ctx {
     }
 
     private autoBind(devs: JDDevice[]) {
+        console.log(`autoBind `)
         // TODO make it sort roles etc
         // TODO prevent two roles binding to the same service idx
         for (const r of this.roles) {
