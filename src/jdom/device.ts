@@ -812,6 +812,14 @@ export class JDDevice extends JDNode {
     }
 
     /**
+     * Send command to enter proxy/dongle mode
+     * @returns 
+     */
+    startProxy() {
+        return this.service(0)?.sendCmdAsync(ControlCmd.Proxy)
+    }
+
+    /**
      * Tries to retrive the product identifier from the device
      * @param retry number of devices
      * @returns promise that returns product identifier if received
