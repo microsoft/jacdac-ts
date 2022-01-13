@@ -667,6 +667,7 @@ ${this.devices({ ignoreInfrastructure: false })
   id: ${dev.shortId} (0x${dev.deviceId})
   product: ${dev.name || "?"} (0x${dev.productIdentifier?.toString(16) || "?"})
   firmware_version: ${dev.firmwareVersion || ""}
+  uptime: ${dev.uptime || ""}
   services:
 ${dev
     .services()
