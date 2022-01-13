@@ -135,6 +135,8 @@ export function verifyBinary(
         idx++
     }
 
+    let allStrings: string[] = []
+
     idx = 0
     for (
         let ptr = strDesc.start;
@@ -146,6 +148,7 @@ export function verifyBinary(
         const str = fromUTF8(
             uint8ArrayToString(new Uint8Array(strSect.asBuffer()))
         )
+        allStrings.push(str)
         host.log(`str #${idx} = ${JSON.stringify(str)}`)
         idx++
     }
@@ -163,7 +166,9 @@ export function verifyBinary(
             top == 0x1 || top == 0x2,
             "service class starts with 0x1 or 0x2 (mixin)"
         )
-        host.log(`role #${idx} = ${hex(cl)} ${dbg.roles[idx]?.name || ""}`)
+        const nameIdx = read16(bin, ptr + 4)
+        assertPos(ptr, nameIdx < numStrings, "role name in range")
+        host.log(`role #${idx} = ${hex(cl)} ${allStrings[nameIdx]}`)
         idx++
     }
 
