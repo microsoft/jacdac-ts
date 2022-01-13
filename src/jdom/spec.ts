@@ -321,7 +321,14 @@ export function isValueOrIntensity(pkt: jdspec.PacketInfo) {
  * @category Specification
  */
 export function isConstRegister(pkt: jdspec.PacketInfo) {
-    return pkt?.kind == "const"
+    return pkt?.kind === "const"
+}
+
+/**
+ * Indicates if the packet info is not rw
+ */
+export function isReadOnlyRegister(pkt: jdspec.PacketInfo) {
+    return pkt?.kind !== "rw";
 }
 
 /**
