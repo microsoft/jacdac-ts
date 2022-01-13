@@ -11,8 +11,8 @@ import {
     printPacket,
     Scheduler,
     SRV_ROLE_MANAGER,
+    RoleManagerServer,
 } from "jacdac-ts"
-import { RoleManagerServer } from "./rolemanagerserver"
 
 export class JDBusJacsEnv implements JacsEnv {
     private scheduler: Scheduler

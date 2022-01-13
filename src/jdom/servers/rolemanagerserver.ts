@@ -1,23 +1,20 @@
+import { JDBus } from "../bus"
 import {
     CHANGE,
-    JDDevice,
-    JDServiceServer,
-    Packet,
-    RoleManagerCmd,
-    SRV_ROLE_MANAGER,
-    toHex,
-    OutPipe,
-    jdpack,
-    fromHex,
     DEVICE_DISCONNECT,
-    strcmp,
-    JDBus,
-    RoleManagerReg,
     REGISTER_PRE_GET,
+    RoleManagerCmd,
     RoleManagerEvent,
-    debounce,
-    JDRegisterServer,
-} from "jacdac-ts"
+    RoleManagerReg,
+    SRV_ROLE_MANAGER,
+} from "../constants"
+import { JDDevice } from "../device"
+import { jdpack } from "../pack"
+import { Packet } from "../packet"
+import { OutPipe } from "../pipes"
+import { JDRegisterServer } from "./registerserver"
+import { JDServiceServer } from "./serviceserver"
+import { debounce, fromHex, strcmp, toHex } from "../utils"
 
 class Role {
     device: JDDevice
