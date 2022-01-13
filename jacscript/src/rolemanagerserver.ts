@@ -9,10 +9,14 @@ import {
     OutPipe,
     jdpack,
     fromHex,
-    DEVICE_CHANGE,
-    DEVICE_CONNECT,
     DEVICE_DISCONNECT,
     strcmp,
+    JDBus,
+    RoleManagerReg,
+    REGISTER_PRE_GET,
+    RoleManagerEvent,
+    debounce,
+    JDRegisterServer,
 } from "jacdac-ts"
 
 class Role {
@@ -31,16 +35,25 @@ class Role {
             return this.device.deviceId + ":" + this.serviceIndex
         return undefined
     }
+    toString() {
+        const binding = this.device
+            ? this.device + ":" + this.serviceIndex
+            : "?"
+        return `${this.name}[${binding}]`
+    }
 }
 
 export class RoleManagerServer extends JDServiceServer {
     private roles: Role[] = []
     private assignmentCache: Record<string, string> // role name -> deviceId : serviceIndex
+    private autoBindEnabled: JDRegisterServer<[boolean]>
 
-    constructor(readonly storageKey?: string) {
+    constructor(private bus: JDBus, readonly storageKey?: string) {
         super(SRV_ROLE_MANAGER)
 
         this.assignmentCache = this.read()
+
+        this.changed = debounce(this.changed.bind(this), 100)
 
         this.addCommand(RoleManagerCmd.SetRole, this.handleSet.bind(this))
         this.addCommand(RoleManagerCmd.ListRoles, this.handleList.bind(this))
@@ -49,12 +62,21 @@ export class RoleManagerServer extends JDServiceServer {
             this.handleClearAssignments.bind(this)
         )
 
-        let initialized = false
-        this.on(DEVICE_CHANGE, () => {
-            if (initialized || !this.device) return
-            initialized = true
-            this.initForBus()
+        const alloc = this.addRegister(RoleManagerReg.AllRolesAllocated)
+        alloc.on(REGISTER_PRE_GET, () => {
+            const allDone = this.roles.every(r => r.isAssigned())
+            alloc.setValues([allDone ? 1 : 0])
         })
+
+        this.autoBindEnabled = this.addRegister(RoleManagerReg.AutoBind, [true])
+
+        this.initForBus()
+    }
+
+    private changed() {
+        console.log("CHANGE: " + this.roles.join(", "))
+        this.emit(CHANGE)
+        this.sendEvent(RoleManagerEvent.Change)
     }
 
     private initForBus() {
@@ -62,7 +84,7 @@ export class RoleManagerServer extends JDServiceServer {
             this.setFromCache(r)
         }
         this.bus.scheduler.setInterval(() => this.autoBind(), 980)
-        this.on(DEVICE_DISCONNECT, (dev: JDDevice) => {
+        this.bus.on(DEVICE_DISCONNECT, (dev: JDDevice) => {
             let numCleared = 0
             for (const r of this.roles) {
                 if (r.device == dev) {
@@ -70,11 +92,13 @@ export class RoleManagerServer extends JDServiceServer {
                     numCleared++
                 }
             }
-            if (numCleared) this.emit(CHANGE)
+            if (numCleared) this.changed()
         })
     }
 
     private autoBind() {
+        if (!this.autoBindEnabled.values()[0]) return
+
         const usedBindings: Record<string, boolean> = {}
         let numUnbound = 0
         for (const r of this.roles)
@@ -90,7 +114,7 @@ export class RoleManagerServer extends JDServiceServer {
         for (const r of roles) {
             if (!r.isAssigned())
                 for (const d of devs) {
-                    const len = Math.min(d.serviceLength, 32)
+                    const len = d.serviceLength
                     for (let i = 1; i < len; ++i) {
                         if (
                             r.classIdentifier == d.serviceClassAt(i) &&
@@ -106,7 +130,7 @@ export class RoleManagerServer extends JDServiceServer {
 
         if (assignedRoles.length) {
             this.save()
-            this.emit(CHANGE)
+            this.changed()
         }
     }
 
@@ -115,7 +139,7 @@ export class RoleManagerServer extends JDServiceServer {
         const cached = this.assignmentCache[r.name]
         if (typeof cached != "string") return
         const [devId, idx_] = cached.split(":")
-        const dev = this.bus.device(devId)
+        const dev = this.bus.device(devId, true)
         const idx = parseInt(idx_)
         if (!dev || !idx) return
         if (dev.serviceClassAt(idx) != r.classIdentifier) return
@@ -124,14 +148,14 @@ export class RoleManagerServer extends JDServiceServer {
 
     public deleteRoles() {
         this.roles = []
-        this.emit(CHANGE)
+        this.changed()
     }
 
     public clearAssignments() {
         for (const r of this.roles) r.clear()
         this.assignmentCache = {}
         this.save()
-        this.emit(CHANGE)
+        this.changed()
     }
 
     public addRole(name: string, classIdenitifer: number) {
@@ -148,7 +172,7 @@ export class RoleManagerServer extends JDServiceServer {
             r.clear()
         }
         this.setFromCache(r)
-        this.emit(CHANGE)
+        this.changed()
     }
 
     private setRoleCore(name: string, dev: JDDevice, serviceIndex: number) {
@@ -170,7 +194,7 @@ export class RoleManagerServer extends JDServiceServer {
     public setRole(name: string, dev: JDDevice, serviceIndex: number) {
         this.setRoleCore(name, dev, serviceIndex)
         this.save()
-        this.emit(CHANGE)
+        this.changed()
     }
 
     public getRole(
@@ -183,10 +207,6 @@ export class RoleManagerServer extends JDServiceServer {
 
     private lookup(name: string) {
         return this.roles.find(r => r.name == name)
-    }
-
-    private get bus() {
-        return this.device.bus
     }
 
     private async handleSet(pkt: Packet) {

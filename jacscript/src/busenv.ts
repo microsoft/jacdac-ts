@@ -28,7 +28,7 @@ export class JDBusJacsEnv implements JacsEnv {
             name: "JacScript Helper",
             serviceClasses: [SRV_ROLE_MANAGER],
             services: () => {
-                const serv = new RoleManagerServer("jacsRoles")
+                const serv = new RoleManagerServer(this.bus, "jacsRoles")
                 this.roleManager = new BusRoleManager(serv)
                 return [serv]
             },

@@ -154,6 +154,11 @@ class RoleInfo {
     get classId() {
         return read32(this.parent.bin, this.offset)
     }
+    get roleName() {
+        const idx = read16(this.parent.bin, this.offset + 4)
+        const buf = this.parent.stringLiterals[idx]
+        return fromUTF8(uint8ArrayToString(buf))
+    }
     toString() {
         return this.dbg?.name || `R${this.offset}`
     }
@@ -964,16 +969,44 @@ class Ctx {
         this.globals = new Float64Array(this.info.numGlobals)
         this.roles = info.roles.map(r => new Role(r))
 
-        this.env.onDisconnect = this.deviceDisconnect.bind(this)
         this.env.onPacket = this.processPkt.bind(this)
 
-        const autobind = () => {
-            this.autoBind(this.env.devices())
-            this.env.setTimeout(autobind, 500)
-        }
-        this.env.setTimeout(autobind, 500)
+        this.env.roleManager.setRoles(
+            this.roles
+                .filter(r => !r.isCondition())
+                .map(r => ({
+                    name: r.info.roleName,
+                    classIdenitifer: r.info.classId,
+                }))
+        )
+
+        this.env.roleManager.onAssignmentsChanged =
+            this.syncRoleAssignments.bind(this)
 
         this.wakeFibers = this.wakeFibers.bind(this)
+    }
+
+    private syncRoleAssignments() {
+        const assignedRoles: Role[] = []
+        for (const r of this.roles) {
+            const curr = this.env.roleManager.getRole(r.info.roleName)
+            if (
+                curr.device != r.device ||
+                curr.serviceIndex != r.serviceIndex
+            ) {
+                assignedRoles.push(r)
+                r.assign(curr.device, curr.serviceIndex)
+                if (!curr.device) this.regs.detachRole(r)
+            }
+        }
+        if (assignedRoles.length) {
+            for (const r of assignedRoles) {
+                this.pkt = Packet.from(0xffff, new Uint8Array(0))
+                if (r.device) this.pkt.deviceIdentifier = r.device.deviceId
+                this.wakeRole(r)
+            }
+            this.pokeFibers()
+        }
     }
 
     now() {
@@ -1083,58 +1116,6 @@ class Ctx {
                     )
                 this.run(f)
             }
-    }
-
-    private deviceDisconnect(dev: JDDevice) {
-        this.pkt = Packet.from(0xffff, new Uint8Array(0))
-        this.pkt.deviceIdentifier = dev.deviceId
-        for (let idx = 0; idx < this.roles.length; ++idx) {
-            const r = this.roles[idx]
-            if (r.device == dev) {
-                r.assign(null, 0)
-                this.regs.detachRole(r)
-                this.wakeRole(r)
-            }
-        }
-        this.pokeFibers()
-    }
-
-    private autoBind(devs_: JDDevice[]) {
-        type Dev = JDDevice & { _jacsUsedRoles: number }
-        const devs = devs_ as Dev[]
-        for (const d of devs) d._jacsUsedRoles = 0
-        let numUnbound = 0
-        for (const r of this.roles) {
-            if (r.serviceIndex >= 32) oops()
-            const d = r.device as Dev
-            if (d) d._jacsUsedRoles |= 1 << r.serviceIndex
-            else numUnbound++
-        }
-        if (numUnbound == 0) return
-
-        devs.sort((a, b) => strcmp(a.deviceId, b.deviceId))
-        let assignedRoles: Role[] = []
-        for (const r of this.roles) {
-            if (!r.isAttached())
-                for (const d of devs) {
-                    const len = Math.min(d.serviceLength, 32)
-                    for (let i = 1; i < len; ++i) {
-                        if (
-                            r.info.classId == d.serviceClassAt(i) &&
-                            (d._jacsUsedRoles & (1 << i)) == 0
-                        ) {
-                            d._jacsUsedRoles |= 1 << i
-                            r.assign(d, i)
-                            assignedRoles.push(r)
-                        }
-                    }
-                }
-        }
-
-        if (assignedRoles.length) {
-            for (const r of assignedRoles) this.wakeRole(r)
-            this.pokeFibers()
-        }
     }
 
     private processPkt(pkt: Packet) {
