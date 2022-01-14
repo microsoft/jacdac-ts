@@ -50,6 +50,7 @@ const files = {
   "dist/jacdac.mjs": "src/jacdac.ts",
   "dist/p5.jacdac.js": "src/p5/p5.jacdac.ts",
   "dist/jacdac-azure-iot.mjs": "src/azure-iot/jacdac-azure-iot.ts",
+  "dist/jacdac-azure-iot.cjs": "src/azure-iot/jacdac-azure-iot.ts",
   "dist/jacdac-embed.js": "src/embed/jacdac-embed.ts",
   "dist/jacdac-worker.js": "src/worker/jacdac-worker.ts",
   "dist/jacdac-tstester.mjs": "src/tstester/jacdac-tstester.ts",
