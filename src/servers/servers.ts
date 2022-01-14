@@ -1360,7 +1360,7 @@ function initProviders() {
                 services: () =>
                     Array(4)
                         .fill(0)
-                        .map(_ => new TrafficLightServer()),
+                        .map(() => new TrafficLightServer()),
             },
             {
                 name: "TVOC",
