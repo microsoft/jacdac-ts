@@ -1,4 +1,4 @@
-import JDBus, { BusOptions } from "../bus"
+import { JDBus,  BusOptions } from "../bus"
 import { createUSBTransport, isWebUSBSupported } from "./usb"
 import {
     createWebSerialTransport,
@@ -11,7 +11,7 @@ import {
     WebBluetoothOptions,
 } from "./bluetooth"
 import { USBOptions } from "./usbio"
-import createIFrameBridge from "../bridges/iframebridge"
+import { createIFrameBridge } from "../bridges/iframebridge"
 
 /**
  * Options to instantiate a bus. By default, the bus acts as a client.

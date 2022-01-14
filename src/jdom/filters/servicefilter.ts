@@ -28,4 +28,4 @@ export interface ServiceFilter {
      */
     sensor?: boolean
 }
-export default ServiceFilter
+

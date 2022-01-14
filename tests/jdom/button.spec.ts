@@ -1,6 +1,6 @@
 import { suite, test } from "mocha"
 import { ButtonEvent, ButtonReg } from "../../src/jdom/constants"
-import ButtonServer from "../../src/servers/buttonserver"
+import { ButtonServer } from "../../src/servers/buttonserver"
 import { ServiceTester } from "../../src/tstester/servicewrapper"
 import { makeTest } from "./fastforwardtester"
 

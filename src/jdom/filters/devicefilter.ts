@@ -32,4 +32,4 @@ export interface DeviceFilter {
      */
     physical?: boolean
 }
-export default DeviceFilter
+

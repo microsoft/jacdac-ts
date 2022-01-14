@@ -1,5 +1,5 @@
-import Packet from "./packet"
-import JDDevice from "./device"
+import { Packet } from "./packet"
+import { JDDevice } from "./device"
 import { strcmp, arrayConcatMany, toHex } from "./utils"
 import {
     JD_SERVICE_INDEX_CTRL,
@@ -56,9 +56,9 @@ import {
     CONNECTION_STATE,
 } from "./constants"
 import { serviceClass } from "./pretty"
-import JDNode from "./node"
+import { JDNode } from "./node"
 import { FirmwareBlob, sendStayInBootloaderCommand } from "./flashing"
-import JDService from "./service"
+import { JDService } from "./service"
 import { isConstRegister, isReading, isSensor } from "./spec"
 import {
     LoggerPriority,
@@ -68,13 +68,13 @@ import {
     SRV_REAL_TIME_CLOCK,
     SystemReg,
 } from "../../src/jdom/constants"
-import JDServiceProvider from "./servers/serviceprovider"
-import RealTimeClockServer from "../servers/realtimeclockserver"
+import { JDServiceProvider } from "./servers/serviceprovider"
+import { RealTimeClockServer } from "../servers/realtimeclockserver"
 import { SRV_ROLE_MANAGER } from "../../src/jdom/constants"
-import Transport, { ConnectionState } from "./transport/transport"
+import { Transport,  ConnectionState } from "./transport/transport"
 import { BusStatsMonitor } from "./busstats"
-import RoleManagerClient from "./clients/rolemanagerclient"
-import JDBridge from "./bridge"
+import { RoleManagerClient } from "./clients/rolemanagerclient"
+import { JDBridge } from "./bridge"
 import { randomDeviceId } from "./random"
 import {
     ControlAnnounceFlags,
@@ -83,10 +83,10 @@ import {
     SRV_DASHBOARD,
     SRV_PROXY,
 } from "../../jacdac-spec/dist/specconstants"
-import Scheduler, { WallClockScheduler } from "./scheduler"
-import ServiceFilter from "./filters/servicefilter"
-import DeviceFilter from "./filters/devicefilter"
-import Flags from "./flags"
+import { Scheduler,  WallClockScheduler } from "./scheduler"
+import { ServiceFilter } from "./filters/servicefilter"
+import { DeviceFilter } from "./filters/devicefilter"
+import { Flags } from "./flags"
 import { stack } from "./trace/trace"
 import { DeviceCatalog } from "./catalog"
 
@@ -1458,4 +1458,4 @@ ${dev
     }
 }
 
-export default JDBus
+

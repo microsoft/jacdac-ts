@@ -1,7 +1,7 @@
 import { errorCode } from "../jdom/error"
-import Proto from "../jdom/transport/proto"
-import USBIO from "../jdom/transport/usbio"
-import TransportProxy from "./transportproxy"
+import { Proto } from "../jdom/transport/proto"
+import { USBIO } from "../jdom/transport/usbio"
+import { TransportProxy } from "./transportproxy"
 
 const { debug } = console
 

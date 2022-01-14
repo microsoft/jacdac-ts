@@ -1,5 +1,5 @@
-import Packet from "../packet"
-import Flags from "../flags"
+import { Packet } from "../packet"
+import { Flags } from "../flags"
 import { bufferConcat } from "../utils"
 import {
     BLUETOOTH_JACDAC_TX_CHARACTERISTIC,
@@ -7,7 +7,7 @@ import {
     BLUETOOTH_JACDAC_SERVICE,
     BLUETOOTH_TRANSPORT,
 } from "../constants"
-import Transport from "./transport"
+import { Transport } from "./transport"
 
 const JD_BLE_FIRST_CHUNK_FLAG = 0x80
 

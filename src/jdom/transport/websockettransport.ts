@@ -1,6 +1,6 @@
 import { PACKET_SEND_DISCONNECT, WEBSOCKET_TRANSPORT } from "../constants"
-import Packet from "../packet"
-import Transport, { TransportOptions } from "./transport"
+import { Packet } from "../packet"
+import { Transport,  TransportOptions } from "./transport"
 
 const RECONNECT_TIMEOUT = 5000
 

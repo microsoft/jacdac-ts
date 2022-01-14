@@ -5,11 +5,11 @@ import {
     HidKeyboardModifiers,
     SRV_HID_KEYBOARD,
 } from "../jdom/constants"
-import Packet from "../jdom/packet"
-import JDServiceServer, { JDServerOptions } from "../jdom/servers/serviceserver"
+import { Packet } from "../jdom/packet"
+import { JDServiceServer,  JDServerOptions } from "../jdom/servers/serviceserver"
 import { SMap } from "../jdom/utils"
 
-export default class HIDKeyboardServer extends JDServiceServer {
+export class HIDKeyboardServer extends JDServiceServer {
     private _lastKey: [number, HidKeyboardModifiers, HidKeyboardAction][]
 
     constructor(options?: JDServerOptions) {

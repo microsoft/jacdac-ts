@@ -4,17 +4,17 @@ import {
     SRV_SOUND_PLAYER,
 } from "../jdom/constants"
 import { jdpack } from "../jdom/pack"
-import Packet from "../jdom/packet"
+import { Packet } from "../jdom/packet"
 import { OutPipe } from "../jdom/pipes"
-import JDRegisterServer from "../jdom/servers/registerserver"
-import JDServiceServer from "../jdom/servers/serviceserver"
+import { JDRegisterServer } from "../jdom/servers/registerserver"
+import { JDServiceServer } from "../jdom/servers/serviceserver"
 
 /**
  * @internal
  */
 export type SoundPlayerSound = [number, string]
 
-export default class SoundPlayerServer extends JDServiceServer {
+export class SoundPlayerServer extends JDServiceServer {
     readonly volume: JDRegisterServer<[number]>
     onPlay?: (name: string) => void
     constructor(private readonly sounds: SoundPlayerSound[]) {

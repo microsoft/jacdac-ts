@@ -19,4 +19,4 @@ export class EventTargetObservable<TEvent> implements Observable<TEvent> {
         }
     }
 }
-export default EventTargetObservable
+

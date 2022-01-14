@@ -1,6 +1,6 @@
 import { NEW_LISTENER, REMOVE_LISTENER, ERROR, CHANGE } from "./constants"
 import { Observable, Observer } from "./observable"
-import Flags from "./flags"
+import { Flags } from "./flags"
 import { stack } from "./trace/trace"
 
 /**
@@ -303,4 +303,4 @@ class EventObservable<T> implements Observable<T> {
         }
     }
 }
-export default JDEventSource
+

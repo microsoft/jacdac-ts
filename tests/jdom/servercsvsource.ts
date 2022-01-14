@@ -1,6 +1,6 @@
 import { REFRESH } from "../../src/jdom/constants"
-import JDRegisterServer from "../../src/jdom/servers/registerserver"
-import JDServiceServer from "../../src/jdom/servers/serviceserver"
+import { JDRegisterServer } from "../../src/jdom/servers/registerserver"
+import { JDServiceServer } from "../../src/jdom/servers/serviceserver"
 import { assert } from "../../src/jdom/utils"
 
 /**

@@ -1,7 +1,7 @@
 import { bufferToArray, NumberFormat, getNumber } from "./buffer"
-import JDBus from "./bus"
-import Packet from "./packet"
-import JDDevice from "./device"
+import { JDBus } from "./bus"
+import { Packet } from "./packet"
+import { JDDevice } from "./device"
 import {
     BootloaderCmd,
     ControlCmd,
@@ -23,7 +23,7 @@ import {
 import { jdpack, jdunpack } from "./pack"
 import { BootloaderError } from "./constants"
 import { prettySize } from "./pretty"
-import Flags from "./flags"
+import { Flags } from "./flags"
 
 const BL_SUBPAGE_SIZE = 208
 const BL_RETRIES = 15

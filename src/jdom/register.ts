@@ -1,4 +1,4 @@
-import Packet from "./packet"
+import { Packet } from "./packet"
 import {
     CMD_SET_REG,
     REPORT_RECEIVE,
@@ -11,14 +11,14 @@ import {
     REGISTER_REFRESH_RETRY_0,
     GET_ATTEMPT,
 } from "./constants"
-import JDService from "./service"
+import { JDService } from "./service"
 import { intOfBuffer, uintOfBuffer } from "./buffer"
 import { bufferEq, toHex, fromUTF8, uint8ArrayToString } from "./utils"
 import { DecodedPacket } from "./pretty"
 import { isConstRegister, isRegister } from "./spec"
-import JDField from "./field"
-import JDServiceMemberNode from "./servicemembernode"
-import JDNode from "./node"
+import { JDField } from "./field"
+import { JDServiceMemberNode } from "./servicemembernode"
+import { JDNode } from "./node"
 import { jdpack, jdunpack, PackedValues } from "./pack"
 import { PackedObject, unpackedToObject } from "./packobject"
 
@@ -388,4 +388,4 @@ export class JDRegister extends JDServiceMemberNode {
     }
 }
 
-export default JDRegister
+

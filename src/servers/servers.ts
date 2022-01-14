@@ -1,4 +1,4 @@
-import JDBus from "../jdom/bus"
+import { JDBus } from "../jdom/bus"
 import {
     CharacterScreenTextDirection,
     CharacterScreenVariant,
@@ -85,51 +85,51 @@ import {
     LightBulbReg,
     WifiAPFlags,
 } from "../jdom/constants"
-import JDServerServiceProvider from "../jdom/servers/serverserviceprovider"
-import ProtocolTestServer from "../jdom/servers/protocoltestserver"
-import JDServiceServer from "../jdom/servers/serviceserver"
-import ButtonServer from "./buttonserver"
-import BuzzerServer from "./buzzerserver"
-import CharacterScreenServer from "./characterscreenserver"
-import GamepadServer, {
+import { JDServerServiceProvider } from "../jdom/servers/serverserviceprovider"
+import { ProtocolTestServer } from "../jdom/servers/protocoltestserver"
+import { JDServiceServer } from "../jdom/servers/serviceserver"
+import { ButtonServer } from "./buttonserver"
+import { BuzzerServer } from "./buzzerserver"
+import { CharacterScreenServer } from "./characterscreenserver"
+import { GamepadServer, 
     GAMEPAD_ARCADE_BUTTONS,
     GAMEPAD_DPAD_AB_BUTTONS,
 } from "./gamepadserver"
-import DotMatrixServer from "./dotmatrixserver"
-import LedPixelServer from "./ledpixelserver"
-import MatrixKeypadServer from "./matrixkeypadserver"
-import MotorServer from "./motorserver"
-import RainGaugeServer from "./raingaugeserver"
-import RealTimeClockServer from "./realtimeclockserver"
-import ReflectedLightServer from "./reflectedlightserver"
-import RotaryEncoderServer from "./rotaryencoderserver"
-import SensorServer, { SensorServiceOptions } from "./sensorserver"
-import ServoServer from "./servoserver"
-import SettingsServer from "./settingsserver"
-import SpeechSynthesisServer from "./speechsynthesisserver"
-import SwitchServer from "./switchserver"
-import TrafficLightServer from "./trafficlightserver"
-import LEDServer from "./ledserver"
+import { DotMatrixServer } from "./dotmatrixserver"
+import { LedPixelServer } from "./ledpixelserver"
+import { MatrixKeypadServer } from "./matrixkeypadserver"
+import { MotorServer } from "./motorserver"
+import { RainGaugeServer } from "./raingaugeserver"
+import { RealTimeClockServer } from "./realtimeclockserver"
+import { ReflectedLightServer } from "./reflectedlightserver"
+import { RotaryEncoderServer } from "./rotaryencoderserver"
+import { SensorServer,  SensorServiceOptions } from "./sensorserver"
+import { ServoServer } from "./servoserver"
+import { SettingsServer } from "./settingsserver"
+import { SpeechSynthesisServer } from "./speechsynthesisserver"
+import { SwitchServer } from "./switchserver"
+import { TrafficLightServer } from "./trafficlightserver"
+import { LEDServer } from "./ledserver"
 import { fromHex, hash, stringToUint8Array, toFullHex } from "../jdom/utils"
-import SoundPlayerServer, { SoundPlayerSound } from "./soundplayerserver"
-import AnalogSensorServer, {
+import { SoundPlayerServer,  SoundPlayerSound } from "./soundplayerserver"
+import { AnalogSensorServer, 
     AnalogSensorServerOptions,
 } from "./analogsensorserver"
-import RandomNumberGeneratorServer from "./randomnumbergeneratorserver"
-import CompassServer from "./compassserver"
-import DMXServer from "./dmxserver"
-import BitRadioServer from "./bitradioserver"
-import PowerServer from "./powerserver"
-import CapacitiveButtonServer from "./capacitivebuttonserver"
-import HIDKeyboardServer from "./hidkeyboardserver"
-import HIDMouseServer from "./hidmouseserver"
-import AzureIoTHubHealthServer from "./azureiothubhealthserver"
-import JDServiceProvider from "../jdom/servers/serviceprovider"
-import VibrationMotor from "./vibrationmotorserver"
-import WifiServer from "./wifiserver"
-import AccelerometerServer from "./accelerometerserver"
-import BrailleDisplayServer from "./brailledisplayserver"
-import Flags from "../jdom/flags"
+import { RandomNumberGeneratorServer } from "./randomnumbergeneratorserver"
+import { CompassServer } from "./compassserver"
+import { DMXServer } from "./dmxserver"
+import { BitRadioServer } from "./bitradioserver"
+import { PowerServer } from "./powerserver"
+import { CapacitiveButtonServer } from "./capacitivebuttonserver"
+import { HIDKeyboardServer } from "./hidkeyboardserver"
+import { HIDMouseServer } from "./hidmouseserver"
+import { AzureIoTHubHealthServer } from "./azureiothubhealthserver"
+import { JDServiceProvider } from "../jdom/servers/serviceprovider"
+import { VibrationMotorServer } from "./vibrationmotorserver"
+import { WifiServer } from "./wifiserver"
+import { AccelerometerServer } from "./accelerometerserver"
+import { BrailleDisplayServer } from "./brailledisplayserver"
+import { Flags } from "../jdom/flags"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "indoor",
@@ -1382,7 +1382,7 @@ function initProviders() {
             {
                 name: "vibration motor",
                 serviceClasses: [SRV_VIBRATION_MOTOR],
-                services: () => [new VibrationMotor()],
+                services: () => [new VibrationMotorServer()],
             },
             {
                 name: "water level",
@@ -1643,7 +1643,7 @@ function initProviders() {
  * Gets the list of simulated service providers
  * @category Servers
  */
-export default function serviceProviderDefinitions() {
+export function serviceProviderDefinitions() {
     return initProviders().slice(0)
 }
 

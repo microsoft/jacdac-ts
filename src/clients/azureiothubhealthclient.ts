@@ -9,8 +9,8 @@ import {
     SRV_AZURE_IOT_HUB_HEALTH,
 } from "../jdom/constants"
 import { jdpack } from "../jdom/pack"
-import JDRegister from "../jdom/register"
-import JDService from "../jdom/service"
+import { JDRegister } from "../jdom/register"
+import { JDService } from "../jdom/service"
 import { JDServiceClient } from "../jdom/serviceclient"
 import { assert } from "../jdom/utils"
 
@@ -103,4 +103,4 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
         )
     }
 }
-export default AzureIoTHubHealthClient
+

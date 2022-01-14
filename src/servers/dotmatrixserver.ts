@@ -5,10 +5,10 @@ import {
     SensorReg,
     SRV_DOT_MATRIX,
 } from "../jdom/constants"
-import JDRegisterServer from "../jdom/servers/registerserver"
-import JDServiceServer from "../jdom/servers/serviceserver"
+import { JDRegisterServer } from "../jdom/servers/registerserver"
+import { JDServiceServer } from "../jdom/servers/serviceserver"
 
-export default class DotMatrixServer extends JDServiceServer {
+export class DotMatrixServer extends JDServiceServer {
     readonly dots: JDRegisterServer<[Uint8Array]>
     readonly rows: JDRegisterServer<[number]>
     readonly columns: JDRegisterServer<[number]>

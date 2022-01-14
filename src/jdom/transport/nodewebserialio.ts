@@ -1,5 +1,5 @@
 import { HF2Proto, HF2_IO } from "./hf2"
-import Proto from "./proto"
+import { Proto } from "./proto"
 import {
     assert,
     bufferConcat,
@@ -7,14 +7,14 @@ import {
     isCancelError,
     throwError,
 } from "../utils"
-import Flags from "../flags"
-import JDError, { errorCode } from "../error"
+import { Flags } from "../flags"
+import { JDError,  errorCode } from "../error"
 import { WebSerialTransport } from "./webserial"
-import Transport from "./transport"
+import { Transport } from "./transport"
 import { Observable, Observer } from "../observable"
 import { CONNECT, DISCONNECT } from "../constants"
-import JDEventSource from "../eventsource"
-import JDBus from "../bus"
+import { JDEventSource } from "../eventsource"
+import { JDBus } from "../bus"
 
 const SCAN_INTERVAL = 2500
 

@@ -1,4 +1,4 @@
-import JDEventSource from "./eventsource"
+import { JDEventSource } from "./eventsource"
 
 /**
  * Base class for clients
@@ -30,4 +30,4 @@ export class JDClient extends JDEventSource {
         this.unmounted = true
     }
 }
-export default JDClient
+

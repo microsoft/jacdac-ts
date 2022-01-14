@@ -4,11 +4,11 @@ import {
     CharacterScreenVariant,
     SRV_CHARACTER_SCREEN,
 } from "../jdom/constants"
-import Packet from "../jdom/packet"
-import JDRegisterServer from "../jdom/servers/registerserver"
-import JDServiceServer from "../jdom/servers/serviceserver"
+import { Packet } from "../jdom/packet"
+import { JDRegisterServer } from "../jdom/servers/registerserver"
+import { JDServiceServer } from "../jdom/servers/serviceserver"
 
-export default class CharacterScreenServer extends JDServiceServer {
+export class CharacterScreenServer extends JDServiceServer {
     readonly message: JDRegisterServer<[string]>
     readonly brightness: JDRegisterServer<[number]>
     readonly rows: JDRegisterServer<[number]>

@@ -1,7 +1,7 @@
-import JDDevice from "./device"
-import Packet from "./packet"
+import { JDDevice } from "./device"
+import { Packet } from "./packet"
 import { serviceName } from "./pretty"
-import JDRegister from "./register"
+import { JDRegister } from "./register"
 import {
     PACKET_RECEIVE,
     PACKET_SEND,
@@ -16,7 +16,7 @@ import {
     CMD_SET_REG,
     COMMAND_RECEIVE,
 } from "./constants"
-import JDNode from "./node"
+import { JDNode } from "./node"
 import {
     serviceSpecificationFromClassIdentifier,
     isRegister,
@@ -27,7 +27,7 @@ import {
     isOptionalReadingRegisterCode,
     isConstRegister,
 } from "./spec"
-import JDEvent from "./event"
+import { JDEvent } from "./event"
 import { strcmp } from "./utils"
 import {
     BaseEvent,
@@ -39,9 +39,9 @@ import {
 import { JDServiceClient } from "./serviceclient"
 import { InPipeReader } from "./pipes"
 import { jdpack, jdunpack, PackedValues } from "./pack"
-import Flags from "./flags"
+import { Flags } from "./flags"
 import { isMixinService } from "../../jacdac-spec/spectool/jdutils"
-import JDServiceServer from "./servers/serviceserver"
+import { JDServiceServer } from "./servers/serviceserver"
 
 /**
  * A Jacdac service client hosting registers, events.
@@ -559,4 +559,4 @@ export class JDService extends JDNode {
     }
 }
 
-export default JDService
+

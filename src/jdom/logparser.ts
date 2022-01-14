@@ -1,9 +1,9 @@
 import { arrayConcatMany, fromHex } from "./utils"
-import JDBus from "./bus"
-import Packet from "./packet"
-import TracePlayer from "./trace/traceplayer"
-import Frame from "./frame"
-import Trace from "./trace/trace"
+import { JDBus } from "./bus"
+import { Packet } from "./packet"
+import { TracePlayer } from "./trace/traceplayer"
+import { Frame } from "./frame"
+import { Trace } from "./trace/trace"
 import { META_TRACE, META_TRACE_DESCRIPTION } from "./constants"
 
 /**

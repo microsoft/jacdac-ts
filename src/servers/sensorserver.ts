@@ -7,8 +7,8 @@ import {
     STREAMING_DEFAULT_INTERVAL,
 } from "../jdom/constants"
 import { PackedValues } from "../jdom/pack"
-import JDRegisterServer from "../jdom/servers/registerserver"
-import JDServiceServer, { JDServerOptions } from "../jdom/servers/serviceserver"
+import { JDRegisterServer } from "../jdom/servers/registerserver"
+import { JDServiceServer,  JDServerOptions } from "../jdom/servers/serviceserver"
 
 /**
  * Creation options for sensor servers
@@ -23,7 +23,7 @@ export interface SensorServiceOptions<TReading extends PackedValues>
     preferredStreamingInterval?: number
 }
 
-export default class SensorServer<
+export class SensorServer<
     TReading extends PackedValues
 > extends JDServiceServer {
     readonly reading: JDRegisterServer<TReading>

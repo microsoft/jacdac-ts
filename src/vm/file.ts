@@ -1,6 +1,6 @@
 import { VMProgram } from "./ir"
 
-export default interface VMFile {
+export interface VMFile {
     xml: string
     name?: string
     program?: VMProgram

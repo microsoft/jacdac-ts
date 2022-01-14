@@ -1,7 +1,7 @@
 import { SystemReg } from "../jdom/constants"
-import JDRegisterServer from "../jdom/servers/registerserver"
-import LevelDetector from "./leveldetector"
-import SensorServer, { SensorServiceOptions } from "./sensorserver"
+import { JDRegisterServer } from "../jdom/servers/registerserver"
+import { LevelDetector } from "./leveldetector"
+import { SensorServer,  SensorServiceOptions } from "./sensorserver"
 
 /**
  * Creation options for AnalogSensorServer
@@ -21,7 +21,7 @@ export interface AnalogSensorServerOptions
  * Base class for analog sensor servers
  * @category Servers
  */
-export default class AnalogSensorServer extends SensorServer<[number]> {
+export class AnalogSensorServer extends SensorServer<[number]> {
     readonly inactiveThreshold: JDRegisterServer<[number]>
     readonly activeThreshold: JDRegisterServer<[number]>
     readonly levelDetector: LevelDetector

@@ -4,10 +4,10 @@ import {
     ServoReg,
     SRV_SERVO,
 } from "../jdom/constants"
-import JDRegisterServer from "../jdom/servers/registerserver"
-import JDServiceServer, { JDServerOptions } from "../jdom/servers/serviceserver"
+import { JDRegisterServer } from "../jdom/servers/registerserver"
+import { JDServiceServer,  JDServerOptions } from "../jdom/servers/serviceserver"
 
-export default class ServoServer extends JDServiceServer {
+export class ServoServer extends JDServiceServer {
     readonly angle: JDRegisterServer<[number]>
     readonly currentAngle: JDRegisterServer<[number]>
     readonly offset: JDRegisterServer<[number]>

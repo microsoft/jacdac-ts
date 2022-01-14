@@ -1,6 +1,6 @@
-import JDBus from "../bus"
+import { JDBus } from "../bus"
 import { META_TRACE, META_TRACE_DESCRIPTION } from "../constants"
-import Packet from "../packet"
+import { Packet } from "../packet"
 import { printPacket } from "../pretty"
 import { randomDeviceId } from "../random"
 import { roundWithPrecision, toHex } from "../utils"
@@ -149,4 +149,4 @@ export class Trace {
             .forEach(pkt => pkt.assignDevice(bus));
     }
 }
-export default Trace
+

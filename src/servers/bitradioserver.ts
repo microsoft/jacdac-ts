@@ -1,9 +1,9 @@
 import { getNumber, NumberFormat, setNumber } from "../jdom/buffer"
 import { BitRadioCmd, BitRadioReg, SRV_BIT_RADIO } from "../jdom/constants"
 import { inIFrame } from "../jdom/iframeclient"
-import Packet from "../jdom/packet"
-import JDRegisterServer from "../jdom/servers/registerserver"
-import JDServiceServer from "../jdom/servers/serviceserver"
+import { Packet } from "../jdom/packet"
+import { JDRegisterServer } from "../jdom/servers/registerserver"
+import { JDServiceServer } from "../jdom/servers/serviceserver"
 import { memcpy, stringToBuffer } from "../jdom/utils"
 
 // keep in sync with CODAL
@@ -202,7 +202,7 @@ class RadioPacket {
  * A server implementation of the bit:radio service
  * @category Servers
  */
-export default class BitRadioServer extends JDServiceServer {
+export class BitRadioServer extends JDServiceServer {
     readonly enabled: JDRegisterServer<[boolean]>
     readonly group: JDRegisterServer<[number]>
     readonly transmissionPower: JDRegisterServer<[number]>

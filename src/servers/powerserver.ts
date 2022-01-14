@@ -1,8 +1,8 @@
 import { PowerReg, SRV_POWER } from "../jdom/constants"
-import JDRegisterServer from "../jdom/servers/registerserver"
-import JDServiceServer, { JDServerOptions } from "../jdom/servers/serviceserver"
+import { JDRegisterServer } from "../jdom/servers/registerserver"
+import { JDServiceServer,  JDServerOptions } from "../jdom/servers/serviceserver"
 
-export default class PowerServer extends JDServiceServer {
+export class PowerServer extends JDServiceServer {
     readonly enabled: JDRegisterServer<[boolean]>
     readonly maxPower: JDRegisterServer<[number]>
     readonly overload: JDRegisterServer<[boolean]>

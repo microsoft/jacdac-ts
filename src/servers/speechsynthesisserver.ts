@@ -3,11 +3,11 @@ import {
     SpeechSynthesisReg,
     SRV_SPEECH_SYNTHESIS,
 } from "../jdom/constants"
-import Packet from "../jdom/packet"
-import JDRegisterServer from "../jdom/servers/registerserver"
-import JDServiceServer from "../jdom/servers/serviceserver"
+import { Packet } from "../jdom/packet"
+import { JDRegisterServer } from "../jdom/servers/registerserver"
+import { JDServiceServer } from "../jdom/servers/serviceserver"
 
-export default class SpeechSynthesisServer extends JDServiceServer {
+export class SpeechSynthesisServer extends JDServiceServer {
     readonly enabled: JDRegisterServer<[boolean]>
     readonly pitch: JDRegisterServer<[number]>
     readonly rate: JDRegisterServer<[number]>

@@ -1,5 +1,5 @@
-import Proto from "./proto"
-import USBIO from "./usbio"
+import { Proto } from "./proto"
+import { USBIO } from "./usbio"
 import {
     delay,
     PromiseQueue,
@@ -12,7 +12,7 @@ import {
     fromUTF8,
     isCancelError,
 } from "../utils"
-import Flags from "../flags"
+import { Flags } from "../flags"
 import {
     ERROR_MICROBIT_INVALID_MEMORY,
     ERROR_MICROBIT_JACDAC_MISSING,

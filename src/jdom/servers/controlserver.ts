@@ -7,9 +7,9 @@ import {
     SRV_CONTROL,
 } from "../constants"
 import { jdunpack } from "../pack"
-import Packet from "../packet"
-import JDRegisterServer from "./registerserver"
-import JDServiceServer from "./serviceserver"
+import { Packet } from "../packet"
+import { JDRegisterServer } from "./registerserver"
+import { JDServiceServer } from "./serviceserver"
 
 /**
  * A control service server
@@ -112,4 +112,4 @@ export class ControlServer extends JDServiceServer {
     }
 }
 
-export default ControlServer
+

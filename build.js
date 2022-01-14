@@ -33,6 +33,14 @@ function runTSC(args) {
       if (code == 0) resolve()
       else reject(new Error("exit " + code))
     })
+
+    // in watch mode "go in background"
+    if (watch)
+      setTimeout(() => {
+        if (invoked) return
+        invoked = true
+        resolve()
+      }, 500)
   })
 }
 
@@ -54,24 +62,29 @@ function check(pr) {
   })
 }
 
-for (const outfile of Object.keys(files)) {
-  const src = files[outfile]
-  const cjs = outfile.endsWith(".cjs")
-  const mjs = outfile.endsWith(".mjs")
-  check(esbuild
-    .build({
-      entryPoints: [src],
-      bundle: true,
-      sourcemap: true,
-      outfile,
-      logLevel: "warning",
-      external: ["net", "webusb"],
-      platform: cjs ? "node" : "browser",
-      target: "es2019",
-      format: mjs ? "esm" : cjs ? "cjs" : "iife",
-      watch
-    }))
+async function main() {
+  try {
+    for (const outfile of Object.keys(files)) {
+      const src = files[outfile]
+      const cjs = outfile.endsWith(".cjs")
+      const mjs = outfile.endsWith(".mjs")
+      await esbuild.build({
+        entryPoints: [src],
+        bundle: true,
+        sourcemap: true,
+        outfile,
+        logLevel: "warning",
+        external: ["net", "webusb"],
+        platform: cjs ? "node" : "browser",
+        target: "es2019",
+        format: mjs ? "esm" : cjs ? "cjs" : "iife",
+        watch
+      })
+    }
+    console.log("bundle done")
+    await runTSC(["-b", "."])
+    await runTSC(["-b", "src/worker"])
+  } catch { }
 }
 
-check(runTSC(["-b", "."]))
-check(runTSC(["-b", "src/worker"]))
+main()

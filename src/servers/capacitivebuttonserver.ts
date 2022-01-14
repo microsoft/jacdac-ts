@@ -1,9 +1,9 @@
 import { CapacitiveButtonReg, SRV_CAPACITIVE_BUTTON } from "../jdom/constants"
-import JDServiceServer, { JDServerOptions } from "../jdom/servers/serviceserver"
-import RegisterServer from "../jdom/servers/registerserver"
+import { JDServiceServer,  JDServerOptions } from "../jdom/servers/serviceserver"
+import { JDRegisterServer } from "../jdom/servers/registerserver"
 
-export default class CapacitiveButtonServer extends JDServiceServer {
-    readonly threshold: RegisterServer<[number]>
+export class CapacitiveButtonServer extends JDServiceServer {
+    readonly threshold: JDRegisterServer<[number]>
 
     constructor(options?: { threshold?: number } & JDServerOptions) {
         super(SRV_CAPACITIVE_BUTTON, options)
