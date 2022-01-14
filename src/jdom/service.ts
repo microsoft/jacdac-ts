@@ -1,7 +1,7 @@
-import JDDevice from "./device"
-import Packet from "./packet"
+import { JDDevice } from "./device"
+import { Packet } from "./packet"
 import { serviceName } from "./pretty"
-import JDRegister from "./register"
+import { JDRegister } from "./register"
 import {
     PACKET_RECEIVE,
     PACKET_SEND,
@@ -16,7 +16,7 @@ import {
     CMD_SET_REG,
     COMMAND_RECEIVE,
 } from "./constants"
-import JDNode from "./node"
+import { JDNode } from "./node"
 import {
     serviceSpecificationFromClassIdentifier,
     isRegister,
@@ -27,7 +27,7 @@ import {
     isOptionalReadingRegisterCode,
     isConstRegister,
 } from "./spec"
-import JDEvent from "./event"
+import { JDEvent } from "./event"
 import { strcmp } from "./utils"
 import {
     BaseEvent,
@@ -39,9 +39,9 @@ import {
 import { JDServiceClient } from "./serviceclient"
 import { InPipeReader } from "./pipes"
 import { jdpack, jdunpack, PackedValues } from "./pack"
-import Flags from "./flags"
+import { Flags } from "./flags"
 import { isMixinService } from "../../jacdac-spec/spectool/jdutils"
-import JDServiceServer from "./servers/serviceserver"
+import { JDServiceServer } from "./servers/serviceserver"
 
 /**
  * A Jacdac service client hosting registers, events.
@@ -407,10 +407,6 @@ export class JDService extends JDNode {
         if (pkt.requiresAck) await this.device.sendPktWithAck(pkt)
         else await pkt.sendCmdAsync(this.device)
         this.emit(PACKET_SEND, pkt)
-
-        // invalid register after a command call to refresh their values asap
-        if (pkt.isCommand && !pkt.isRegisterGet && !pkt.isRegisterSet)
-            this.invalidateRegisterValues(pkt)
     }
 
     /**
@@ -513,17 +509,8 @@ export class JDService extends JDNode {
             const reg = this.register(id)
             if (reg) reg.processPacket(pkt)
         } else if (pkt.isCommand) {
-            this.invalidateRegisterValues(pkt)
             this.emit(COMMAND_RECEIVE, pkt)
         }
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private invalidateRegisterValues(pkt: Packet) {
-        //console.log(`clearing register get timestamp`, pkt)
-        this.registers()
-            .filter(r => r.specification && !isConstRegister(r.specification))
-            .forEach(r => r.clearGetTimestamp())
     }
 
     /**
@@ -572,4 +559,4 @@ export class JDService extends JDNode {
     }
 }
 
-export default JDService
+

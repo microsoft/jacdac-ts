@@ -6,9 +6,9 @@ import { toJacScript } from "../../src/vm/ir2jacscript"
 
 
 import { makeTest } from "../jdom/fastforwardtester"
-import ButtonServer from "../../src/servers/buttonserver"
-import RoleManager from "../../src/jdom/rolemanager"
-import ServoServer from "../../src/servers/servoserver"
+import { ButtonServer } from "../../src/servers/buttonserver"
+import { RoleManager } from "../../src/jdom/rolemanager"
+import { ServoServer } from "../../src/servers/servoserver"
 import { bindRoles } from "./vmtester"
 import { FastForwardTester } from "../jdom/fastforwardtester"
 import { RegisterTester } from "../../src/tstester/registerwrapper"

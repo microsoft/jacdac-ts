@@ -1,6 +1,6 @@
 import deviceRegistryData from "../../jacdac-spec/dist/devices.json"
 import { CHANGE } from "./constants"
-import JDEventSource from "./eventsource"
+import { JDEventSource } from "./eventsource"
 import { cryptoRandomUint32 } from "./random"
 import { serviceSpecificationFromClassIdentifier } from "./spec"
 import { toFullHex } from "./utils"

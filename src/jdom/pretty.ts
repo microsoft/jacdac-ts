@@ -1,4 +1,4 @@
-import Packet from "./packet"
+import { Packet } from "./packet"
 import { NumberFormat } from "./buffer"
 import {
     roundWithPrecision,

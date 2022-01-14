@@ -5,10 +5,10 @@ import {
     MICROBIT_V2_VENDOR_ID,
 } from "./microbit"
 import { Observable } from "../observable"
-import Proto from "./proto"
+import { Proto } from "./proto"
 import { assert, delay, isCancelError, throwError } from "../utils"
-import Flags from "../flags"
-import JDError, { errorCode } from "../error"
+import { Flags } from "../flags"
+import { JDError,  errorCode } from "../error"
 
 export const USB_FILTERS = {
     filters: [
@@ -37,7 +37,7 @@ export interface USBOptions {
     disconnectObservable?: Observable<void>
 }
 
-export default class USBIO implements HF2_IO {
+export class USBIO implements HF2_IO {
     private dev: USBDevice
     private iface: USBInterface
     private altIface: USBAlternateInterface

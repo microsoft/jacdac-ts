@@ -2,10 +2,10 @@ import {
     AccelerometerReg,
     SRV_ACCELEROMETER,
 } from "../../jacdac-spec/dist/specconstants"
-import JDRegisterServer from "../jdom/servers/registerserver"
-import SensorServer from "./sensorserver"
+import { JDRegisterServer } from "../jdom/servers/registerserver"
+import { SensorServer } from "./sensorserver"
 
-export default class AccelerometerServer extends SensorServer<
+export class AccelerometerServer extends SensorServer<
     [number, number, number]
 > {
     maxForce: JDRegisterServer<[number]>

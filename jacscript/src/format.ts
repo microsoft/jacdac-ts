@@ -1,10 +1,3 @@
-/*
-
-- FORMAT should maybe set the buffer size?
-- get_reg option to return immediately
-
-*/
-
 export enum BinFmt {
     Magic0 = 0x5363614a,
     Magic1 = 0x9a6a7e0a,
@@ -44,7 +37,8 @@ export enum OpAsync {
     YIELD, // A-timeout in ms
     CLOUD_UPLOAD, // A-numregs
     QUERY_REG, // A-role, B-code, C-timeout
-    SET_REG, // A-role, B-code
+    SEND_CMD, // A-role, B-code
+    QUERY_IDX_REG, // A-role, B-STRIDX:CMD[8], C-timeout
     _LAST,
 }
 
@@ -92,7 +86,7 @@ export enum CellKind {
 
     BUFFER = 4, // arg=shift:numfmt, C=Offset
     SPECIAL = 5, // arg=nan, regcode, role, ...
-    ROLE_PROPERTY = 6, // arg=roleidx, B=OpRoleProperty
+    ROLE_PROPERTY = 6, // arg=roleidx, C=OpRoleProperty
 
     // these cannot be emitted directly
     JD_EVENT = 0x100,
@@ -100,10 +94,12 @@ export enum CellKind {
     JD_ROLE = 0x102,
     JD_VALUE_SEQ = 0x103,
     JD_CURR_BUFFER = 0x104,
-    X_STRING = 0x105,
-    X_FP_REG = 0x106,
-    X_FLOAT = 0x107,
-    X_FUNCTION = 0x108,
+    JD_COMMAND = 0x105,
+
+    X_STRING = 0x120,
+    X_FP_REG = 0x121,
+    X_FLOAT = 0x122,
+    X_FUNCTION = 0x123,
 
     ERROR = 0x200,
 }
@@ -119,7 +115,6 @@ export enum ValueSpecial {
     SIZE = 0x1,
     EV_CODE = 0x2, // or nan
     REG_GET_CODE = 0x3, // or nan
-    ROLE_ID = 0x4, // or nan
     _LAST,
 }
 
@@ -189,6 +184,8 @@ export function stringifyCellKind(vk: CellKind) {
             return "float literal (generic)"
         case CellKind.JD_EVENT:
             return "Jacdac event"
+        case CellKind.JD_COMMAND:
+            return "Jacdac command"
         case CellKind.JD_REG:
             return "Jacdac register"
         case CellKind.JD_ROLE:
@@ -478,8 +475,8 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
                 return `upload(#${a})`
             case OpAsync.QUERY_REG: // A-role, B-code, C-timeout
                 return `query(${jdreg()} timeout=${c}ms)`
-            case OpAsync.SET_REG: // A-role, B-code
-                return `set(${jdreg()})`
+            case OpAsync.SEND_CMD: // A-role, B-code
+                return `send(${jdreg()})`
             default:
                 return `Async_0x${arg8.toString(16)}`
         }

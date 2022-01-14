@@ -4,17 +4,17 @@ import { VMProgram } from "../../src/vm/ir"
 import { VMProgramRunner } from "../../src/vm/runner"
 
 import { makeTest } from "../jdom/fastforwardtester"
-import RoleManager from "../../src/jdom/rolemanager"
+import { RoleManager } from "../../src/jdom/rolemanager"
 import { bindRoles, getRoles } from "./vmtester"
 import {
     SRV_POTENTIOMETER,
     SwitchEvent,
     SwitchReg,
 } from "../../jacdac-spec/dist/specconstants"
-import SensorServer from "../../src/servers/sensorserver"
+import { SensorServer } from "../../src/servers/sensorserver"
 import { FastForwardTester } from "../jdom/fastforwardtester"
 import { ServiceTester } from "../../src/tstester/servicewrapper"
-import JDRegisterServer from "../../src/jdom/servers/registerserver"
+import { JDRegisterServer } from "../../src/jdom/servers/registerserver"
 
 suite("pot to switch adapter", () => {
     const program: VMProgram = JSON.parse(

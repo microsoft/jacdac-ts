@@ -2,7 +2,7 @@
 
 import { suite, test } from "mocha"
 import { ButtonEvent, ButtonReg } from "../../src/jdom/constants"
-import ButtonServer from "../../src/servers/buttonserver"
+import { ButtonServer } from "../../src/servers/buttonserver"
 import { WaitTimeoutError } from "../../src/tstester/base"
 import { RegisterConditionError } from "../../src/tstester/registerwrapper"
 import {

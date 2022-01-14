@@ -1,8 +1,8 @@
 import { BrailleDisplayReg, SRV_BRAILLE_DISPLAY } from "../jdom/constants"
-import JDRegisterServer from "../jdom/servers/registerserver"
-import JDServiceServer, { JDServerOptions } from "../jdom/servers/serviceserver"
+import { JDRegisterServer } from "../jdom/servers/registerserver"
+import { JDServiceServer,  JDServerOptions } from "../jdom/servers/serviceserver"
 
-export default class BrailleDisplayServer extends JDServiceServer {
+export class BrailleDisplayServer extends JDServiceServer {
     readonly patterns: JDRegisterServer<[string]>
     readonly enabled: JDRegisterServer<[boolean]>
     readonly length: JDRegisterServer<[number]>

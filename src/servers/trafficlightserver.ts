@@ -1,8 +1,8 @@
 import { SRV_TRAFFIC_LIGHT, TrafficLightReg } from "../jdom/constants"
-import JDRegisterServer from "../jdom/servers/registerserver"
-import JDServiceServer, { JDServerOptions } from "../jdom/servers/serviceserver"
+import { JDRegisterServer } from "../jdom/servers/registerserver"
+import { JDServiceServer,  JDServerOptions } from "../jdom/servers/serviceserver"
 
-export default class TrafficLightServer extends JDServiceServer {
+export class TrafficLightServer extends JDServiceServer {
     readonly red: JDRegisterServer<[boolean]>
     readonly orange: JDRegisterServer<[boolean]>
     readonly green: JDRegisterServer<[boolean]>

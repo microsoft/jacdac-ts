@@ -7,10 +7,10 @@ import {
     VerifiedTelemetryReg,
     VerifiedTelemetryStatus,
 } from "../jdom/constants"
-import JDRegisterServer from "../jdom/servers/registerserver"
-import JDServiceServer, { JDServerOptions } from "../jdom/servers/serviceserver"
+import { JDRegisterServer } from "../jdom/servers/registerserver"
+import { JDServiceServer,  JDServerOptions } from "../jdom/servers/serviceserver"
 
-export default class VerifiedTelemetryServer extends JDServiceServer {
+export class VerifiedTelemetryServer extends JDServiceServer {
     readonly telemetryStatus: JDRegisterServer<[VerifiedTelemetryStatus]>
     readonly telemetryStatusInterval: JDRegisterServer<[number]>
     readonly fingerprintType: JDRegisterServer<

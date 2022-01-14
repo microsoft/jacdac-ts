@@ -1,7 +1,7 @@
-import JDBus from "./bus"
+import { JDBus } from "./bus"
 import { JDClient } from "./client"
 import { CHANGE, PACKET_PROCESS, PACKET_SEND } from "./constants"
-import Packet from "./packet"
+import { Packet } from "./packet"
 import { randomDeviceId } from "./random"
 
 /**
@@ -94,4 +94,4 @@ export abstract class JDBridge extends JDClient {
      */
     protected abstract sendPacket(data: Uint8Array): void
 }
-export default JDBridge
+

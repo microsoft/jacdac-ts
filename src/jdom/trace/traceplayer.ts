@@ -1,7 +1,7 @@
-import JDBus from "../bus"
-import JDClient from "../client"
+import { JDBus } from "../bus"
+import { JDClient } from "../client"
 import { CHANGE, PROGRESS } from "../constants"
-import Trace from "./trace"
+import { Trace } from "./trace"
 
 /**
  * A player for packet traces.
@@ -105,4 +105,4 @@ export class TracePlayer extends JDClient {
         }
     }
 }
-export default TracePlayer
+

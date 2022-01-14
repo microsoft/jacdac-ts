@@ -1,5 +1,5 @@
 import { HF2Proto, HF2_IO } from "./hf2"
-import Proto from "./proto"
+import { Proto } from "./proto"
 import {
     assert,
     bufferConcat,
@@ -7,11 +7,11 @@ import {
     isCancelError,
     throwError,
 } from "../utils"
-import Flags from "../flags"
-import JDError, { errorCode } from "../error"
-import JDBus from "../bus"
+import { Flags } from "../flags"
+import { JDError,  errorCode } from "../error"
+import { JDBus } from "../bus"
 
-export default class WebSerialIO implements HF2_IO {
+export class WebSerialIO implements HF2_IO {
     private dev: SerialPort
     private readLoopStarted = false
     ready = false

@@ -2,9 +2,9 @@
 
 import { ROLE_BOUND } from "../../src/jdom/constants"
 import { EventHandler } from "../../src/jdom/jacdac-jdom"
-import JDService from "../../src/jdom/service"
+import { JDService } from "../../src/jdom/service"
 import { assert } from "../../src/jdom/utils"
-import RoleManager, { RoleBinding } from "../../src/jdom/rolemanager"
+import { RoleManager, RoleBinding } from "../../src/jdom/rolemanager"
 import { TestDriverInterface } from "../../src/tstester/base"
 import { EventWithHoldAdapter } from "../../src/tstester/eventhold"
 import { VMProgram } from "../../src/vm/ir"

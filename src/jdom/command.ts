@@ -1,7 +1,7 @@
 import { setNumber, sizeOfNumberFormat } from "./buffer"
 import { CMD_SET_REG, JD_SERIAL_MAX_PAYLOAD_SIZE } from "./constants"
 import { PackedValues } from "./pack"
-import Packet from "./packet"
+import { Packet } from "./packet"
 import {
     clampToStorage,
     isRegister,

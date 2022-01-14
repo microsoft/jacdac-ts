@@ -10,7 +10,7 @@ export class JDError extends Error {
         this.name = JACDAC_ERROR
     }
 }
-export default JDError
+
 
 /**
  * Extract the Jacdac error code if any

@@ -19,6 +19,8 @@ import {
     SRV_UNIQUE_BRAIN,
     SRV_DASHBOARD,
     SRV_BRIDGE,
+    SRV_JACSCRIPT_CLOUD,
+    SRV_JACSCRIPT_CONDITION,
 } from "./constants"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -130,6 +132,8 @@ export function isInfrastructure(spec: jdspec.ServiceSpec) {
             SRV_UNIQUE_BRAIN,
             SRV_DASHBOARD,
             SRV_BRIDGE,
+            SRV_JACSCRIPT_CLOUD,
+            SRV_JACSCRIPT_CONDITION,
         ].indexOf(spec.classIdentifier) > -1 ||
             spec.shortId[0] === "_")
     )
@@ -317,7 +321,14 @@ export function isValueOrIntensity(pkt: jdspec.PacketInfo) {
  * @category Specification
  */
 export function isConstRegister(pkt: jdspec.PacketInfo) {
-    return pkt?.kind == "const"
+    return pkt?.kind === "const"
+}
+
+/**
+ * Indicates if the packet info is not rw
+ */
+export function isReadOnlyRegister(pkt: jdspec.PacketInfo) {
+    return pkt?.kind !== "rw"
 }
 
 /**

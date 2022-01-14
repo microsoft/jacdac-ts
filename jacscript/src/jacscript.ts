@@ -3,11 +3,12 @@ export * from "./compiler"
 export * from "./executor"
 export * from "./verify"
 
-import { JDBus } from "../jdom/bus"
-import { createNodeSocketTransport } from "../jdom/transport/nodesocket"
+import { JDBus, createNodeSocketTransport } from "jacdac-ts"
 
 export function nodeBus() {
-    const bus = new JDBus([createNodeSocketTransport()])
+    const bus = new JDBus([createNodeSocketTransport()], {
+        disableRoleManager: true
+    })
     bus.connect()
     return bus
 }

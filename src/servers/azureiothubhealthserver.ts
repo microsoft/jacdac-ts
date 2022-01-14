@@ -7,9 +7,9 @@ import {
     CHANGE,
     SRV_AZURE_IOT_HUB_HEALTH,
 } from "../jdom/constants"
-import Packet from "../jdom/packet"
-import JDRegisterServer from "../jdom/servers/registerserver"
-import JDServiceServer, { JDServerOptions } from "../jdom/servers/serviceserver"
+import { Packet } from "../jdom/packet"
+import { JDRegisterServer } from "../jdom/servers/registerserver"
+import { JDServiceServer,  JDServerOptions } from "../jdom/servers/serviceserver"
 import { delay } from "../jdom/utils"
 
 function splitPair(kv: string): string[] {
@@ -32,7 +32,7 @@ function parsePropertyBag(
     return r
 }
 
-export default class AzureIoTHubHealthServer extends JDServiceServer {
+export class AzureIoTHubHealthServer extends JDServiceServer {
     readonly hubName: JDRegisterServer<[string]>
     readonly hubDeviceId: JDRegisterServer<[string]>
     readonly connectionStatus: JDRegisterServer<

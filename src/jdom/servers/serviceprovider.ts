@@ -1,10 +1,10 @@
-import JDBus from "../bus"
+import { JDBus } from "../bus"
 import { PACKET_PROCESS, PACKET_SEND, SELF_ANNOUNCE } from "../constants"
-import JDEventSource from "../eventsource"
-import Packet from "../packet"
+import { JDEventSource } from "../eventsource"
+import { Packet } from "../packet"
 import { shortDeviceId } from "../pretty"
 import { randomDeviceId } from "../random"
-import JDServiceServer from "./serviceserver"
+import { JDServiceServer } from "./serviceserver"
 
 /**
  * Implements a device with service servers.
@@ -58,4 +58,4 @@ export abstract class JDServiceProvider extends JDEventSource {
     protected handleSelfAnnounce(): void {}
     protected abstract handlePacket(pkt: Packet): void
 }
-export default JDServiceProvider
+

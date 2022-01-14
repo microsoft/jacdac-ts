@@ -11,8 +11,8 @@ function foo() {
     var z = 1 //! already defined
 }
 
-var qq = 1 //! already defined
-function qq() { }
+var qq = 1
+function qq() { } //! already defined
 
 function baz() { }
 function baz() { } //! already defined

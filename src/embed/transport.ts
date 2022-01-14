@@ -1,4 +1,4 @@
-import JDClient from "../jdom/client"
+import { JDClient } from "../jdom/client"
 import { IAckMessage, IMessage, IStatusMessage } from "./protocol"
 
 export interface ITransport {

@@ -1,6 +1,6 @@
-import JDEventSource from "./eventsource"
+import { JDEventSource } from "./eventsource"
 import { jdpack } from "./pack"
-import JDService from "./service"
+import { JDService } from "./service"
 
 function trgbToValues(trgb: number) {
     return [
@@ -31,4 +31,4 @@ export class LEDController extends JDEventSource {
         }
     }
 }
-export default LEDController
+

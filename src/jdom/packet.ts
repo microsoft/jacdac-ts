@@ -36,9 +36,9 @@ import {
     CMD_EVENT_COUNTER_POS,
     JD_SERVICE_INDEX_MAX_NORMAL,
 } from "./constants"
-import JDDevice from "./device"
+import { JDDevice } from "./device"
 import { NumberFormat, getNumber } from "./buffer"
-import JDBus from "./bus"
+import { JDBus } from "./bus"
 import {
     commandName,
     DecodedPacket,
@@ -539,4 +539,4 @@ function frameToPackets(frame: Uint8Array, timestamp: number) {
     return []
 }
 
-export default Packet
+

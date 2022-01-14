@@ -4,8 +4,8 @@ import {
     SRV_CONTROL,
     SRV_LOGGER,
 } from "../../jacdac-spec/dist/specconstants"
-import JDBus from "./bus"
-import Packet from "./packet"
+import { JDBus } from "./bus"
+import { Packet } from "./packet"
 import { isInstanceOf, serviceSpecificationFromName } from "./spec"
 
 /**

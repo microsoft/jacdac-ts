@@ -1,5 +1,5 @@
 import { errorCode } from "../jdom/error"
-import TransportProxy from "./transportproxy"
+import { TransportProxy } from "./transportproxy"
 import { USBTransportProxy } from "./usbtransportproxy"
 
 const { debug } = console

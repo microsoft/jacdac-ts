@@ -1,4 +1,4 @@
-import Proto from "./proto"
+import { Proto } from "./proto"
 import {
     throwError,
     assert,

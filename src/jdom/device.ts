@@ -1,4 +1,4 @@
-import Packet from "./packet"
+import { Packet } from "./packet"
 import {
     JD_SERVICE_INDEX_CTRL,
     DEVICE_ANNOUNCE,
@@ -41,17 +41,17 @@ import {
 } from "./constants"
 import { read32, bufferEq, setAckError, read16 } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
-import JDBus from "./bus"
-import JDService from "./service"
+import { JDBus } from "./bus"
+import { JDService } from "./service"
 import { serviceClass, shortDeviceId } from "./pretty"
-import JDNode from "./node"
+import { JDNode } from "./node"
 import { isInstanceOf, isSensor } from "./spec"
 import { FirmwareInfo } from "./flashing"
-import LEDController from "./ledcontroller"
-import JDEventSource from "./eventsource"
+import { LEDController } from "./ledcontroller"
+import { JDEventSource } from "./eventsource"
 import { ServiceFilter } from "./filters/servicefilter"
 import { randomDeviceId } from "./random"
-import Flags from "./flags"
+import { Flags } from "./flags"
 
 /**
  * Pipe information
@@ -696,22 +696,19 @@ export class JDDevice extends JDNode {
             ? getNumber(this._servicesData, NumberFormat.UInt32LE, 0)
             : 0
         const w1 = getNumber(pkt.data, NumberFormat.UInt32LE, 0)
+        const restarted = w1 &&
+        (w1 & JD_ADVERTISEMENT_0_COUNTER_MASK) <
+            (w0 & JD_ADVERTISEMENT_0_COUNTER_MASK)
 
         // compare service data
         const servicesChanged = !bufferEq(pkt.data, this._servicesData, 4)
         this._servicesData = pkt.data
 
         // check for restart
-        if (
-            w1 &&
-            (w1 & JD_ADVERTISEMENT_0_COUNTER_MASK) <
-                (w0 & JD_ADVERTISEMENT_0_COUNTER_MASK)
-        ) {
+        if (restarted) {
             this.stats.processRestart()
-            this.initServices(true)
             this.bus.emit(DEVICE_RESTART, this)
             this.emit(RESTART)
-            changed = true
         }
 
         // notify that services got updated
@@ -812,6 +809,14 @@ export class JDDevice extends JDNode {
      */
     reset() {
         return this.service(0)?.sendCmdAsync(ControlCmd.Reset)
+    }
+
+    /**
+     * Send command to enter proxy/dongle mode
+     * @returns 
+     */
+    startProxy() {
+        return this.service(0)?.sendCmdAsync(ControlCmd.Proxy)
     }
 
     /**
@@ -986,4 +991,4 @@ export class JDDevice extends JDNode {
     }
 }
 
-export default JDDevice
+

@@ -1,5 +1,5 @@
 import { isCancelError } from "../utils"
-import EventTargetObservable from "./eventtargetobservable"
+import { EventTargetObservable } from "./eventtargetobservable"
 import { HF2_DEVICE_MAJOR } from "./hf2"
 import { MICROBIT_V2_PRODUCT_ID, MICROBIT_V2_VENDOR_ID } from "./microbit"
 import { USBOptions } from "./usbio"

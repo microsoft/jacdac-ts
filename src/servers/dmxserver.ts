@@ -1,9 +1,9 @@
 import { DmxCmd, SRV_DMX } from "../jdom/constants"
-import Packet from "../jdom/packet"
-import JDServiceServer from "../jdom/servers/serviceserver"
+import { Packet } from "../jdom/packet"
+import { JDServiceServer } from "../jdom/servers/serviceserver"
 import { toHex } from "../jdom/utils"
 
-export default class DMXServer extends JDServiceServer {
+export class DMXServer extends JDServiceServer {
     constructor() {
         super(SRV_DMX, {
             intensityValues: [0],

@@ -7,9 +7,9 @@ import {
     SRV_CONTROL,
 } from "../constants"
 import { jdunpack } from "../pack"
-import Packet from "../packet"
-import JDRegisterServer from "./registerserver"
-import JDServiceServer from "./serviceserver"
+import { Packet } from "../packet"
+import { JDRegisterServer } from "./registerserver"
+import { JDServiceServer } from "./serviceserver"
 
 /**
  * A control service server
@@ -38,6 +38,11 @@ export class ControlServer extends JDServiceServer {
         this.uptime = this.addRegister<[number]>(ControlReg.Uptime)
         if (resetIn)
             this.resetIn = this.addRegister<[number]>(ControlReg.ResetIn, [0])
+
+        this.addRegister(ControlReg.DeviceDescription, ["Simulated"])
+        this.addRegister(ControlReg.FirmwareVersion, ["0.0.0"])
+        this.addRegister(ControlReg.ProductIdentifier, [0])
+        this.addRegister(ControlReg.BootloaderProductIdentifier, [0])
 
         this.addCommand(ControlCmd.Services, this.announce.bind(this))
         this.addCommand(ControlCmd.Identify, this.identify.bind(this))
@@ -107,4 +112,4 @@ export class ControlServer extends JDServiceServer {
     }
 }
 
-export default ControlServer
+

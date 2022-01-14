@@ -1,4 +1,4 @@
-import SensorServer from "./sensorserver"
+import { SensorServer } from "./sensorserver"
 import {
     RealTimeClockCmd,
     RealTimeClockReg,
@@ -6,9 +6,9 @@ import {
     REFRESH,
     SRV_REAL_TIME_CLOCK,
 } from "../jdom/constants"
-import JDRegisterServer from "../jdom/servers/registerserver"
-import JDBus from "../jdom/bus"
-import Packet from "../jdom/packet"
+import { JDRegisterServer } from "../jdom/servers/registerserver"
+import { JDBus } from "../jdom/bus"
+import { Packet } from "../jdom/packet"
 
 /**
  * @internal
@@ -38,7 +38,7 @@ export function dateToClock(n: Date): RealTimeClockReadingType {
     return [year, month, dayOfMonth, dayOfWeek, hour, min, sec]
 }
 
-export default class RealTimeClockServer extends SensorServer<RealTimeClockReadingType> {
+export class RealTimeClockServer extends SensorServer<RealTimeClockReadingType> {
     readonly drift: JDRegisterServer<[number]>
     readonly precision: JDRegisterServer<[number]>
     private lastSecond = 0

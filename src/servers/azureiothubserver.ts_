@@ -5,9 +5,9 @@ import {
     CHANGE,
     SRV_AZURE_IOT_HUB,
 } from "../jdom/constants"
-import JDServiceServer, { ServerOptions } from "../jdom/servers/serviceserver"
-import RegisterServer from "../jdom/servers/registerserver"
-import Packet from "../jdom/packet"
+import { JDServiceServer, ServerOptions } from "../jdom/servers/serviceserver"
+import { RegisterServer } from "../jdom/servers/registerserver"
+import { Packet } from "../jdom/packet"
 import { jdpack } from "../jdom/pack"
 
 /**
@@ -45,7 +45,7 @@ export interface AzureIoTHubMessage {
  * A server implementation of Azure IoT Hub service
  * @category Servers
  */
-export default class AzureIoTHubServer extends JDServiceServer {
+export class AzureIoTHubServer extends JDServiceServer {
     readonly hubName: RegisterServer<[string]>
     readonly deviceId: RegisterServer<[string]>
     readonly connectionStatus: RegisterServer<[string]>

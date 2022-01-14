@@ -10,8 +10,8 @@ import { jdpack } from "../jdom/pack"
 import { Packet } from "../jdom/packet"
 import { OutPipe } from "../jdom/pipes"
 import { randomBytes } from "../jdom/random"
-import JDRegisterServer from "../jdom/servers/registerserver"
-import JDServiceServer from "../jdom/servers/serviceserver"
+import { JDRegisterServer } from "../jdom/servers/registerserver"
+import { JDServiceServer } from "../jdom/servers/serviceserver"
 
 export interface ScanResult {
     flags: WifiAPFlags
@@ -205,4 +205,4 @@ export class WifiServer extends JDServiceServer {
         this.sendEvent(WifiEvent.NetworksChanged)
     }
 }
-export default WifiServer
+

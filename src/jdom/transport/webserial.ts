@@ -1,13 +1,13 @@
-import Packet from "../packet"
-import Flags from "../flags"
+import { Packet } from "../packet"
+import { Flags } from "../flags"
 import { SERIAL_TRANSPORT } from "../constants"
-import Transport from "./transport"
-import Proto from "./proto"
-import WebSerialIO from "./webserialio"
+import { Transport } from "./transport"
+import { Proto } from "./proto"
+import { WebSerialIO } from "./webserialio"
 import { HF2_IO } from "./hf2"
 import { Observable } from "../observable"
-import EventTargetObservable from "./eventtargetobservable"
-import JDBus from "../bus"
+import { EventTargetObservable } from "./eventtargetobservable"
+import { JDBus } from "../bus"
 
 export function isWebSerialEnabled(): boolean {
     return !!Flags.webSerial

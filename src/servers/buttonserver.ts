@@ -5,15 +5,15 @@ import {
     REFRESH,
     SRV_BUTTON,
 } from "../jdom/constants"
-import SensorServer from "./sensorserver"
-import RegisterServer from "../jdom/servers/registerserver"
+import { SensorServer } from "./sensorserver"
+import { JDRegisterServer } from "../jdom/servers/registerserver"
 import { jdpack } from "../jdom/pack"
 
 /**
  * Server implementation for the button service
  * @category Servers
  */
-export default class ButtonServer extends SensorServer<[number]> {
+export class ButtonServer extends SensorServer<[number]> {
     public static readonly HOLD_TIME = 500
     public static readonly INACTIVE_VALUE = 0
     public static readonly ACTIVE_VALUE = 1
@@ -21,8 +21,8 @@ export default class ButtonServer extends SensorServer<[number]> {
     private _downTime: number
     private _nextHold: number
 
-    readonly analog: RegisterServer<[boolean]>
-    private _threshold: RegisterServer<[number]>
+    readonly analog: JDRegisterServer<[boolean]>
+    private _threshold: JDRegisterServer<[number]>
 
     constructor(instanceName?: string, analog?: boolean) {
         super(SRV_BUTTON, {
@@ -38,7 +38,7 @@ export default class ButtonServer extends SensorServer<[number]> {
         return this._threshold
     }
 
-    set threshold(value: RegisterServer<[number]>) {
+    set threshold(value: JDRegisterServer<[number]>) {
         if (value !== this._threshold) {
             this._threshold = value
             this.analog.setValues([!!this._threshold])

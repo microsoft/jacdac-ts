@@ -1,4 +1,3 @@
-import { jdunpack } from "../jdom/pack"
 import {
     fromUTF8,
     range,
@@ -9,7 +8,7 @@ import {
     uint8ArrayToString,
     write16,
     write32,
-} from "../jdom/utils"
+} from "jacdac-ts"
 import {
     assertPos,
     BinSection,
@@ -136,6 +135,8 @@ export function verifyBinary(
         idx++
     }
 
+    let allStrings: string[] = []
+
     idx = 0
     for (
         let ptr = strDesc.start;
@@ -147,6 +148,7 @@ export function verifyBinary(
         const str = fromUTF8(
             uint8ArrayToString(new Uint8Array(strSect.asBuffer()))
         )
+        allStrings.push(str)
         host.log(`str #${idx} = ${JSON.stringify(str)}`)
         idx++
     }
@@ -164,7 +166,9 @@ export function verifyBinary(
             top == 0x1 || top == 0x2,
             "service class starts with 0x1 or 0x2 (mixin)"
         )
-        host.log(`role #${idx} = ${hex(cl)} ${dbg.roles[idx]?.name || ""}`)
+        const nameIdx = read16(bin, ptr + 4)
+        assertPos(ptr, nameIdx < numStrings, "role name in range")
+        host.log(`role #${idx} = ${hex(cl)} ${allStrings[nameIdx]}`)
         idx++
     }
 
@@ -373,7 +377,10 @@ export function verifyBinary(
                         case OpAsync.CLOUD_UPLOAD: // A-numregs
                             rdRegs(a)
                             break
-                        case OpAsync.SET_REG: // A-role, B-code
+                        case OpAsync.SEND_CMD: // A-role, B-code
+                            check(a < numRoles, "role idx")
+                            check(b <= 0xffff, "cmd code")
+                            break
                         case OpAsync.QUERY_REG: // A-role, B-code, C-timeout
                             check(a < numRoles, "role idx")
                             check(b <= 0x1ff, "reg code")

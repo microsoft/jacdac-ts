@@ -1,5 +1,5 @@
-import Packet from "./packet"
-import JDDevice from "./device"
+import { Packet } from "./packet"
+import { JDDevice } from "./device"
 import { strcmp, arrayConcatMany, toHex } from "./utils"
 import {
     JD_SERVICE_INDEX_CTRL,
@@ -56,9 +56,9 @@ import {
     CONNECTION_STATE,
 } from "./constants"
 import { serviceClass } from "./pretty"
-import JDNode from "./node"
+import { JDNode } from "./node"
 import { FirmwareBlob, sendStayInBootloaderCommand } from "./flashing"
-import JDService from "./service"
+import { JDService } from "./service"
 import { isConstRegister, isReading, isSensor } from "./spec"
 import {
     LoggerPriority,
@@ -68,13 +68,13 @@ import {
     SRV_REAL_TIME_CLOCK,
     SystemReg,
 } from "../../src/jdom/constants"
-import JDServiceProvider from "./servers/serviceprovider"
-import RealTimeClockServer from "../servers/realtimeclockserver"
+import { JDServiceProvider } from "./servers/serviceprovider"
+import { RealTimeClockServer } from "../servers/realtimeclockserver"
 import { SRV_ROLE_MANAGER } from "../../src/jdom/constants"
-import Transport, { ConnectionState } from "./transport/transport"
+import { Transport,  ConnectionState } from "./transport/transport"
 import { BusStatsMonitor } from "./busstats"
-import RoleManagerClient from "./clients/rolemanagerclient"
-import JDBridge from "./bridge"
+import { RoleManagerClient } from "./clients/rolemanagerclient"
+import { JDBridge } from "./bridge"
 import { randomDeviceId } from "./random"
 import {
     ControlAnnounceFlags,
@@ -83,10 +83,10 @@ import {
     SRV_DASHBOARD,
     SRV_PROXY,
 } from "../../jacdac-spec/dist/specconstants"
-import Scheduler, { WallClockScheduler } from "./scheduler"
-import ServiceFilter from "./filters/servicefilter"
-import DeviceFilter from "./filters/devicefilter"
-import Flags from "./flags"
+import { Scheduler,  WallClockScheduler } from "./scheduler"
+import { ServiceFilter } from "./filters/servicefilter"
+import { DeviceFilter } from "./filters/devicefilter"
+import { Flags } from "./flags"
 import { stack } from "./trace/trace"
 import { DeviceCatalog } from "./catalog"
 
@@ -121,6 +121,11 @@ export interface BusOptions {
      * This bus is a dashboard
      */
     dashboard?: boolean
+
+    /**
+     * This bus is a proxy
+     */
+    proxy?: boolean
 }
 
 /**
@@ -166,6 +171,7 @@ export class JDBus extends JDNode {
     private _passive = false
     private _client = false
     private _dashboard = false
+    private _proxy = false
 
     /**
      * the device catalog
@@ -194,6 +200,7 @@ export class JDBus extends JDNode {
             client,
             disableRoleManager,
             dashboard,
+            proxy,
         } = options || {}
 
         this._roleManagerClient = disableRoleManager ? null : undefined
@@ -202,6 +209,7 @@ export class JDBus extends JDNode {
         this.parentOrigin = parentOrigin || "*"
         this._client = !!client
         this._dashboard = !!dashboard
+        this._proxy = !!proxy
         this.stats = new BusStatsMonitor(this)
         this.deviceCatalog = new DeviceCatalog()
 
@@ -659,6 +667,7 @@ ${this.devices({ ignoreInfrastructure: false })
   id: ${dev.shortId} (0x${dev.deviceId})
   product: ${dev.name || "?"} (0x${dev.productIdentifier?.toString(16) || "?"})
   firmware_version: ${dev.firmwareVersion || ""}
+  uptime: ${dev.uptime || ""}
   services:
 ${dev
     .services()
@@ -1158,6 +1167,7 @@ ${dev
                 [
                     [SRV_INFRASTRUCTURE],
                     this._dashboard ? [SRV_DASHBOARD] : undefined,
+                    this._proxy ? [SRV_PROXY] : undefined,
                 ].filter(sc => !!sc),
             ]
         )
@@ -1396,6 +1406,7 @@ ${dev
         }
 
         // apply streaming samples to service provider
+        this.emit(REFRESH)
         this._serviceProviders.map(host => host.emit(REFRESH))
     }
 
@@ -1447,4 +1458,4 @@ ${dev
     }
 }
 
-export default JDBus
+

@@ -1,4 +1,4 @@
-import JDBus from "./bus"
+import { JDBus } from "./bus"
 import { isSensor, serviceSpecifications } from "./spec"
 import { toMap } from "./utils"
 

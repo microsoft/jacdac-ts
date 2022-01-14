@@ -1,14 +1,17 @@
-import { JDBus, JDDevice, JDRegister, JDService, printPacket } from "../jacdac"
-import { NumberFormat, setNumber } from "../jdom/buffer"
 import {
+    JDBus,
+    JDDevice,
+    JDRegister,
+    JDService,
+    printPacket,
+    NumberFormat,
+    setNumber,
     CMD_GET_REG,
     DEVICE_DISCONNECT,
     PACKET_PROCESS,
     SELF_ANNOUNCE,
-} from "../jdom/constants"
-import { jdunpack } from "../jdom/pack"
-import { Packet } from "../jdom/packet"
-import {
+    jdunpack,
+    Packet,
     fromUTF8,
     range,
     read16,
@@ -19,7 +22,13 @@ import {
     uint8ArrayToString,
     write16,
     write32,
-} from "../jdom/utils"
+    CMD_SET_REG,
+    sizeOfNumberFormat,
+    strcmp,
+    SRV_JACSCRIPT_CONDITION,
+} from "jacdac-ts"
+import { JDBusJacsEnv } from "./busenv"
+import { JacsEnv } from "./env"
 import {
     BinFmt,
     bitSize,
@@ -144,6 +153,11 @@ class RoleInfo {
     ) {}
     get classId() {
         return read32(this.parent.bin, this.offset)
+    }
+    get roleName() {
+        const idx = read16(this.parent.bin, this.offset + 4)
+        const buf = this.parent.stringLiterals[idx]
+        return fromUTF8(uint8ArrayToString(buf))
     }
     toString() {
         return this.dbg?.name || `R${this.offset}`
@@ -367,7 +381,9 @@ function loadCell(
         case CellKind.GLOBAL:
             return ctx.globals[idx]
         case CellKind.BUFFER: // arg=shift:numfmt, C=Offset
-            const v = ctx.pkt.getNumber(toNumberFormat(idx & 0xf), c)
+            const fmt = toNumberFormat(idx & 0xf)
+            if (sizeOfNumberFormat(fmt) + c > ctx.pkt.size) return NaN
+            const v = ctx.pkt.getNumber(fmt, c)
             if (v === undefined) return NaN
             return v / shiftVal(idx >> 4)
         case CellKind.FLOAT_CONST:
@@ -386,8 +402,6 @@ function loadCell(
                     return ctx.pkt.isRegisterGet
                         ? ctx.pkt.registerIdentifier
                         : NaN
-                case ValueSpecial.ROLE_ID:
-                    return nanify(ctx.wakeRoleIdx)
                 default:
                     oops()
             }
@@ -395,7 +409,7 @@ function loadCell(
             const role = ctx.roles[idx]
             switch (c) {
                 case OpRoleProperty.IS_CONNECTED:
-                    return role.device ? 1 : 0
+                    return role.isAttached() ? 1 : 0
                 default:
                     oops()
             }
@@ -525,7 +539,7 @@ class Activation {
     }
 
     step() {
-        //this.logInstr()
+        // this.logInstr()
 
         const ctx = this.fiber.ctx
         const instr = ctx.info.code[this.pc++]
@@ -629,7 +643,7 @@ class Activation {
                         break
                     case OpSync.OBSERVE_ROLE: // A-role
                         const r = ctx.roles[a]
-                        this.fiber.waitingOn.push(r)
+                        this.fiber.waitingOnRole = r
                         break
                     case OpSync.FORMAT: // A-string-index B-numargs C-offset
                         ctx.setBuffer(
@@ -682,11 +696,11 @@ class Activation {
                     case OpAsync.CLOUD_UPLOAD: // A-numregs
                         ctx.cloudUpload(a)
                         break
-                    case OpAsync.SET_REG: // A-role, B-code
-                        ctx.setReg(ctx.roles[a], b)
+                    case OpAsync.SEND_CMD: // A-role, B-code
+                        ctx.sendCmd(ctx.roles[a], b)
                         break
                     case OpAsync.QUERY_REG: // A-role, B-code, C-timeout
-                        ctx.getReg(ctx.roles[a], b, c)
+                        ctx.getReg(ctx.roles[a], b | CMD_GET_REG, c)
                         break
                     default:
                         oops()
@@ -699,11 +713,22 @@ class Activation {
     }
 }
 
+function memcmp(a: Uint8Array, b: Uint8Array, sz: number) {
+    for (let i = 0; i < sz; ++i) {
+        const d = a[i] - b[i]
+        if (d) return d
+    }
+    return 0
+}
+
 class Fiber {
-    waitingOn: Role[] = []
     wakeTime: number
-    waitingOnGet: Role
-    waitingOnGetCode: number
+    waitingOnRole: Role
+    commandCode: number
+    commandArg: number
+    resendTimeout: number
+    cmdPayload: Uint8Array
+
     activation: Activation
     firstFun: FunctionInfo
     pending: boolean
@@ -711,10 +736,56 @@ class Fiber {
     constructor(public ctx: Ctx) {}
 
     resume() {
+        if (this.prelude()) return
         this.setWakeTime(0)
-        this.waitingOn = []
+        this.waitingOnRole = null
         this.ctx.currentFiber = this
+        this.ctx.params.fill(0)
         this.activate(this.activation)
+    }
+
+    private prelude() {
+        const resumeUserCode = false
+        const keepWaiting = true
+
+        if (!this.commandCode) return false
+        const role = this.waitingOnRole
+        if (!role.isAttached()) {
+            this.setWakeTime(0)
+            return keepWaiting // unbound, keep waiting, no timeout
+        }
+
+        if (this.cmdPayload) {
+            const pkt = role.mkCmd(this.commandCode, this.cmdPayload)
+            log(`send ${role.info} ${printPacket(pkt)}`)
+            this.ctx.env.send(pkt)
+            this.commandCode = 0
+            this.cmdPayload = null
+            return resumeUserCode
+        }
+
+        const pkt = this.ctx.pkt
+
+        if (pkt.isReport && pkt.serviceCommand == this.commandCode) {
+            const c = new CachedRegister()
+            c.code = pkt.serviceCommand
+            c.argument = this.commandArg
+            c.role = role
+            if (c.updateWith(role, pkt, this.ctx)) {
+                this.ctx.regs.add(c)
+                this.commandCode = 0
+                return resumeUserCode
+            }
+        }
+        if (this.ctx.now() >= this.wakeTime) {
+            const p = role.mkCmd(this.commandCode)
+            if (this.commandArg)
+                p.data = this.ctx.info.stringLiterals[this.commandArg].slice()
+            this.ctx.env.send(p)
+            if (this.resendTimeout < 1000) this.resendTimeout *= 2
+            this.sleep(this.resendTimeout)
+        }
+        return keepWaiting
     }
 
     activate(a: Activation) {
@@ -750,32 +821,127 @@ class Fiber {
 class Role {
     device: JDDevice
     serviceIndex: number
-    awaiters: (() => void)[] = []
 
     constructor(public info: RoleInfo) {}
-
-    service() {
-        if (!this.device) return null
-        return this.device.service(this.serviceIndex)
-    }
-
-    serviceAsync() {
-        const s = this.service()
-        if (s) return Promise.resolve(s)
-        return new Promise<JDService>(resolve => {
-            this.awaiters.push(() => resolve(this.service()))
-        })
-    }
 
     assign(d: JDDevice, idx: number) {
         log(`role ${this.info} <-- ${d}:${idx}`)
         this.device = d
         this.serviceIndex = idx
-        if (this.awaiters.length) {
-            const aa = this.awaiters
-            this.awaiters = []
-            for (const a of aa) a()
+    }
+
+    mkCmd(serviceCommand: number, payload?: Uint8Array) {
+        const p = Packet.from(serviceCommand, payload || new Uint8Array(0))
+        p.device = this.device
+        p.deviceIdentifier = this.device.deviceId
+        p.serviceIndex = this.serviceIndex
+        p.isCommand = true
+        return p
+    }
+
+    isAttached() {
+        return this.isCondition() || !!this.device
+    }
+
+    isCondition() {
+        return this.info.classId == SRV_JACSCRIPT_CONDITION
+    }
+}
+
+/*
+// in C
+uint8_t role
+uint8_t arg
+uint16_t code
+uint32_t last_refresh
+uint8_t data_size
+uint8_t data[data_size]
+*/
+
+class CachedRegister {
+    role: Role
+    code: number
+    argument: number
+    last_access_idx: number
+    last_refresh_time: number
+    value: Uint8Array
+    dead: boolean
+
+    expired(now: number, validity: number) {
+        if (!validity) validity = 15 * 60 * 1000
+        return this.last_refresh_time + validity <= now
+    }
+
+    updateWith(role: Role, pkt: Packet, ctx: Ctx) {
+        if (this.dead) return false
+        if (this.role != role) return false
+        if (this.code != pkt.serviceCommand) return false
+        if (!pkt.isReport) return false
+        let val = pkt.data
+        if (this.argument) {
+            const arg = ctx.info.stringLiterals[this.argument]
+            if (
+                pkt.data.length >= arg.length + 1 &&
+                pkt.data[arg.length] == 0 &&
+                memcmp(pkt.data, arg, arg.length) == 0
+            ) {
+                val = pkt.data.slice(arg.length + 1)
+            } else {
+                val = null
+            }
         }
+        if (val) {
+            this.last_refresh_time = ctx.now()
+            this.value = val.slice()
+            return true
+        } else {
+            return false
+        }
+    }
+}
+
+const MAX_REG_CACHE = 50
+const HALF_REG_CACHE = MAX_REG_CACHE >> 1
+
+class RegisterCache {
+    private regs: CachedRegister[] = []
+    private access_idx = 0
+
+    markUsed(c: CachedRegister) {
+        c.last_access_idx = this.access_idx++
+    }
+    lookup(role: Role, code: number, arg = 0) {
+        return this.regs.find(
+            r =>
+                !r.dead && r.role == role && r.code == code && r.argument == arg
+        )
+    }
+    detachRole(role: Role) {
+        for (const r of this.regs) if (r.role == role) r.dead = true
+    }
+    updateWith(role: Role, pkt: Packet, ctx: Ctx) {
+        for (const r of this.regs) r.updateWith(role, pkt, ctx)
+    }
+    add(c: CachedRegister) {
+        if (this.regs.length >= MAX_REG_CACHE) {
+            let old_access = 0
+            let num_live = 0
+            for (;;) {
+                let min_access = this.access_idx
+                num_live = 0
+                for (const r of this.regs) {
+                    if (r.last_access_idx <= old_access) r.dead = true
+                    if (r.dead) continue
+                    min_access = Math.min(r.last_access_idx, min_access)
+                    num_live++
+                }
+                if (num_live <= HALF_REG_CACHE) break
+                old_access = min_access - 2
+            }
+            this.regs = this.regs.filter(r => !r.dead)
+        }
+        this.regs.push(c)
+        this.markUsed(c)
     }
 }
 
@@ -784,7 +950,6 @@ const INTERNAL_ERROR_PANIC_CODE = 0x100001
 
 class Ctx {
     pkt: Packet
-    wakeRoleIdx: number
     registers = new Float64Array(NUM_REGS)
     params = new Uint16Array(4)
     globals: Float64Array
@@ -797,22 +962,60 @@ class Ctx {
     panicCode = 0
     onPanic: (code: number) => void
     onError: (err: Error) => void
+    bus: JDBus
+    regs = new RegisterCache()
 
-    constructor(public info: ImageInfo, public bus: JDBus) {
+    constructor(public info: ImageInfo, public env: JacsEnv) {
         this.globals = new Float64Array(this.info.numGlobals)
         this.roles = info.roles.map(r => new Role(r))
-        bus.on(DEVICE_DISCONNECT, this.deviceDisconnect.bind(this))
-        bus.on(SELF_ANNOUNCE, () => this.autoBind(bus.devices()))
-        bus.on(PACKET_PROCESS, this.processPkt.bind(this))
+
+        this.env.onPacket = this.processPkt.bind(this)
+
+        this.env.roleManager.setRoles(
+            this.roles
+                .filter(r => !r.isCondition())
+                .map(r => ({
+                    name: r.info.roleName,
+                    classIdenitifer: r.info.classId,
+                }))
+        )
+
+        this.env.roleManager.onAssignmentsChanged =
+            this.syncRoleAssignments.bind(this)
+
         this.wakeFibers = this.wakeFibers.bind(this)
     }
 
+    private syncRoleAssignments() {
+        const assignedRoles: Role[] = []
+        for (const r of this.roles) {
+            const curr = this.env.roleManager.getRole(r.info.roleName)
+            if (
+                curr.device != r.device ||
+                curr.serviceIndex != r.serviceIndex
+            ) {
+                assignedRoles.push(r)
+                r.assign(curr.device, curr.serviceIndex)
+                if (!curr.device) this.regs.detachRole(r)
+            }
+        }
+        if (assignedRoles.length) {
+            for (const r of assignedRoles) {
+                this.pkt = Packet.from(0xffff, new Uint8Array(0))
+                if (r.device) this.pkt.deviceIdentifier = r.device.deviceId
+                this.wakeRole(r)
+            }
+            this.pokeFibers()
+        }
+    }
+
     now() {
-        return this.bus.timestamp
+        return this.env.now()
     }
 
     startProgram() {
         this.startFiber(this.info.functions[0], 0, OpCall.BG)
+        this.pokeFibers()
     }
 
     wakeTimesUpdated() {
@@ -836,7 +1039,7 @@ class Ctx {
 
     private clearWakeTimer() {
         if (this.wakeTimeout !== undefined) {
-            this.bus.scheduler.clearTimeout(this.wakeTimeout)
+            this.env.clearTimeout(this.wakeTimeout)
             this.wakeTimeout = undefined
         }
     }
@@ -874,6 +1077,8 @@ class Ctx {
 
         this.clearWakeTimer()
 
+        this.pkt = Packet.onlyHeader(0xffff)
+
         for (;;) {
             let numRun = 0
             const now = this.now()
@@ -896,49 +1101,21 @@ class Ctx {
         this.wakeUpdated = false
         if (minTime < Infinity) {
             const delta = Math.max(0, minTime - this.now())
-            this.wakeTimeout = this.bus.scheduler.setTimeout(
-                this.wakeFibers,
-                delta
-            )
+            this.wakeTimeout = this.env.setTimeout(this.wakeFibers, delta)
         }
     }
 
-    private wakeRole(idx: number) {
-        const r = this.roles[idx]
+    private wakeRole(role: Role) {
         for (const f of this.fibers)
-            if (f.waitingOn.indexOf(r) >= 0) {
-                this.wakeRoleIdx = idx
-                // log(`run ${f.firstFun} ev=${this.pkt.eventCode}`)
+            if (f.waitingOnRole == role) {
+                if (false)
+                    log(
+                        `wake ${f.firstFun} r=${
+                            role.info
+                        } pkt=${this.pkt.toString()}`
+                    )
                 this.run(f)
-                this.wakeRoleIdx = null
             }
-    }
-
-    private deviceDisconnect(dev: JDDevice) {
-        this.pkt = Packet.from(0xffff, new Uint8Array(0))
-        this.pkt.deviceIdentifier = dev.deviceId
-        for (let idx = 0; idx < this.roles.length; ++idx) {
-            const r = this.roles[idx]
-            if (r.device == dev) {
-                r.assign(null, 0)
-                this.wakeRole(idx)
-            }
-        }
-        this.pokeFibers()
-    }
-
-    private autoBind(devs: JDDevice[]) {
-        console.log(`autoBind `)
-        // TODO make it sort roles etc
-        // TODO prevent two roles binding to the same service idx
-        for (const r of this.roles) {
-            if (!r.device)
-                for (const d of devs) {
-                    if (d.hasService(r.info.classId)) {
-                        r.assign(d, d.serviceClasses.indexOf(r.info.classId))
-                    }
-                }
-        }
     }
 
     private processPkt(pkt: Packet) {
@@ -951,8 +1128,10 @@ class Ctx {
                 r.device == pkt.device &&
                 (r.serviceIndex == pkt.serviceIndex ||
                     (pkt.serviceIndex == 0 && pkt.serviceCommand == 0))
-            )
-                this.wakeRole(idx)
+            ) {
+                this.regs.updateWith(r, pkt, this)
+                this.wakeRole(r)
+            }
         }
         this.pokeFibers()
     }
@@ -1006,41 +1185,54 @@ class Ctx {
         }
     }
 
-    setReg(r: Role, code: number) {
-        const fib = this.doYield()
-        const val = this.pkt.data.slice()
-        r.serviceAsync().then(serv => {
-            log(`set ${r.info}.r${code} := ${toHex(val)}`)
-            serv.register(code).sendSetAsync(val, true)
-            this.run(fib)
-            this.pokeFibers()
-        })
-    }
-
-    getReg(r: Role, code: number, timeout: number) {
-        const setPktInCtx = (reg: JDRegister) => {
-            this.pkt = Packet.from(CMD_GET_REG | code, reg.data)
-            this.pkt.deviceIdentifier = r.device.deviceId
-            this.pkt.serviceIndex = r.serviceIndex
+    sendCmd(role: Role, code: number) {
+        if ((code & 0xf000) == CMD_SET_REG) {
+            const cached = this.regs.lookup(
+                role,
+                (code & ~CMD_SET_REG) | CMD_GET_REG
+            )
+            if (cached) cached.dead = true
         }
 
-        const reg = r.service()?.register(code)
-        const ts = reg?.lastDataTimestamp
-
-        if (ts && (!timeout || this.bus.timestamp - ts < timeout)) {
-            setPktInCtx(reg)
+        const fib = this.currentFiber
+        if (role.isCondition()) {
+            fib.sleep(0)
+            log(`wake condition ${role.info}`)
+            this.wakeRole(role)
             return
         }
 
-        const fib = this.doYield()
-        r.serviceAsync().then(serv => {
-            const reg = serv.register(code)
-            reg.refresh().then(() => {
-                setPktInCtx(reg)
-                this.run(fib)
-                this.pokeFibers()
-            })
-        })
+        fib.waitingOnRole = role
+        fib.commandCode = code
+        fib.resendTimeout = 20
+        fib.cmdPayload = this.pkt.data.slice() // hmmm...
+        fib.sleep(0)
+    }
+
+    getReg(role: Role, code: number, timeout: number, arg = 0) {
+        const now = this.now()
+
+        if (role.device) {
+            const cached = this.regs.lookup(role, code, arg)
+            if (cached) {
+                if (cached.expired(now, timeout)) {
+                    cached.dead = true
+                } else {
+                    this.regs.markUsed(cached)
+                    this.pkt = Packet.from(cached.code, cached.value)
+                    this.pkt.deviceIdentifier = role.device.deviceId
+                    this.pkt.serviceIndex = role.serviceIndex
+                    return
+                }
+            }
+        }
+
+        const fib = this.currentFiber
+        fib.waitingOnRole = role
+        fib.commandCode = code
+        fib.commandArg = arg
+        fib.resendTimeout = 20
+        fib.sleep(0)
     }
 }
 
@@ -1068,7 +1260,7 @@ export class Runner {
     }
 
     run() {
-        this.ctx = new Ctx(this.img, this.bus)
+        this.ctx = new Ctx(this.img, new JDBusJacsEnv(this.bus))
         this.ctx.onError = e => {
             console.error("Internal error", e.stack)
             this.state = RunnerState.Error

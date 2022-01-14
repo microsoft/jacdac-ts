@@ -1,4 +1,4 @@
-import JDDevice from "./device"
+import { JDDevice } from "./device"
 import {
     PIPE_PORT_SHIFT,
     PIPE_COUNTER_MASK,
@@ -9,8 +9,8 @@ import {
     DATA,
     CLOSE,
 } from "./constants"
-import Packet from "./packet"
-import JDBus from "./bus"
+import { Packet } from "./packet"
+import { JDBus } from "./bus"
 import { signal, fromHex, throwError, toHex } from "./utils"
 import { JDClient } from "./client"
 import { jdpack } from "./pack"
@@ -54,16 +54,13 @@ export class OutPipe {
         items: ArrayLike<T>,
         converter: (item: T) => Uint8Array
     ) {
-        try {
-            const n = items.length
-            for (let i = 0; i < n; ++i) {
-                const item = items[i]
-                const data = converter(item)
-                await this.send(data)
-            }
-        } finally {
-            await this.close()
+        const n = items.length
+        for (let i = 0; i < n; ++i) {
+            const item = items[i]
+            const data = converter(item)
+            await this.send(data)
         }
+        await this.close()
     }
 
     private async sendData(buf: Uint8Array, flags: number) {
@@ -77,14 +74,14 @@ export class OutPipe {
             (this._count & PIPE_COUNTER_MASK)
         const pkt = Packet.from(cmd, buf)
         pkt.serviceIndex = JD_SERVICE_INDEX_PIPE
-        this.device.sendPktWithAck(pkt).then(
-            () => {},
-            err => {
-                console.log(err)
-                this.free()
-            }
-        )
-        if (this.hosted) this.device.bus.processPacket(pkt)
+        try {
+            // this needs await - we don't want to send further pipe packets before the current
+            // one is ACKed
+            await this.device.sendPktWithAck(pkt)
+        } catch {
+            this.free()
+        }
+        if (this.hosted && this.device) this.device.bus.processPacket(pkt)
         this._count++
     }
 

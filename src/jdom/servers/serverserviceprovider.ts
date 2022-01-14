@@ -1,7 +1,7 @@
-import JDServiceServer from "./serviceserver"
-import Packet from "../packet"
+import { JDServiceServer } from "./serviceserver"
+import { Packet } from "../packet"
 import { isBufferEmpty } from "../utils"
-import ControlServer from "./controlserver"
+import { ControlServer } from "./controlserver"
 import {
     CHANGE,
     CMD_EVENT_COUNTER_MASK,
@@ -13,7 +13,7 @@ import {
     REFRESH,
     RESET,
 } from "../constants"
-import JDServiceProvider from "./serviceprovider"
+import { JDServiceProvider } from "./serviceprovider"
 
 /**
  * Implements a device with service servers.
@@ -227,4 +227,4 @@ export class JDServerServiceProvider extends JDServiceProvider {
         this.emit(RESET)
     }
 }
-export default JDServerServiceProvider
+

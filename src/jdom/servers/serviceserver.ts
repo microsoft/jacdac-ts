@@ -12,13 +12,13 @@ import {
     PACKET_SEND,
     REPORT_UPDATE,
 } from "../constants"
-import JDServerServiceProvider from "./serverserviceprovider"
-import JDEventSource from "../eventsource"
-import Packet from "../packet"
-import JDRegisterServer from "./registerserver"
+import { JDServerServiceProvider } from "./serverserviceprovider"
+import { JDEventSource } from "../eventsource"
+import { Packet } from "../packet"
+import { JDRegisterServer } from "./registerserver"
 import { isRegister, serviceSpecificationFromClassIdentifier } from "../spec"
 import { PackedValues } from "../pack"
-import JDService from "../service"
+import { JDService } from "../service"
 
 const CALIBRATION_DELAY = 5000
 
@@ -330,4 +330,4 @@ export class JDServiceServer extends JDEventSource {
         this.statusCode.setValues([SystemStatusCodes.Ready, 0])
     }
 }
-export default JDServiceServer
+
