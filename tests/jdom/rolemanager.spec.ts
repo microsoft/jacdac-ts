@@ -1,8 +1,8 @@
 import { suite, test } from "mocha"
 import { SRV_BUTTON } from "../../src/jdom/constants"
-import RoleManager from "../../src/jdom/rolemanager"
+import { RoleManager } from "../../src/jdom/rolemanager"
 import { assert } from "../../src/jdom/utils"
-import ButtonServer from "../../src/servers/buttonserver"
+import { ButtonServer } from "../../src/servers/buttonserver"
 import { makeTest } from "./fastforwardtester"
 
 suite("rolemanager", () => {

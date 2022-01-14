@@ -1,6 +1,6 @@
 import jsep from "jsep"
 import { VMProgram, VMHandler, VMCommand, VMRole } from "./ir"
-import RoleManager from "../jdom/rolemanager"
+import { RoleManager } from "../jdom/rolemanager"
 import {
     VMEnvironment,
     VMException,
@@ -11,7 +11,7 @@ import {
     ExternalRequest,
 } from "./environment"
 import { VMExprEvaluator, unparse, CallEvaluator } from "./expr"
-import JDEventSource from "../jdom/eventsource"
+import { JDEventSource } from "../jdom/eventsource"
 import {
     CHANGE,
     ROLE_BOUND,
@@ -32,9 +32,9 @@ import {
 import { Mutex, atomic } from "./utils"
 import { assert, SMap } from "../jdom/utils"
 import { JDClient } from "../jdom/client"
-import JDServerServiceProvider from "../jdom/servers/serverserviceprovider"
-import JDDevice from "../jdom/device"
-import JDServiceProvider from "../jdom/servers/serviceprovider"
+import { JDServerServiceProvider } from "../jdom/servers/serverserviceprovider"
+import { JDDevice } from "../jdom/device"
+import { JDServiceProvider } from "../jdom/servers/serviceprovider"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type VMTraceContext = any

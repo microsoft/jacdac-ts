@@ -1,8 +1,8 @@
-import JDServiceServer from "./serviceserver"
+import { JDServiceServer } from "./serviceserver"
 import { jdpack, jdunpack, PackedSimpleValue, PackedValues } from "../pack"
-import Packet from "../packet"
+import { Packet } from "../packet"
 import { bufferEq, isSet, pick } from "../utils"
-import JDEventSource from "../eventsource"
+import { JDEventSource } from "../eventsource"
 import {
     CHANGE,
     CMD_GET_REG,
@@ -218,4 +218,4 @@ export class JDRegisterServer<
         return true
     }
 }
-export default JDRegisterServer
+

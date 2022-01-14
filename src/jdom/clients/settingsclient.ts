@@ -1,8 +1,8 @@
 import { CHANGE, SettingsCmd } from "../constants"
 import { jdpack, jdunpack } from "../pack"
-import Packet from "../packet"
+import { Packet } from "../packet"
 import { InPipeReader } from "../pipes"
-import JDService from "../service"
+import { JDService } from "../service"
 import { JDServiceClient } from "../serviceclient"
 import { bufferToString, stringToBuffer } from "../utils"
 
@@ -94,4 +94,4 @@ export class SettingsClient extends JDServiceClient {
         this.emit(CHANGE)
     }
 }
-export default SettingsClient
+

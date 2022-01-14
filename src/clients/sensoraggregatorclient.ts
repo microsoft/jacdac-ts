@@ -6,8 +6,8 @@ import {
 import { bufferToArray, NumberFormat } from "../jdom/buffer"
 import { JD_SERIAL_MAX_PAYLOAD_SIZE, REPORT_RECEIVE } from "../jdom/constants"
 import { jdpack } from "../jdom/pack"
-import JDRegister from "../jdom/register"
-import JDService from "../jdom/service"
+import { JDRegister } from "../jdom/register"
+import { JDService } from "../jdom/service"
 import { JDServiceClient } from "../jdom/serviceclient"
 import {
     isReading,
@@ -173,4 +173,4 @@ export class SensorAggregatorClient extends JDServiceClient {
         return info
     }
 }
-export default SensorAggregatorClient
+

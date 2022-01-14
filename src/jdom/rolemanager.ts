@@ -7,9 +7,9 @@ import {
     ROLE_UNBOUND,
     UNBOUND,
 } from "./constants"
-import JDBus from "./bus"
-import JDDevice from "./device"
-import JDService from "./service"
+import { JDBus } from "./bus"
+import { JDDevice } from "./device"
+import { JDService } from "./service"
 import { serviceSpecificationFromClassIdentifier } from "./spec"
 import { JDClient } from "./client"
 
@@ -313,7 +313,7 @@ export class RoleManager extends JDClient {
             .join(",")
     }
 }
-export default RoleManager
+
 
 /**
  * Tracks a set of roles

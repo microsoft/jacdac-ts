@@ -1,11 +1,11 @@
-import Packet from "../packet"
-import EventTargetObservable from "./eventtargetobservable"
-import Flags from "../flags"
+import { Packet } from "../packet"
+import { EventTargetObservable } from "./eventtargetobservable"
+import { Flags } from "../flags"
 import { USB_TRANSPORT } from "../constants"
-import Transport from "./transport"
-import JDBus, { BusOptions } from "../bus"
-import Proto from "./proto"
-import USBIO, { USBOptions } from "./usbio"
+import { Transport } from "./transport"
+import { JDBus,  BusOptions } from "../bus"
+import { Proto } from "./proto"
+import { USBIO,  USBOptions } from "./usbio"
 
 export function isWebUSBEnabled(): boolean {
     return !!Flags.webUSB

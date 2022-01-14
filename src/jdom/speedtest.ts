@@ -1,6 +1,6 @@
 import * as U from "./utils"
-import Packet from "./packet"
-import JDDevice from "./device"
+import { Packet } from "./packet"
+import { JDDevice } from "./device"
 import { PACKET_REPORT, CMD_GET_REG, JD_SERVICE_INDEX_CTRL } from "./constants"
 import { ControlReg } from "../../jacdac-spec/dist/specconstants"
 

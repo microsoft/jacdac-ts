@@ -6,9 +6,9 @@ import {
     REGISTER_PRE_GET,
     SRV_LED,
 } from "../jdom/constants"
-import Packet from "../jdom/packet"
-import JDRegisterServer from "../jdom/servers/registerserver"
-import JDServiceServer, { JDServerOptions } from "../jdom/servers/serviceserver"
+import { Packet } from "../jdom/packet"
+import { JDRegisterServer } from "../jdom/servers/registerserver"
+import { JDServiceServer,  JDServerOptions } from "../jdom/servers/serviceserver"
 
 export interface LEDServiceOptions extends JDServerOptions {
     ledCount?: number
@@ -19,7 +19,7 @@ export interface LEDServiceOptions extends JDServerOptions {
     color?: [number, number, number]
 }
 
-export default class LEDServer extends JDServiceServer {
+export class LEDServer extends JDServiceServer {
     readonly color: JDRegisterServer<[number, number, number]>
     readonly maxPower: JDRegisterServer<[number]>
     readonly ledCount: JDRegisterServer<[number]>

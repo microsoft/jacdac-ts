@@ -1,6 +1,6 @@
-import Packet from "../packet"
+import { Packet } from "../packet"
 import { toHex } from "../utils"
-import Transport, { TransportOptions } from "./transport"
+import { Transport,  TransportOptions } from "./transport"
 
 export interface SpiTransportOptions extends TransportOptions {
     txReadyPin: number

@@ -28,9 +28,9 @@ import {
     LIGHT_PROG_SET_ALL,
     LIGHT_PROG_SHOW,
 } from "../jdom/lightconstants"
-import Packet from "../jdom/packet"
-import JDRegisterServer from "../jdom/servers/registerserver"
-import JDServiceServer, { JDServerOptions } from "../jdom/servers/serviceserver"
+import { Packet } from "../jdom/packet"
+import { JDRegisterServer } from "../jdom/servers/registerserver"
+import { JDServiceServer,  JDServerOptions } from "../jdom/servers/serviceserver"
 import { isBufferEmpty } from "../jdom/utils"
 
 const PROG_EOF = 0
@@ -110,7 +110,7 @@ function SCALE0(c: number, i: number) {
     return ((c & 0xff) * (1 + (i & 0xff))) >> 8
 }
 
-export default class LedPixelServer extends JDServiceServer {
+export class LedPixelServer extends JDServiceServer {
     readonly brightness: JDRegisterServer<[number]>
     readonly actualBrightness: JDRegisterServer<[number]>
     readonly lightType: JDRegisterServer<[LedPixelLightType]>

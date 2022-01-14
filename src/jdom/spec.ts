@@ -133,7 +133,7 @@ export function isInfrastructure(spec: jdspec.ServiceSpec) {
             SRV_DASHBOARD,
             SRV_BRIDGE,
             SRV_JACSCRIPT_CLOUD,
-            SRV_JACSCRIPT_CONDITION
+            SRV_JACSCRIPT_CONDITION,
         ].indexOf(spec.classIdentifier) > -1 ||
             spec.shortId[0] === "_")
     )
@@ -328,7 +328,7 @@ export function isConstRegister(pkt: jdspec.PacketInfo) {
  * Indicates if the packet info is not rw
  */
 export function isReadOnlyRegister(pkt: jdspec.PacketInfo) {
-    return pkt?.kind !== "rw";
+    return pkt?.kind !== "rw"
 }
 
 /**

@@ -1,7 +1,7 @@
 import { USB_TRANSPORT } from "../constants"
-import EventTargetObservable from "./eventtargetobservable"
-import Flags from "../flags"
-import Packet from "../packet"
+import { EventTargetObservable } from "./eventtargetobservable"
+import { Flags } from "../flags"
+import { Packet } from "../packet"
 import { Transport, TransportOptions } from "./transport"
 import {
     TransportConnectMessage,

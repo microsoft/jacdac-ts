@@ -1,4 +1,4 @@
-import JDBridge from "../bridge"
+import { JDBridge } from "../bridge"
 import { inIFrame } from "../iframeclient"
 
 class IFrameBridge extends JDBridge {
@@ -32,7 +32,7 @@ class IFrameBridge extends JDBridge {
     }
 }
 
-export default function createIFrameBridge(parentOrigin = "*"): JDBridge {
+export function createIFrameBridge(parentOrigin = "*"): JDBridge {
     return inIFrame() && new IFrameBridge(parentOrigin)
 }
 

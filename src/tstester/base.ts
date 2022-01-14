@@ -1,5 +1,5 @@
 // Contains foundational abstractions for the testing system
-import JDBus from "../jdom/bus"
+import { JDBus } from "../jdom/bus"
 import { assert } from "../jdom/utils"
 
 // A base class that abstracts away user-facing logging events, eg to pipe it to a web page

@@ -4,10 +4,10 @@ import {
     SRV_VIBRATION_MOTOR,
     VibrationMotorCmd,
 } from "../jdom/constants"
-import Packet from "../jdom/packet"
-import JDServiceServer from "../jdom/servers/serviceserver"
+import { Packet } from "../jdom/packet"
+import { JDServiceServer } from "../jdom/servers/serviceserver"
 
-export default class VibrationMotorServer extends JDServiceServer {
+export class VibrationMotorServer extends JDServiceServer {
     static VIBRATE_PATTERN = "vibratePattern"
 
     private _animation: {

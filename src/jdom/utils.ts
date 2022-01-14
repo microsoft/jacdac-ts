@@ -1,6 +1,6 @@
 import { TIMEOUT_ERROR_CODE } from "./constants"
-import JDError from "./error"
-import Flags from "./flags"
+import { JDError } from "./error"
+import { Flags } from "./flags"
 
 export function throwError(msg: string, cancel?: boolean) {
     const e = new Error(msg)

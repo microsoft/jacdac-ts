@@ -19,9 +19,9 @@ import {
     SystemEvent,
 } from "../constants"
 import { jdpack, jdunpack } from "../pack"
-import Packet from "../packet"
+import { Packet } from "../packet"
 import { InPipeReader } from "../pipes"
-import JDService from "../service"
+import { JDService } from "../service"
 import { JDServiceClient } from "../serviceclient"
 import {
     arrayConcatMany,
@@ -289,4 +289,4 @@ export class RoleManagerClient extends JDServiceClient {
         }
     }
 }
-export default RoleManagerClient
+

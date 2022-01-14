@@ -1,6 +1,6 @@
-import JDNode from "./node"
-import JDService from "./service"
-import Packet from "./packet"
+import { JDNode } from "./node"
+import { JDService } from "./service"
+import { Packet } from "./packet"
 import {
     CHANGE,
     CMD_EVENT_COUNTER_MASK,
@@ -8,9 +8,9 @@ import {
     EVENT_NODE_NAME,
 } from "./constants"
 import { isEvent } from "./spec"
-import JDServiceMemberNode from "./servicemembernode"
+import { JDServiceMemberNode } from "./servicemembernode"
 import { DecodedPacket } from "./pretty"
-import JDField from "./field"
+import { JDField } from "./field"
 
 /**
  * A Jacdac event client.
@@ -125,4 +125,4 @@ export class JDEvent extends JDServiceMemberNode {
     }
 }
 
-export default JDEvent
+

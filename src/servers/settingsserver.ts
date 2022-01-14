@@ -1,11 +1,11 @@
 import { SettingsCmd, SettingsEvent, SRV_SETTINGS } from "../jdom/constants"
 import { jdpack } from "../jdom/pack"
-import Packet from "../jdom/packet"
+import { Packet } from "../jdom/packet"
 import { OutPipe } from "../jdom/pipes"
-import JDServiceServer from "../jdom/servers/serviceserver"
+import { JDServiceServer } from "../jdom/servers/serviceserver"
 import { fromHex, toHex } from "../jdom/utils"
 
-export default class SettingsServer extends JDServiceServer {
+export class SettingsServer extends JDServiceServer {
     private settings: Record<string, string>
 
     constructor(readonly storageKey?: string) {

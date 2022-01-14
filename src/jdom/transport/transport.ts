@@ -1,4 +1,4 @@
-import JDBus from "../bus"
+import { JDBus } from "../bus"
 import {
     CHANGE,
     CONNECT,
@@ -13,9 +13,9 @@ import {
     TRANSPORT_CONNECT_RETRY_DELAY,
     TRANSPORT_PULSE_TIMEOUT,
 } from "../constants"
-import JDEventSource from "../eventsource"
+import { JDEventSource } from "../eventsource"
 import { Observable } from "../observable"
-import Packet from "../packet"
+import { Packet } from "../packet"
 import { assert, delay, isCancelError } from "../utils"
 
 /**
@@ -335,4 +335,4 @@ export abstract class Transport extends JDEventSource {
     }
 }
 
-export default Transport
+

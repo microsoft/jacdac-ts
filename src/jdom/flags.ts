@@ -25,4 +25,4 @@ export class Flags {
      */
     static webBluetooth = false
 }
-export default Flags
+

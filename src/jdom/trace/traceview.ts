@@ -1,4 +1,4 @@
-import JDBus from "../bus"
+import { JDBus } from "../bus"
 import { JDClient } from "../client"
 import {
     CHANGE,
@@ -12,9 +12,9 @@ import {
     SystemCmd,
     TRACE_FILTER_HORIZON,
 } from "../constants"
-import Packet from "../packet"
+import { Packet } from "../packet"
 import { PacketFilter, parsePacketFilter } from "../packetfilter"
-import Trace from "./trace"
+import { Trace } from "./trace"
 import { throttle, toHex } from "../utils"
 
 const TRACE_MAX_ITEMS = 1000
@@ -312,4 +312,4 @@ export class TraceView extends JDClient {
         }
     }
 }
-export default TraceView
+
