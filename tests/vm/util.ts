@@ -6,7 +6,7 @@ export function runJacScriptProgram(fn: string, bus: JDBus, delay: number = unde
     const res = compile(
         {
             write: (fn, cont) => {},
-            log: msg => { console.log(msg) },
+            log: msg => { } // console.log(msg) },
         },
         fn
     )

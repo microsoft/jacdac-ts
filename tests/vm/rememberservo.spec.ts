@@ -34,8 +34,6 @@ suite("remember servo", () => {
     ) {
         return makeTest(async tester => {
 
-            await runJacScriptProgram(output, tester.bus)
-
             const { recall, set, servo } = await tester.createServices({
                 recall: new ButtonServer("button", false),
                 set: new ButtonServer("button", false),
@@ -54,6 +52,10 @@ suite("remember servo", () => {
             const servoReg = new RegisterTester(
                 servo.service.register(ServoReg.Angle)
             )
+
+            await runJacScriptProgram(output, tester.bus)
+            // await tester.scheduler.runForDelay(1)
+
             await testBody(
                 tester,
                 recall.server,
