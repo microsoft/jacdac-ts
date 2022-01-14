@@ -1,8 +1,19 @@
 {
     "compilerOptions": {
         "target": "es2020",
-        "lib": ["webworker", "es2020", "scripthost"],
-        "types": ["@types/w3c-web-usb"]
+        "lib": [
+            "webworker",
+            "es2020",
+            "scripthost"
+        ],
+        "declarationDir": "../../dist/types",
+        "declaration": true,
+        "emitDeclarationOnly": true,
+        "types": [
+            "@types/w3c-web-usb"
+        ]
     },
-    "exclude": ["node_modules"]
+    "exclude": [
+        "node_modules"
+    ]
 }
