@@ -8,12 +8,12 @@
     "i2c",
     "sensors"
   ],
-  "main": "dist/jacdac.js",
-  "module": "dist/jacdac.cjs.js",
+  "main": "dist/jacdac.cjs",
+  "module": "dist/jacdac.mjs",
   "exports": {
     ".": {
       "import": "./dist/jacdac.js",
-      "require": "./dist/jacdac.cjs.js"
+      "require": "./dist/jacdac.cjs"
     }
   },
   "typings": "dist/types/src/jacdac.d.ts",
