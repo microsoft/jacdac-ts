@@ -39,6 +39,11 @@ export class ControlServer extends JDServiceServer {
         if (resetIn)
             this.resetIn = this.addRegister<[number]>(ControlReg.ResetIn, [0])
 
+        this.addRegister(ControlReg.DeviceDescription, ["Simulated"])
+        this.addRegister(ControlReg.FirmwareVersion, ["0.0.0"])
+        this.addRegister(ControlReg.ProductIdentifier, [0])
+        this.addRegister(ControlReg.BootloaderProductIdentifier, [0])
+
         this.addCommand(ControlCmd.Services, this.announce.bind(this))
         this.addCommand(ControlCmd.Identify, this.identify.bind(this))
         this.addCommand(ControlCmd.Reset, this.handleReset.bind(this))

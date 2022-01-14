@@ -149,14 +149,17 @@ class Role extends Cell {
         wasConnected: Variable
     }
     autoRefreshRegs: jdspec.PacketInfo[] = []
+    stringIndex: number
 
     constructor(
+        prog: Program,
         definition: estree.VariableDeclarator,
         scope: VariableScope,
         public spec: jdspec.ServiceSpec
     ) {
         super(definition, scope)
         assert(!!spec)
+        this.stringIndex = prog.addString(this.getName())
     }
     value(): ValueDesc {
         return mkValue(CellKind.JD_ROLE, this.index, this)
@@ -167,6 +170,7 @@ class Role extends Cell {
     serialize() {
         const r = new Uint8Array(BinFmt.RoleHeaderSize)
         write32(r, 0, this.spec.classIdentifier)
+        write16(r, 4, this.stringIndex)
         return r
     }
     toString() {
@@ -438,10 +442,7 @@ class OpWriter {
     }
 
     emitString(s: string) {
-        return mkValue(
-            CellKind.X_STRING,
-            addUnique(this.parent.parent.stringLiterals, s)
-        )
+        return mkValue(CellKind.X_STRING, this.parent.parent.addString(s))
     }
 
     isReg(v: ValueDesc) {
@@ -904,6 +905,10 @@ class Program implements InstrArgResolver {
 
     constructor(public host: Host, public source: string) {}
 
+    addString(str: string) {
+        return addUnique(this.stringLiterals, str)
+    }
+
     indexToLine(idx: number) {
         const s = this.source.slice(0, idx)
         return s.replace(/[^\n]/g, "").length + 1
@@ -1144,6 +1149,7 @@ class Program implements InstrArgResolver {
         if (idName(expr.callee) == "condition") {
             this.requireArgs(expr, 0)
             return new Role(
+                this,
                 decl,
                 this.roles,
                 serviceSpecificationFromName("jacscriptcondition")
@@ -1155,7 +1161,7 @@ class Program implements InstrArgResolver {
         this.requireArgs(expr, 0)
         const spec = serviceSpecificationFromName(serv.toLowerCase())
         if (!spec) this.throwError(expr.callee, "no such service: " + serv)
-        return new Role(decl, this.roles, spec)
+        return new Role(this, decl, this.roles, spec)
     }
 
     private emitStore(trg: Variable, src: ValueDesc) {
@@ -1393,52 +1399,6 @@ class Program implements InstrArgResolver {
     }
 
     private emitEventCall(
-        expr: estree.CallExpression,
-        obj: ValueDesc,
-        prop: string
-    ): ValueDesc {
-        const role = obj.cell as Role
-        switch (prop) {
-            case "sub":
-                this.requireTopLevel(expr)
-                this.requireArgs(expr, 1)
-                const handler = this.emitHandler(
-                    this.codeName(expr.callee),
-                    expr.arguments[0]
-                )
-                this.emitInRoleDispatcher(role, wr => {
-                    wr.push()
-                    const cond = this.inlineBin(
-                        OpBinary.EQ,
-                        specialVal(ValueSpecial.EV_CODE),
-                        floatVal(obj.spec.identifier)
-                    )
-                    wr.emitIfAndPop(cond, () =>
-                        wr.emitCall(handler, OpCall.BG_MAX1_PEND1)
-                    )
-                })
-                return values.zero
-            case "wait":
-                this.requireArgs(expr, 0)
-                const wr = this.writer
-                const lbl = wr.mkLabel("wait")
-                wr.emitLabel(lbl)
-                wr.emitSync(OpSync.OBSERVE_ROLE, role.encode())
-                wr.emitAsync(OpAsync.YIELD)
-                wr.push()
-                const cond = this.inlineBin(
-                    OpBinary.EQ,
-                    specialVal(ValueSpecial.EV_CODE),
-                    floatVal(obj.spec.identifier)
-                )
-                wr.pop()
-                wr.emitJump(lbl, cond.index)
-                return values.zero
-        }
-        this.throwError(expr, `events don't have property ${prop}`)
-    }
-
-    private emitCommandCall(
         expr: estree.CallExpression,
         obj: ValueDesc,
         prop: string

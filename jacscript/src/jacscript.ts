@@ -6,7 +6,9 @@ export * from "./verify"
 import { JDBus, createNodeSocketTransport } from "jacdac-ts"
 
 export function nodeBus() {
-    const bus = new JDBus([createNodeSocketTransport()])
+    const bus = new JDBus([createNodeSocketTransport()], {
+        disableRoleManager: true
+    })
     bus.connect()
     return bus
 }
