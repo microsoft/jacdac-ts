@@ -75,7 +75,7 @@ async function main() {
         sourcemap: true,
         outfile,
         logLevel: "warning",
-        external: ["net", "webusb", "crypto"],
+        external: ["net", "webusb", "crypto", "fs"],
         platform: cjs ? "node" : "browser",
         target: "es2019",
         format: mjs ? "esm" : cjs ? "cjs" : "iife",
