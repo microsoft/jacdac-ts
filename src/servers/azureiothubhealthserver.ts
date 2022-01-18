@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { Setting } from "../jdom/setting"
 import {
     AzureIotHubHealthCmd,
     AzureIotHubHealthConnectionStatus,
@@ -43,7 +44,10 @@ export class AzureIoTHubHealthServer extends JDServiceServer {
     connectionString: string
     isReal = false
 
-    constructor(options?: JDServerOptions) {
+    constructor(
+        options?: JDServerOptions,
+        readonly connStringSetting?: Setting
+    ) {
         super(SRV_AZURE_IOT_HUB_HEALTH, options)
 
         this.hubName = this.addRegister(AzureIotHubHealthReg.HubName, [""])
@@ -57,7 +61,7 @@ export class AzureIoTHubHealthServer extends JDServiceServer {
         this.connectionStatus.on(CHANGE, () =>
             this.sendEvent(AzureIotHubHealthEvent.ConnectionStatusChange)
         )
-        this.connectionString = ""
+        this.connectionString = this.connStringSetting?.get() || ""
 
         this.addCommand(
             AzureIotHubHealthCmd.Connect,
@@ -86,6 +90,7 @@ export class AzureIoTHubHealthServer extends JDServiceServer {
         if (newConnectionString !== this.connectionString) {
             await this.handleDisconnect()
             this.connectionString = newConnectionString
+            this.connStringSetting?.set(newConnectionString)
             const connStringParts = parsePropertyBag(this.connectionString, ";")
             this.hubName.setValues([connStringParts["HostName"] || ""])
             this.hubDeviceId.setValues([connStringParts["DeviceId"] || ""])

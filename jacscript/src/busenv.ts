@@ -13,6 +13,7 @@ import {
     SRV_ROLE_MANAGER,
     RoleManagerServer,
     AzureIoTHubHealthServer,
+    keyedSetting,
 } from "jacdac-ts"
 import { JacscriptCloudServer } from "./jacscriptcloudserver"
 import { AzureIoTHubConnector } from "./azureiothubconnector"
@@ -31,9 +32,15 @@ export class JDBusJacsEnv implements JacsEnv {
             name: "JacScript Helper",
             serviceClasses: [SRV_ROLE_MANAGER],
             services: () => {
-                const roleServer = new RoleManagerServer(this.bus, "jacsRoles")
+                const roleServer = new RoleManagerServer(
+                    this.bus,
+                    keyedSetting("jacs_roles")
+                )
                 this.roleManager = new BusRoleManager(roleServer)
-                const healthServer = new AzureIoTHubHealthServer()
+                const healthServer = new AzureIoTHubHealthServer(
+                    {},
+                    keyedSetting("jacs_azure_iot_conn")
+                )
                 const conn = new AzureIoTHubConnector(healthServer)
                 const jacsCloud = new JacscriptCloudServer(conn)
                 return [roleServer, healthServer, jacsCloud]
