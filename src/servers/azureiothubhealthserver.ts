@@ -5,11 +5,13 @@ import {
     AzureIotHubHealthEvent,
     AzureIotHubHealthReg,
     CHANGE,
+    CONNECT,
+    DISCONNECT,
     SRV_AZURE_IOT_HUB_HEALTH,
 } from "../jdom/constants"
 import { Packet } from "../jdom/packet"
 import { JDRegisterServer } from "../jdom/servers/registerserver"
-import { JDServiceServer,  JDServerOptions } from "../jdom/servers/serviceserver"
+import { JDServiceServer, JDServerOptions } from "../jdom/servers/serviceserver"
 import { delay } from "../jdom/utils"
 
 function splitPair(kv: string): string[] {
@@ -39,6 +41,7 @@ export class AzureIoTHubHealthServer extends JDServiceServer {
         [AzureIotHubHealthConnectionStatus]
     >
     connectionString: string
+    isReal = false
 
     constructor(options?: JDServerOptions) {
         super(SRV_AZURE_IOT_HUB_HEALTH, options)
@@ -70,30 +73,16 @@ export class AzureIoTHubHealthServer extends JDServiceServer {
         )
     }
 
-    private async handleConnect() {
-        this.connectionStatus.setValues([
-            AzureIotHubHealthConnectionStatus.Connecting,
-        ])
-        await delay(500)
-        if (!this.connectionString) this.connectionStatus.setValues([401])
-        else
-            this.connectionStatus.setValues([
-                AzureIotHubHealthConnectionStatus.Connected,
-            ])
+    parsedConnectionString() {
+        return parsePropertyBag(this.connectionString || "", ";")
     }
 
-    private async handleDisconnect() {
-        this.connectionStatus.setValues([
-            AzureIotHubHealthConnectionStatus.Disconnecting,
-        ])
-        await delay(500)
-        this.connectionStatus.setValues([
-            AzureIotHubHealthConnectionStatus.Disconnected,
-        ])
+    setConnectionStatus(status: AzureIotHubHealthConnectionStatus) {
+        this.connectionStatus.setValues([status])
     }
 
-    private async handleSetConnectionString(pkt: Packet) {
-        const newConnectionString = pkt.stringData
+    async setConnectionString(newConnectionString: string) {
+        console.log("set connX: " + newConnectionString)
         if (newConnectionString !== this.connectionString) {
             await this.handleDisconnect()
             this.connectionString = newConnectionString
@@ -102,6 +91,44 @@ export class AzureIoTHubHealthServer extends JDServiceServer {
             this.hubDeviceId.setValues([connStringParts["DeviceId"] || ""])
             // notify connection string changed
             this.sendEvent(AzureIotHubHealthEvent.ConnectionStatusChange)
+            this.emit(CHANGE)
+            await this.handleConnect()
         }
+    }
+
+    private async handleConnect() {
+        if (!this.connectionString) {
+            this.setConnectionStatus(401)
+            return
+        }
+
+        this.setConnectionStatus(AzureIotHubHealthConnectionStatus.Connecting)
+
+        if (this.isReal) {
+            this.emit(CONNECT, this.connectionString)
+        } else {
+            await delay(500)
+            this.setConnectionStatus(
+                AzureIotHubHealthConnectionStatus.Connected
+            )
+        }
+    }
+
+    private async handleDisconnect() {
+        this.setConnectionStatus(
+            AzureIotHubHealthConnectionStatus.Disconnecting
+        )
+        if (this.isReal) {
+            this.emit(DISCONNECT)
+        } else {
+            await delay(500)
+            this.setConnectionStatus(
+                AzureIotHubHealthConnectionStatus.Disconnected
+            )
+        }
+    }
+
+    private async handleSetConnectionString(pkt: Packet) {
+        await this.setConnectionString(pkt.stringData)
     }
 }
