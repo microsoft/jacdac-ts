@@ -15,6 +15,7 @@ import { OutPipe } from "../pipes"
 import { JDRegisterServer } from "./registerserver"
 import { JDServiceServer } from "./serviceserver"
 import { debounce, fromHex, strcmp, toHex } from "../utils"
+import { Setting } from "../setting"
 
 class Role {
     device: JDDevice
@@ -45,7 +46,7 @@ export class RoleManagerServer extends JDServiceServer {
     private assignmentCache: Record<string, string> // role name -> deviceId : serviceIndex
     private autoBindEnabled: JDRegisterServer<[boolean]>
 
-    constructor(private bus: JDBus, readonly storageKey?: string) {
+    constructor(private bus: JDBus, readonly roleStore?: Setting) {
         super(SRV_ROLE_MANAGER)
 
         this.assignmentCache = this.read()
@@ -229,13 +230,10 @@ export class RoleManagerServer extends JDServiceServer {
     }
 
     private read(): Record<string, string> {
-        if (!this.storageKey) return {}
+        if (!this.roleStore) return {}
 
         try {
-            const payload =
-                typeof window !== "undefined" &&
-                window.localStorage.getItem(this.storageKey)
-            return JSON.parse(payload || "{}")
+            return JSON.parse(this.roleStore.get() || "{}")
         } catch (e) {
             console.debug(e)
             return {}
@@ -243,16 +241,6 @@ export class RoleManagerServer extends JDServiceServer {
     }
 
     private save() {
-        if (this.storageKey) {
-            try {
-                if (typeof window !== "undefined")
-                    window.localStorage.setItem(
-                        this.storageKey,
-                        JSON.stringify(this.assignmentCache)
-                    )
-            } catch (e) {
-                console.debug(e)
-            }
-        }
+        this.roleStore?.set(JSON.stringify(this.assignmentCache))
     }
 }

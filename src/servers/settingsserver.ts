@@ -3,12 +3,13 @@ import { jdpack } from "../jdom/pack"
 import { Packet } from "../jdom/packet"
 import { OutPipe } from "../jdom/pipes"
 import { JDServiceServer } from "../jdom/servers/serviceserver"
+import { Setting } from "../jdom/setting"
 import { fromHex, toHex } from "../jdom/utils"
 
 export class SettingsServer extends JDServiceServer {
     private settings: Record<string, string>
 
-    constructor(readonly storageKey?: string) {
+    constructor(readonly store?: Setting) {
         super(SRV_SETTINGS)
 
         this.addCommand(SettingsCmd.Get, this.handleGet.bind(this))
@@ -82,13 +83,10 @@ export class SettingsServer extends JDServiceServer {
     }
 
     private read(): Record<string, string> {
-        if (!this.storageKey) return {}
+        if (!this.store) return {}
 
         try {
-            const payload =
-                typeof window !== "undefined" &&
-                window.localStorage.getItem(this.storageKey)
-            return JSON.parse(payload || "{}")
+            return JSON.parse(this.store.get() || "{}")
         } catch (e) {
             console.debug(e)
             return {}
@@ -96,17 +94,7 @@ export class SettingsServer extends JDServiceServer {
     }
 
     private async save() {
-        if (this.storageKey) {
-            try {
-                if (typeof window !== "undefined")
-                    window.localStorage.setItem(
-                        this.storageKey,
-                        JSON.stringify(this.settings)
-                    )
-            } catch (e) {
-                console.debug(e)
-            }
-        }
+        this.store?.set(JSON.stringify(this.settings))
         await this.sendEvent(SettingsEvent.Change)
     }
 }
