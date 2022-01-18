@@ -49,6 +49,8 @@ function readdir(folder) {
 }
 
 async function main() {
+    global.WebSocket = require("ws")
+
     const args = process.argv.slice(2)
     if (args[0] == "-v") {
         args.shift()

@@ -12,7 +12,10 @@ import {
     Scheduler,
     SRV_ROLE_MANAGER,
     RoleManagerServer,
+    AzureIoTHubHealthServer,
 } from "jacdac-ts"
+import { JacscriptCloudServer } from "./jacscriptcloudserver"
+import { AzureIoTHubConnector } from "./azureiothubconnector"
 
 export class JDBusJacsEnv implements JacsEnv {
     private scheduler: Scheduler
@@ -28,9 +31,12 @@ export class JDBusJacsEnv implements JacsEnv {
             name: "JacScript Helper",
             serviceClasses: [SRV_ROLE_MANAGER],
             services: () => {
-                const serv = new RoleManagerServer(this.bus, "jacsRoles")
-                this.roleManager = new BusRoleManager(serv)
-                return [serv]
+                const roleServer = new RoleManagerServer(this.bus, "jacsRoles")
+                this.roleManager = new BusRoleManager(roleServer)
+                const healthServer = new AzureIoTHubHealthServer()
+                const conn = new AzureIoTHubConnector(healthServer)
+                const jacsCloud = new JacscriptCloudServer(conn)
+                return [roleServer, healthServer, jacsCloud]
             },
         })
     }
