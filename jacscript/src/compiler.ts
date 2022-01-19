@@ -17,6 +17,7 @@ import {
     SystemReg,
     CMD_GET_REG,
     SRV_JACSCRIPT_CONDITION,
+    JD_SERIAL_MAX_PAYLOAD_SIZE,
 } from "jacdac-ts"
 
 import {
@@ -627,6 +628,8 @@ class OpWriter {
         if (sz < 0) {
             fmt = OpFmt.I8
             sz = -sz
+        } else if (mem.isFloat) {
+            fmt = 0b1000
         }
         switch (sz) {
             case 1:
@@ -1557,31 +1560,66 @@ class Program implements InstrArgResolver {
         }
     }
 
+    private stringLiteral(expr: Expr) {
+        if (expr.type == "Literal" && typeof expr.value == "string") {
+            return expr.value
+        }
+        return undefined
+    }
+
     private emitPackArgs(expr: estree.CallExpression, obj: ValueDesc) {
-        const wr = this.writer
-        this.requireArgs(expr, obj.spec.fields.length)
-        let off = 0
-        let sz = 0
-        for (const f of obj.spec.fields) sz += Math.abs(f.storage)
-        wr.emitSync(OpSync.SETUP_BUFFER, sz)
-        for (let i = 0; i < expr.arguments.length; ++i) {
-            wr.push()
-            let v = this.emitExpr(expr.arguments[i])
-            if (v.kind == CellKind.JD_CURR_BUFFER) {
-                if (i != expr.arguments.length - 1)
-                    this.throwError(
-                        expr.arguments[i + 1],
-                        "args can't follow a buffer"
-                    )
-                wr.pop()
-                break
+        let offset = 0
+        let repeatsStart = -1
+        let specIdx = 0
+        const fields = obj.spec.fields
+
+        const args = expr.arguments.map(arg => {
+            if (specIdx >= fields.length) {
+                if (repeatsStart != -1) specIdx = repeatsStart
+                else this.throwError(arg, `too many arguments`)
             }
-            v = wr.forceReg(v)
-            const f = obj.spec.fields[i]
-            wr.emitBufOp(OpTop.STORE_CELL, v, off, f)
-            off += Math.abs(f.storage)
-            assert(off <= sz)
-            wr.pop()
+            const spec = obj.spec.fields[specIdx++]
+            if (spec.startRepeats) repeatsStart = specIdx - 1
+            let size = Math.abs(spec.storage)
+            let stringLiteral: string = undefined
+            if (size == 0) {
+                stringLiteral = this.stringLiteral(arg)
+                if (stringLiteral == undefined)
+                    this.throwError(arg, "expecting a string literal here")
+                size = toUTF8(stringLiteral).length
+                if (spec.type == "string0") size += 1
+            }
+            const r = {
+                stringLiteral,
+                size,
+                offset,
+                spec,
+                arg,
+            }
+            offset += size
+            return r
+        })
+
+        // this could be skipped - they will just be zero
+        if (specIdx < fields.length)
+            this.throwError(expr, "not enough arguments")
+
+        if (offset > JD_SERIAL_MAX_PAYLOAD_SIZE)
+            this.throwError(expr, "arguments do not fit in a packet")
+
+        const wr = this.writer
+
+        wr.emitSync(OpSync.SETUP_BUFFER, offset)
+        for (const desc of args) {
+            if (desc.stringLiteral !== undefined) {
+                const vd = wr.emitString(desc.stringLiteral)
+                wr.emitSync(OpSync.MEMCPY, vd.index, 0, desc.offset)
+            } else {
+                wr.push()
+                let v = this.emitSimpleValue(desc.arg)
+                wr.emitBufOp(OpTop.STORE_CELL, v, desc.offset, desc.spec)
+                wr.pop()
+            }
         }
     }
 

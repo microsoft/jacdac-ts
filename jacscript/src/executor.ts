@@ -27,7 +27,7 @@ import {
     strcmp,
     SRV_JACSCRIPT_CONDITION,
 } from "jacdac-ts"
-import { JDBusJacsEnv } from "./busenv"
+import { JacsEnvOptions, JDBusJacsEnv } from "./busenv"
 import { JacsEnv } from "./env"
 import {
     BinFmt,
@@ -355,8 +355,8 @@ function toNumberFormat(opfmt: OpFmt) {
 }
 
 function shiftVal(n: number) {
-    if (n <= 31) return 1 << n
-    let r = 1 << 31
+    if (n <= 31) return (1 << n) >>> 0
+    let r = (1 << 31) >>> 0
     n -= 31
     while (n--) r *= 2
     return r
@@ -427,9 +427,7 @@ function clamp(nfmt: OpFmt, v: number) {
         const max = shiftVal(sz) - 1
         if (v > max) return max
         return v
-    }
-
-    if (nfmt <= OpFmt.I64) {
+    } else if (nfmt <= OpFmt.I64) {
         v = Math.round(v)
         const min = -shiftVal(sz - 1)
         if (v < min) return min
@@ -1246,6 +1244,7 @@ export class Runner {
     private ctx: Ctx
     img: ImageInfo
     allowRestart = false
+    options: JacsEnvOptions = {}
     state = RunnerState.Initializing
     startDelay = 1100
     onError: (err: Error) => void = null
@@ -1260,7 +1259,7 @@ export class Runner {
     }
 
     run() {
-        this.ctx = new Ctx(this.img, new JDBusJacsEnv(this.bus))
+        this.ctx = new Ctx(this.img, new JDBusJacsEnv(this.bus, this.options))
         this.ctx.onError = e => {
             console.error("Internal error", e.stack)
             this.state = RunnerState.Error

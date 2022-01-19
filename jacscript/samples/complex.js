@@ -11,6 +11,6 @@ btnA.down.sub(() => {
   r = r + led.brightness.read()
   tint = (r + g + 2.3 * b) / (r + 2 * g + b)
   upload("color", r, g, b, tint)
-  display.message.write(format("t={0} {1}", tint, r))
+  // display.message.write(format("t={0} {1}", tint, r))
   led.brightness.write(0)
 })

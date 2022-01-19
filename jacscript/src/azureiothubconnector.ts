@@ -10,7 +10,6 @@ import {
     sha256Hmac,
     stringToUint8Array,
     toBase64,
-    toHex,
 } from "jacdac-ts"
 import MQTT from "paho-mqtt"
 
@@ -26,6 +25,44 @@ async function generateSasToken(
     const sig = encodeURIComponent(toBase64(sigBytes))
     const token = `sr=${resourceUri}&se=${expiresEpoch}&sig=${sig}`
     return token
+}
+
+const methodPrefix = "$iothub/methods/POST/"
+
+function parseTopicArgs(topic: string) {
+    const qidx = topic.indexOf("?")
+    if (qidx >= 0) return parsePropertyBag(topic.slice(qidx + 1))
+    return {}
+}
+
+function splitPair(kv: string): string[] {
+    const i = kv.indexOf("=")
+    if (i < 0) return [kv, ""]
+    else return [kv.slice(0, i), kv.slice(i + 1)]
+}
+
+function parsePropertyBag(
+    msg: string,
+    separator?: string
+): Record<string, string> {
+    const r: Record<string, string> = {}
+    if (msg && typeof msg === "string")
+        msg.split(separator || "&")
+            .map(kv => splitPair(kv))
+            .filter(parts => !!parts[1].length)
+            .forEach(
+                parts =>
+                    (r[decodeURIComponent(parts[0])] = decodeURIComponent(
+                        parts[1]
+                    ))
+            )
+    return r
+}
+
+export interface MethodInvocation {
+    method: string
+    seqNo: number
+    payload: any
 }
 
 export class AzureIoTHubConnector extends JDEventSource {
@@ -44,29 +81,27 @@ export class AzureIoTHubConnector extends JDEventSource {
             this.connect()
         })
 
-        this.on(DISCONNECT, () => {
-            this.healthServer.setConnectionStatus(
-                AzureIotHubHealthConnectionStatus.Disconnected
-            )
-        })
         setInterval(() => {
             if (!this.disabled && !this.client) this.connect()
         }, 1000)
     }
 
     public upload(label: string, values: number[]) {
-        const msg = new MQTT.Message(
+        this.publish(
+            `devices/${this.clientId}/messages/events/`,
             JSON.stringify({
                 device: this.healthServer.device.deviceId,
                 label,
                 values,
             })
         )
-        msg.qos = 0
-        msg.retained = false
-        msg.destinationName = `devices/${this.clientId}/messages/events/`
-        if (this.client) this.client.send(msg)
-        else this.toSend.push(msg)
+    }
+
+    private emitDisconnect() {
+        this.emit(DISCONNECT)
+        this.healthServer.setConnectionStatus(
+            AzureIotHubHealthConnectionStatus.Disconnected
+        )
     }
 
     private disconnect() {
@@ -77,12 +112,59 @@ export class AzureIoTHubConnector extends JDEventSource {
             try {
                 c.disconnect()
             } catch {}
-            this.emit(DISCONNECT)
+            this.emitDisconnect()
         }
     }
 
     private log(msg: string) {
         console.log(`AzureIoT: ${msg}`)
+    }
+
+    private handleMqttMsg(msg: MQTT.Message) {
+        this.log(
+            "onMessageArrived: " +
+                msg.destinationName +
+                " -> " +
+                msg.payloadString
+        )
+
+        if (msg.destinationName.startsWith(methodPrefix)) {
+            const props = parseTopicArgs(msg.destinationName)
+            const qidx = msg.destinationName.indexOf("/?")
+            const methodName = msg.destinationName.slice(
+                methodPrefix.length,
+                qidx
+            )
+            this.log("method: '" + methodName + "'; " + JSON.stringify(props))
+            const rid = parseInt(props["$rid"])
+            let payload: any = {}
+            try {
+                payload = JSON.parse(msg.payloadString)
+            } catch {}
+
+            const info: MethodInvocation = {
+                method: methodName,
+                seqNo: rid,
+                payload,
+            }
+            this.emit("method", info)
+        }
+    }
+
+    private publish(topic: string, payload: string | ArrayBuffer) {
+        const msg = new MQTT.Message(payload)
+        msg.destinationName = topic
+        msg.qos = 0
+        msg.retained = false
+        if (this.client) this.client.send(msg)
+        else this.toSend.push(msg)
+    }
+
+    finishMethod(seqNo: number, payload: any, status = 200) {
+        this.publish(
+            `$iothub/methods/res/${status}/?$rid=${seqNo}`,
+            JSON.stringify(payload)
+        )
     }
 
     private async connect() {
@@ -119,7 +201,7 @@ export class AzureIoTHubConnector extends JDEventSource {
 
         const disconnected = () => {
             if (this.client == client) {
-                this.emit(DISCONNECT)
+                this.emitDisconnect()
                 this.client = null
             }
         }
@@ -128,9 +210,7 @@ export class AzureIoTHubConnector extends JDEventSource {
             if (info.errorCode != 0) this.log("MQTT lost: " + info.errorMessage)
             disconnected()
         }
-        client.onMessageArrived = msg => {
-            this.log("onMessageArrived:" + msg.payloadString)
-        }
+        client.onMessageArrived = this.handleMqttMsg.bind(this)
 
         client.connect({
             // reconnect: true, - TODO need some policy here
@@ -143,6 +223,14 @@ export class AzureIoTHubConnector extends JDEventSource {
                 this.healthServer.setConnectionStatus(
                     AzureIotHubHealthConnectionStatus.Connected
                 )
+
+                client.subscribe(methodPrefix + "#")
+
+                const mm = this.toSend
+                if (mm.length) {
+                    this.toSend = []
+                    for (const m of mm) client.send(m)
+                }
             },
             onFailure: info => {
                 this.log(`MQTT error: ${info.errorMessage}`)
