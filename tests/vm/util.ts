@@ -1,6 +1,6 @@
 import { JDBus } from "../../src/jdom/bus"
-import { compile } from "../../src/jacscript/compiler"
-import { Runner } from "../../src/jacscript/executor"
+import { compile } from "../../jacscript/src/compiler"
+import { Runner } from "../../jacscript/src/executor"
 
 export function runJacScriptProgram(fn: string, bus: JDBus, delay: number = undefined) {
     const res = compile(

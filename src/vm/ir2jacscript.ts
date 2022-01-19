@@ -1,4 +1,5 @@
 import jsep from "jsep"
+import { throwError } from "../jacdac"
 import { serviceSpecificationFromClassIdentifier } from "../jdom/spec"
 import { VMBase, VMCommand, VMHandler, VMIfThenElse, VMProgram } from "./ir"
 
@@ -134,6 +135,9 @@ function processCommand(cmd: VMCommand): [string, string[]] {
 }
 
 export function toJacScript({ roles, serverRoles, handlers }: VMProgram): JacScriptProgram {
+    if (serverRoles)
+        throwError("server roles not supported");
+
     const program: string[] = []
     const debug: string[] = []
     const globals: string[] = []

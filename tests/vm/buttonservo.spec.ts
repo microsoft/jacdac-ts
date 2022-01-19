@@ -3,7 +3,7 @@ import { readFileSync } from "fs"
 import { VMProgram } from "../../src/vm/ir"
 import { toJacScript } from "../../src/vm/ir2jacscript"
 import { VMProgramRunner } from "../../src/vm/runner"
-import { compile } from "../../src/jacscript/compiler"
+import { compile } from "../../jacscript/src/compiler"
 
 import { makeTest } from "../jdom/fastforwardtester"
 import { ButtonServer } from "../../src/servers/buttonserver"
