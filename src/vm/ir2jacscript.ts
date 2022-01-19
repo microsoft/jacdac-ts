@@ -7,7 +7,7 @@ import { VMBase, VMCommand, VMHandler, VMIfThenElse, VMProgram } from "./ir"
 // - insert read() after register in a read context
 // - write a register with fields
 
-export type JacScriptProgram = {
+export interface JacScriptProgram {
     program: string[]
     debug: string[]
 }
@@ -16,7 +16,10 @@ function sanitize(s: string) {
     return s.replace(" ", "_")
 }
 
-function processExpression(e: jsep.Expression, asRead = true): [string, string[]] {
+function processExpression(
+    e: jsep.Expression,
+    asRead = true
+): [string, string[]] {
     const vars: string[] = []
     return [processExpr(e), vars]
 
@@ -35,20 +38,20 @@ function processExpression(e: jsep.Expression, asRead = true): [string, string[]
             case "MemberExpression": {
                 const root = e as jsep.MemberExpression
                 if (root.computed) {
-                    return `${processExpr(root.object)}[${processExpr(root.property)}]`
+                    return `${processExpr(root.object)}[${processExpr(
+                        root.property
+                    )}]`
                 } else {
                     const first = `${processExpr(root.object)}`
                     const second = `${processExpr(root.property)}`
                     if (first.startsWith("$var")) {
-                        if (vars.indexOf(second) < 0)
-                            vars.push(second)
+                        if (vars.indexOf(second) < 0) vars.push(second)
                         return second
                     } else if (asRead) {
-                        if (second.indexOf(".") >0 ) {
-                            const [reg,field] = second.split(".")
+                        if (second.indexOf(".") > 0) {
+                            const [reg, field] = second.split(".")
                             return `${reg}.read().${field}`
-                        } else
-                            return `${first}.${second}.read()`
+                        } else return `${first}.${second}.read()`
                     } else {
                         return `${first}.${second}`
                     }
@@ -56,7 +59,9 @@ function processExpression(e: jsep.Expression, asRead = true): [string, string[]
             }
             case "BinaryExpression": {
                 const be = e as any
-                return `(${processExpr(be.left)} ${be.operator} ${processExpr(be.right)})`
+                return `(${processExpr(be.left)} ${be.operator} ${processExpr(
+                    be.right
+                )})`
             }
             case "UnaryExpression": {
                 const ue = e as jsep.UnaryExpression
@@ -82,20 +87,20 @@ function getInst(cmd: VMCommand) {
 function processHead(head: VMCommand): [string, string[]] {
     const args = head.command.arguments
     const inst = getInst(head)
-    switch(inst) {
+    switch (inst) {
         case "awaitEvent": {
             const event = args[0] as jsep.MemberExpression
-            const [ev,vars] = processExpression(event,false)
+            const [ev, vars] = processExpression(event, false)
             return [`${ev}.sub(() => {`, vars]
         }
         case "awaitChange": {
-            const [reg, vars1] = processExpression(args[0],false)
+            const [reg, vars1] = processExpression(args[0], false)
             const [delta, vars2] = processExpression(args[1], false)
-            return  [`${reg}.onChange(${delta}, () => {`, [...vars1, ...vars2]]
+            return [`${reg}.onChange(${delta}, () => {`, [...vars1, ...vars2]]
         }
         case "awaitRegister": {
             const [reg, vars] = processExpression(args[0], false)
-            return  [`${reg}.onChange(0, () => {`, vars]
+            return [`${reg}.onChange(0, () => {`, vars]
         }
         case "roleBound": {
             // TODO
@@ -111,32 +116,42 @@ function processHead(head: VMCommand): [string, string[]] {
 function processCommand(cmd: VMCommand): [string, string[]] {
     const args = cmd.command.arguments
     if (cmd.command.callee.type === "MemberExpression") {
-        const roleCall = processExpression(cmd.command.callee as jsep.MemberExpression, false)
+        const roleCall = processExpression(
+            cmd.command.callee as jsep.MemberExpression,
+            false
+        )
         const exprs = args.map(a => processExpression(a))
-        return [ `${roleCall[0]}(${exprs.map(p => p[0]).join(",")})`, 
-                    [...roleCall[1], ...exprs.flatMap(p => p[1])] ]
+        return [
+            `${roleCall[0]}(${exprs.map(p => p[0]).join(",")})`,
+            [...roleCall[1], ...exprs.flatMap(p => p[1])],
+        ]
     }
     const inst = getInst(cmd)
     switch (inst) {
         case "writeRegister": {
             const rest = cmd.command.arguments.slice(1)
             const exprs = rest.map(a => processExpression(a))
-            const reg = processExpression(args[0],false)
-            return [ `${reg[0]}.write(${exprs.map(p => p[0]).join(",")})`,
-                        [...reg[1], ...exprs.flatMap(p => p[1])] ]
+            const reg = processExpression(args[0], false)
+            return [
+                `${reg[0]}.write(${exprs.map(p => p[0]).join(",")})`,
+                [...reg[1], ...exprs.flatMap(p => p[1])],
+            ]
         }
         case "writeLocal": {
-            const lhs = processExpression(args[0],false)
+            const lhs = processExpression(args[0], false)
             const rhs = processExpression(args[1])
-            return [ `${lhs[0]} = ${rhs[0]}`, [...lhs[1], ...rhs[1] ] ]
+            return [`${lhs[0]} = ${rhs[0]}`, [...lhs[1], ...rhs[1]]]
         }
     }
-    return [ "ERROR", [] ]
+    return ["ERROR", []]
 }
 
-export function toJacScript({ roles, serverRoles, handlers }: VMProgram): JacScriptProgram {
-    if (serverRoles)
-        throwError("server roles not supported");
+export function toJacScript({
+    roles,
+    serverRoles,
+    handlers,
+}: VMProgram): JacScriptProgram {
+    if (serverRoles) throwError("server roles not supported")
 
     const program: string[] = []
     const debug: string[] = []
@@ -144,22 +159,18 @@ export function toJacScript({ roles, serverRoles, handlers }: VMProgram): JacScr
     let tab = 0
     const add = (code: string, vars: string[] = []) => {
         vars.forEach(v => {
-            if (globals.indexOf(v) < 0)
-                globals.push(v)
+            if (globals.indexOf(v) < 0) globals.push(v)
         })
-        program.push(`${" ".repeat(tab*4)}${code}`)
+        program.push(`${" ".repeat(tab * 4)}${code}`)
     }
 
     // pass over program
     let startHandler: VMHandler = undefined
     handlers.forEach(h => {
-        if (h.commands.length === 0)
-            return
+        if (h.commands.length === 0) return
         const [head] = processHead(h.commands[0] as VMCommand)
-        if (head)
-          handlerVisitor(h)
-        else
-          startHandler = h
+        if (head) handlerVisitor(h)
+        else startHandler = h
     })
 
     if (startHandler) {
@@ -168,9 +179,7 @@ export function toJacScript({ roles, serverRoles, handlers }: VMProgram): JacScr
 
     // process start blocks
     roles.forEach(r => {
-        const spec = serviceSpecificationFromClassIdentifier(
-            r.serviceClass
-        )
+        const spec = serviceSpecificationFromClassIdentifier(r.serviceClass)
         program.unshift(`var ${sanitize(r.role)} = roles.${spec.shortId}()`)
     })
 
@@ -180,9 +189,7 @@ export function toJacScript({ roles, serverRoles, handlers }: VMProgram): JacScr
 
     return { program, debug }
 
-    function handlerVisitor(
-        handler: VMHandler,
-    ) {
+    function handlerVisitor(handler: VMHandler) {
         const head = handler.commands[0]
         add(...processHead(head as VMCommand))
         tab++
@@ -200,7 +207,7 @@ export function toJacScript({ roles, serverRoles, handlers }: VMProgram): JacScr
             case "ite": {
                 const ite = base as VMIfThenElse
                 if (ite) {
-                    const [expr,vars] = processExpression(ite.expr)
+                    const [expr, vars] = processExpression(ite.expr)
                     add(`if (${expr}) {`, vars)
                     tab++
                     ite.then?.forEach(visitBase)
@@ -217,6 +224,3 @@ export function toJacScript({ roles, serverRoles, handlers }: VMProgram): JacScr
         }
     }
 }
-
-
-
