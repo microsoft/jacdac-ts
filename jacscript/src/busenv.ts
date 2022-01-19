@@ -12,13 +12,21 @@ import {
     Scheduler,
     SRV_ROLE_MANAGER,
     RoleManagerServer,
+    AzureIoTHubHealthServer,
+    keyedSetting,
 } from "jacdac-ts"
+import { JacscriptCloudServer } from "./jacscriptcloudserver"
+import { AzureIoTHubConnector } from "./azureiothubconnector"
+
+export interface JacsEnvOptions {
+    disableCloud?: boolean
+}
 
 export class JDBusJacsEnv implements JacsEnv {
     private scheduler: Scheduler
     roleManager: JacsRoleMgr
 
-    constructor(private bus: JDBus) {
+    constructor(private bus: JDBus, private options: JacsEnvOptions = {}) {
         this.scheduler = this.bus.scheduler
         this.bus.on(DEVICE_DISCONNECT, dev => this.onDisconnect?.(dev))
         this.bus.on(DEVICE_CONNECT, dev => this.onConnect?.(dev))
@@ -28,9 +36,22 @@ export class JDBusJacsEnv implements JacsEnv {
             name: "JacScript Helper",
             serviceClasses: [SRV_ROLE_MANAGER],
             services: () => {
-                const serv = new RoleManagerServer(this.bus, "jacsRoles")
-                this.roleManager = new BusRoleManager(serv)
-                return [serv]
+                const roleServer = new RoleManagerServer(
+                    this.bus,
+                    keyedSetting("jacs_roles")
+                )
+                this.roleManager = new BusRoleManager(roleServer)
+                if (this.options.disableCloud) {
+                    return [roleServer]
+                } else {
+                    const healthServer = new AzureIoTHubHealthServer(
+                        {},
+                        keyedSetting("jacs_azure_iot_conn")
+                    )
+                    const conn = new AzureIoTHubConnector(healthServer)
+                    const jacsCloud = new JacscriptCloudServer(conn)
+                    return [roleServer, healthServer, jacsCloud]
+                }
             },
         })
     }

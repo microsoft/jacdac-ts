@@ -37,7 +37,26 @@ declare class Condition {
 }
 declare function condition(): Condition
 
-declare function upload(label: string, ...args: number[]): void
+declare class JacscriptCloud {
+    upload(label: string, ...value: number[]): void
+    onMethod(
+        name: string,
+        handler: (
+            v0: number,
+            v1: number,
+            v2: number,
+            v3: number,
+            v4: number,
+            v5: number,
+            v6: number,
+            v7: number
+        ) => void
+    ): void
+    twin(path: string): number
+    onTwinChange(path: string, handler: (val: number) => void): void
+}
+declare var cloud: JacscriptCloud
+
 declare function print(fmt: string, ...args: number[]): void
 declare function format(fmt: string, ...args: number[]): string
 declare function wait(seconds: number): void

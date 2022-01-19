@@ -17,6 +17,7 @@ import {
     SystemReg,
     CMD_GET_REG,
     SRV_JACSCRIPT_CONDITION,
+    JD_SERIAL_MAX_PAYLOAD_SIZE,
 } from "jacdac-ts"
 
 import {
@@ -150,21 +151,25 @@ class Role extends Cell {
     }
     autoRefreshRegs: jdspec.PacketInfo[] = []
     stringIndex: number
+    used = false
 
     constructor(
         prog: Program,
         definition: estree.VariableDeclarator,
         scope: VariableScope,
-        public spec: jdspec.ServiceSpec
+        public spec: jdspec.ServiceSpec,
+        _name?: string
     ) {
         super(definition, scope)
+        if (_name) this._name = _name
         assert(!!spec)
         this.stringIndex = prog.addString(this.getName())
     }
     value(): ValueDesc {
-        return mkValue(CellKind.JD_ROLE, this.index, this)
+        return mkValue(CellKind.JD_ROLE, this.encode(), this)
     }
     encode() {
+        this.used = true
         return this.index
     }
     serialize() {
@@ -627,6 +632,8 @@ class OpWriter {
         if (sz < 0) {
             fmt = OpFmt.I8
             sz = -sz
+        } else if (mem.isFloat) {
+            fmt = 0b1000
         }
         switch (sz) {
             case 1:
@@ -901,6 +908,7 @@ class Program implements InstrArgResolver {
     resolverPC: number
     numErrors = 0
     main: Procedure
+    cloudRole: Role
     startDispatchers: DelayedCodeSection
 
     constructor(public host: Host, public source: string) {}
@@ -1277,6 +1285,7 @@ class Program implements InstrArgResolver {
 
     private emitProgram(prog: estree.Program) {
         this.main = new Procedure(this, "main")
+
         this.startDispatchers = new DelayedCodeSection(
             "startDispatchers",
             this.main
@@ -1312,6 +1321,15 @@ class Program implements InstrArgResolver {
 
         this.roles.sort()
 
+        // make sure the cloud role is last
+        this.cloudRole = new Role(
+            this,
+            null,
+            this.roles,
+            serviceSpecificationFromName("jacscriptcloud"),
+            "cloud"
+        )
+
         this.withProcedure(this.main, () => {
             this.startDispatchers.callHere()
             for (const s of prog.body) this.emitStmt(s)
@@ -1319,6 +1337,11 @@ class Program implements InstrArgResolver {
             this.finalizeAutoRefresh()
             this.startDispatchers.finalize()
         })
+
+        if (!this.cloudRole.used) {
+            const cl = this.roles.list.pop()
+            assert(cl == this.cloudRole)
+        }
 
         function markTopLevel(node: estree.Node) {
             ;(node as any)._jacsIsTopLevel = true
@@ -1541,7 +1564,7 @@ class Program implements InstrArgResolver {
             default:
                 const v = this.emitRoleMember(expr.callee, obj)
                 if (v.kind == CellKind.JD_COMMAND) {
-                    this.emitPackArgs(expr, v)
+                    this.emitPackArgs(expr, v.spec)
                     this.writer.emitAsync(
                         OpAsync.SEND_CMD,
                         role.encode(),
@@ -1557,31 +1580,69 @@ class Program implements InstrArgResolver {
         }
     }
 
-    private emitPackArgs(expr: estree.CallExpression, obj: ValueDesc) {
-        const wr = this.writer
-        this.requireArgs(expr, obj.spec.fields.length)
-        let off = 0
-        let sz = 0
-        for (const f of obj.spec.fields) sz += Math.abs(f.storage)
-        wr.emitSync(OpSync.SETUP_BUFFER, sz)
-        for (let i = 0; i < expr.arguments.length; ++i) {
-            wr.push()
-            let v = this.emitExpr(expr.arguments[i])
-            if (v.kind == CellKind.JD_CURR_BUFFER) {
-                if (i != expr.arguments.length - 1)
-                    this.throwError(
-                        expr.arguments[i + 1],
-                        "args can't follow a buffer"
-                    )
-                wr.pop()
-                break
+    private stringLiteral(expr: Expr) {
+        if (expr.type == "Literal" && typeof expr.value == "string") {
+            return expr.value
+        }
+        return undefined
+    }
+
+    private emitPackArgs(
+        expr: estree.CallExpression,
+        pspec: jdspec.PacketInfo
+    ) {
+        let offset = 0
+        let repeatsStart = -1
+        let specIdx = 0
+        const fields = pspec.fields
+
+        const args = expr.arguments.map(arg => {
+            if (specIdx >= fields.length) {
+                if (repeatsStart != -1) specIdx = repeatsStart
+                else this.throwError(arg, `too many arguments`)
             }
-            v = wr.forceReg(v)
-            const f = obj.spec.fields[i]
-            wr.emitBufOp(OpTop.STORE_CELL, v, off, f)
-            off += Math.abs(f.storage)
-            assert(off <= sz)
-            wr.pop()
+            const spec = pspec.fields[specIdx++]
+            if (spec.startRepeats) repeatsStart = specIdx - 1
+            let size = Math.abs(spec.storage)
+            let stringLiteral: string = undefined
+            if (size == 0) {
+                stringLiteral = this.stringLiteral(arg)
+                if (stringLiteral == undefined)
+                    this.throwError(arg, "expecting a string literal here")
+                size = toUTF8(stringLiteral).length
+                if (spec.type == "string0") size += 1
+            }
+            const r = {
+                stringLiteral,
+                size,
+                offset,
+                spec,
+                arg,
+            }
+            offset += size
+            return r
+        })
+
+        // this could be skipped - they will just be zero
+        if (specIdx < fields.length)
+            this.throwError(expr, "not enough arguments")
+
+        if (offset > JD_SERIAL_MAX_PAYLOAD_SIZE)
+            this.throwError(expr, "arguments do not fit in a packet")
+
+        const wr = this.writer
+
+        wr.emitSync(OpSync.SETUP_BUFFER, offset)
+        for (const desc of args) {
+            if (desc.stringLiteral !== undefined) {
+                const vd = wr.emitString(desc.stringLiteral)
+                wr.emitSync(OpSync.MEMCPY, vd.index, 0, desc.offset)
+            } else {
+                wr.push()
+                let v = this.emitSimpleValue(desc.arg)
+                wr.emitBufOp(OpTop.STORE_CELL, v, desc.offset, desc.spec)
+                wr.pop()
+            }
         }
     }
 
@@ -1599,7 +1660,7 @@ class Program implements InstrArgResolver {
                 this.requireArgs(expr, 0)
                 return this.emitRegGet(obj)
             case "write":
-                this.emitPackArgs(expr, obj)
+                this.emitPackArgs(expr, obj.spec)
                 wr.emitAsync(
                     OpAsync.SEND_CMD,
                     role.encode(),
@@ -1701,6 +1762,24 @@ class Program implements InstrArgResolver {
         return tmp.index
     }
 
+    private emitCloud(expr: estree.CallExpression, fnName: string): ValueDesc {
+        switch (fnName) {
+            case "cloud.upload":
+                const spec = this.cloudRole.spec.packets.find(
+                    p => p.name == "upload"
+                )
+                this.emitPackArgs(expr, spec)
+                this.writer.emitAsync(
+                    OpAsync.SEND_CMD,
+                    this.cloudRole.encode(),
+                    spec.identifier
+                )
+                return values.zero
+            default:
+                return null
+        }
+    }
+
     private emitMath(expr: estree.CallExpression, fnName: string): ValueDesc {
         interface Desc {
             m1?: OpMath1
@@ -1775,7 +1854,9 @@ class Program implements InstrArgResolver {
             const objName = idName(expr.callee.object)
             if (objName) {
                 const fullName = objName + "." + prop
-                const r = this.emitMath(expr, fullName)
+                const r =
+                    this.emitMath(expr, fullName) ||
+                    this.emitCloud(expr, fullName)
                 if (r) return r
             }
             const obj = this.emitExpr(expr.callee.object)
@@ -1848,22 +1929,6 @@ class Program implements InstrArgResolver {
                     every: time,
                 })
                 wr.emitCall(proc, OpCall.BG)
-                return values.zero
-            }
-            case "upload": {
-                if (numargs == 0)
-                    this.throwError(expr, "upload() requires args")
-                wr.push()
-                const lbl = this.emitExpr(expr.arguments[0])
-                if (lbl.kind != CellKind.JD_CURR_BUFFER)
-                    this.throwError(
-                        expr.arguments[0],
-                        "expecting buffer (string) here; got " +
-                            stringifyCellKind(lbl.kind)
-                    )
-                this.emitArgs(expr.arguments.slice(1))
-                wr.pop() // we don't need to save the argument registers
-                wr.emitAsync(OpAsync.CLOUD_UPLOAD, numargs - 1)
                 return values.zero
             }
             case "print":

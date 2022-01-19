@@ -26,8 +26,9 @@ import {
     sizeOfNumberFormat,
     strcmp,
     SRV_JACSCRIPT_CONDITION,
+    SRV_JACSCRIPT_CLOUD,
 } from "jacdac-ts"
-import { JDBusJacsEnv } from "./busenv"
+import { JacsEnvOptions, JDBusJacsEnv } from "./busenv"
 import { JacsEnv } from "./env"
 import {
     BinFmt,
@@ -355,8 +356,8 @@ function toNumberFormat(opfmt: OpFmt) {
 }
 
 function shiftVal(n: number) {
-    if (n <= 31) return 1 << n
-    let r = 1 << 31
+    if (n <= 31) return (1 << n) >>> 0
+    let r = (1 << 31) >>> 0
     n -= 31
     while (n--) r *= 2
     return r
@@ -427,9 +428,7 @@ function clamp(nfmt: OpFmt, v: number) {
         const max = shiftVal(sz) - 1
         if (v > max) return max
         return v
-    }
-
-    if (nfmt <= OpFmt.I64) {
+    } else if (nfmt <= OpFmt.I64) {
         v = Math.round(v)
         const min = -shiftVal(sz - 1)
         if (v < min) return min
@@ -692,9 +691,6 @@ class Activation {
                     case OpAsync.YIELD: // A-timeout in ms
                         this.fiber.setWakeTime(a ? ctx.now() + a : 0)
                         ctx.doYield()
-                        break
-                    case OpAsync.CLOUD_UPLOAD: // A-numregs
-                        ctx.cloudUpload(a)
                         break
                     case OpAsync.SEND_CMD: // A-role, B-code
                         ctx.sendCmd(ctx.roles[a], b)
@@ -1164,13 +1160,6 @@ class Ctx {
         return fromUTF8(uint8ArrayToString(this.pkt.data))
     }
 
-    cloudUpload(numargs: number) {
-        const regs = this.registers.slice(0, numargs).join(", ")
-        console.log(`upload: ${this.pktLabel()} ${regs}`)
-        // TODO do actual upload
-        this.currentFiber.sleep(50 + Math.random() * 50)
-    }
-
     setBuffer(b: Uint8Array, off: number) {
         if (off > 236) return
         if (b.length + off > 236) b = b.slice(0, 236 - off)
@@ -1246,6 +1235,7 @@ export class Runner {
     private ctx: Ctx
     img: ImageInfo
     allowRestart = false
+    options: JacsEnvOptions = {}
     state = RunnerState.Initializing
     startDelay = 1100
     onError: (err: Error) => void = null
@@ -1260,7 +1250,9 @@ export class Runner {
     }
 
     run() {
-        this.ctx = new Ctx(this.img, new JDBusJacsEnv(this.bus))
+        if (!this.img.roles.some(r => r.classId == SRV_JACSCRIPT_CLOUD))
+            this.options.disableCloud = true
+        this.ctx = new Ctx(this.img, new JDBusJacsEnv(this.bus, this.options))
         this.ctx.onError = e => {
             console.error("Internal error", e.stack)
             this.state = RunnerState.Error

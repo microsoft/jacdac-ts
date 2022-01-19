@@ -258,7 +258,6 @@ Main dynamic memory usage - function activation records (and fibers).
 * add `role.waitConnected()` or something?
 * add `bg(() => { ... })`, also `bg1()` ?
 * do fiber round-robin for yields?
-* role mgr interface and storage
 * some testing framework? (depends on services?)
 
 ### Implementing services in jacscript

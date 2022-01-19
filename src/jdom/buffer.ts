@@ -1,4 +1,4 @@
-import { read16, read32 } from "./utils"
+import { read16, read32, stringToUint8Array, uint8ArrayToString } from "./utils"
 
 /** @internal */
 export enum NumberFormat {
@@ -251,4 +251,41 @@ export function concatBufferArray(chunks: Uint8Array[]) {
         sz += ch.length
     }
     return r
+}
+
+export async function sha256(buffers: Uint8Array[]) {
+    const concat = concatBufferArray(buffers)
+    if (typeof window == "undefined" || !window.crypto) {
+        const s = require("crypto").createHash("sha256")
+        s.update(concat)
+        return Promise.resolve(new Uint8Array(s.digest()))
+    }
+    const r = await window.crypto.subtle.digest("SHA-256", concat)
+    return new Uint8Array(r)
+}
+
+/**
+ * Compute keyed-Hash Message Authentication Code as defined in RFC 2104.
+ */
+export async function sha256Hmac(key: Uint8Array, msg: Uint8Array) {
+    const blockSize = 64
+    if (key.length > blockSize) key = await sha256([key])
+    const paddedKey = new Uint8Array(blockSize)
+    paddedKey.set(key, 0)
+    for (let i = 0; i < blockSize; ++i) paddedKey[i] ^= 0x36
+    const h0 = await sha256([paddedKey, msg])
+    for (let i = 0; i < blockSize; ++i) paddedKey[i] ^= 0x36 ^ 0x5c
+    return await sha256([paddedKey, h0])
+}
+
+export function fromBase64(encoded: string): Uint8Array {
+    if (typeof Buffer == "function" && typeof Buffer.from == "function")
+        return new Uint8Array(Buffer.from(encoded, "base64"))
+    else return stringToUint8Array(atob(encoded))
+}
+
+export function toBase64(data: Uint8Array): string {
+    if (typeof Buffer == "function" && typeof Buffer.from == "function")
+        return Buffer.from(data).toString("base64")
+    else return btoa(uint8ArrayToString(data))
 }

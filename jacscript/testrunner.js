@@ -9,7 +9,7 @@ const distPath = "dist"
 let verbose = false
 let bus = null
 
-function runProgram(fn, delay) {
+function runProgram(fn, real) {
     console.log(`*** run ${fn}`)
 
     try {
@@ -31,8 +31,10 @@ function runProgram(fn, delay) {
 
     return new Promise(resolve => {
         const r = new jacscript.Runner(bus, res.binary, res.dbg)
-        if (delay !== undefined)
-            r.startDelay = delay
+        if (!real) {
+            r.options.disableCloud = true
+            r.startDelay = 1
+        }
         r.onError = () => process.exit(1)
         r.onPanic = code => {
             if (code == 0)
@@ -49,6 +51,8 @@ function readdir(folder) {
 }
 
 async function main() {
+    global.WebSocket = require("ws")
+
     const args = process.argv.slice(2)
     if (args[0] == "-v") {
         args.shift()
@@ -58,7 +62,7 @@ async function main() {
     try {
         if (args.length) {
             verbose = true
-            await runProgram(args[0])
+            await runProgram(args[0], true)
         } else {
             for (const fn of readdir(ctest).concat(readdir(samples))) {
                 console.log(`*** test ${fn}`)
@@ -66,7 +70,7 @@ async function main() {
             }
 
             for (const fn of readdir(rtest)) {
-                await runProgram(fn, 1)
+                await runProgram(fn)
             }
         }
     } catch (e) {

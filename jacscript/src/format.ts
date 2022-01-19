@@ -35,7 +35,6 @@ export enum OpTop {
 
 export enum OpAsync {
     YIELD, // A-timeout in ms
-    CLOUD_UPLOAD, // A-numregs
     QUERY_REG, // A-role, B-code, C-timeout
     SEND_CMD, // A-role, B-code
     QUERY_IDX_REG, // A-role, B-STRIDX:CMD[8], C-timeout
@@ -471,8 +470,6 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
         switch (arg8) {
             case OpAsync.YIELD: // A-timeout in ms
                 return `yield(wait=${a}ms)`
-            case OpAsync.CLOUD_UPLOAD: // A-numregs
-                return `upload(#${a})`
             case OpAsync.QUERY_REG: // A-role, B-code, C-timeout
                 return `query(${jdreg()} timeout=${c}ms)`
             case OpAsync.SEND_CMD: // A-role, B-code
