@@ -1,7 +1,9 @@
 import { suite, test } from "mocha"
 import { readFileSync } from "fs"
 import { VMProgram } from "../../src/vm/ir"
+import { toJacScript } from "../../src/vm/ir2jacscript"
 import { VMProgramRunner } from "../../src/vm/runner"
+import { compile } from "../../jacscript/src/compiler"
 
 import { makeTest } from "../jdom/fastforwardtester"
 import { ButtonServer } from "../../src/servers/buttonserver"
@@ -15,6 +17,18 @@ import { ServoReg } from "../../jacdac-spec/dist/specconstants"
 suite("button servo", () => {
     const program: VMProgram = JSON.parse(
         readFileSync("vm/suites/buttonservo.json", "utf8")
+    )
+
+    const jacscript = toJacScript(program)
+    const output = jacscript.program.join("\n")
+    console.log(output)
+
+    const res = compile(
+        {
+            write: (fn, cont) => {},
+            log: msg => { console.log(msg) },
+        },
+        output
     )
 
     function makeVmTest(
@@ -32,8 +46,8 @@ suite("button servo", () => {
             })
             const roleMgr = new RoleManager(tester.bus)
             bindRoles(roleMgr, program, {
-                "button 1": button.service,
-                "servo 1": servo.service,
+                "button_1": button.service,
+                "servo_1": servo.service,
             })
 
             const runner = new VMProgramRunner(roleMgr, program)

@@ -36,13 +36,13 @@ suite("pot to switch adapter", () => {
             })
             const roleMgr = new RoleManager(tester.bus)
             bindRoles(roleMgr, program, {
-                "potentiometer 1": pot.service,
+                "potentiometer_1": pot.service,
             })
 
             const runner = new VMProgramRunner(roleMgr, program)
             await runner.device()
 
-            const { "switch server 1": sw } = await getRoles(
+            const { "switch_server_1": sw } = await getRoles(
                 tester,
                 roleMgr,
                 program

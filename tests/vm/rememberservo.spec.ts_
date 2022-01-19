@@ -1,7 +1,8 @@
 import { suite, test } from "mocha"
 import { readFileSync } from "fs"
 import { VMProgram } from "../../src/vm/ir"
-import { VMProgramRunner } from "../../src/vm/runner"
+import { toJacScript } from "../../src/vm/ir2jacscript"
+
 
 import { makeTest } from "../jdom/fastforwardtester"
 import { ButtonServer } from "../../src/servers/buttonserver"
@@ -11,11 +12,15 @@ import { bindRoles } from "./vmtester"
 import { FastForwardTester } from "../jdom/fastforwardtester"
 import { RegisterTester } from "../../src/tstester/registerwrapper"
 import { ServoReg } from "../../jacdac-spec/dist/specconstants"
+import { runJacScriptProgram } from "./util"
 
 suite("remember servo", () => {
     const program: VMProgram = JSON.parse(
         readFileSync("vm/suites/rememberservo.json", "utf8")
     )
+
+    const jacscript = toJacScript(program)
+    const output = jacscript.program.join("\n")
 
     function makeVmTest(
         testBody: (
@@ -27,6 +32,7 @@ suite("remember servo", () => {
         ) => void
     ) {
         return makeTest(async tester => {
+
             const { recall, set, servo } = await tester.createServices({
                 recall: new ButtonServer("button", false),
                 set: new ButtonServer("button", false),
@@ -36,15 +42,19 @@ suite("remember servo", () => {
             bindRoles(roleMgr, program, {
                 recall: recall.service,
                 set: set.service,
-                "servo 1": servo.service,
+                "servo_1": servo.service,
             })
 
-            const runner = new VMProgramRunner(roleMgr, program)
-            await runner.startAsync()
+            //const runner = new VMProgramRunner(roleMgr, program)
+            //await runner.startAsync()
 
             const servoReg = new RegisterTester(
                 servo.service.register(ServoReg.Angle)
             )
+
+            await runJacScriptProgram(output, tester.bus)
+            // await tester.scheduler.runForDelay(1)
+
             await testBody(
                 tester,
                 recall.server,

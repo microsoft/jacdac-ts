@@ -1,13 +1,14 @@
 // Helper methods for unit testing VM programs
 
 import { ROLE_BOUND } from "../../src/jdom/constants"
-import { EventHandler } from "../../src/jdom/jacdac-jdom"
 import { JDService } from "../../src/jdom/service"
 import { assert } from "../../src/jdom/utils"
 import { RoleManager, RoleBinding } from "../../src/jdom/rolemanager"
 import { TestDriverInterface } from "../../src/tstester/base"
 import { EventWithHoldAdapter } from "../../src/tstester/eventhold"
 import { VMProgram } from "../../src/vm/ir"
+import { EventHandler } from "../../src/jdom/eventsource"
+import { snakify } from "../../jacdac-spec/spectool/jdspec"
 
 class RoleBoundTrigger extends EventWithHoldAdapter<string> {
     constructor(
@@ -46,17 +47,18 @@ export function bindRoles(
     )
 
     const serverRolesMap = program.roles.map(vmRole => {
+        const role = snakify(vmRole.role)
         assert(
-            vmRole.role in servers,
-            `servers missing role ${vmRole.role} required by program`
+            role in servers,
+            `servers missing role ${role} (${vmRole.role}) required by program (${Object.keys(servers)})`
         )
-        const service = servers[vmRole.role]
+        const service = servers[role]
         assert(
             service.serviceClass == vmRole.serviceClass,
             `serviceClass of ${vmRole.role} different than program`
         )
         return {
-            role: vmRole.role,
+            role,
             serviceClass: vmRole.serviceClass,
             preferredDeviceId: service.device.deviceId,
             service: service,
