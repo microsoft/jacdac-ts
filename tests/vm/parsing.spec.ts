@@ -2,7 +2,6 @@ import { suite, test } from "mocha"
 import { readdirSync, readFileSync } from "fs"
 import { join } from "path"
 import { VMProgram } from "../../src/vm/ir"
-import { VMProgramRunner } from "../../src/vm/runner"
 
 suite("vm", () => {
     suite("json baselines", () => {

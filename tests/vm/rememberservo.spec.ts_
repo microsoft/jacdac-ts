@@ -1,7 +1,6 @@
 import { suite, test } from "mocha"
 import { readFileSync } from "fs"
 import { VMProgram } from "../../src/vm/ir"
-import { VMProgramRunner } from "../../src/vm/runner"
 import { toJacScript } from "../../src/vm/ir2jacscript"
 
 
