@@ -156,9 +156,11 @@ class Role extends Cell {
         prog: Program,
         definition: estree.VariableDeclarator,
         scope: VariableScope,
-        public spec: jdspec.ServiceSpec
+        public spec: jdspec.ServiceSpec,
+        _name?: string
     ) {
         super(definition, scope)
+        if (_name) this._name = _name
         assert(!!spec)
         this.stringIndex = prog.addString(this.getName())
     }
@@ -904,6 +906,7 @@ class Program implements InstrArgResolver {
     resolverPC: number
     numErrors = 0
     main: Procedure
+    cloudRole: Role
     startDispatchers: DelayedCodeSection
 
     constructor(public host: Host, public source: string) {}
@@ -1280,6 +1283,13 @@ class Program implements InstrArgResolver {
 
     private emitProgram(prog: estree.Program) {
         this.main = new Procedure(this, "main")
+        this.cloudRole = new Role(
+            this,
+            null,
+            this.roles,
+            serviceSpecificationFromName("jacscriptcloud"),
+            "cloud"
+        )
         this.startDispatchers = new DelayedCodeSection(
             "startDispatchers",
             this.main
@@ -1544,7 +1554,7 @@ class Program implements InstrArgResolver {
             default:
                 const v = this.emitRoleMember(expr.callee, obj)
                 if (v.kind == CellKind.JD_COMMAND) {
-                    this.emitPackArgs(expr, v)
+                    this.emitPackArgs(expr, v.spec)
                     this.writer.emitAsync(
                         OpAsync.SEND_CMD,
                         role.encode(),
@@ -1567,18 +1577,21 @@ class Program implements InstrArgResolver {
         return undefined
     }
 
-    private emitPackArgs(expr: estree.CallExpression, obj: ValueDesc) {
+    private emitPackArgs(
+        expr: estree.CallExpression,
+        pspec: jdspec.PacketInfo
+    ) {
         let offset = 0
         let repeatsStart = -1
         let specIdx = 0
-        const fields = obj.spec.fields
+        const fields = pspec.fields
 
         const args = expr.arguments.map(arg => {
             if (specIdx >= fields.length) {
                 if (repeatsStart != -1) specIdx = repeatsStart
                 else this.throwError(arg, `too many arguments`)
             }
-            const spec = obj.spec.fields[specIdx++]
+            const spec = pspec.fields[specIdx++]
             if (spec.startRepeats) repeatsStart = specIdx - 1
             let size = Math.abs(spec.storage)
             let stringLiteral: string = undefined
@@ -1637,7 +1650,7 @@ class Program implements InstrArgResolver {
                 this.requireArgs(expr, 0)
                 return this.emitRegGet(obj)
             case "write":
-                this.emitPackArgs(expr, obj)
+                this.emitPackArgs(expr, obj.spec)
                 wr.emitAsync(
                     OpAsync.SEND_CMD,
                     role.encode(),
@@ -1739,6 +1752,24 @@ class Program implements InstrArgResolver {
         return tmp.index
     }
 
+    private emitCloud(expr: estree.CallExpression, fnName: string): ValueDesc {
+        switch (fnName) {
+            case "cloud.upload":
+                const spec = this.cloudRole.spec.packets.find(
+                    p => p.name == "upload"
+                )
+                this.emitPackArgs(expr, spec)
+                this.writer.emitAsync(
+                    OpAsync.SEND_CMD,
+                    this.cloudRole.encode(),
+                    spec.identifier
+                )
+                return values.zero
+            default:
+                return null
+        }
+    }
+
     private emitMath(expr: estree.CallExpression, fnName: string): ValueDesc {
         interface Desc {
             m1?: OpMath1
@@ -1813,7 +1844,9 @@ class Program implements InstrArgResolver {
             const objName = idName(expr.callee.object)
             if (objName) {
                 const fullName = objName + "." + prop
-                const r = this.emitMath(expr, fullName)
+                const r =
+                    this.emitMath(expr, fullName) ||
+                    this.emitCloud(expr, fullName)
                 if (r) return r
             }
             const obj = this.emitExpr(expr.callee.object)
@@ -1886,22 +1919,6 @@ class Program implements InstrArgResolver {
                     every: time,
                 })
                 wr.emitCall(proc, OpCall.BG)
-                return values.zero
-            }
-            case "upload": {
-                if (numargs == 0)
-                    this.throwError(expr, "upload() requires args")
-                wr.push()
-                const lbl = this.emitExpr(expr.arguments[0])
-                if (lbl.kind != CellKind.JD_CURR_BUFFER)
-                    this.throwError(
-                        expr.arguments[0],
-                        "expecting buffer (string) here; got " +
-                            stringifyCellKind(lbl.kind)
-                    )
-                this.emitArgs(expr.arguments.slice(1))
-                wr.pop() // we don't need to save the argument registers
-                wr.emitAsync(OpAsync.CLOUD_UPLOAD, numargs - 1)
                 return values.zero
             }
             case "print":

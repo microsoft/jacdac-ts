@@ -374,9 +374,6 @@ export function verifyBinary(
                     switch (arg8) {
                         case OpAsync.YIELD: // A-timeout in ms
                             break
-                        case OpAsync.CLOUD_UPLOAD: // A-numregs
-                            rdRegs(a)
-                            break
                         case OpAsync.SEND_CMD: // A-role, B-code
                             check(a < numRoles, "role idx")
                             check(b <= 0xffff, "cmd code")

@@ -1,5 +1,3 @@
-var cloud = roles.jacscriptCloud()
-
 var q = 0
 
 every(1, () => {

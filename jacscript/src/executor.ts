@@ -691,9 +691,6 @@ class Activation {
                         this.fiber.setWakeTime(a ? ctx.now() + a : 0)
                         ctx.doYield()
                         break
-                    case OpAsync.CLOUD_UPLOAD: // A-numregs
-                        ctx.cloudUpload(a)
-                        break
                     case OpAsync.SEND_CMD: // A-role, B-code
                         ctx.sendCmd(ctx.roles[a], b)
                         break
@@ -1160,13 +1157,6 @@ class Ctx {
 
     private pktLabel() {
         return fromUTF8(uint8ArrayToString(this.pkt.data))
-    }
-
-    cloudUpload(numargs: number) {
-        const regs = this.registers.slice(0, numargs).join(", ")
-        console.log(`upload: ${this.pktLabel()} ${regs}`)
-        // TODO do actual upload
-        this.currentFiber.sleep(50 + Math.random() * 50)
     }
 
     setBuffer(b: Uint8Array, off: number) {

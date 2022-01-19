@@ -10,7 +10,7 @@ btnA.down.sub(() => {
   [r, g, b] = color.color.read()
   r = r + led.brightness.read()
   tint = (r + g + 2.3 * b) / (r + 2 * g + b)
-  upload("color", r, g, b, tint)
+  cloud.upload("color", r, g, b, tint)
   // display.message.write(format("t={0} {1}", tint, r))
   led.brightness.write(0)
 })
