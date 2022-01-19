@@ -63,3 +63,8 @@ export * from "./filters/devicefilter"
 export * from "./sensors"
 export * from "./bridges/iframebridge"
 export * from "./catalog"
+
+export * from "./transport/nodesocket"
+export * from "./transport/nodespi"
+export * from "./transport/nodewebserialio"
+export * from "./transport/nodewebusb"

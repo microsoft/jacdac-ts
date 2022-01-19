@@ -1,6 +1,6 @@
-import { Packet } from "../jdom/packet"
-import { toHex } from "../jdom/utils"
-import { Transport,  TransportOptions } from "../jdom/transport/transport"
+import { Packet } from "../packet"
+import { toHex } from "../utils"
+import { Transport,  TransportOptions } from "./transport"
 
 export interface SpiTransportOptions extends TransportOptions {
     txReadyPin: number

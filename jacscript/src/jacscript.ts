@@ -3,7 +3,7 @@ export * from "./compiler"
 export * from "./executor"
 export * from "./verify"
 
-import { JDBus, createNodeSocketTransport } from "jacdac-ts/jacdac-node"
+import { JDBus, createNodeSocketTransport } from "jacdac-ts"
 
 export function nodeBus() {
     const bus = new JDBus([createNodeSocketTransport()], {

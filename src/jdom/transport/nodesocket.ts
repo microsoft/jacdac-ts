@@ -1,7 +1,7 @@
-import { NODESOCKET_TRANSPORT } from "../jdom/constants"
-import { Packet } from "../jdom/packet"
-import { bufferConcat } from "../jdom/utils"
-import { Transport, TransportOptions } from "../jdom/transport/transport"
+import { NODESOCKET_TRANSPORT } from "../constants"
+import { Packet } from "../packet"
+import { bufferConcat } from "../utils"
+import { Transport, TransportOptions } from "./transport"
 
 /**
  * Transport creation options for TCP sockets

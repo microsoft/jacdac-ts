@@ -1,8 +1,8 @@
-import { isCancelError } from "../jdom/utils"
-import { EventTargetObservable } from "../jdom/transport/eventtargetobservable"
-import { HF2_DEVICE_MAJOR } from "../jdom/transport/hf2"
-import { MICROBIT_V2_PRODUCT_ID, MICROBIT_V2_VENDOR_ID } from "../jdom/transport/microbit"
-import { USBOptions } from "../jdom/transport/usbio"
+import { isCancelError } from "../utils"
+import { EventTargetObservable } from "./eventtargetobservable"
+import { HF2_DEVICE_MAJOR } from "./hf2"
+import { MICROBIT_V2_PRODUCT_ID, MICROBIT_V2_VENDOR_ID } from "./microbit"
+import { USBOptions } from "./usbio"
 
 export function createNodeUSBOptions(): USBOptions {
     console.debug(`jacdac: creating usb transport`)

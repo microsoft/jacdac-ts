@@ -1,20 +1,20 @@
-import { HF2Proto, HF2_IO } from "../jdom/transport/hf2"
-import { Proto } from "../jdom/transport/proto"
+import { HF2Proto, HF2_IO } from "./hf2"
+import { Proto } from "./proto"
 import {
     assert,
     bufferConcat,
     delay,
     isCancelError,
     throwError,
-} from "../jdom/utils"
-import { Flags } from "../jdom/flags"
-import { JDError,  errorCode } from "../jdom/error"
-import { WebSerialTransport } from "../jdom/transport/webserial"
-import { Transport } from "../jdom/transport/transport"
-import { Observable } from "../jdom/observable"
-import { CONNECT, DISCONNECT } from "../jdom/constants"
-import { JDEventSource } from "../jdom/eventsource"
-import { JDBus } from "../jdom/bus"
+} from "../utils"
+import { Flags } from "../flags"
+import { JDError,  errorCode } from "../error"
+import { WebSerialTransport } from "./webserial"
+import { Transport } from "./transport"
+import { Observable } from "../observable"
+import { CONNECT, DISCONNECT } from "../constants"
+import { JDEventSource } from "../eventsource"
+import { JDBus } from "../bus"
 
 const SCAN_INTERVAL = 2500
 
