@@ -1,13 +1,14 @@
 // Helper methods for unit testing VM programs
 
 import { ROLE_BOUND } from "../../src/jdom/constants"
-import { camelize, EventHandler } from "../../src/jdom/jacdac-jdom"
 import { JDService } from "../../src/jdom/service"
 import { assert } from "../../src/jdom/utils"
 import { RoleManager, RoleBinding } from "../../src/jdom/rolemanager"
 import { TestDriverInterface } from "../../src/tstester/base"
 import { EventWithHoldAdapter } from "../../src/tstester/eventhold"
 import { VMProgram } from "../../src/vm/ir"
+import { EventHandler } from "../../src/jdom/eventsource"
+import { snakify } from "../../jacdac-spec/spectool/jdspec"
 
 class RoleBoundTrigger extends EventWithHoldAdapter<string> {
     constructor(
@@ -46,10 +47,10 @@ export function bindRoles(
     )
 
     const serverRolesMap = program.roles.map(vmRole => {
-        const role = camelize(vmRole.role)
+        const role = snakify(vmRole.role)
         assert(
             role in servers,
-            `servers missing role ${vmRole.role} required by program`
+            `servers missing role ${role} (${vmRole.role}) required by program (${Object.keys(servers)})`
         )
         const service = servers[role]
         assert(

@@ -29,7 +29,7 @@ suite("button to switch adapter", () => {
             })
             const roleMgr = new RoleManager(tester.bus)
             bindRoles(roleMgr, program, {
-                "button 1": button.service,
+                "button_1": button.service,
             })
 
             const runner = new VMProgramRunner(roleMgr, program)
