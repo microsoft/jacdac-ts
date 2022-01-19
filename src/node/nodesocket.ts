@@ -1,12 +1,13 @@
-import { NODESOCKET_TRANSPORT } from "../constants"
-import { Packet } from "../packet"
-import { bufferConcat } from "../utils"
-import { Transport, TransportOptions } from "./transport"
+import { NODESOCKET_TRANSPORT } from "../jdom/constants"
+import { Packet } from "../jdom/packet"
+import { bufferConcat } from "../jdom/utils"
+import { Transport, TransportOptions } from "../jdom/transport/transport"
 
 /**
  * Transport creation options for TCP sockets
  * @category Transport
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface NodeSocketTransportOptions extends TransportOptions {}
 
 class NodeSocketTransport extends Transport {
@@ -22,6 +23,7 @@ class NodeSocketTransport extends Transport {
 
     protected transportConnectAsync(background?: boolean): Promise<void> {
         return new Promise(resolve => {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
             const net = require("net")
             this.sock = net.createConnection(this.port, this.host, resolve)
             this.sock.on("error", () => this.disconnect(background))
@@ -81,8 +83,8 @@ class NodeSocketTransport extends Transport {
  * @category transport
  */
 export function createNodeSocketTransport(
-    port: number = 8082,
-    host: string = "localhost",
+    port = 8082,
+    host = "localhost",
     options?: NodeSocketTransportOptions
 ) {
     return new NodeSocketTransport(port, host, options)
