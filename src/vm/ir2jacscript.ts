@@ -1,5 +1,5 @@
 import jsep from "jsep"
-import { throwError } from "../jacdac"
+import { camelize, throwError } from "../jacdac"
 import { serviceSpecificationFromClassIdentifier } from "../jdom/spec"
 import { VMBase, VMCommand, VMHandler, VMIfThenElse, VMProgram } from "./ir"
 
@@ -10,10 +10,6 @@ import { VMBase, VMCommand, VMHandler, VMIfThenElse, VMProgram } from "./ir"
 export interface JacScriptProgram {
     program: string[]
     debug: string[]
-}
-
-function sanitize(s: string) {
-    return s.replace(" ", "_")
 }
 
 function processExpression(
@@ -68,7 +64,7 @@ function processExpression(
                 return `${ue.operator}${processExpr(ue.argument)}`
             }
             case "Identifier": {
-                return sanitize((e as jsep.Identifier).name)
+                return camelize((e as jsep.Identifier).name)
             }
             case "Literal": {
                 return (e as jsep.Literal).raw
@@ -178,7 +174,7 @@ export function toJacScript(p: VMProgram): JacScriptProgram {
     // process start blocks
     roles.forEach(r => {
         const spec = serviceSpecificationFromClassIdentifier(r.serviceClass)
-        program.unshift(`var ${sanitize(r.role)} = roles.${spec.shortId}()`)
+        program.unshift(`var ${camelize(r.role)} = roles.${spec.shortId}()`)
     })
 
     globals.forEach(g => {
