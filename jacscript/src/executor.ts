@@ -26,6 +26,7 @@ import {
     sizeOfNumberFormat,
     strcmp,
     SRV_JACSCRIPT_CONDITION,
+    SRV_JACSCRIPT_CLOUD,
 } from "jacdac-ts"
 import { JacsEnvOptions, JDBusJacsEnv } from "./busenv"
 import { JacsEnv } from "./env"
@@ -1249,6 +1250,8 @@ export class Runner {
     }
 
     run() {
+        if (!this.img.roles.some(r => r.classId == SRV_JACSCRIPT_CLOUD))
+            this.options.disableCloud = true
         this.ctx = new Ctx(this.img, new JDBusJacsEnv(this.bus, this.options))
         this.ctx.onError = e => {
             console.error("Internal error", e.stack)

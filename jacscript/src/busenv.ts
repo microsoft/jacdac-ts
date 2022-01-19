@@ -19,7 +19,7 @@ import { JacscriptCloudServer } from "./jacscriptcloudserver"
 import { AzureIoTHubConnector } from "./azureiothubconnector"
 
 export interface JacsEnvOptions {
-    enableCloud?: boolean
+    disableCloud?: boolean
 }
 
 export class JDBusJacsEnv implements JacsEnv {
@@ -41,7 +41,9 @@ export class JDBusJacsEnv implements JacsEnv {
                     keyedSetting("jacs_roles")
                 )
                 this.roleManager = new BusRoleManager(roleServer)
-                if (this.options.enableCloud) {
+                if (this.options.disableCloud) {
+                    return [roleServer]
+                } else {
                     const healthServer = new AzureIoTHubHealthServer(
                         {},
                         keyedSetting("jacs_azure_iot_conn")
@@ -49,8 +51,6 @@ export class JDBusJacsEnv implements JacsEnv {
                     const conn = new AzureIoTHubConnector(healthServer)
                     const jacsCloud = new JacscriptCloudServer(conn)
                     return [roleServer, healthServer, jacsCloud]
-                } else {
-                    return [roleServer]
                 }
             },
         })

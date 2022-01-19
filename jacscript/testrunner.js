@@ -31,9 +31,8 @@ function runProgram(fn, real) {
 
     return new Promise(resolve => {
         const r = new jacscript.Runner(bus, res.binary, res.dbg)
-        if (real) {
-            r.options.enableCloud = true
-        } else {
+        if (!real) {
+            r.options.disableCloud = true
             r.startDelay = 1
         }
         r.onError = () => process.exit(1)

@@ -151,6 +151,7 @@ class Role extends Cell {
     }
     autoRefreshRegs: jdspec.PacketInfo[] = []
     stringIndex: number
+    used = false
 
     constructor(
         prog: Program,
@@ -165,9 +166,10 @@ class Role extends Cell {
         this.stringIndex = prog.addString(this.getName())
     }
     value(): ValueDesc {
-        return mkValue(CellKind.JD_ROLE, this.index, this)
+        return mkValue(CellKind.JD_ROLE, this.encode(), this)
     }
     encode() {
+        this.used = true
         return this.index
     }
     serialize() {
@@ -1283,13 +1285,7 @@ class Program implements InstrArgResolver {
 
     private emitProgram(prog: estree.Program) {
         this.main = new Procedure(this, "main")
-        this.cloudRole = new Role(
-            this,
-            null,
-            this.roles,
-            serviceSpecificationFromName("jacscriptcloud"),
-            "cloud"
-        )
+
         this.startDispatchers = new DelayedCodeSection(
             "startDispatchers",
             this.main
@@ -1325,6 +1321,15 @@ class Program implements InstrArgResolver {
 
         this.roles.sort()
 
+        // make sure the cloud role is last
+        this.cloudRole = new Role(
+            this,
+            null,
+            this.roles,
+            serviceSpecificationFromName("jacscriptcloud"),
+            "cloud"
+        )
+
         this.withProcedure(this.main, () => {
             this.startDispatchers.callHere()
             for (const s of prog.body) this.emitStmt(s)
@@ -1332,6 +1337,11 @@ class Program implements InstrArgResolver {
             this.finalizeAutoRefresh()
             this.startDispatchers.finalize()
         })
+
+        if (!this.cloudRole.used) {
+            const cl = this.roles.list.pop()
+            assert(cl == this.cloudRole)
+        }
 
         function markTopLevel(node: estree.Node) {
             ;(node as any)._jacsIsTopLevel = true
