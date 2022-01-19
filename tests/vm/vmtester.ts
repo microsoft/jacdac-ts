@@ -1,7 +1,7 @@
 // Helper methods for unit testing VM programs
 
 import { ROLE_BOUND } from "../../src/jdom/constants"
-import { EventHandler } from "../../src/jdom/jacdac-jdom"
+import { camelize, EventHandler } from "../../src/jdom/jacdac-jdom"
 import { JDService } from "../../src/jdom/service"
 import { assert } from "../../src/jdom/utils"
 import { RoleManager, RoleBinding } from "../../src/jdom/rolemanager"
@@ -46,8 +46,7 @@ export function bindRoles(
     )
 
     const serverRolesMap = program.roles.map(vmRole => {
-        const sanitize = (s:string) => s.replace(" ","_")
-        const role = sanitize(vmRole.role)
+        const role = camelize(vmRole.role)
         assert(
             role in servers,
             `servers missing role ${vmRole.role} required by program`
