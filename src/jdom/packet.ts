@@ -69,6 +69,7 @@ export class Packet {
     public sender: string
     // Replayed in a trace
     public replay?: boolean
+    public isRepeatedEvent: boolean
 
     private static _nextKey = 1
     private constructor() {

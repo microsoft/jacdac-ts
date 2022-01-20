@@ -480,6 +480,7 @@ export class JDService extends JDNode {
      */
     processPacket(pkt: Packet) {
         this.emit(PACKET_RECEIVE, pkt)
+        if (pkt.isRepeatedEvent) return
         if (pkt.isReport) {
             this.emit(REPORT_RECEIVE, pkt)
             if (pkt.isRegisterGet) {
@@ -558,5 +559,3 @@ export class JDService extends JDNode {
         return recv
     }
 }
-
-

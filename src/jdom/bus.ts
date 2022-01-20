@@ -54,6 +54,7 @@ import {
     REGISTER_POLL_REPORT_VOLATILE_INTERVAL,
     SRV_INFRASTRUCTURE,
     CONNECTION_STATE,
+    CMD_EVENT_COUNTER_MASK,
 } from "./constants"
 import { serviceClass } from "./pretty"
 import { JDNode } from "./node"
@@ -71,7 +72,7 @@ import {
 import { JDServiceProvider } from "./servers/serviceprovider"
 import { RealTimeClockServer } from "../servers/realtimeclockserver"
 import { SRV_ROLE_MANAGER } from "../../src/jdom/constants"
-import { Transport,  ConnectionState } from "./transport/transport"
+import { Transport, ConnectionState } from "./transport/transport"
 import { BusStatsMonitor } from "./busstats"
 import { RoleManagerClient } from "./clients/rolemanagerclient"
 import { JDBridge } from "./bridge"
@@ -83,7 +84,7 @@ import {
     SRV_DASHBOARD,
     SRV_PROXY,
 } from "../../jacdac-spec/dist/specconstants"
-import { Scheduler,  WallClockScheduler } from "./scheduler"
+import { Scheduler, WallClockScheduler } from "./scheduler"
 import { ServiceFilter } from "./filters/servicefilter"
 import { DeviceFilter } from "./filters/devicefilter"
 import { Flags } from "./flags"
@@ -1080,6 +1081,32 @@ ${dev
         this.emit(CHANGE)
     }
 
+    private markRepeatedEvent(pkt: Packet) {
+        if (!pkt.isEvent) return
+
+        const device = pkt.device
+        const ec = (device.eventCounter || 0) + 1
+        // how many packets ahead and behind current are we?
+        const ahead = (pkt.eventCounter - ec) & CMD_EVENT_COUNTER_MASK
+        const behind = (ec - pkt.eventCounter) & CMD_EVENT_COUNTER_MASK
+        // ahead == behind == 0 is the usual case, otherwise
+        // behind < 60 means this is an old event (or retransmission of something we already processed)
+        const old = behind < 60
+        const missed5 = ahead < 5
+        const isahead = ahead > 0
+
+        // ahead < 5 means we missed at most 5 events,
+        // so we ignore this one and rely on retransmission
+        // of the missed events, and then eventually the current event
+        if (isahead && (old || missed5)) {
+            pkt.isRepeatedEvent = true
+            return
+        }
+
+        // update device counter
+        device.eventCounter = pkt.eventCounter
+    }
+
     /**
      * Ingests and process a packet received from the bus.
      * @param pkt a jacdac packet
@@ -1123,6 +1150,8 @@ ${dev
                     this._lastResetInTime = this.timestamp
                 }
             }
+
+            this.markRepeatedEvent(pkt)
             pkt.device.processPacket(pkt)
         }
         this.emit(PACKET_PROCESS, pkt)
@@ -1131,7 +1160,8 @@ ${dev
             this.emit(PACKET_RECEIVE_ANNOUNCE, pkt)
         } else {
             this.emit(PACKET_RECEIVE, pkt)
-            if (pkt.isEvent) this.emit(PACKET_EVENT, pkt)
+            if (pkt.isEvent && !pkt.isRepeatedEvent)
+                this.emit(PACKET_EVENT, pkt)
             else if (pkt.isReport) this.emit(PACKET_REPORT, pkt)
         }
     }
@@ -1457,5 +1487,3 @@ ${dev
         })
     }
 }
-
-
