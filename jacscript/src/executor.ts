@@ -1167,11 +1167,7 @@ class Ctx {
                     return
                 }
             }
-        log(
-            `start fiber: ${info} ${
-                this.pkt ? toHex(this.pkt.data) + printPacket(this.pkt) : ""
-            }`
-        )
+        log(`start fiber: ${info} ${this.pkt ? printPacket(this.pkt) : ""}`)
         const fiber = new Fiber(this)
         fiber.activation = new Activation(fiber, info, null, numargs)
         fiber.firstFun = info

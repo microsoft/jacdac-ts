@@ -1253,7 +1253,11 @@ class Program implements InstrArgResolver {
         }
     }
 
-    private emitAckCloud(code: JacscriptCloudCommandStatus, isOuter: boolean, args: Expr[] = []) {
+    private emitAckCloud(
+        code: JacscriptCloudCommandStatus,
+        isOuter: boolean,
+        args: Expr[] = []
+    ) {
         const wr = this.writer
         wr.push()
         wr.allocBuf()
@@ -1451,7 +1455,11 @@ class Program implements InstrArgResolver {
             }
             wr.emitLabel(wr.ret)
             if (options.every) wr.emitJump(wr.top)
-            else wr.emitSync(OpSync.RETURN)
+            else {
+                if (options.methodHandler)
+                    this.emitAckCloud(JacscriptCloudCommandStatus.OK, false, [])
+                wr.emitSync(OpSync.RETURN)
+            }
         })
         return proc
     }
