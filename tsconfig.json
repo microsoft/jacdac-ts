@@ -26,8 +26,11 @@
     "outDir": "dist/lib",
     "pretty": true,
     "newLine": "LF",
-    "typeRoots": [
-      "node_modules/@types"
+    "types": [
+      "w3c-web-serial",
+      "w3c-web-usb",
+      "web-bluetooth",
+      "node"
     ]
   },
   "include": [

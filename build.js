@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const esbuild = require("esbuild")
+const fs = require("fs")
 const childProcess = require("child_process")
 
 let watch = false
@@ -20,7 +21,10 @@ function runTSC(args) {
     let invoked = false
     if (watch) args.push("--watch", "--preserveWatchOutput")
     console.log("run tsc " + args.join(" "))
-    const process = childProcess.fork("node_modules/typescript/lib/tsc.js", args)
+    let tscPath = "node_modules/typescript/lib/tsc.js"
+    if (!fs.existsSync(tscPath))
+      tscPath = "../" + tscPath
+    const process = childProcess.fork(tscPath, args)
     process.on("error", err => {
       if (invoked) return
       invoked = true
