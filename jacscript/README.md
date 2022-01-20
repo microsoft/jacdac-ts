@@ -176,9 +176,20 @@ wait(0.3)
 Send a label + 0 or more numeric values.
 
 ```js
-upload("potval", pot.reading.read())
-upload("color", r * 256, g * 256, b * 256)
-upload(format("X[{0}]", idx), x)
+cloud.upload("potval", pot.reading.read())
+cloud.upload("color", r * 256, g * 256, b * 256)
+```
+
+Respond to a request from the cloud.
+
+```js
+cloud.onMethod("set_lights", (a, b) => {
+    lightA.brightness.write(a)
+    lightB.brightness.write(a)
+})
+cloud.onMethod("get_temp_hum", () => {
+    return [temp.temperature.read(), hum.humidity.read()]
+})
 ```
 
 ### Math
@@ -251,7 +262,6 @@ Main dynamic memory usage - function activation records (and fibers).
 * add opcode to cache current packet (in onChanged())
 * is timeout in yield needed?
 * extend format strings to include numfmt
-* `memcmp()` opcode
 * shift buffer opcode?
 * implement `QUERY_IDX_REG`
 * somehow deal with events with legit args (button and barcode reader currently) - doesn't work so well in handler-pending model
@@ -273,7 +283,6 @@ Main dynamic memory usage - function activation records (and fibers).
 
 ### Cloud
 
-* responding to cloud messages: `onCloud("play_sound", (freq, time) => { ... })`
 * responding to twin updates: `onTwinUpdate("foo.bar", value => { ... })`; on boot as well
 * specific uploads: `hum.autoUpload(5, 1) // 5s, 1%`
 * auto-upload of everything
