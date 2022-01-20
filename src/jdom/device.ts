@@ -38,6 +38,7 @@ import {
     DEVICE_PACKET_ANNOUNCE,
     SRV_PROXY,
     SRV_UNIQUE_BRAIN,
+    CMD_EVENT_COUNTER_MASK,
 } from "./constants"
 import { read32, bufferEq, setAckError, read16 } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
@@ -696,9 +697,10 @@ export class JDDevice extends JDNode {
             ? getNumber(this._servicesData, NumberFormat.UInt32LE, 0)
             : 0
         const w1 = getNumber(pkt.data, NumberFormat.UInt32LE, 0)
-        const restarted = w1 &&
-        (w1 & JD_ADVERTISEMENT_0_COUNTER_MASK) <
-            (w0 & JD_ADVERTISEMENT_0_COUNTER_MASK)
+        const restarted =
+            w1 &&
+            (w1 & JD_ADVERTISEMENT_0_COUNTER_MASK) <
+                (w0 & JD_ADVERTISEMENT_0_COUNTER_MASK)
 
         // compare service data
         const servicesChanged = !bufferEq(pkt.data, this._servicesData, 4)
@@ -731,10 +733,35 @@ export class JDDevice extends JDNode {
         }
     }
 
+    private markRepeatedEvent(pkt: Packet) {
+        if (!pkt.isEvent || !pkt.isReport) return
+
+        const ec = (this.eventCounter || 0) + 1
+        // how many packets ahead and behind current are we?
+        const ahead = (pkt.eventCounter - ec) & CMD_EVENT_COUNTER_MASK
+        const behind = (ec - pkt.eventCounter) & CMD_EVENT_COUNTER_MASK
+        // ahead == behind == 0 is the usual case, otherwise
+        // behind < 60 means this is an old event (or retransmission of something we already processed)
+        const old = behind < 60
+        const missed5 = ahead < 5
+        const isahead = ahead > 0
+
+        // ahead < 5 means we missed at most 5 events,
+        // so we ignore this one and rely on retransmission
+        // of the missed events, and then eventually the current event
+        if (isahead && (old || missed5)) {
+            pkt.isRepeatedEvent = true
+        } else {
+            // update device counter
+            this.eventCounter = pkt.eventCounter
+        }
+    }
+
     /**
      * @internal
      */
     processPacket(pkt: Packet) {
+        this.markRepeatedEvent(pkt)
         this.stats.processPacket(pkt)
         this.lost = false
         this.emit(PACKET_RECEIVE, pkt)
@@ -813,7 +840,7 @@ export class JDDevice extends JDNode {
 
     /**
      * Send command to enter proxy/dongle mode
-     * @returns 
+     * @returns
      */
     startProxy() {
         return this.service(0)?.sendCmdAsync(ControlCmd.Proxy)
@@ -990,5 +1017,3 @@ export class JDDevice extends JDNode {
         await this.sendPktWithAck(pkt)
     }
 }
-
-
