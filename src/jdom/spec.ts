@@ -481,6 +481,7 @@ export function storageTypeRange(tp: jdspec.StorageType): [number, number] {
  * @internal
  */
 export function clampToStorage(v: number, tp: jdspec.StorageType) {
+    if (tp == null) return v // no clamping for floats
     const [min, max] = storageTypeRange(tp)
     if (isNaN(v)) return 0
     if (v < min) return min
