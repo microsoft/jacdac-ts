@@ -186,10 +186,17 @@ export function decodeMember(
         else humanValue = "" + value
         if (member.unit) humanValue += prettyUnit(member.unit)
     } else if (!isInt) {
+        if (member.type == "string0") {
+            let ptr = offset
+            while (ptr < pkt.data.length) {
+                if (!pkt.data[ptr++]) break
+            }
+            size = ptr - offset
+        }
         const buf = size
             ? pkt.data.slice(offset, offset + size)
             : pkt.data.slice(offset)
-        if (member.type == "string") {
+        if (member.type == "string" || member.type == "string0") {
             try {
                 value = fromUTF8(uint8ArrayToString(buf))
             } catch {
@@ -310,26 +317,27 @@ export function decodeMembers(
     off = 0
 ) {
     const fields = pktInfo.fields.slice(0)
-    let idx = fields.findIndex(f => f.startRepeats)
-    if (idx >= 0) {
-        if (fields.some(f => !f.storage))
-            throw new Error("zero-sized field in repeats:")
-        let sz = 0
-        for (const f of fields) sz += Math.abs(f.storage)
-        // make sure we have enough fields to decode all data
-        while (sz <= pkt.data.length) {
-            const f = fields[idx++]
-            sz += Math.abs(f.storage)
-            fields.push(f)
+    let startRep = fields.findIndex(f => f.startRepeats)
+    let fidx = 0
+    const res: DecodedMember[] = []
+
+    while (off < pkt.data.length) {
+        if (fidx >= fields.length && startRep >= 0) fidx = startRep
+        const member = fields[fidx++]
+        if (!member) {
+            // warning: too large packet
+            break
+        }
+        const decoded = decodeMember(service, pktInfo, member, pkt, off)
+        if (decoded) {
+            off += decoded.size
+            res.push(decoded)
+        } else {
+            break // ???
         }
     }
-    return fields
-        .map(mem => {
-            const decoded = decodeMember(service, pktInfo, mem, pkt, off)
-            if (decoded) off += decoded.size
-            return decoded
-        })
-        .filter(info => !!info)
+
+    return res
 }
 
 export function wrapDecodedMembers(decoded: DecodedMember[]) {
