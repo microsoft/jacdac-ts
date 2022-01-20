@@ -282,7 +282,9 @@ function jdpackCore(
                         trg,
                         parser.nfmt,
                         off,
-                        clampToStorage(Math.round(v * parser.div), st)
+                        st == null
+                            ? v * parser.div
+                            : clampToStorage(Math.round(v * parser.div), st)
                     )
                 }
                 off += parser.size
