@@ -12,7 +12,7 @@
   "module": "dist/jacdac.mjs",
   "exports": {
     ".": {
-      "import": "./dist/jacdac.js",
+      "import": "./dist/jacdac.mjs",
       "require": "./dist/jacdac.cjs"
     }
   },

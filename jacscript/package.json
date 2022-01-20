@@ -4,6 +4,7 @@
   "description": "Jacscript VM",
   "main": "./dist/jacscript.node.js",
   "module": "./dist/jacscript.js",
+  "types": "./dist/types/jacscript.d.ts",
   "scripts": {
     "build": "tsc -p src/tsconfig.json && yarn buildnode && yarn buildbrowser",
     "buildbrowser": "esbuild src/jacscript.ts --bundle --outfile=dist/jacscript.bundle.js --external:jacdac-ts",
