@@ -20,6 +20,7 @@ import {
     JD_SERIAL_MAX_PAYLOAD_SIZE,
     JacscriptCloudEvent,
     JacscriptCloudCmd,
+    JacscriptCloudCommandStatus,
 } from "jacdac-ts"
 
 import {
@@ -779,6 +780,7 @@ class OpWriter {
     emitCall(proc: Procedure, op = OpCall.SYNC) {
         let d = 0
         if (op == OpCall.SYNC) d = this.saveRegs()
+        else assert((this.allocatedRegsMask & 1) == 0)
         this.emitPrefix(proc.index >> 6, 0, 0, d)
         this.emitRaw(
             OpTop.CALL,
@@ -922,6 +924,8 @@ class Program implements InstrArgResolver {
     numErrors = 0
     main: Procedure
     cloudRole: Role
+    cloudMethod429: Label
+    cloudMethodDispatcher: DelayedCodeSection
     startDispatchers: DelayedCodeSection
 
     constructor(public host: Host, public source: string) {}
@@ -1249,6 +1253,37 @@ class Program implements InstrArgResolver {
         }
     }
 
+    private emitAckCloud(code: JacscriptCloudCommandStatus, isOuter: boolean, args: Expr[] = []) {
+        const wr = this.writer
+        wr.push()
+        wr.allocBuf()
+        {
+            wr.push()
+            const tmp = wr.allocReg()
+            if (isOuter) wr.emitBufLoad(tmp, OpFmt.U32, 0)
+            else wr.emitLoadCell(tmp, CellKind.LOCAL, 0)
+            wr.emitSync(OpSync.SETUP_BUFFER, 8 + args.length * 8)
+            wr.emitBufStore(tmp, OpFmt.U32, 0)
+            wr.assign(tmp, floatVal(code))
+            wr.emitBufStore(tmp, OpFmt.U32, 4)
+            wr.pop()
+        }
+        let off = 8
+        for (const arg of args) {
+            wr.push()
+            const v = this.emitSimpleValue(arg)
+            wr.emitBufStore(v, OpFmt.F64, off)
+            off += 8
+            wr.pop()
+        }
+        this.writer.emitAsync(
+            OpAsync.SEND_CMD,
+            this.cloudRole.encode(),
+            JacscriptCloudCmd.AckCloudCommand
+        )
+        wr.pop()
+    }
+
     private emitReturnStatement(stmt: estree.ReturnStatement) {
         const wr = this.writer
         wr.push()
@@ -1259,27 +1294,7 @@ class Program implements InstrArgResolver {
             } else if (stmt.argument) {
                 args = [stmt.argument]
             }
-
-            wr.allocBuf()
-            wr.emitSync(OpSync.SETUP_BUFFER, 4 + args.length * 8)
-            let off = 4
-            for (const arg of args) {
-                wr.push()
-                const v = this.emitSimpleValue(arg)
-                wr.emitBufStore(v, OpFmt.F64, off)
-                off += 8
-                wr.pop()
-            }
-            wr.push()
-            const tmp = wr.allocReg()
-            wr.emitLoadCell(tmp, CellKind.LOCAL, 0)
-            wr.emitBufStore(tmp, OpFmt.U32, 0)
-            wr.pop()
-            this.writer.emitAsync(
-                OpAsync.SEND_CMD,
-                this.cloudRole.encode(),
-                JacscriptCloudCmd.AckCloudCommand
-            )
+            this.emitAckCloud(JacscriptCloudCommandStatus.OK, false, args)
         } else if (stmt.argument) {
             const v = this.emitSimpleValue(stmt.argument)
             const r = wr.allocArgs(1)[0]
@@ -1824,6 +1839,32 @@ class Program implements InstrArgResolver {
         return tmp.index
     }
 
+    private finalizeCloudMethods() {
+        if (!this.cloudMethodDispatcher) return
+        this.emitInRoleDispatcher(this.cloudRole, wr => {
+            const skipMethods = wr.mkLabel("skipMethods")
+
+            wr.push()
+            const cond = this.inlineBin(
+                OpBinary.EQ,
+                specialVal(ValueSpecial.EV_CODE),
+                floatVal(JacscriptCloudEvent.CloudCommand)
+            )
+            wr.emitJump(skipMethods, cond.index)
+            wr.pop()
+
+            this.cloudMethodDispatcher.finalizeRaw()
+            this.emitAckCloud(JacscriptCloudCommandStatus.NotFound, true)
+            wr.emitJump(this.cloudRole.dispatcher.top)
+
+            wr.emitLabel(this.cloudMethod429)
+            this.emitAckCloud(JacscriptCloudCommandStatus.Busy, true)
+            wr.emitJump(this.cloudRole.dispatcher.top)
+
+            wr.emitLabel(skipMethods)
+        })
+    }
+
     private emitCloud(expr: estree.CallExpression, fnName: string): ValueDesc {
         switch (fnName) {
             case "cloud.upload":
@@ -1846,17 +1887,21 @@ class Program implements InstrArgResolver {
                     expr.arguments[1],
                     { methodHandler: true }
                 )
-                this.emitInRoleDispatcher(this.cloudRole, wr => {
+                if (!this.cloudMethodDispatcher) {
+                    this.emitInRoleDispatcher(this.cloudRole, wr => {
+                        this.cloudMethod429 = wr.mkLabel("cloud429")
+                    })
+                    this.cloudMethodDispatcher = new DelayedCodeSection(
+                        "cloud_method",
+                        this.cloudRole.dispatcher.proc
+                    )
+                }
+
+                this.cloudMethodDispatcher.emit(wr => {
                     const skip = wr.mkLabel("skipMethod")
 
                     {
                         wr.push()
-                        const cond = this.inlineBin(
-                            OpBinary.EQ,
-                            specialVal(ValueSpecial.EV_CODE),
-                            floatVal(JacscriptCloudEvent.CloudCommand)
-                        )
-                        wr.emitJump(skip, cond.index)
                         const r0 = wr.allocArgs(1)[0]
                         wr.emitSync(OpSync.STR0EQ, str.index, 0, 4)
                         wr.emitJump(skip, r0.index)
@@ -1882,6 +1927,9 @@ class Program implements InstrArgResolver {
                     }
 
                     wr.emitCall(handler, OpCall.BG_MAX1)
+                    wr.emitJump(this.cloudMethod429, 0)
+                    wr.emitJump(this.cloudRole.dispatcher.top)
+
                     wr.emitLabel(skip)
                 })
                 return values.zero
@@ -2531,6 +2579,7 @@ class Program implements InstrArgResolver {
 
         this.emitProgram(this.tree)
 
+        this.finalizeCloudMethods()
         this.finalizeDispatchers()
         for (const p of this.procs) p.finalize()
 

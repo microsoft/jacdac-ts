@@ -181,6 +181,9 @@ cloud.upload("color", r * 256, g * 256, b * 256)
 ```
 
 Respond to a request from the cloud.
+Normally, status code 200 is returned to the cloud once the handler finishes.
+If the method is not found, 404 is returned.
+If the method is already running 429 is returned.
 
 ```js
 cloud.onMethod("set_lights", (a, b) => {

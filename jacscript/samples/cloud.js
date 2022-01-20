@@ -7,6 +7,13 @@ every(10, () => {
 })
 
 cloud.onMethod("foo", (a, b) => {
-    print("a={0} b={1}", a, b)
+    print("foo a={0} b={1}", a, b)
     return [a + 1, b * 2]
+})
+
+
+cloud.onMethod("bar", (a) => {
+    print("bar a={0}", a)
+    wait(5)
+    return [108]
 })

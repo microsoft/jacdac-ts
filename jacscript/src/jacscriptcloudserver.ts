@@ -68,9 +68,10 @@ export class JacscriptCloudServer extends JDServiceServer {
     }
 
     private async handleAckCloudCommand(pkt: Packet) {
-        const [seqNo, args] = pkt.jdunpack<[number, number[]]>("u32 f64[]")
-        console.log("ack-invoke", seqNo, args)
-        this.connector.finishMethod(seqNo, { args })
+        const [seqNo, status, args] =
+            pkt.jdunpack<[number, number, number[]]>("u32 u32 f64[]")
+        console.log("ack-invoke", seqNo, status, args)
+        this.connector.finishMethod(seqNo, { args }, status)
     }
 
     private async handleGetTwin(pkt: Packet) {

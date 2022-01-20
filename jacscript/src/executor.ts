@@ -1158,7 +1158,12 @@ class Ctx {
         if (op != OpCall.BG)
             for (const f of this.fibers) {
                 if (f.firstFun == info) {
-                    if (op == OpCall.BG_MAX1_PEND1) f.pending = true
+                    if (op == OpCall.BG_MAX1_PEND1) {
+                        f.pending = true
+                        this.registers[0] = 2
+                    } else {
+                        this.registers[0] = 0
+                    }
                     return
                 }
             }
@@ -1172,6 +1177,7 @@ class Ctx {
         fiber.firstFun = info
         fiber.setWakeTime(this.now())
         this.fibers.push(fiber)
+        this.registers[0] = 1
     }
 
     private pktLabel() {
