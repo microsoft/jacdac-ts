@@ -599,6 +599,12 @@ export function ellipse(text: string, maxChars: number, suffix = "...") {
     return text
 }
 
+export function ellipseFirstSentence(text: string) {
+    const i = text.indexOf(".")
+    if (i < 0) return text
+    else return text.slice(0, i + 1)
+}
+
 export function ellipseJoin(
     values: string[],
     maxChars: number,
