@@ -656,6 +656,19 @@ class Activation {
                     case OpSync.MEMCPY: // A-string-index C-offset
                         ctx.setBuffer(ctx.info.stringLiterals[a], c)
                         break
+                    case OpSync.STR0EQ: {
+                        const s = ctx.info.stringLiterals[a]
+                        ctx.registers[0] =
+                            ctx.pkt.data[c + s.length] === 0 &&
+                            memcmp(
+                                ctx.pkt.data.slice(c, c + s.length),
+                                s,
+                                s.length
+                            ) == 0
+                                ? 1
+                                : 0
+                        break
+                    }
                     case OpSync.LOG_FORMAT: // A-string-index B-numargs
                         const msg = strFormat(
                             ctx.info.stringLiterals[a],
@@ -712,7 +725,7 @@ class Activation {
 function memcmp(a: Uint8Array, b: Uint8Array, sz: number) {
     for (let i = 0; i < sz; ++i) {
         const d = a[i] - b[i]
-        if (d) return d
+        if (d) return Math.sign(d)
     }
     return 0
 }
@@ -1116,6 +1129,8 @@ class Ctx {
 
     private processPkt(pkt: Packet) {
         if (this.panicCode) return
+        if (pkt.isRepeatedEvent) return
+
         this.pkt = pkt
         // console.log(new Date(), "process: " + printPacket(pkt))
         for (let idx = 0; idx < this.roles.length; ++idx) {
@@ -1140,7 +1155,6 @@ class Ctx {
     }
 
     startFiber(info: FunctionInfo, numargs: number, op: OpCall) {
-        if (numargs > info.numRegs) oops()
         if (op != OpCall.BG)
             for (const f of this.fibers) {
                 if (f.firstFun == info) {
@@ -1148,7 +1162,11 @@ class Ctx {
                     return
                 }
             }
-        log(`start fiber: ${info}`)
+        log(
+            `start fiber: ${info} ${
+                this.pkt ? toHex(this.pkt.data) + printPacket(this.pkt) : ""
+            }`
+        )
         const fiber = new Fiber(this)
         fiber.activation = new Activation(fiber, info, null, numargs)
         fiber.firstFun = info

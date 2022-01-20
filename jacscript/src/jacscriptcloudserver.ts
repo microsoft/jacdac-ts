@@ -50,10 +50,13 @@ export class JacscriptCloudServer extends JDServiceServer {
 
     private async handleMethod(info: MethodInvocation) {
         console.log("invoke", info)
+        const args: number[] = Array.isArray(info.payload)
+            ? info.payload
+            : info.payload?.args || []
         const payload = jdpack<[number, string, number[]]>("u32 z f64[]", [
             info.seqNo,
             info.method,
-            info.payload.args || [],
+            args,
         ])
         await this.sendEvent(JacscriptCloudEvent.CloudCommand, payload)
     }

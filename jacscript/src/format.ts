@@ -47,6 +47,7 @@ export enum OpSync {
     OBSERVE_ROLE, // A-role
     FORMAT, // A-string-index B-numargs C-offset
     MEMCPY, // A-string-index C-offset
+    STR0EQ, // A-string-index C-offset result in R0
     LOG_FORMAT, // A-string-index B-numargs
     MATH1, // A-OpMath1, R0 := op(R0)
     MATH2, // A-OpMath2, R0 := op(R0, R1)
@@ -454,7 +455,9 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
             case OpSync.LOG_FORMAT: // A-string-index B-numargs
                 return `log(str=${a} #${b})`
             case OpSync.MEMCPY: // A-string-index
-                return `memcpy(str=${a})`
+                return `memcpy(str=${a}) @${c}`
+            case OpSync.STR0EQ: // A-string-index
+                return `r0 := str0eq(str=${a}) @${c}`
             case OpSync.MATH1:
                 return `r0 := ${math1code()}(r0)`
             case OpSync.MATH2:

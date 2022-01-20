@@ -345,7 +345,13 @@ export function verifyBinary(
                             rdRegs(b)
                             check(a < numStrings, "str in range")
                             break
-                        case OpSync.MEMCPY: // A-string-index
+                        case OpSync.STR0EQ:
+                            check(c <= 236, "offset in range")
+                            check(a < numStrings, "str in range")
+                            wrReg(0)
+                            break
+                        case OpSync.MEMCPY:
+                            check(c <= 236, "offset in range")
                             check(a < numStrings, "str in range")
                             break
                         case OpSync.MATH1:

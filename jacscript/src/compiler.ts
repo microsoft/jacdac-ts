@@ -18,6 +18,8 @@ import {
     CMD_GET_REG,
     SRV_JACSCRIPT_CONDITION,
     JD_SERIAL_MAX_PAYLOAD_SIZE,
+    JacscriptCloudEvent,
+    JacscriptCloudCmd,
 } from "jacdac-ts"
 
 import {
@@ -620,6 +622,16 @@ class OpWriter {
         )
     }
 
+    emitBufLoad(dst: ValueDesc, fmt: OpFmt, off: number) {
+        assertRange(0, off, 0xff)
+        this.emitLoadStoreCell(OpTop.LOAD_CELL, dst, CellKind.BUFFER, fmt, off)
+    }
+
+    emitBufStore(src: ValueDesc, fmt: OpFmt, off: number) {
+        assertRange(0, off, 0xff)
+        this.emitLoadStoreCell(OpTop.STORE_CELL, src, CellKind.BUFFER, fmt, off)
+    }
+
     emitBufOp(
         op: OpTop,
         dst: ValueDesc,
@@ -824,6 +836,7 @@ class Procedure {
     index: number
     numargs = 0
     locals: VariableScope
+    methodSeqNo: Variable
     constructor(public parent: Program, public name: string) {
         this.index = this.parent.procs.length
         this.parent.procs.push(this)
@@ -1239,7 +1252,35 @@ class Program implements InstrArgResolver {
     private emitReturnStatement(stmt: estree.ReturnStatement) {
         const wr = this.writer
         wr.push()
-        if (stmt.argument) {
+        if (this.proc.methodSeqNo) {
+            let args: Expr[] = []
+            if (stmt.argument?.type == "ArrayExpression") {
+                args = stmt.argument.elements.slice()
+            } else if (stmt.argument) {
+                args = [stmt.argument]
+            }
+
+            wr.allocBuf()
+            wr.emitSync(OpSync.SETUP_BUFFER, 4 + args.length * 8)
+            let off = 4
+            for (const arg of args) {
+                wr.push()
+                const v = this.emitSimpleValue(arg)
+                wr.emitBufStore(v, OpFmt.F64, off)
+                off += 8
+                wr.pop()
+            }
+            wr.push()
+            const tmp = wr.allocReg()
+            wr.emitLoadCell(tmp, CellKind.LOCAL, 0)
+            wr.emitBufStore(tmp, OpFmt.U32, 0)
+            wr.pop()
+            this.writer.emitAsync(
+                OpAsync.SEND_CMD,
+                this.cloudRole.encode(),
+                JacscriptCloudCmd.AckCloudCommand
+            )
+        } else if (stmt.argument) {
             const v = this.emitSimpleValue(stmt.argument)
             const r = wr.allocArgs(1)[0]
             wr.assign(r, v)
@@ -1249,6 +1290,22 @@ class Program implements InstrArgResolver {
         }
         wr.pop()
         this.writer.emitJump(this.writer.ret)
+    }
+
+    private emitParameters(
+        stmt: estree.FunctionDeclaration | estree.ArrowFunctionExpression,
+        proc: Procedure
+    ) {
+        for (const paramdef of stmt.params) {
+            if (paramdef.type != "Identifier")
+                this.throwError(
+                    paramdef,
+                    "only simple identifiers supported as parameters"
+                )
+            const v = new Variable(paramdef, proc.locals)
+            v.isLocal = true
+            if (v.index >= 8) this.throwError(paramdef, "too many arguments")
+        }
     }
 
     private emitFunctionDeclaration(stmt: estree.FunctionDeclaration) {
@@ -1262,17 +1319,7 @@ class Program implements InstrArgResolver {
         if (!fundecl && this.numErrors) return
 
         this.withProcedure(fundecl.proc, wr => {
-            let idx = 0
-            for (const paramdef of stmt.params) {
-                if (paramdef.type != "Identifier")
-                    this.throwError(
-                        paramdef,
-                        "only simple identifiers supported as parameters"
-                    )
-                const v = new Variable(paramdef, fundecl.proc.locals)
-                v.isLocal = true
-                if (idx >= 8) this.throwError(paramdef, "too many arguments")
-            }
+            this.emitParameters(stmt, fundecl.proc)
             this.emitStmt(stmt.body)
             wr.emitLabel(wr.ret)
             wr.emitSync(OpSync.RETURN)
@@ -1365,12 +1412,21 @@ class Program implements InstrArgResolver {
     private emitHandler(
         name: string,
         func: Expr,
-        options: { every?: number } = {}
+        options: {
+            every?: number
+            methodHandler?: boolean
+        } = {}
     ): Procedure {
         if (func.type != "ArrowFunctionExpression")
             this.throwError(func, "arrow function expected here")
         const proc = new Procedure(this, name)
+        if (func.params.length && !options.methodHandler)
+            this.throwError(func, "parameters not supported here")
         this.withProcedure(proc, wr => {
+            if (options.methodHandler)
+                proc.methodSeqNo = proc.mkTempLocal("methSeqNo")
+            this.emitParameters(func, proc)
+            proc.numargs = proc.locals.list.length
             if (options.every)
                 wr.emitAsync(OpAsync.YIELD, (options.every | 0) + 1)
             if (func.body.type == "BlockStatement") {
@@ -1581,10 +1637,16 @@ class Program implements InstrArgResolver {
     }
 
     private stringLiteral(expr: Expr) {
-        if (expr.type == "Literal" && typeof expr.value == "string") {
+        if (expr?.type == "Literal" && typeof expr.value == "string") {
             return expr.value
         }
         return undefined
+    }
+
+    private forceStringLiteral(expr: Expr) {
+        const v = this.stringLiteral(expr)
+        if (v === undefined) this.throwError(expr, "string literal expected")
+        return this.writer.emitString(v)
     }
 
     private emitPackArgs(
@@ -1775,6 +1837,54 @@ class Program implements InstrArgResolver {
                     spec.identifier
                 )
                 return values.zero
+            case "cloud.onMethod":
+                this.requireTopLevel(expr)
+                this.requireArgs(expr, 2)
+                const str = this.forceStringLiteral(expr.arguments[0])
+                const handler = this.emitHandler(
+                    this.codeName(expr.callee),
+                    expr.arguments[1],
+                    { methodHandler: true }
+                )
+                this.emitInRoleDispatcher(this.cloudRole, wr => {
+                    const skip = wr.mkLabel("skipMethod")
+
+                    {
+                        wr.push()
+                        const cond = this.inlineBin(
+                            OpBinary.EQ,
+                            specialVal(ValueSpecial.EV_CODE),
+                            floatVal(JacscriptCloudEvent.CloudCommand)
+                        )
+                        wr.emitJump(skip, cond.index)
+                        const r0 = wr.allocArgs(1)[0]
+                        wr.emitSync(OpSync.STR0EQ, str.index, 0, 4)
+                        wr.emitJump(skip, r0.index)
+                        wr.pop()
+                    }
+
+                    {
+                        wr.push()
+                        const args = wr.allocArgs(handler.numargs)
+                        wr.emitBufLoad(args[0], OpFmt.U32, 0)
+                        const pref =
+                            4 +
+                            toUTF8(this.stringLiteral(expr.arguments[0]))
+                                .length +
+                            1
+                        for (let i = 1; i < handler.numargs; ++i)
+                            wr.emitBufLoad(
+                                args[i],
+                                OpFmt.F64,
+                                pref + (i - 1) * 8
+                            )
+                        wr.pop()
+                    }
+
+                    wr.emitCall(handler, OpCall.BG_MAX1)
+                    wr.emitLabel(skip)
+                })
+                return values.zero
             default:
                 return null
         }
@@ -1933,13 +2043,10 @@ class Program implements InstrArgResolver {
             }
             case "print":
             case "format": {
-                const arg0 = expr.arguments[0]
-                if (arg0?.type != "Literal" || typeof arg0.value != "string")
-                    this.throwError(expr, `${funName}() requires string arg`)
+                const fmtString = this.forceStringLiteral(expr.arguments[0])
                 wr.push()
                 this.emitArgs(expr.arguments.slice(1))
                 const r = wr.allocBuf()
-                const fmtString = wr.emitString(arg0.value)
                 wr.emitSync(
                     funName == "print" ? OpSync.LOG_FORMAT : OpSync.FORMAT,
                     fmtString.index,
