@@ -28,6 +28,8 @@ async function generateSasToken(
 }
 
 const methodPrefix = "$iothub/methods/POST/"
+const twinUpdatePrefix = "$iothub/twin/PATCH/properties/desired/"
+const twinMethodPrefix = "$iothub/twin/res/"
 
 function parseTopicArgs(topic: string) {
     const qidx = topic.indexOf("?")
@@ -65,11 +67,36 @@ export interface MethodInvocation {
     payload: any
 }
 
+export type Json = any
+export type TwinJson = {
+    desired: Json
+    reported: Json
+}
+
+export function applyTwinPatch(trg: Json, patch: Json) {
+    for (const k of Object.keys(patch)) {
+        const v = patch[k]
+        if (v === null) {
+            delete trg[k]
+        } else if (typeof v == "object") {
+            if (!trg[k]) trg[k] = {}
+            applyTwinPatch(trg[k], v)
+        } else {
+            trg[k] = v
+        }
+    }
+}
 export class AzureIoTHubConnector extends JDEventSource {
-    client: MQTT.Client
-    clientId: string
-    disabled = false
-    toSend: MQTT.Message[] = []
+    private client: MQTT.Client
+    private clientId: string
+    private disabled = false
+    private toSend: MQTT.Message[] = []
+    private currTwin: TwinJson
+    private lastTwinVersion: number
+    private twinRespHandlers: Record<
+        string,
+        (status: number, body: any) => void
+    > = {}
 
     constructor(private healthServer: AzureIoTHubHealthServer) {
         super()
@@ -148,11 +175,39 @@ export class AzureIoTHubConnector extends JDEventSource {
                 payload,
             }
             this.emit("method", info)
+        } else if (msg.destinationName.startsWith(twinUpdatePrefix)) {
+            if (!this.currTwin) return
+            const sysProps = parseTopicArgs(msg.destinationName)
+            const ver = parseInt(sysProps["$version"])
+            if (ver <= this.lastTwinVersion) {
+                this.log(`skipping twin update: ${ver}`)
+                return
+            }
+            const update = JSON.parse(msg.payloadString)
+            applyTwinPatch(this.currTwin["desired"], update)
+            this.onTwinUpdate(this.currTwin, update)
+        } else if (msg.destinationName.startsWith(twinMethodPrefix)) {
+            // $iothub/twin/res/{status}/?$rid={request id}
+            const status = parseInt(
+                msg.destinationName.slice(twinMethodPrefix.length)
+            )
+            const args = parseTopicArgs(msg.destinationName)
+            const rid = args["$rid"]
+            const h = this.twinRespHandlers[rid]
+            if (h) {
+                delete this.twinRespHandlers[rid]
+                h(status, JSON.parse(msg.payloadString || "{}"))
+            }
         }
     }
 
+    private onTwinUpdate(currTwin: TwinJson, updated: Json) {
+        this.emit("twinUpdate", currTwin, updated)
+    }
+
     private publish(topic: string, payload: string | ArrayBuffer) {
-        const msg = new MQTT.Message(payload)
+        console.log("pub", topic)
+        const msg = new MQTT.Message(payload || "")
         msg.destinationName = topic
         msg.qos = 0
         msg.retained = false
@@ -165,6 +220,64 @@ export class AzureIoTHubConnector extends JDEventSource {
             `$iothub/methods/res/${status}/?$rid=${seqNo}`,
             JSON.stringify(payload)
         )
+    }
+
+    private twinReq(path: string, msg?: string): Promise<Json> {
+        const rid = Math.round(Math.random() * 800000000) + 100000000
+        return new Promise((resolve, reject) => {
+            this.twinRespHandlers[rid] = (status, body) => {
+                if (status == 204 || status == 200) {
+                    resolve(body)
+                } else {
+                    const msg = `twin error -> ${status} ${JSON.stringify(
+                        body
+                    )}`
+                    this.log(msg)
+                    reject(new Error(msg))
+                }
+            }
+            this.publish(`$iothub/twin/${path}/?$rid=${rid}`, msg)
+        })
+    }
+
+    patchTwin(patch: Json) {
+        const p = JSON.stringify(patch)
+        if (p == "{}") {
+            this.log("skipping empty twin patch")
+            return Promise.resolve()
+        } else {
+            this.log(`twin patch: ${JSON.stringify(patch)}`)
+            return this.twinReq("PATCH/properties/reported", p)
+        }
+    }
+
+    private connected() {
+        this.log(`connected`)
+        this.emit(CONNECT)
+        this.healthServer.setConnectionStatus(
+            AzureIotHubHealthConnectionStatus.Connected
+        )
+
+        this.client.subscribe(methodPrefix + "#")
+        this.client.subscribe(twinMethodPrefix + "#")
+        this.client.subscribe(twinUpdatePrefix + "#")
+
+        this.twinReq("GET").then(
+            (currTwin: TwinJson) => {
+                this.currTwin = currTwin
+                this.lastTwinVersion = currTwin.desired["$version"]
+                this.onTwinUpdate(currTwin, currTwin.desired)
+            },
+            e => {
+                // TODO ???
+            }
+        )
+
+        const mm = this.toSend
+        if (mm.length) {
+            this.toSend = []
+            for (const m of mm) this.client.send(m)
+        }
     }
 
     private async connect() {
@@ -218,19 +331,7 @@ export class AzureIoTHubConnector extends JDEventSource {
             password: "SharedAccessSignature " + sasToken,
             mqttVersion: 4,
             onSuccess: () => {
-                this.log(`connected`)
-                this.emit(CONNECT)
-                this.healthServer.setConnectionStatus(
-                    AzureIotHubHealthConnectionStatus.Connected
-                )
-
-                client.subscribe(methodPrefix + "#")
-
-                const mm = this.toSend
-                if (mm.length) {
-                    this.toSend = []
-                    for (const m of mm) client.send(m)
-                }
+                if (client == this.client) this.connected()
             },
             onFailure: info => {
                 this.log(`MQTT error: ${info.errorMessage}`)

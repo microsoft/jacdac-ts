@@ -13,10 +13,27 @@ import {
     JacscriptCloudEvent,
     jdpack,
 } from "jacdac-ts"
-import { AzureIoTHubConnector, MethodInvocation } from "./azureiothubconnector"
+import {
+    AzureIoTHubConnector,
+    Json,
+    MethodInvocation,
+    TwinJson,
+} from "./azureiothubconnector"
+
+function lookupJsonPath(j: Json, path: string) {
+    for (const w of path.split(".")) {
+        j = j[w]
+        if (j == null) return j
+    }
+    return j
+}
 
 export class JacscriptCloudServer extends JDServiceServer {
     readonly connected: JDRegisterServer<[boolean]>
+
+    private currTwin: TwinJson
+    private twinGetsWaiting: string[] = []
+    private twinSubs: string[] = []
 
     constructor(
         public connector: AzureIoTHubConnector,
@@ -31,7 +48,8 @@ export class JacscriptCloudServer extends JDServiceServer {
 
         this.connector.on(CONNECT, () => this.connected.setValues([true]))
         this.connector.on(DISCONNECT, () => this.connected.setValues([false]))
-        this.connector.on("method", this.handleMethod.bind(this))
+        this.connector.on("method", this.onMethod.bind(this))
+        this.connector.on("twinUpdate", this.onTwinUpdate.bind(this))
 
         this.addCommand(JacscriptCloudCmd.Upload, this.handleUpload.bind(this))
         this.addCommand(
@@ -48,7 +66,7 @@ export class JacscriptCloudServer extends JDServiceServer {
         )
     }
 
-    private async handleMethod(info: MethodInvocation) {
+    private async onMethod(info: MethodInvocation) {
         console.log("invoke", info)
         const args: number[] = Array.isArray(info.payload)
             ? info.payload
@@ -74,11 +92,58 @@ export class JacscriptCloudServer extends JDServiceServer {
         this.connector.finishMethod(seqNo, { args }, status)
     }
 
+    private async sendGetResp(path: string) {
+        let v = lookupJsonPath(this.currTwin.desired, path)
+        if (typeof v != "number") v = NaN
+        const pkt = Packet.jdpacked(JacscriptCloudCmd.GetTwin, "z f64", [
+            path,
+            v,
+        ])
+        await this.sendPacketAsync(pkt)
+    }
+
+    private async sendTwinEvent(updated: Json, path: string) {
+        let v = lookupJsonPath(updated, path)
+        if (v === null) v = NaN
+        if (typeof v == "number")
+            await this.sendEvent(
+                JacscriptCloudEvent.TwinChanged,
+                jdpack("z f64", [path, v])
+            )
+    }
+
+    private async onTwinUpdate(currTwin: TwinJson, updated: Json) {
+        console.log("twin-update", updated, currTwin)
+        this.currTwin = currTwin
+        if (this.twinGetsWaiting.length) {
+            const waiting = this.twinGetsWaiting
+            this.twinGetsWaiting = []
+            const desired = currTwin.desired
+            for (const path of this.twinGetsWaiting) {
+                await this.sendGetResp(path)
+            }
+        }
+        for (const sub of this.twinSubs) {
+            await this.sendTwinEvent(updated, sub)
+        }
+    }
+
     private async handleGetTwin(pkt: Packet) {
-        // TODO
+        const path: string = pkt.jdunpack("s")[0]
+        if (this.currTwin) {
+            await this.sendGetResp(path)
+        } else {
+            this.twinGetsWaiting.push(path)
+        }
     }
 
     private async handleSubscribeTwin(pkt: Packet) {
-        // TODO
+        const path: string = pkt.jdunpack("s")[0]
+        if (this.twinSubs.indexOf(path) < 0) {
+            this.twinSubs.push(path)
+        }
+        if (this.currTwin) {
+            await this.sendTwinEvent(this.currTwin.desired, path)
+        }
     }
 }
