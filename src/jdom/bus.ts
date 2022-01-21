@@ -229,7 +229,11 @@ export class JDBus extends JDNode {
     }
 
     private configureBroadcastChannel() {
-        if (typeof BroadcastChannel === "undefined" || typeof window === "undefined") return
+        if (
+            typeof BroadcastChannel === "undefined" ||
+            typeof window === "undefined"
+        )
+            return
 
         // the purpose of this code is to orchestrate
         // interactions with multiple tabs and windows
@@ -459,6 +463,13 @@ export class JDBus extends JDNode {
                 () => this.gcDevices(),
                 JD_DEVICE_DISCONNECTED_DELAY
             )
+    }
+
+    /**
+     * Indicates if the bus is announcing and managing packets
+     */
+    get running() {
+        return !!this._announceInterval
     }
 
     /**
