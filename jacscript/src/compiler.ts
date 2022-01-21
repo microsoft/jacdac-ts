@@ -1993,7 +1993,7 @@ class Program implements InstrArgResolver {
                     "twin_changed",
                     expr.arguments[0],
                     this.cloudRole,
-                    JacscriptCloudEvent.TwinChanged
+                    JacscriptCloudEvent.TwinChange
                 )
                 return values.zero
             case "cloud.onMethod":

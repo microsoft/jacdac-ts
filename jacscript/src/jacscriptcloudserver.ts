@@ -102,7 +102,7 @@ export class JacscriptCloudServer extends JDServiceServer {
         if (v === null) v = NaN
         if (typeof v == "number")
             await this.sendEvent(
-                JacscriptCloudEvent.TwinChanged,
+                JacscriptCloudEvent.TwinChange,
                 jdpack("z f64", [path, v])
             )
     }
@@ -110,7 +110,7 @@ export class JacscriptCloudServer extends JDServiceServer {
     private async onTwinUpdate(currTwin: TwinJson, updated: Json) {
         console.log("twin-update", updated, currTwin)
         this.currTwin = currTwin
-        await this.sendEvent(JacscriptCloudEvent.TwinChanged)
+        await this.sendEvent(JacscriptCloudEvent.TwinChange)
         if (this.twinGetsWaiting.length) {
             const waiting = this.twinGetsWaiting
             this.twinGetsWaiting = []
