@@ -63,6 +63,7 @@ export * from "./filters/devicefilter"
 export * from "./sensors"
 export * from "./bridges/iframebridge"
 export * from "./catalog"
+export * from "./bridge"
 
 export * from "./transport/nodesocket"
 export * from "./transport/nodespi"
