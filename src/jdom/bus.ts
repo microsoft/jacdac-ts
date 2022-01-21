@@ -229,7 +229,7 @@ export class JDBus extends JDNode {
     }
 
     private configureBroadcastChannel() {
-        if (typeof BroadcastChannel === "undefined") return
+        if (typeof BroadcastChannel === "undefined" || typeof window === "undefined") return
 
         // the purpose of this code is to orchestrate
         // interactions with multiple tabs and windows
