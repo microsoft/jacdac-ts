@@ -70,6 +70,14 @@ export function assertRange(
     oops(`${desc}=${v} out of range [${min}, ${max}]`)
 }
 
+function strlen(s: string | ValueDesc) {
+    if (typeof s != "string") {
+        s = s.strValue
+        assert(s != null)
+    }
+    return toUTF8(s).length
+}
+
 class Cell {
     index: number
     _name: string
@@ -237,6 +245,7 @@ interface ValueDesc {
     cell?: Cell
     spec?: jdspec.PacketInfo
     litValue?: number
+    strValue?: string
 }
 
 function mkValue(kind: CellKind, index: number, cell?: Cell): ValueDesc {
@@ -408,8 +417,7 @@ class OpWriter {
     }
 
     allocBuf(): ValueDesc {
-        if (this.allocatedRegsMask & (1 << BUFFER_REG))
-            this.parent.parent.throwError(null, "buffer already in use")
+        assert(!this.bufferAllocated(), "allocBuf() not free")
         return this.doAlloc(BUFFER_REG, CellKind.JD_CURR_BUFFER)
     }
 
@@ -450,7 +458,9 @@ class OpWriter {
     }
 
     emitString(s: string) {
-        return mkValue(CellKind.X_STRING, this.parent.parent.addString(s))
+        const v = mkValue(CellKind.X_STRING, this.parent.parent.addString(s))
+        v.strValue = s
+        return v
     }
 
     isReg(v: ValueDesc) {
@@ -502,6 +512,7 @@ class OpWriter {
     }
 
     emitAsync(op: OpAsync, a: number = 0, b: number = 0, c: number = 0) {
+        assert(!this.bufferAllocated(), "buffer allocated in async")
         const d = this.saveRegs()
         this.emitPrefix(a, b, c, d >> 4)
         assertRange(0, op, OpAsync._LAST)
@@ -594,6 +605,10 @@ class OpWriter {
         }
     }
 
+    private bufferAllocated() {
+        return !!(this.allocatedRegsMask & (1 << BUFFER_REG))
+    }
+
     private emitLoadStoreCell(
         op: OpTop,
         dst: ValueDesc,
@@ -630,6 +645,7 @@ class OpWriter {
 
     emitBufStore(src: ValueDesc, fmt: OpFmt, off: number) {
         assertRange(0, off, 0xff)
+        assert(this.bufferAllocated(), "buffer allocated in store")
         this.emitLoadStoreCell(OpTop.STORE_CELL, src, CellKind.BUFFER, fmt, off)
     }
 
@@ -667,6 +683,8 @@ class OpWriter {
         const shift = mem.shift || 0
         assertRange(0, shift, bitSize(fmt))
         assertRange(0, off, 0xff)
+        if (op == OpTop.STORE_CELL)
+            assert(this.bufferAllocated(), "buffer allocated in store")
 
         this.emitLoadStoreCell(
             op,
@@ -890,6 +908,7 @@ class VariableScope {
 enum RefreshMS {
     Never = 0,
     Normal = 500,
+    Slow = 5000,
 }
 
 type Expr = estree.Expression | estree.Super | estree.SpreadElement
@@ -1280,12 +1299,12 @@ class Program implements InstrArgResolver {
             off += 8
             wr.pop()
         }
+        wr.pop()
         this.writer.emitAsync(
             OpAsync.SEND_CMD,
             this.cloudRole.encode(),
             JacscriptCloudCmd.AckCloudCommand
         )
-        wr.pop()
     }
 
     private emitReturnStatement(stmt: estree.ReturnStatement) {
@@ -1694,15 +1713,16 @@ class Program implements InstrArgResolver {
                 stringLiteral = this.stringLiteral(arg)
                 if (stringLiteral == undefined)
                     this.throwError(arg, "expecting a string literal here")
-                size = toUTF8(stringLiteral).length
+                size = strlen(stringLiteral)
                 if (spec.type == "string0") size += 1
             }
+            const val = stringLiteral === undefined ? this.emitSimpleValue(arg) : null
             const r = {
                 stringLiteral,
                 size,
                 offset,
                 spec,
-                arg,
+                val,
             }
             offset += size
             return r
@@ -1717,6 +1737,8 @@ class Program implements InstrArgResolver {
 
         const wr = this.writer
 
+        wr.push()
+        wr.allocBuf()
         wr.emitSync(OpSync.SETUP_BUFFER, offset)
         for (const desc of args) {
             if (desc.stringLiteral !== undefined) {
@@ -1724,11 +1746,11 @@ class Program implements InstrArgResolver {
                 wr.emitSync(OpSync.MEMCPY, vd.index, 0, desc.offset)
             } else {
                 wr.push()
-                let v = this.emitSimpleValue(desc.arg)
-                wr.emitBufOp(OpTop.STORE_CELL, v, desc.offset, desc.spec)
+                wr.emitBufOp(OpTop.STORE_CELL, desc.val, desc.offset, desc.spec)
                 wr.pop()
             }
         }
+        wr.pop()
     }
 
     private emitRegisterCall(
@@ -1873,6 +1895,34 @@ class Program implements InstrArgResolver {
         })
     }
 
+    private subsribeTwin(pathExpr: Expr) {
+        const wr = this.writer
+        wr.push()
+        const path = this.forceStringLiteral(pathExpr)
+        wr.emitSync(OpSync.SETUP_BUFFER, strlen(path))
+        const r = wr.allocBuf()
+        wr.emitSync(OpSync.MEMCPY, path.index)
+        wr.emitAsync(
+            OpAsync.SEND_CMD,
+            this.cloudRole.encode(),
+            JacscriptCloudCmd.SubscribeTwin
+        )
+        wr.pop()
+    }
+
+    private emitGetTwin(path: ValueDesc) {
+        const wr = this.writer
+        wr.emitAsync(
+            OpAsync.QUERY_IDX_REG,
+            this.cloudRole.encode(),
+            JacscriptCloudCmd.GetTwin | (path.index << 8),
+            RefreshMS.Slow
+        )
+        const res = wr.allocReg()
+        wr.emitBufLoad(res, OpFmt.F64, 0)
+        return res
+    }
+
     private emitCloud(expr: estree.CallExpression, fnName: string): ValueDesc {
         switch (fnName) {
             case "cloud.upload":
@@ -1886,6 +1936,10 @@ class Program implements InstrArgResolver {
                     spec.identifier
                 )
                 return values.zero
+            case "cloud.twin":
+                this.requireArgs(expr, 1)
+                const path = this.forceStringLiteral(expr.arguments[0])
+                return this.emitGetTwin(path)
             case "cloud.onMethod":
                 this.requireTopLevel(expr)
                 this.requireArgs(expr, 2)
@@ -1922,8 +1976,7 @@ class Program implements InstrArgResolver {
                         wr.emitBufLoad(args[0], OpFmt.U32, 0)
                         const pref =
                             4 +
-                            toUTF8(this.stringLiteral(expr.arguments[0]))
-                                .length +
+                            strlen(this.stringLiteral(expr.arguments[0])) +
                             1
                         for (let i = 1; i < handler.numargs; ++i)
                             wr.emitBufLoad(
@@ -2258,9 +2311,12 @@ class Program implements InstrArgResolver {
     }
 
     private emitSimpleValue(expr: Expr) {
+        this.writer.push()
         const val = this.emitExpr(expr)
         this.requireRuntimeValue(expr, val)
-        return this.writer.forceReg(val)
+        const r = this.writer.forceReg(val)
+        this.writer.popExcept(r)
+        return r
     }
 
     private requireRuntimeValue(node: estree.BaseNode, v: ValueDesc) {
@@ -2429,6 +2485,7 @@ class Program implements InstrArgResolver {
         if (e.sourceNode !== undefined) {
             const node = e.sourceNode || stmt
             this.reportError(node.range, e.message)
+            // console.log(e.stack)
         } else {
             this.reportError(stmt.range, "Internal error: " + e.message)
             console.log(e.stack)

@@ -266,7 +266,6 @@ Main dynamic memory usage - function activation records (and fibers).
 * is timeout in yield needed?
 * extend format strings to include numfmt
 * shift buffer opcode?
-* implement `QUERY_IDX_REG`
 * somehow deal with events with legit args (button and barcode reader currently) - doesn't work so well in handler-pending model
 * add `role.waitConnected()` or something?
 * add `bg(() => { ... })`, also `bg1()` ?

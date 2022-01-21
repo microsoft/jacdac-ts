@@ -389,6 +389,11 @@ export function verifyBinary(
                             check(a < numRoles, "role idx")
                             check(b <= 0x1ff, "reg code")
                             break
+                        case OpAsync.QUERY_IDX_REG: // A-role, B-STRIDX:CMD[8], C-timeout
+                            check(a < numRoles, "role idx")
+                            check(b >> 8 != 0, "arg!=0")
+                            check(b >> 8 < numStrings, "num str")
+                            break
                         default:
                             check(false, "invalid async code")
                             break

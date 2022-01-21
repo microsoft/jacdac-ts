@@ -302,8 +302,8 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
         }
     }
 
-    function jdreg() {
-        return `${role()}.reg_0x${b.toString(16)}`
+    function jdreg(v = b) {
+        return `${role()}.reg_0x${v.toString(16)}`
     }
 
     function role(idx = a) {
@@ -475,6 +475,10 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
                 return `yield(wait=${a}ms)`
             case OpAsync.QUERY_REG: // A-role, B-code, C-timeout
                 return `query(${jdreg()} timeout=${c}ms)`
+            case OpAsync.QUERY_IDX_REG:
+                return `queryIdx(${jdreg(b & 0xff)} str=${
+                    b >> 8
+                } timeout=${c}ms)`
             case OpAsync.SEND_CMD: // A-role, B-code
                 return `send(${jdreg()})`
             default:

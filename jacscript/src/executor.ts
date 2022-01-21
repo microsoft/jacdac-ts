@@ -27,6 +27,7 @@ import {
     strcmp,
     SRV_JACSCRIPT_CONDITION,
     SRV_JACSCRIPT_CLOUD,
+    SystemEvent,
 } from "jacdac-ts"
 import { JacsEnvOptions, JDBusJacsEnv } from "./busenv"
 import { JacsEnv } from "./env"
@@ -711,6 +712,9 @@ class Activation {
                     case OpAsync.QUERY_REG: // A-role, B-code, C-timeout
                         ctx.getReg(ctx.roles[a], b | CMD_GET_REG, c)
                         break
+                    case OpAsync.QUERY_IDX_REG:
+                        ctx.getReg(ctx.roles[a], b & 0xff, c, b >> 8)
+                        break
                     default:
                         oops()
                         break
@@ -766,7 +770,7 @@ class Fiber {
 
         if (this.cmdPayload) {
             const pkt = role.mkCmd(this.commandCode, this.cmdPayload)
-            log(`send ${role.info} ${printPacket(pkt)}`)
+            log(`send to ${role.info}: ${printPacket(pkt)}`)
             this.ctx.env.send(pkt)
             this.commandCode = 0
             this.cmdPayload = null
@@ -783,6 +787,7 @@ class Fiber {
             if (c.updateWith(role, pkt, this.ctx)) {
                 this.ctx.regs.add(c)
                 this.commandCode = 0
+                pkt.data = c.value // this will strip any string label
                 return resumeUserCode
             }
         }
@@ -841,8 +846,8 @@ class Role {
 
     mkCmd(serviceCommand: number, payload?: Uint8Array) {
         const p = Packet.from(serviceCommand, payload || new Uint8Array(0))
-        p.device = this.device
         p.deviceIdentifier = this.device.deviceId
+        p.device = this.device
         p.serviceIndex = this.serviceIndex
         p.isCommand = true
         return p
@@ -927,6 +932,14 @@ class RegisterCache {
     }
     detachRole(role: Role) {
         for (const r of this.regs) if (r.role == role) r.dead = true
+    }
+    roleChanged(now: number, role: Role) {
+        for (const r of this.regs) {
+            if (r.role == role) {
+                // if the role changed, push all it's registers' last update time at least 10s in the past
+                r.last_refresh_time = Math.min(r.last_refresh_time, now - 10000)
+            }
+        }
     }
     updateWith(role: Role, pkt: Packet, ctx: Ctx) {
         for (const r of this.regs) r.updateWith(role, pkt, ctx)
@@ -1132,7 +1145,8 @@ class Ctx {
         if (pkt.isRepeatedEvent) return
 
         this.pkt = pkt
-        // console.log(new Date(), "process: " + printPacket(pkt))
+        if (false && pkt.serviceIndex != 0)
+            console.log(new Date(), "process: " + printPacket(pkt))
         for (let idx = 0; idx < this.roles.length; ++idx) {
             const r = this.roles[idx]
             if (
@@ -1140,6 +1154,8 @@ class Ctx {
                 (r.serviceIndex == pkt.serviceIndex ||
                     (pkt.serviceIndex == 0 && pkt.serviceCommand == 0))
             ) {
+                if (pkt.eventCode === SystemEvent.Change)
+                    this.regs.roleChanged(this.now(), r)
                 this.regs.updateWith(r, pkt, this)
                 this.wakeRole(r)
             }

@@ -57,8 +57,8 @@ export class JDBusJacsEnv implements JacsEnv {
     }
 
     send(pkt: Packet): void {
-        pkt = pkt.clone()
         console.log(new Date(), "SEND", printPacket(pkt))
+        pkt = pkt.clone()
         this.bus.sendPacketAsync(pkt)
     }
     devices(): JDDevice[] {
