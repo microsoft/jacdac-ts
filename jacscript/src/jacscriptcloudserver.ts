@@ -33,7 +33,6 @@ export class JacscriptCloudServer extends JDServiceServer {
 
     private currTwin: TwinJson
     private twinGetsWaiting: string[] = []
-    private twinSubs: string[] = []
 
     constructor(
         public connector: AzureIoTHubConnector,
@@ -59,10 +58,6 @@ export class JacscriptCloudServer extends JDServiceServer {
         this.addCommand(
             JacscriptCloudCmd.GetTwin,
             this.handleGetTwin.bind(this)
-        )
-        this.addCommand(
-            JacscriptCloudCmd.SubscribeTwin,
-            this.handleSubscribeTwin.bind(this)
         )
     }
 
@@ -115,6 +110,7 @@ export class JacscriptCloudServer extends JDServiceServer {
     private async onTwinUpdate(currTwin: TwinJson, updated: Json) {
         console.log("twin-update", updated, currTwin)
         this.currTwin = currTwin
+        await this.sendEvent(JacscriptCloudEvent.TwinChanged)
         if (this.twinGetsWaiting.length) {
             const waiting = this.twinGetsWaiting
             this.twinGetsWaiting = []
@@ -122,9 +118,6 @@ export class JacscriptCloudServer extends JDServiceServer {
             for (const path of this.twinGetsWaiting) {
                 await this.sendGetResp(path)
             }
-        }
-        for (const sub of this.twinSubs) {
-            await this.sendTwinEvent(updated, sub)
         }
     }
 
@@ -134,16 +127,6 @@ export class JacscriptCloudServer extends JDServiceServer {
             await this.sendGetResp(path)
         } else {
             this.twinGetsWaiting.push(path)
-        }
-    }
-
-    private async handleSubscribeTwin(pkt: Packet) {
-        const path: string = pkt.jdunpack("s")[0]
-        if (this.twinSubs.indexOf(path) < 0) {
-            this.twinSubs.push(path)
-        }
-        if (this.currTwin) {
-            await this.sendTwinEvent(this.currTwin.desired, path)
         }
     }
 }

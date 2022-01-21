@@ -155,23 +155,7 @@ pot.position.onChange(0.02, () => {
 })
 ```
 
-## Top-level functions
-
-### Time
-
-Run a function periodically (`0.3s` in the example below; `20ms` minimum):
-```js
-every(0.3, () => {
-    // ...
-})
-```
-
-Wait given number of seconds:
-```js
-wait(0.3)
-```
-
-### Cloud telemetry upload
+## Cloud
 
 Send a label + 0 or more numeric values.
 
@@ -193,6 +177,38 @@ cloud.onMethod("set_lights", (a, b) => {
 cloud.onMethod("get_temp_hum", () => {
     return [temp.temperature.read(), hum.humidity.read()]
 })
+```
+
+Get value of a twin field (has to be numeric):
+
+```js
+var speed = cloud.twin("speed")
+var lightA = cloud.twin("lights.a")
+```
+
+Respond to changes in twin values:
+
+```js
+cloud.onTwinChange(() => {
+    lightA.brightness.write(cloud.twin("lights.a"))
+    lightB.brightness.write(cloud.twin("lights.b"))
+})
+```
+
+## Top-level functions
+
+### Time
+
+Run a function periodically (`0.3s` in the example below; `20ms` minimum):
+```js
+every(0.3, () => {
+    // ...
+})
+```
+
+Wait given number of seconds:
+```js
+wait(0.3)
 ```
 
 ### Math
@@ -285,7 +301,6 @@ Main dynamic memory usage - function activation records (and fibers).
 
 ### Cloud
 
-* responding to twin updates: `onTwinUpdate("foo.bar", value => { ... })`; on boot as well
 * specific uploads: `hum.autoUpload(5, 1) // 5s, 1%`
 * auto-upload of everything
 

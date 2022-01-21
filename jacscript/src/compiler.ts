@@ -1519,6 +1519,26 @@ class Program implements InstrArgResolver {
             )
     }
 
+    private emitEventHandler(
+        name: string,
+        handlerExpr: Expr,
+        role: Role,
+        code: number
+    ) {
+        const handler = this.emitHandler(name, handlerExpr)
+        this.emitInRoleDispatcher(role, wr => {
+            wr.push()
+            const cond = this.inlineBin(
+                OpBinary.EQ,
+                specialVal(ValueSpecial.EV_CODE),
+                floatVal(code)
+            )
+            wr.emitIfAndPop(cond, () =>
+                wr.emitCall(handler, OpCall.BG_MAX1_PEND1)
+            )
+        })
+    }
+
     private emitEventCall(
         expr: estree.CallExpression,
         obj: ValueDesc,
@@ -1529,21 +1549,12 @@ class Program implements InstrArgResolver {
             case "sub":
                 this.requireTopLevel(expr)
                 this.requireArgs(expr, 1)
-                const handler = this.emitHandler(
+                this.emitEventHandler(
                     this.codeName(expr.callee),
-                    expr.arguments[0]
+                    expr.arguments[0],
+                    role,
+                    obj.spec.identifier
                 )
-                this.emitInRoleDispatcher(role, wr => {
-                    wr.push()
-                    const cond = this.inlineBin(
-                        OpBinary.EQ,
-                        specialVal(ValueSpecial.EV_CODE),
-                        floatVal(obj.spec.identifier)
-                    )
-                    wr.emitIfAndPop(cond, () =>
-                        wr.emitCall(handler, OpCall.BG_MAX1_PEND1)
-                    )
-                })
                 return values.zero
             case "wait":
                 this.requireArgs(expr, 0)
@@ -1716,7 +1727,8 @@ class Program implements InstrArgResolver {
                 size = strlen(stringLiteral)
                 if (spec.type == "string0") size += 1
             }
-            const val = stringLiteral === undefined ? this.emitSimpleValue(arg) : null
+            const val =
+                stringLiteral === undefined ? this.emitSimpleValue(arg) : null
             const r = {
                 stringLiteral,
                 size,
@@ -1895,21 +1907,6 @@ class Program implements InstrArgResolver {
         })
     }
 
-    private subsribeTwin(pathExpr: Expr) {
-        const wr = this.writer
-        wr.push()
-        const path = this.forceStringLiteral(pathExpr)
-        wr.emitSync(OpSync.SETUP_BUFFER, strlen(path))
-        const r = wr.allocBuf()
-        wr.emitSync(OpSync.MEMCPY, path.index)
-        wr.emitAsync(
-            OpAsync.SEND_CMD,
-            this.cloudRole.encode(),
-            JacscriptCloudCmd.SubscribeTwin
-        )
-        wr.pop()
-    }
-
     private emitGetTwin(path: ValueDesc) {
         const wr = this.writer
         wr.emitAsync(
@@ -1921,6 +1918,55 @@ class Program implements InstrArgResolver {
         const res = wr.allocReg()
         wr.emitBufLoad(res, OpFmt.F64, 0)
         return res
+    }
+
+    private emitCloudMethod(expr: estree.CallExpression) {
+        this.requireTopLevel(expr)
+        this.requireArgs(expr, 2)
+        const str = this.forceStringLiteral(expr.arguments[0])
+        const handler = this.emitHandler(
+            this.codeName(expr.callee),
+            expr.arguments[1],
+            { methodHandler: true }
+        )
+        if (!this.cloudMethodDispatcher) {
+            this.emitInRoleDispatcher(this.cloudRole, wr => {
+                this.cloudMethod429 = wr.mkLabel("cloud429")
+            })
+            this.cloudMethodDispatcher = new DelayedCodeSection(
+                "cloud_method",
+                this.cloudRole.dispatcher.proc
+            )
+        }
+
+        this.cloudMethodDispatcher.emit(wr => {
+            const skip = wr.mkLabel("skipMethod")
+
+            {
+                wr.push()
+                const r0 = wr.allocArgs(1)[0]
+                wr.emitSync(OpSync.STR0EQ, str.index, 0, 4)
+                wr.emitJump(skip, r0.index)
+                wr.pop()
+            }
+
+            {
+                wr.push()
+                const args = wr.allocArgs(handler.numargs)
+                wr.emitBufLoad(args[0], OpFmt.U32, 0)
+                const pref =
+                    4 + strlen(this.stringLiteral(expr.arguments[0])) + 1
+                for (let i = 1; i < handler.numargs; ++i)
+                    wr.emitBufLoad(args[i], OpFmt.F64, pref + (i - 1) * 8)
+                wr.pop()
+            }
+
+            wr.emitCall(handler, OpCall.BG_MAX1)
+            wr.emitJump(this.cloudMethod429, 0)
+            wr.emitJump(this.cloudRole.dispatcher.top)
+
+            wr.emitLabel(skip)
+        })
     }
 
     private emitCloud(expr: estree.CallExpression, fnName: string): ValueDesc {
@@ -1940,59 +1986,18 @@ class Program implements InstrArgResolver {
                 this.requireArgs(expr, 1)
                 const path = this.forceStringLiteral(expr.arguments[0])
                 return this.emitGetTwin(path)
-            case "cloud.onMethod":
+            case "cloud.onTwinChange":
                 this.requireTopLevel(expr)
-                this.requireArgs(expr, 2)
-                const str = this.forceStringLiteral(expr.arguments[0])
-                const handler = this.emitHandler(
-                    this.codeName(expr.callee),
-                    expr.arguments[1],
-                    { methodHandler: true }
+                this.requireArgs(expr, 1)
+                this.emitEventHandler(
+                    "twin_changed",
+                    expr.arguments[0],
+                    this.cloudRole,
+                    JacscriptCloudEvent.TwinChanged
                 )
-                if (!this.cloudMethodDispatcher) {
-                    this.emitInRoleDispatcher(this.cloudRole, wr => {
-                        this.cloudMethod429 = wr.mkLabel("cloud429")
-                    })
-                    this.cloudMethodDispatcher = new DelayedCodeSection(
-                        "cloud_method",
-                        this.cloudRole.dispatcher.proc
-                    )
-                }
-
-                this.cloudMethodDispatcher.emit(wr => {
-                    const skip = wr.mkLabel("skipMethod")
-
-                    {
-                        wr.push()
-                        const r0 = wr.allocArgs(1)[0]
-                        wr.emitSync(OpSync.STR0EQ, str.index, 0, 4)
-                        wr.emitJump(skip, r0.index)
-                        wr.pop()
-                    }
-
-                    {
-                        wr.push()
-                        const args = wr.allocArgs(handler.numargs)
-                        wr.emitBufLoad(args[0], OpFmt.U32, 0)
-                        const pref =
-                            4 +
-                            strlen(this.stringLiteral(expr.arguments[0])) +
-                            1
-                        for (let i = 1; i < handler.numargs; ++i)
-                            wr.emitBufLoad(
-                                args[i],
-                                OpFmt.F64,
-                                pref + (i - 1) * 8
-                            )
-                        wr.pop()
-                    }
-
-                    wr.emitCall(handler, OpCall.BG_MAX1)
-                    wr.emitJump(this.cloudMethod429, 0)
-                    wr.emitJump(this.cloudRole.dispatcher.top)
-
-                    wr.emitLabel(skip)
-                })
+                return values.zero
+            case "cloud.onMethod":
+                this.emitCloudMethod(expr)
                 return values.zero
             default:
                 return null

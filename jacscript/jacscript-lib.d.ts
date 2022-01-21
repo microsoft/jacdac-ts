@@ -53,7 +53,7 @@ declare class JacscriptCloud {
         ) => void
     ): void
     twin(path: string): number
-    onTwinChange(path: string, handler: (val: number) => void): void
+    onTwinChange(handler: () => void): void
 }
 declare var cloud: JacscriptCloud
 
