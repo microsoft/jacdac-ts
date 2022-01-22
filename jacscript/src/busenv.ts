@@ -13,13 +13,14 @@ import {
     SRV_ROLE_MANAGER,
     RoleManagerServer,
     AzureIoTHubHealthServer,
-    keyedSetting,
+    Setting
 } from "jacdac-ts"
 import { JacscriptCloudServer } from "./jacscriptcloudserver"
 import { AzureIoTHubConnector } from "./azureiothubconnector"
 
 export interface JacsEnvOptions {
     disableCloud?: boolean
+    setting?: (name: string) => Setting
 }
 
 export class JDBusJacsEnv implements JacsEnv {
@@ -38,7 +39,7 @@ export class JDBusJacsEnv implements JacsEnv {
             services: () => {
                 const roleServer = new RoleManagerServer(
                     this.bus,
-                    keyedSetting("jacs_roles")
+                    this.options.setting?.("jacs_roles")
                 )
                 this.roleManager = new BusRoleManager(roleServer)
                 if (this.options.disableCloud) {
@@ -46,7 +47,7 @@ export class JDBusJacsEnv implements JacsEnv {
                 } else {
                     const healthServer = new AzureIoTHubHealthServer(
                         {},
-                        keyedSetting("jacs_azure_iot_conn")
+                        this.options.setting?.("jacs_azure_iot_conn")
                     )
                     const conn = new AzureIoTHubConnector(healthServer)
                     const jacsCloud = new JacscriptCloudServer(conn)

@@ -14,7 +14,7 @@ export abstract class JDBridge extends JDClient {
     packetSent = 0
     packetProcessed = 0
 
-    constructor() {
+    constructor(public readonly infrastructure: boolean = false) {
         super()
         this.handleSendPacket = this.handleSendPacket.bind(this)
     }
