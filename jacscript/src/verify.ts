@@ -93,6 +93,7 @@ export function verifyBinary(
 
     for (let i = 0; i < sects.length; ++i) {
         host.log(`sect ${sects[i]}`)
+        sects[i].checkAligned()
         if (i > 0)
             assertPos(
                 sects[i].offset,
@@ -123,6 +124,7 @@ export function verifyBinary(
         ptr += BinFmt.FunctionHeaderSize
     ) {
         const funSect = new BinSection(bin, ptr)
+        funSect.checkAligned()
         assertPos(ptr, funSect.start == prevProc, "func in order")
         funData.mustContain(ptr, funSect)
         prevProc = funSect.end
@@ -277,6 +279,7 @@ export function verifyBinary(
                     rdReg(reg1)
                     rdReg(reg2)
                     wrReg(reg1)
+                    check(subop != 0, "valid bincode")
                     check(subop < OpBinary._LAST, "valid bincode")
                     break
 

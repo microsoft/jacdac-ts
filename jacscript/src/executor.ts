@@ -83,6 +83,11 @@ export class BinSection {
         assertPos(offset, this.end <= this.buf.length, "binsect: end <= len")
     }
 
+    checkAligned() {
+        assertPos(this.offset, (this.start & 3) == 0, "binsect: aligned")
+        assertPos(this.offset, (this.length & 3) == 0, "binsect: aligned sz")
+    }
+
     toString() {
         return `[${hex(this.start)}:${hex(this.end)}]`
     }
