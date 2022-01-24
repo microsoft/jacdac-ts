@@ -13,7 +13,8 @@ import {
     SRV_ROLE_MANAGER,
     RoleManagerServer,
     AzureIoTHubHealthServer,
-    Setting
+    Setting,
+    JDClient
 } from "jacdac-ts"
 import { JacscriptCloudServer } from "./jacscriptcloudserver"
 import { AzureIoTHubConnector } from "./azureiothubconnector"
@@ -23,17 +24,20 @@ export interface JacsEnvOptions {
     setting?: (name: string) => Setting
 }
 
-export class JDBusJacsEnv implements JacsEnv {
+export class JDBusJacsEnv extends JDClient implements JacsEnv {
     private scheduler: Scheduler
     roleManager: JacsRoleMgr
 
     constructor(private bus: JDBus, private options: JacsEnvOptions = {}) {
-        this.scheduler = this.bus.scheduler
-        this.bus.on(DEVICE_DISCONNECT, dev => this.onDisconnect?.(dev))
-        this.bus.on(DEVICE_CONNECT, dev => this.onConnect?.(dev))
-        this.bus.on(PACKET_PROCESS, pkt => this.onPacket?.(pkt))
+        super()
 
-        addServiceProvider(this.bus, {
+        this.scheduler = this.bus.scheduler
+
+        this.mount(this.bus.subscribe(DEVICE_DISCONNECT, (dev: JDDevice) => this.onDisconnect?.(dev)))
+        this.mount(this.bus.subscribe(DEVICE_CONNECT, (dev: JDDevice) => this.onConnect?.(dev)))
+        this.mount(this.bus.subscribe(PACKET_PROCESS, (pkt: Packet) => this.onPacket?.(pkt)))
+
+        const jacScriptServiceProvider = addServiceProvider(this.bus, {
             name: "JacScript Helper",
             serviceClasses: [SRV_ROLE_MANAGER],
             services: () => {
@@ -55,6 +59,7 @@ export class JDBusJacsEnv implements JacsEnv {
                 }
             },
         })
+        this.mount(() => this.bus.removeServiceProvider(jacScriptServiceProvider))
     }
 
     send(pkt: Packet): void {

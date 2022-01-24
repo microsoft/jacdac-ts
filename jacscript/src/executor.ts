@@ -1319,4 +1319,10 @@ export class Runner {
             this.ctx.startProgram()
         }, this.startDelay)
     }
+
+    stop() {
+        if (!this.ctx) return;
+        this.allowRestart = false;
+        this.ctx.onPanic(0);
+    }
 }
