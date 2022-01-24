@@ -21,7 +21,8 @@ import {
     assert,
     JDEventSource,
     ERROR,
-    PANIC
+    PANIC,
+    CHANGE
 } from "jacdac-ts"
 import { JacsEnvOptions, JDBusJacsEnv } from "./busenv"
 import { JacsEnv } from "./env"
@@ -1279,7 +1280,7 @@ export class Runner extends JDEventSource {
     img: ImageInfo
     allowRestart = false
     options: JacsEnvOptions = {}
-    state = RunnerState.Stopped
+    private _state = RunnerState.Stopped
     startDelay = 1100
     onError: (err: Error) => void = null
     onPanic: (code: number) => void = null
@@ -1294,6 +1295,16 @@ export class Runner extends JDEventSource {
         if (!this.img.roles.some(r => r.classId == SRV_JACSCRIPT_CLOUD))
             this.options.disableCloud = true
         this.env = new JDBusJacsEnv(this.bus, this.options)
+    }
+
+    get state() {
+        return this._state
+    }
+    private set state(value: RunnerState) {
+        if (value !== this._state) {
+            this._state = value;
+            this.emit(CHANGE);
+        }
     }
 
     run() {

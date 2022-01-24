@@ -38,6 +38,7 @@
     "prettier": "prettier --write src/**/*.ts tests/**/*.ts",
     "predist": "rm -rf dist",
     "dist": "node build.js",
+    "build:ts": "node build.js",
     "watch:ts": "node build.js --watch",
     "test": "(cd tests && node ../node_modules/mocha/bin/mocha --require ts-node/register --watch-extensions ts,tsx -p ./tsconfig.json **/*.spec.ts)",
     "testone": "cd tests && node ../node_modules/mocha/bin/mocha --require ts-node/register --watch-extensions ts,tsx -p ./tsconfig.json **/rolemanager.spec.ts",
