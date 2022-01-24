@@ -34,7 +34,9 @@ export enum OpTop {
 }
 
 export enum OpAsync {
-    YIELD, // A-timeout in ms
+    WAIT_ROLE, // A-role
+    SLEEP_R0, // R0 - wait time in seconds
+    SLEEP_MS, // A - time in ms
     QUERY_REG, // A-role, B-code, C-timeout
     SEND_CMD, // A-role, B-code
     QUERY_IDX_REG, // A-role, B-STRIDX:CMD[8], C-timeout
@@ -44,7 +46,6 @@ export enum OpAsync {
 export enum OpSync {
     RETURN,
     SETUP_BUFFER, // A-size
-    OBSERVE_ROLE, // A-role
     FORMAT, // A-string-index B-numargs C-offset
     MEMCPY, // A-string-index C-offset
     STR0EQ, // A-string-index C-offset result in R0
@@ -448,8 +449,6 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
                 return `return`
             case OpSync.SETUP_BUFFER: // A-size
                 return `setup_buffer(size=${a})`
-            case OpSync.OBSERVE_ROLE: // A-role
-                return `observe(${role()})`
             case OpSync.FORMAT: // A-string-index B-numargs
                 return `format(str=${a} #${b}) @${c}`
             case OpSync.LOG_FORMAT: // A-string-index B-numargs
@@ -471,8 +470,12 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
 
     function asyncOp() {
         switch (arg8) {
-            case OpAsync.YIELD: // A-timeout in ms
-                return `yield(wait=${a}ms)`
+            case OpAsync.WAIT_ROLE:
+                return `wait_role(${role()})`
+            case OpAsync.SLEEP_MS:
+                return `sleep(${a}ms)`
+            case OpAsync.SLEEP_R0:
+                return `sleep(R0 s)`
             case OpAsync.QUERY_REG: // A-role, B-code, C-timeout
                 return `query(${jdreg()} timeout=${c}ms)`
             case OpAsync.QUERY_IDX_REG:

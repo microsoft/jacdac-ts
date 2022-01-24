@@ -337,9 +337,6 @@ export function verifyBinary(
                         case OpSync.SETUP_BUFFER: // A-size
                             check(a <= 236, "setup buffer size in range")
                             break
-                        case OpSync.OBSERVE_ROLE: // A-role
-                            check(a < numRoles, "role in range")
-                            break
                         case OpSync.LOG_FORMAT:
                         case OpSync.FORMAT: // A-string-index B-numargs
                             check(c <= 236, "offset in range")
@@ -379,7 +376,13 @@ export function verifyBinary(
                     d = (d << 4) | subop
                     checkSaveRegs()
                     switch (arg8) {
-                        case OpAsync.YIELD: // A-timeout in ms
+                        case OpAsync.SLEEP_MS:
+                            break
+                        case OpAsync.SLEEP_R0:
+                            rdReg(0)
+                            break
+                        case OpAsync.WAIT_ROLE:
+                            check(a < numRoles, "role in range")
                             break
                         case OpAsync.SEND_CMD: // A-role, B-code
                             check(a < numRoles, "role idx")

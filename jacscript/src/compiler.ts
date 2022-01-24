@@ -1023,8 +1023,7 @@ class Program implements InstrArgResolver {
                 wr.pop()
                 role.dispatcher.init.callHere()
                 wr.emitLabel(role.dispatcher.top)
-                wr.emitSync(OpSync.OBSERVE_ROLE, role.encode())
-                wr.emitAsync(OpAsync.YIELD)
+                wr.emitAsync(OpAsync.WAIT_ROLE, role.encode())
                 role.dispatcher.checkConnected.callHere()
             })
 
@@ -1157,7 +1156,7 @@ class Program implements InstrArgResolver {
                     }
                 })
             }
-            wr.emitAsync(OpAsync.YIELD, period)
+            wr.emitAsync(OpAsync.SLEEP_MS, period)
             wr.emitJump(wr.top)
         })
 
@@ -1465,8 +1464,17 @@ class Program implements InstrArgResolver {
                 proc.methodSeqNo = proc.mkTempLocal("methSeqNo")
             this.emitParameters(func, proc)
             proc.numargs = proc.locals.list.length
-            if (options.every)
-                wr.emitAsync(OpAsync.YIELD, (options.every | 0) + 1)
+            if (options.every) {
+                if (options.every <= 0xffff)
+                    wr.emitAsync(OpAsync.SLEEP_MS, options.every)
+                else {
+                    wr.push()
+                    const tm = wr.allocArgs(1)[0]
+                    wr.assign(tm, floatVal(options.every / 1000))
+                    wr.pop()
+                    wr.emitAsync(OpAsync.SLEEP_R0)
+                }
+            }
             if (func.body.type == "BlockStatement") {
                 for (const stmt of func.body.body) this.emitStmt(stmt)
             } else {
@@ -1561,8 +1569,7 @@ class Program implements InstrArgResolver {
                 const wr = this.writer
                 const lbl = wr.mkLabel("wait")
                 wr.emitLabel(lbl)
-                wr.emitSync(OpSync.OBSERVE_ROLE, role.encode())
-                wr.emitAsync(OpAsync.YIELD)
+                wr.emitAsync(OpAsync.WAIT_ROLE, role.encode())
                 wr.push()
                 const cond = this.inlineBin(
                     OpBinary.EQ,
@@ -1667,8 +1674,7 @@ class Program implements InstrArgResolver {
                 if (!role.isCondition())
                     this.throwError(expr, "only condition()s have wait()")
                 this.requireArgs(expr, 0)
-                wr.emitSync(OpSync.OBSERVE_ROLE, role.encode())
-                wr.emitAsync(OpAsync.YIELD)
+                wr.emitAsync(OpAsync.WAIT_ROLE, role.encode())
                 return values.zero
             default:
                 const v = this.emitRoleMember(expr.callee, obj)
@@ -2114,8 +2120,19 @@ class Program implements InstrArgResolver {
         switch (funName) {
             case "wait": {
                 this.requireArgs(expr, 1)
-                const time = this.litValue(expr.arguments[0]) * 1000
-                wr.emitAsync(OpAsync.YIELD, (time | 0) + 1)
+                const v = this.emitExpr(expr.arguments[0])
+                const tm =
+                    v.litValue !== undefined
+                        ? Math.round(v.litValue * 1000)
+                        : 0x1000000
+                if (0 < tm && tm <= 0xffff) wr.emitAsync(OpAsync.SLEEP_MS, tm)
+                else {
+                    wr.push()
+                    const r0 = wr.allocArgs(1)[0]
+                    wr.assign(r0, v)
+                    wr.pop()
+                    wr.emitAsync(OpAsync.SLEEP_R0)
+                }
                 return values.zero
             }
             case "isNaN": {

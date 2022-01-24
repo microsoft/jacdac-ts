@@ -641,10 +641,6 @@ class Activation {
                     case OpSync.SETUP_BUFFER: // A-size
                         ctx.pkt.data = new Uint8Array(a)
                         break
-                    case OpSync.OBSERVE_ROLE: // A-role
-                        const r = ctx.roles[a]
-                        this.fiber.waitingOnRole = r
-                        break
                     case OpSync.FORMAT: // A-string-index B-numargs C-offset
                         ctx.setBuffer(
                             strFormat(
@@ -702,8 +698,20 @@ class Activation {
                 d = (d << 4) | subop
                 this.saveRegs(d)
                 switch (arg8) {
-                    case OpAsync.YIELD: // A-timeout in ms
-                        this.fiber.setWakeTime(a ? ctx.now() + a : 0)
+                    case OpAsync.WAIT_ROLE:
+                        const r = ctx.roles[a]
+                        this.fiber.waitingOnRole = r
+                        this.fiber.setWakeTime(0)
+                        ctx.doYield()
+                        break
+                    case OpAsync.SLEEP_MS: // A-timeout in ms
+                        this.fiber.setWakeTime(ctx.now() + a)
+                        ctx.doYield()
+                        break
+                    case OpAsync.SLEEP_R0:
+                        this.fiber.setWakeTime(
+                            ctx.now() + Math.round(ctx.registers[0] * 1000)
+                        )
                         ctx.doYield()
                         break
                     case OpAsync.SEND_CMD: // A-role, B-code
@@ -1011,6 +1019,7 @@ class Ctx {
     private syncRoleAssignments() {
         const assignedRoles: Role[] = []
         for (const r of this.roles) {
+            if (r.isCondition()) continue
             const curr = this.env.roleManager.getRole(r.info.roleName)
             if (
                 curr.device != r.device ||

@@ -279,7 +279,6 @@ Main dynamic memory usage - function activation records (and fibers).
 ## TODO
 
 * add opcode to cache current packet (in onChanged())
-* is timeout in yield needed?
 * extend format strings to include numfmt
 * shift buffer opcode?
 * somehow deal with events with legit args (button and barcode reader currently) - doesn't work so well in handler-pending model
