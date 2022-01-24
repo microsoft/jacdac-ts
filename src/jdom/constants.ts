@@ -129,6 +129,7 @@ export const REPORT_UPDATE = "reportUpdate"
 export const COMMAND_RECEIVE = "commandReceive"
 
 export const ERROR = "error"
+export const PANIC = "panic"
 export const TRACE = "trace"
 export const TIMEOUT = "timeout"
 export const TIMEOUT_DISCONNECT = "timeoutDisconnect"

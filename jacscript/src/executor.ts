@@ -1,15 +1,10 @@
 import {
     JDBus,
     JDDevice,
-    JDRegister,
-    JDService,
     printPacket,
     NumberFormat,
     setNumber,
     CMD_GET_REG,
-    DEVICE_DISCONNECT,
-    PACKET_PROCESS,
-    SELF_ANNOUNCE,
     jdunpack,
     Packet,
     fromUTF8,
@@ -17,17 +12,16 @@ import {
     read16,
     read32,
     stringToUint8Array,
-    toHex,
-    toUTF8,
     uint8ArrayToString,
-    write16,
-    write32,
     CMD_SET_REG,
     sizeOfNumberFormat,
-    strcmp,
     SRV_JACSCRIPT_CONDITION,
     SRV_JACSCRIPT_CLOUD,
     SystemEvent,
+    assert,
+    JDEventSource,
+    ERROR,
+    PANIC
 } from "jacdac-ts"
 import { JacsEnvOptions, JDBusJacsEnv } from "./busenv"
 import { JacsEnv } from "./env"
@@ -39,7 +33,6 @@ import {
     DebugInfo,
     emptyDebugInfo,
     FunctionDebugInfo,
-    InstrArgResolver,
     isPrefixInstr,
     NUM_REGS,
     OpAsync,
@@ -52,8 +45,6 @@ import {
     OpSync,
     OpTop,
     OpUnary,
-    SMap,
-    stringifyCellKind,
     stringifyInstr,
     ValueSpecial,
 } from "./format"
@@ -1276,17 +1267,19 @@ class Ctx {
 }
 
 export enum RunnerState {
+    Stopped,
     Initializing,
     Running,
     Error,
 }
 
-export class Runner {
+export class Runner extends JDEventSource {
     private ctx: Ctx
+    private env: JDBusJacsEnv
     img: ImageInfo
     allowRestart = false
     options: JacsEnvOptions = {}
-    state = RunnerState.Initializing
+    state = RunnerState.Stopped
     startDelay = 1100
     onError: (err: Error) => void = null
     onPanic: (code: number) => void = null
@@ -1296,22 +1289,29 @@ export class Runner {
         public bin: Uint8Array,
         public dbg: DebugInfo = emptyDebugInfo()
     ) {
+        super()
         this.img = new ImageInfo(bin, dbg)
+        if (!this.img.roles.some(r => r.classId == SRV_JACSCRIPT_CLOUD))
+            this.options.disableCloud = true
+        this.env = new JDBusJacsEnv(this.bus, this.options)
     }
 
     run() {
-        if (!this.img.roles.some(r => r.classId == SRV_JACSCRIPT_CLOUD))
-            this.options.disableCloud = true
-        this.ctx = new Ctx(this.img, new JDBusJacsEnv(this.bus, this.options))
+        assert(!this.ctx);
+
+        this.state = RunnerState.Initializing
+
+        this.ctx = new Ctx(this.img, this.env)
         this.ctx.onError = e => {
             console.error("Internal error", e.stack)
             this.state = RunnerState.Error
-            if (this.onError) this.onError(e)
+            this.emit(ERROR, e)
         }
         this.ctx.onPanic = code => {
             if (code == RESTART_PANIC_CODE) code = 0
             if (code) console.error(`PANIC ${code}`)
-            if (this.onPanic) this.onPanic(code)
+            this.state = RunnerState.Stopped
+            this.emit(PANIC, code)
             if (this.allowRestart) this.run()
         }
         this.bus.scheduler.setTimeout(() => {
@@ -1321,8 +1321,11 @@ export class Runner {
     }
 
     stop() {
-        if (!this.ctx) return;
-        this.allowRestart = false;
-        this.ctx.onPanic(0);
+        const ctx = this.ctx;
+        if (ctx) {
+            this.ctx = undefined;
+            this.allowRestart = false;
+            this.ctx.onPanic(0);
+        }
     }
 }
