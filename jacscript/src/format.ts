@@ -34,42 +34,42 @@ export enum OpTop {
 }
 
 export enum OpAsync {
-    WAIT_ROLE, // A-role
-    SLEEP_R0, // R0 - wait time in seconds
-    SLEEP_MS, // A - time in ms
-    QUERY_REG, // A-role, B-code, C-timeout
-    SEND_CMD, // A-role, B-code
-    QUERY_IDX_REG, // A-role, B-STRIDX:CMD[8], C-timeout
-    _LAST,
+    WAIT_ROLE = 0, // A-role
+    SLEEP_R0 = 1, // R0 - wait time in seconds
+    SLEEP_MS = 2, // A - time in ms
+    QUERY_REG = 3, // A-role, B-code, C-timeout
+    SEND_CMD = 4, // A-role, B-code
+    QUERY_IDX_REG = 5, // A-role, B-STRIDX:CMD[8], C-timeout
+    _LAST = 6,
 }
 
 export enum OpSync {
-    RETURN,
-    SETUP_BUFFER, // A-size
-    FORMAT, // A-string-index B-numargs C-offset
-    MEMCPY, // A-string-index C-offset
-    STR0EQ, // A-string-index C-offset result in R0
-    LOG_FORMAT, // A-string-index B-numargs
-    MATH1, // A-OpMath1, R0 := op(R0)
-    MATH2, // A-OpMath2, R0 := op(R0, R1)
-    PANIC, // A-error code
-    _LAST,
+    RETURN = 0,
+    SETUP_BUFFER = 1, // A-size
+    FORMAT = 2, // A-string-index B-numargs C-offset
+    MEMCPY = 3, // A-string-index C-offset
+    STR0EQ = 4, // A-string-index C-offset result in R0
+    LOG_FORMAT = 5, // A-string-index B-numargs
+    MATH1 = 6, // A-OpMath1, R0 := op(R0)
+    MATH2 = 7, // A-OpMath2, R0 := op(R0, R1)
+    PANIC = 8, // A-error code
+    _LAST = 9,
 }
 
 export enum OpMath1 {
-    FLOOR,
-    ROUND,
-    CEIL,
-    LOG_E,
-    RANDOM, // value between 0 and R0
-    _LAST,
+    FLOOR = 0,
+    ROUND = 1,
+    CEIL = 2,
+    LOG_E = 3,
+    RANDOM = 4, // value between 0 and R0
+    _LAST = 5,
 }
 
 export enum OpMath2 {
-    MIN,
-    MAX,
-    POW,
-    _LAST,
+    MIN = 0,
+    MAX = 1,
+    POW = 2,
+    _LAST = 3,
 }
 
 export enum OpCall {
@@ -107,7 +107,7 @@ export enum CellKind {
 
 export enum OpRoleProperty {
     IS_CONNECTED = 0,
-    _LAST,
+    _LAST = 1,
 }
 
 export enum ValueSpecial {
@@ -116,7 +116,7 @@ export enum ValueSpecial {
     SIZE = 0x1,
     EV_CODE = 0x2, // or nan
     REG_GET_CODE = 0x3, // or nan
-    _LAST,
+    _LAST = 0x4,
 }
 
 export enum OpBinary {
@@ -130,7 +130,7 @@ export enum OpBinary {
     NE = 0x8,
     AND = 0x9,
     OR = 0xa,
-    _LAST,
+    _LAST = 0xb,
 }
 
 export enum OpUnary {
@@ -139,7 +139,7 @@ export enum OpUnary {
     NOT = 0x2,
     ABS = 0x3,
     IS_NAN = 0x4,
-    _LAST,
+    _LAST = 0x5,
 }
 
 // Size in bits is: 8 << (fmt & 0b11)
