@@ -22,7 +22,7 @@ import {
     JDEventSource,
     ERROR,
     PANIC,
-    CHANGE
+    CHANGE,
 } from "jacdac-ts"
 import { JacsEnvOptions, JDBusJacsEnv } from "./busenv"
 import { JacsEnv } from "./env"
@@ -1302,24 +1302,25 @@ export class Runner extends JDEventSource {
     }
     private set state(value: RunnerState) {
         if (value !== this._state) {
-            this._state = value;
+            this._state = value
             console.log(`jsc: runner ${this._state}`)
-            this.emit(CHANGE);
+            this.emit(CHANGE)
         }
     }
 
     run() {
-        assert(!this.ctx);
+        if (this.state === RunnerState.Initializing) return
+        assert(!this.ctx)
 
         this.state = RunnerState.Initializing
 
-        const ctx = this.ctx = new Ctx(this.img, this.env)
-        ctx.onError = e => {
+        this.ctx = new Ctx(this.img, this.env)
+        this.ctx.onError = e => {
             console.error("Internal error", e.stack)
             this.state = RunnerState.Error
             this.emit(ERROR, e)
         }
-        ctx.onPanic = code => {
+        this.ctx.onPanic = code => {
             if (code == RESTART_PANIC_CODE) code = 0
             if (code) console.error(`PANIC ${code}`)
             this.state = RunnerState.Stopped
@@ -1328,16 +1329,16 @@ export class Runner extends JDEventSource {
         }
         this.bus.scheduler.setTimeout(() => {
             this.state = RunnerState.Running
-            ctx.startProgram()
+            this.ctx.startProgram()
         }, this.startDelay)
     }
 
     stop() {
-        const ctx = this.ctx;
+        const ctx = this.ctx
         if (ctx) {
-            this.allowRestart = false;
-            this.ctx = undefined;
-            ctx.onPanic(0);
+            this.allowRestart = false
+            this.ctx = undefined
+            ctx.onPanic(0)
         }
     }
 }
