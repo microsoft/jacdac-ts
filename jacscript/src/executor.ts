@@ -1303,6 +1303,7 @@ export class Runner extends JDEventSource {
     private set state(value: RunnerState) {
         if (value !== this._state) {
             this._state = value;
+            console.log(`jsc: runner ${this._state}`)
             this.emit(CHANGE);
         }
     }
@@ -1312,13 +1313,13 @@ export class Runner extends JDEventSource {
 
         this.state = RunnerState.Initializing
 
-        this.ctx = new Ctx(this.img, this.env)
-        this.ctx.onError = e => {
+        const ctx = this.ctx = new Ctx(this.img, this.env)
+        ctx.onError = e => {
             console.error("Internal error", e.stack)
             this.state = RunnerState.Error
             this.emit(ERROR, e)
         }
-        this.ctx.onPanic = code => {
+        ctx.onPanic = code => {
             if (code == RESTART_PANIC_CODE) code = 0
             if (code) console.error(`PANIC ${code}`)
             this.state = RunnerState.Stopped
@@ -1327,16 +1328,16 @@ export class Runner extends JDEventSource {
         }
         this.bus.scheduler.setTimeout(() => {
             this.state = RunnerState.Running
-            this.ctx.startProgram()
+            ctx.startProgram()
         }, this.startDelay)
     }
 
     stop() {
         const ctx = this.ctx;
         if (ctx) {
-            this.ctx = undefined;
             this.allowRestart = false;
-            this.ctx.onPanic(0);
+            this.ctx = undefined;
+            ctx.onPanic(0);
         }
     }
 }
