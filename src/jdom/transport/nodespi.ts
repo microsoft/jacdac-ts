@@ -19,6 +19,7 @@ interface Rpio {
     HIGH: number
     LOW: number
     POLL_HIGH: number
+    init(): void
     open(pin: number, mode: number, flags?: number): void
     close(pin: number): void
     write(pin: number, value: number): void
@@ -49,6 +50,8 @@ class SpiTransport extends Transport {
         super("spi", options)
         this.handleRxPinRising = this.handleRxPinRising.bind(this)
         this.handleTxPinRising = this.handleTxPinRising.bind(this)
+
+        this.controller.init()
     }
 
     protected async transportConnectAsync(background?: boolean): Promise<void> {
