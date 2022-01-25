@@ -175,7 +175,7 @@ export function toJacScript(p: VMProgram): JacScriptProgram {
     // process start blocks
     roles.forEach(r => {
         const spec = serviceSpecificationFromClassIdentifier(r.serviceClass)
-        program.unshift(`var ${camelize(r.role)} = roles.${spec.shortId}()`)
+        program.unshift(`var ${camelize(r.role)} = roles.${spec.camelName}()`)
     })
 
     globals.forEach(g => {
