@@ -13,147 +13,6 @@ export interface JacScriptProgram {
     debug: string[]
 }
 
-function processExpression(
-    e: jsep.Expression,
-    asRead = true
-): [string, string[]] {
-    const vars: string[] = []
-    return [processExpr(e), vars]
-
-    function processExpr(e: jsep.Expression): string {
-        switch (e.type) {
-            case "ArrayExpression": {
-                const ae = e as jsep.ArrayExpression
-                return `[${ae.elements.map(processExpr).join(", ")}]`
-            }
-            case "CallExpression": {
-                const caller = e as jsep.CallExpression
-                return `${processExpr(caller.callee)}(${caller.arguments
-                    .map(processExpr)
-                    .join(", ")})`
-            }
-            case "MemberExpression": {
-                const root = e as jsep.MemberExpression
-                if (root.computed) {
-                    return `${processExpr(root.object)}[${processExpr(
-                        root.property
-                    )}]`
-                } else {
-                    const first = `${processExpr(root.object)}`
-                    const second = `${processExpr(root.property)}`
-                    if (first.startsWith("$var")) {
-                        if (vars.indexOf(second) < 0) vars.push(second)
-                        return second
-                    } else if (asRead) {
-                        if (second.indexOf(".") > 0) {
-                            const [reg, field] = second.split(".")
-                            return `${reg}.read().${field}`
-                        } else return `${first}.${second}.read()`
-                    } else {
-                        return `${first}.${second}`
-                    }
-                }
-            }
-            case "BinaryExpression": {
-                const be = e as any
-                return `(${processExpr(be.left)} ${be.operator} ${processExpr(
-                    be.right
-                )})`
-            }
-            case "UnaryExpression": {
-                const ue = e as jsep.UnaryExpression
-                return `${ue.operator}${processExpr(ue.argument)}`
-            }
-            case "Identifier": {
-                return camelize((e as jsep.Identifier).name)
-            }
-            case "Literal": {
-                return (e as jsep.Literal).raw
-            }
-            default:
-                return "TODO"
-        }
-    }
-}
-
-function getInst(cmd: VMCommand) {
-    return (cmd.command.callee as jsep.Identifier)?.name
-}
-
-// these are waits
-function processHandler(handler: VMCommand): [string, string[]] {
-    const args = handler.command.arguments
-    const inst = getInst(handler)
-    switch (inst) {
-        case "awaitEvent": {
-            const event = args[0] as jsep.MemberExpression
-            const [ev, vars] = processExpression(event, false)
-            return [`${ev}.subscribe(() => {`, vars]
-        }
-        case "awaitChange": {
-            const [reg, vars1] = processExpression(args[0], false)
-            const [delta, vars2] = processExpression(args[1], false)
-            return [`${reg}.onChange(${delta}, () => {`, [...vars1, ...vars2]]
-        }
-        case "awaitRegister": {
-            const [reg, vars] = processExpression(args[0], false)
-            return [`${reg}.onChange(0, () => {`, vars]
-        }
-        case "every": {
-            const [reg, vars] = processExpression(args[0], false)
-            return [`every(${reg}, () => {`, vars]
-        }
-        case "roleBound": {
-            const [reg, vars1] = processExpression(args[0], false)
-            return [`${reg}.onConnected(() => {`, [...vars1]]
-        }
-        case "start": {
-            return ['', []];
-        }
-        default: {
-            console.debug(`jacscript: unknown instruction ${inst}`, handler)
-            return [`error: unknown handler ${inst}`, []]
-        }
-    }
-}
-
-function processCommand(cmd: VMCommand): [string, string[]] {
-    const args = cmd.command.arguments
-    if (cmd.command.callee.type === "MemberExpression") {
-        const roleCall = processExpression(
-            cmd.command.callee as jsep.MemberExpression,
-            false
-        )
-        const exprs = args.map(a => processExpression(a))
-        return [
-            `${roleCall[0]}(${exprs.map(p => p[0]).join(",")})`,
-            [...roleCall[1], ...exprs.flatMap(p => p[1])],
-        ]
-    } else {
-        const inst = getInst(cmd)
-        switch (inst) {
-            case "wait":
-                return processExpression(cmd.command)
-            case "writeRegister": {
-                const rest = cmd.command.arguments.slice(1)
-                const exprs = rest.map(a => processExpression(a))
-                const reg = processExpression(args[0], false)
-                return [
-                    `${reg[0]}.write(${exprs.map(p => p[0]).join(",")})`,
-                    [...reg[1], ...exprs.flatMap(p => p[1])],
-                ]
-            }
-            case "writeLocal": {
-                const lhs = processExpression(args[0], false)
-                const rhs = processExpression(args[1])
-                return [`${lhs[0]} = ${rhs[0]}`, [...lhs[1], ...rhs[1]]]
-            }
-        }
-        console.debug(`jacscript: unknown instruction ${inst}`, cmd)
-        return [`error: unknown command ${inst}`, []]
-    }
-}
-
 export function toJacScript(p: VMProgram): JacScriptProgram {
     if (!p) return null
     const { roles, serverRoles, handlers } = p
@@ -185,14 +44,11 @@ export function toJacScript(p: VMProgram): JacScriptProgram {
         program.unshift(`var ${camelize(r.role)} = roles.${spec.camelName}()`)
     })
 
-    // prepend variables
-    globals.forEach(g => {
-        program.unshift(`var ${g}`)
-    })
-
     // add onStart handler
     startHandlers.forEach(h => h.commands.slice(1).forEach(visitBase))
 
+    // prepend variables
+    globals.forEach(g => program.unshift(`var ${g}`))
 
     return { program, debug }
 
@@ -228,6 +84,152 @@ export function toJacScript(p: VMProgram): JacScriptProgram {
                     add(`}`)
                 }
             }
+        }
+    }
+
+    function processExpression(
+        e: jsep.Expression,
+        asRead = true
+    ): [string, string[]] {
+        const vars: string[] = []
+        return [processExpr(e), vars]
+
+        function processExpr(e: jsep.Expression): string {
+            switch (e.type) {
+                case "ArrayExpression": {
+                    const ae = e as jsep.ArrayExpression
+                    return `[${ae.elements.map(processExpr).join(", ")}]`
+                }
+                case "CallExpression": {
+                    const caller = e as jsep.CallExpression
+                    return `${processExpr(caller.callee)}(${caller.arguments
+                        .map(processExpr)
+                        .join(", ")})`
+                }
+                case "MemberExpression": {
+                    const root = e as jsep.MemberExpression
+                    if (root.computed) {
+                        return `${processExpr(root.object)}[${processExpr(
+                            root.property
+                        )}]`
+                    } else {
+                        const first = `${processExpr(root.object)}`
+                        const second = `${processExpr(root.property)}`
+                        if (first.startsWith("$var")) {
+                            if (globals.indexOf(second) < 0)
+                                globals.push(second)
+                            if (vars.indexOf(second) < 0) vars.push(second)
+                            return second
+                        } else if (asRead) {
+                            if (second.indexOf(".") > 0) {
+                                const [reg, field] = second.split(".")
+                                return `${reg}.read().${field}`
+                            } else return `${first}.${second}.read()`
+                        } else {
+                            return `${first}.${second}`
+                        }
+                    }
+                }
+                case "BinaryExpression": {
+                    const be = e as any
+                    return `(${processExpr(be.left)} ${
+                        be.operator
+                    } ${processExpr(be.right)})`
+                }
+                case "UnaryExpression": {
+                    const ue = e as jsep.UnaryExpression
+                    return `${ue.operator}${processExpr(ue.argument)}`
+                }
+                case "Identifier": {
+                    return camelize((e as jsep.Identifier).name)
+                }
+                case "Literal": {
+                    return (e as jsep.Literal).raw
+                }
+                default:
+                    return "TODO"
+            }
+        }
+    }
+
+    function getInst(cmd: VMCommand) {
+        return (cmd.command.callee as jsep.Identifier)?.name
+    }
+
+    // these are waits
+    function processHandler(handler: VMCommand): [string, string[]] {
+        const args = handler.command.arguments
+        const inst = getInst(handler)
+        switch (inst) {
+            case "awaitEvent": {
+                const event = args[0] as jsep.MemberExpression
+                const [ev, vars] = processExpression(event, false)
+                return [`${ev}.subscribe(() => {`, vars]
+            }
+            case "awaitChange": {
+                const [reg, vars1] = processExpression(args[0], false)
+                const [delta, vars2] = processExpression(args[1], false)
+                return [
+                    `${reg}.onChange(${delta}, () => {`,
+                    [...vars1, ...vars2],
+                ]
+            }
+            case "awaitRegister": {
+                const [reg, vars] = processExpression(args[0], false)
+                return [`${reg}.onChange(0, () => {`, vars]
+            }
+            case "every": {
+                const [reg, vars] = processExpression(args[0], false)
+                return [`every(${reg}, () => {`, vars]
+            }
+            case "roleBound": {
+                const [reg, vars1] = processExpression(args[0], false)
+                return [`${reg}.onConnected(() => {`, [...vars1]]
+            }
+            case "start": {
+                return ["", []]
+            }
+            default: {
+                console.debug(`jacscript: unknown instruction ${inst}`, handler)
+                return [`error: unknown handler ${inst}`, []]
+            }
+        }
+    }
+
+    function processCommand(cmd: VMCommand): [string, string[]] {
+        const args = cmd.command.arguments
+        if (cmd.command.callee.type === "MemberExpression") {
+            const roleCall = processExpression(
+                cmd.command.callee as jsep.MemberExpression,
+                false
+            )
+            const exprs = args.map(a => processExpression(a))
+            return [
+                `${roleCall[0]}(${exprs.map(p => p[0]).join(",")})`,
+                [...roleCall[1], ...exprs.flatMap(p => p[1])],
+            ]
+        } else {
+            const inst = getInst(cmd)
+            switch (inst) {
+                case "wait":
+                    return processExpression(cmd.command)
+                case "writeRegister": {
+                    const rest = cmd.command.arguments.slice(1)
+                    const exprs = rest.map(a => processExpression(a))
+                    const reg = processExpression(args[0], false)
+                    return [
+                        `${reg[0]}.write(${exprs.map(p => p[0]).join(",")})`,
+                        [...reg[1], ...exprs.flatMap(p => p[1])],
+                    ]
+                }
+                case "writeLocal": {
+                    const lhs = processExpression(args[0], false)
+                    const rhs = processExpression(args[1])
+                    return [`${lhs[0]} = ${rhs[0]}`, [...lhs[1], ...rhs[1]]]
+                }
+            }
+            console.debug(`jacscript: unknown instruction ${inst}`, cmd)
+            return [`error: unknown command ${inst}`, []]
         }
     }
 }
