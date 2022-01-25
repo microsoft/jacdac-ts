@@ -157,9 +157,7 @@ export function toUTF8(str: string, cesu8?: boolean) {
     return res
 }
 
-export interface SMap<T> {
-    [index: string]: T
-}
+export type SMap<T> = Record<string, T>
 
 /** @internal */
 export class PromiseBuffer<T> {
