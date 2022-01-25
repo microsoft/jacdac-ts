@@ -133,6 +133,7 @@ export const PANIC = "panic"
 export const TRACE = "trace"
 export const TIMEOUT = "timeout"
 export const TIMEOUT_DISCONNECT = "timeoutDisconnect"
+export const GLOBALS_UPDATED = "globalsUpdated"
 
 export const PROGRESS = "progress"
 

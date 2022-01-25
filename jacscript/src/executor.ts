@@ -23,6 +23,7 @@ import {
     ERROR,
     PANIC,
     CHANGE,
+    GLOBALS_UPDATED,
 } from "jacdac-ts"
 import { JacsEnvOptions, JDBusJacsEnv } from "./busenv"
 import { JacsEnv } from "./env"
@@ -1351,7 +1352,7 @@ export class Runner extends JDEventSource {
             this.emit(ERROR, e)
         }
         this.ctx.onGlobalsUpdated = () => {
-            this.emit("globalsUpdated")
+            this.emit(GLOBALS_UPDATED)
         }
         this.ctx.onPanic = code => {
             if (code == RESTART_PANIC_CODE) code = 0
