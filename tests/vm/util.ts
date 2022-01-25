@@ -19,7 +19,7 @@ export function runJacScriptProgram(fn: string, bus: JDBus, delay: number = unde
         if (delay !== undefined)
             r.startDelay = delay
         r.on("error", () => process.exit(1))
-        r.on("panic", = code => {
+        r.on("panic", code => {
             if (code == 0)
                 resolve()
             else
