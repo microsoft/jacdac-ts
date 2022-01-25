@@ -34,21 +34,21 @@ The only jump statement supported is currently `return`. There are no loops.
 
 ## Logging and format strings
 
-The `print()` function takes a literal string, and optionally format arguments.
+The `console.log()` function takes a literal string, and optionally format arguments.
 
 ```js
-print("Hello world")
-print("X is {0} and Y is {1}", x, y)
+console.log("Hello world")
+console.log("X is {0} and Y is {1}", x, y)
 ```
 
 Arguments are `{0}`, `{1}`, ..., `{9}`, `{A}`, `{B}`, ..., `{F}`.
 A second digit can be supplied to specify precision (though this doesn't work so well yet):
 
 ```js
-print("X = {04}", x)
+console.log("X = {04}", x)
 ```
 
-Some functions that take string literals also accept `format()` function, using the same formatting strings as `print()`,
+Some functions that take string literals also accept `format()` function, using the same formatting strings as `console.log()`,
 for example:
 
 ```js
@@ -87,7 +87,7 @@ Events are referenced as `myRole.eventName`. They currently have two member func
 
 ```js
 btnA.down.subscribe(() => {
-    print("button down!")
+    console.log("button down!")
 })
 
 // ...

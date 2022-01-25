@@ -3,11 +3,11 @@ var heater = roles.relay()
 var t
 
 heater.onConnected(() => {
-    print("heater detected")
+    console.log("heater detected")
 })
 
 heater.onDisconnected(() => {
-    print("heater lost")
+    console.log("heater lost")
 })
 
 thermometer.temperature.onChange(5, () => {

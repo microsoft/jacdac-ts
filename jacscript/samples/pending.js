@@ -2,11 +2,11 @@ var btnA = roles.button()
 var led = roles.lightBulb()
 
 btnA.down.subscribe(() => {
-    print('down')
+    console.log('down')
     led.brightness.write(1)
     wait(0.2)
     led.brightness.write(0.3)
     wait(1)
     led.brightness.write(0)
-    print('end down')
+    console.log('end down')
 })

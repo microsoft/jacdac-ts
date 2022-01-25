@@ -2018,6 +2018,11 @@ class Program implements InstrArgResolver {
             case "cloud.onMethod":
                 this.emitCloudMethod(expr)
                 return values.zero
+            case "console.log":
+                this.writer.push()
+                this.emitFmt(expr, OpSync.LOG_FORMAT)
+                this.writer.pop()
+                return values.zero
             default:
                 return null
         }
@@ -2192,27 +2197,22 @@ class Program implements InstrArgResolver {
                 this.onStart.emit(wr => wr.emitCall(proc))
                 return values.zero
             }
-            case "print":
-            case "format": {
-                const fmtString = this.forceStringLiteral(expr.arguments[0])
+            case "format":
                 wr.push()
-                this.emitArgs(expr.arguments.slice(1))
-                const r = wr.allocBuf()
-                wr.emitSync(
-                    funName == "print" ? OpSync.LOG_FORMAT : OpSync.FORMAT,
-                    fmtString.index,
-                    numargs - 1
-                )
-                if (funName == "print") {
-                    wr.pop()
-                    return values.zero
-                } else {
-                    wr.popExcept(r)
-                    return r
-                }
-            }
+                const r = this.emitFmt(expr, OpSync.FORMAT)
+                wr.popExcept(r)
+                return r
         }
         this.throwError(expr, "unhandled call")
+    }
+
+    private emitFmt(expr: estree.CallExpression, op: OpSync) {
+        const wr = this.writer
+        const fmtString = this.forceStringLiteral(expr.arguments[0])
+        this.emitArgs(expr.arguments.slice(1))
+        const r = wr.allocBuf()
+        wr.emitSync(op, fmtString.index, expr.arguments.length - 1)
+        return r
     }
 
     private emitIdentifier(expr: estree.Identifier): ValueDesc {

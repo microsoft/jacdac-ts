@@ -3,7 +3,7 @@
  * @param {number} y
  */
 function isClose(x, y) {
-    // print("{0} == {1}?", x, y)
+    // console.log("{0} == {1}?", x, y)
     if (isNaN(x) && isNaN(y))
         return
     var d = Math.abs(x - y)
@@ -50,7 +50,7 @@ function testFlow() {
     if (x < 0 || x > 1 || isNaN(x))
         panic(5)
     x = 42
-    print("rand={0}", Math.random())
+    console.log("rand={0}", Math.random())
 }
 
 function testMath() {
@@ -103,5 +103,5 @@ function fibx(k) {
 testFlow()
 if (x != 42) panic(10)
 testMath()
-print("all OK")
+console.log("all OK")
 reboot()
