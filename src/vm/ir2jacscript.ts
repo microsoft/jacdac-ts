@@ -122,25 +122,29 @@ function processCommand(cmd: VMCommand): [string, string[]] {
             `${roleCall[0]}(${exprs.map(p => p[0]).join(",")})`,
             [...roleCall[1], ...exprs.flatMap(p => p[1])],
         ]
-    }
-    const inst = getInst(cmd)
-    switch (inst) {
-        case "writeRegister": {
-            const rest = cmd.command.arguments.slice(1)
-            const exprs = rest.map(a => processExpression(a))
-            const reg = processExpression(args[0], false)
-            return [
-                `${reg[0]}.write(${exprs.map(p => p[0]).join(",")})`,
-                [...reg[1], ...exprs.flatMap(p => p[1])],
-            ]
+    } else if (cmd.command.callee.type === "Identifier") {
+        return processExpression(cmd.command)
+    } else {
+        const inst = getInst(cmd)
+        switch (inst) {
+            case "writeRegister": {
+                const rest = cmd.command.arguments.slice(1)
+                const exprs = rest.map(a => processExpression(a))
+                const reg = processExpression(args[0], false)
+                return [
+                    `${reg[0]}.write(${exprs.map(p => p[0]).join(",")})`,
+                    [...reg[1], ...exprs.flatMap(p => p[1])],
+                ]
+            }
+            case "writeLocal": {
+                const lhs = processExpression(args[0], false)
+                const rhs = processExpression(args[1])
+                return [`${lhs[0]} = ${rhs[0]}`, [...lhs[1], ...rhs[1]]]
+            }
         }
-        case "writeLocal": {
-            const lhs = processExpression(args[0], false)
-            const rhs = processExpression(args[1])
-            return [`${lhs[0]} = ${rhs[0]}`, [...lhs[1], ...rhs[1]]]
-        }
+        console.debug(`jacscript: unknown instruction ${inst}`, cmd)
+        return [`error: unknown command`, []]
     }
-    return ["ERROR", []]
 }
 
 export function toJacScript(p: VMProgram): JacScriptProgram {
