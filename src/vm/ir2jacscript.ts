@@ -191,7 +191,7 @@ export function toJacScript(p: VMProgram): JacScriptProgram {
                 return ["", []]
             }
             case "nop":
-                return []
+                return [undefined, []]
             default: {
                 console.debug(
                     `jacscript: unknown handler instruction ${inst}`,
