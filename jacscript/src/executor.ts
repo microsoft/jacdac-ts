@@ -1321,7 +1321,6 @@ export class Runner extends JDEventSource {
         this.img = new ImageInfo(bin, dbg)
         if (!this.img.roles.some(r => r.classId == SRV_JACSCRIPT_CLOUD))
             this.options.disableCloud = true
-        this.env = new JDBusJacsEnv(this.bus, this.options)
     }
 
     get state() {
@@ -1340,11 +1339,14 @@ export class Runner extends JDEventSource {
     }
 
     run() {
-        if (this.state === RunnerState.Initializing) return
-        assert(!this.ctx)
-
+        if (
+            this.state === RunnerState.Running ||
+            this.state == RunnerState.Initializing
+        )
+            return
+        this.stop()
         this.state = RunnerState.Initializing
-
+        this.env = new JDBusJacsEnv(this.bus, this.options)
         this.ctx = new Ctx(this.img, this.env)
         this.ctx.onError = e => {
             console.error("Internal error", e.stack)
@@ -1373,6 +1375,11 @@ export class Runner extends JDEventSource {
             this.allowRestart = false
             this.ctx = undefined
             ctx.onPanic(0)
+        }
+        const env = this.env
+        if (env) {
+            this.env = undefined
+            env.unmount()
         }
     }
 }
