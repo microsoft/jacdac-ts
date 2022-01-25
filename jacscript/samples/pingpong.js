@@ -17,7 +17,7 @@ every(0.05, () => {
     wait(1)
 })
 
-btnA.down.sub(() => {
+btnA.down.subscribe(() => {
     print("down")
     condA.signal()
 })

@@ -1563,7 +1563,7 @@ class Program implements InstrArgResolver {
     ): ValueDesc {
         const role = obj.cell as Role
         switch (prop) {
-            case "sub":
+            case "subscribe":
                 this.requireTopLevel(expr)
                 this.requireArgs(expr, 1)
                 this.emitEventHandler(

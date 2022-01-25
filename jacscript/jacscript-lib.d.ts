@@ -28,7 +28,7 @@ declare class JDRegisterArray extends JDRegister {
 
 declare class JDEvent extends JDPacketInfo {
     wait(): void
-    sub(handler: () => void): void
+    subscribe(handler: () => void): void
 }
 
 declare class Condition {

@@ -83,10 +83,10 @@ heater.onDisconnected(() => {
 
 ## Events
 
-Events are referenced as `myRole.eventName`. They currently have two member functions, `.wait()` and `.sub()`.
+Events are referenced as `myRole.eventName`. They currently have two member functions, `.wait()` and `.subscribe()`.
 
 ```js
-btnA.down.sub(() => {
+btnA.down.subscribe(() => {
     print("button down!")
 })
 
@@ -278,7 +278,6 @@ Main dynamic memory usage - function activation records (and fibers).
 
 ## TODO
 
-* sub->subscribe
 * add `onStart()`
 
 * add opcode to cache current packet (in onChanged())

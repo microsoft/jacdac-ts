@@ -4,7 +4,7 @@ var led = roles.lightBulb()
 var display = roles.characterScreen()
 var r, g, b, tint
 
-btnA.down.sub(() => {
+btnA.down.subscribe(() => {
   led.brightness.write(1)
   wait(0.1);
   [r, g, b] = color.color.read()

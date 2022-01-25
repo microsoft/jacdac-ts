@@ -1,7 +1,7 @@
 var btnA = roles.button()
 var led = roles.lightBulb()
 
-btnA.down.sub(() => {
+btnA.down.subscribe(() => {
     print('down')
     led.brightness.write(1)
     wait(0.2)

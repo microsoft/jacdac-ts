@@ -4,7 +4,7 @@ var r = roles.button()
 function foo() {
     function bar() { } //! only top-level functions are supported
 
-    r.down.sub(() => { //! top-level
+    r.down.subscribe(() => { //! top-level
     })
     r.onConnected(() => { //! top-level
     })
@@ -15,7 +15,7 @@ if (g > 0) {
     var q = 0
     function baz() { } //! only top-level functions are supported
 
-    r.down.sub(() => { //! top-level
+    r.down.subscribe(() => { //! top-level
     })
 }
 
