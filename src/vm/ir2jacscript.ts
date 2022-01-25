@@ -99,9 +99,13 @@ function processHead(head: VMCommand): [string, string[]] {
             const [reg, vars] = processExpression(args[0], false)
             return [`${reg}.onChange(0, () => {`, vars]
         }
+        case "every": {
+            const [reg, vars] = processExpression(args[0], false)
+            return [`every(${reg}, () => {`, vars]
+        }
         case "roleBound": {
-            // TODO
-            break
+            const [reg, vars1] = processExpression(args[0], false)
+            return [`${reg}.onConnected(() => {`, [...vars1]]
         }
         default: {
             // ERROR
@@ -122,11 +126,11 @@ function processCommand(cmd: VMCommand): [string, string[]] {
             `${roleCall[0]}(${exprs.map(p => p[0]).join(",")})`,
             [...roleCall[1], ...exprs.flatMap(p => p[1])],
         ]
-    } else if (cmd.command.callee.type === "Identifier") {
-        return processExpression(cmd.command)
     } else {
         const inst = getInst(cmd)
         switch (inst) {
+            case "wait":
+                return processExpression(cmd.command)
             case "writeRegister": {
                 const rest = cmd.command.arguments.slice(1)
                 const exprs = rest.map(a => processExpression(a))

@@ -64,6 +64,8 @@ export type VMFunctionNames =
     | "onRoleConnected"
     | "onRoleDisconnected"
     | "raiseEvent"
+    | "wait"
+    | "every"
 
 type Context = "command" | "expression" | "either"
 
