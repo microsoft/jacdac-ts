@@ -88,7 +88,7 @@ function processHead(head: VMCommand): [string, string[]] {
         case "awaitEvent": {
             const event = args[0] as jsep.MemberExpression
             const [ev, vars] = processExpression(event, false)
-            return [`${ev}.sub(() => {`, vars]
+            return [`${ev}.subscribe(() => {`, vars]
         }
         case "awaitChange": {
             const [reg, vars1] = processExpression(args[0], false)
