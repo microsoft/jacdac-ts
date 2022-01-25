@@ -53,7 +53,7 @@ class SpiTransport extends Transport {
 
     protected async transportConnectAsync(background?: boolean): Promise<void> {
         try {
-            return this.internalTransportConnectAsync()
+            await this.internalTransportConnectAsync()
         } catch (e) {
             console.error("SPI configuration failed: make sure to install rpio")
             this.disconnectRpio();
@@ -103,6 +103,7 @@ class SpiTransport extends Transport {
     }
 
     protected async transportDisconnectAsync(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         background?: boolean
     ): Promise<void> {
         this.disconnectRpio()
