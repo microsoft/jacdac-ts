@@ -190,7 +190,10 @@ export function toJacScript(p: VMProgram): JacScriptProgram {
                 return ["", []]
             }
             default: {
-                console.debug(`jacscript: unknown instruction ${inst}`, handler)
+                console.debug(
+                    `jacscript: unknown handler instruction ${inst}`,
+                    handler
+                )
                 return [`error: unknown handler ${inst}`, []]
             }
         }
@@ -227,9 +230,9 @@ export function toJacScript(p: VMProgram): JacScriptProgram {
                     const rhs = processExpression(args[1])
                     return [`${lhs[0]} = ${rhs[0]}`, [...lhs[1], ...rhs[1]]]
                 }
+                default:
+                    return processExpression(cmd.command)
             }
-            console.debug(`jacscript: unknown instruction ${inst}`, cmd)
-            return [`error: unknown command ${inst}`, []]
         }
     }
 }
