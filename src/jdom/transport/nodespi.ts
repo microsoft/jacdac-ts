@@ -62,21 +62,27 @@ class SpiTransport extends Transport {
     }
 
     private async internalTransportConnectAsync(): Promise<void> {
-        console.log("connecting to jacdapter...")
+        console.log("spi: connecting...")
 
         const { txReadyPin, rxReadyPin, resetPin } = this.options
         const { HIGH, LOW, POLL_HIGH, PULL_DOWN, INPUT, OUTPUT } =
             this.controller
 
+        console.log("spi: setup pins")
+
         this.controller.open(txReadyPin, INPUT, PULL_DOWN) // pull down
         this.controller.open(rxReadyPin, INPUT, PULL_DOWN) // pull down
-
         this.controller.open(resetPin, OUTPUT)
+
+        console.log("spi: reset bridge")
+
         this.controller.write(resetPin, LOW)
         await this.bus.delay(10)
         this.controller.write(resetPin, HIGH)
 
         this.controller.mode(resetPin, INPUT)
+
+        console.log("spi: connect spi")
 
         this.controller.spiBegin()
         this.controller.spiChipSelect(0) /* Use CE0 */
@@ -86,14 +92,13 @@ class SpiTransport extends Transport {
         ) /* AT93C46 chip select is active-high */
         this.controller.spiSetClockDivider(
             128
-        ) /* AT93C46 max is 2MHz, 128 == 1.95MHz */
+        ) /* AT93C46 max is 2MHz, 128 == 15...MHz */
         this.controller.spiSetDataMode(0)
 
         this.controller.poll(rxReadyPin, this.handleRxPinRising, POLL_HIGH)
         this.controller.poll(txReadyPin, this.handleTxPinRising, POLL_HIGH)
 
-        console.log("jacdapter ready")
-
+        console.log("spi: ready")
         await this.transfer()
     }
 
