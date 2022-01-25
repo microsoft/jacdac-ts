@@ -648,7 +648,14 @@ class Activation {
                         )
                         break
                     case OpSync.MEMCPY: // A-string-index C-offset
-                        ctx.setBuffer(ctx.info.stringLiterals[a], c)
+                        const lit = ctx.info.stringLiterals[a]
+                        if (lit.length + c > ctx.pkt.data.length) {
+                            const left = ctx.pkt.data.length - c
+                            if (left > 0)
+                                ctx.pkt.data.set(lit.slice(0, left), c)
+                        } else {
+                            ctx.pkt.data.set(lit, c)
+                        }
                         break
                     case OpSync.STR0EQ: {
                         const s = ctx.info.stringLiterals[a]
@@ -1181,8 +1188,12 @@ class Ctx {
             for (const f of this.fibers) {
                 if (f.firstFun == info) {
                     if (op == OpCall.BG_MAX1_PEND1) {
-                        f.pending = true
-                        this.registers[0] = 2
+                        if (f.pending) {
+                            this.registers[0] = 3
+                        } else {
+                            f.pending = true
+                            this.registers[0] = 2
+                        }
                     } else {
                         this.registers[0] = 0
                     }
@@ -1282,8 +1293,6 @@ export class Runner extends JDEventSource {
     options: JacsEnvOptions = {}
     private _state = RunnerState.Stopped
     startDelay = 1100
-    onError: (err: Error) => void = null
-    onPanic: (code: number) => void = null
 
     constructor(
         public bus: JDBus,

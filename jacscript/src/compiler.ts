@@ -2310,6 +2310,7 @@ class Program implements InstrArgResolver {
         if (typeof v == "string") {
             const r = wr.allocBuf()
             const vd = wr.emitString(v)
+            wr.emitSync(OpSync.SETUP_BUFFER, strlen(v))
             wr.emitSync(OpSync.MEMCPY, vd.index)
             return r
         }
