@@ -3,9 +3,21 @@ import { toHex } from "../utils"
 import { Transport,  TransportOptions } from "./transport"
 
 export interface SpiTransportOptions extends TransportOptions {
+    /**
+     * Physical index of the TX ready pin
+    */
     txReadyPin: number
+    /**
+     * Physical index of the RX ready pin
+    */
     rxReadyPin: number
+    /**
+     * Physical index of the RESET pin
+    */
     resetPin: number
+    /**
+     * SPI bus id, default 0
+    */
     spiBusId: number
 }
 
@@ -19,7 +31,10 @@ interface Rpio {
     HIGH: number
     LOW: number
     POLL_HIGH: number
-    init(): void
+    init(options?: {
+        gpiomem?: boolean,
+        mapping?: 'physical'
+    }): void
     open(pin: number, mode: number, flags?: number): void
     close(pin: number): void
     write(pin: number, value: number): void
@@ -51,7 +66,10 @@ class SpiTransport extends Transport {
         this.handleRxPinRising = this.handleRxPinRising.bind(this)
         this.handleTxPinRising = this.handleTxPinRising.bind(this)
 
-        this.controller.init()
+        this.controller.init({
+            gpiomem: false,
+            mapping: 'physical',
+        })
     }
 
     protected async transportConnectAsync(background?: boolean): Promise<void> {
@@ -93,10 +111,10 @@ class SpiTransport extends Transport {
         this.controller.spiSetCSPolarity(
             0,
             HIGH
-        ) /* AT93C46 chip select is active-high */
+        ) // AT93C46 chip select is active-high
         this.controller.spiSetClockDivider(
-            128
-        ) /* AT93C46 max is 2MHz, 128 == 15...MHz */
+            16
+        ) // 250Mhz / 16 ~ 16Mz
         this.controller.spiSetDataMode(0)
 
         this.controller.poll(rxReadyPin, this.handleRxPinRising, POLL_HIGH)
@@ -242,9 +260,10 @@ class SpiTransport extends Transport {
     }
 }
 
-const RPI_PIN_TX_READY = 24
-const RPI_PIN_RX_READY = 25
-const RPI_PIN_RST = 22
+// use physical pin index
+const RPI_PIN_TX_READY = 18 // GPIO 24
+const RPI_PIN_RX_READY = 22 // GPIO 25
+const RPI_PIN_RST = 15 // GPIO 22
 const RPI_SPI_BUS_ID = 0
 
 /**
