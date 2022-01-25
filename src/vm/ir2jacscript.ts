@@ -170,8 +170,6 @@ export function toJacScript(p: VMProgram): JacScriptProgram {
         program.push(`${" ".repeat(tab * 4)}${code}`)
     }
 
-    // sort handlers, push on start to the end
-
     // pass over program
     const startHandlers: VMHandler[] = []
     handlers.forEach(h => {
@@ -180,17 +178,21 @@ export function toJacScript(p: VMProgram): JacScriptProgram {
         if (head) handlerVisitor(h)
         else startHandlers.push(h)
     })
-    startHandlers.forEach(h => h.commands.slice(1).forEach(visitBase))
 
-    // process start blocks
+    // process role handlers
     roles.forEach(r => {
         const spec = serviceSpecificationFromClassIdentifier(r.serviceClass)
         program.unshift(`var ${camelize(r.role)} = roles.${spec.camelName}()`)
     })
 
+    // prepend variables
     globals.forEach(g => {
         program.unshift(`var ${g}`)
     })
+
+    // add onStart handler
+    startHandlers.forEach(h => h.commands.slice(1).forEach(visitBase))
+
 
     return { program, debug }
 
