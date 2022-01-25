@@ -452,7 +452,10 @@ function storeCell(
             act.locals[idx] = val
             break
         case CellKind.GLOBAL:
-            ctx.globals[idx] = val
+            if (ctx.globals[idx] !== val) {
+                ctx.globals[idx] = val
+                ctx.globalsUpdated = true
+            }
             break
         case CellKind.BUFFER: // arg=shift:numfmt, C=Offset
             const v = clamp(idx & 0xf, val * shiftVal(idx >> 4))
@@ -993,9 +996,11 @@ class Ctx {
     roles: Role[]
     wakeTimeout: any
     wakeUpdated = false
+    globalsUpdated = true
     panicCode = 0
     onPanic: (code: number) => void
     onError: (err: Error) => void
+    onGlobalsUpdated: () => void
     bus: JDBus
     regs = new RegisterCache()
 
@@ -1018,6 +1023,14 @@ class Ctx {
             this.syncRoleAssignments.bind(this)
 
         this.wakeFibers = this.wakeFibers.bind(this)
+    }
+
+    getGlobals() {
+        const res: Record<string, number> = {}
+        let idx = 0
+        for (const info of this.info.dbg?.globals ?? [])
+            res[info.name] = this.globals[idx++]
+        return res
     }
 
     private syncRoleAssignments() {
@@ -1103,6 +1116,10 @@ class Ctx {
 
     private pokeFibers() {
         if (this.wakeUpdated) this.wakeFibers()
+        if (this.globalsUpdated) {
+            this.globalsUpdated = false
+            this.onGlobalsUpdated()
+        }
     }
 
     private wakeFibers() {
@@ -1317,6 +1334,10 @@ export class Runner extends JDEventSource {
         }
     }
 
+    globals() {
+        return this.ctx?.getGlobals()
+    }
+
     run() {
         if (this.state === RunnerState.Initializing) return
         assert(!this.ctx)
@@ -1328,6 +1349,9 @@ export class Runner extends JDEventSource {
             console.error("Internal error", e.stack)
             this.state = RunnerState.Error
             this.emit(ERROR, e)
+        }
+        this.ctx.onGlobalsUpdated = () => {
+            this.emit("globalsUpdated")
         }
         this.ctx.onPanic = code => {
             if (code == RESTART_PANIC_CODE) code = 0
