@@ -211,7 +211,7 @@ export function toJacScript(p: VMProgram): JacScriptProgram {
             )
             const exprs = args.map(a => processExpression(a))
             return [
-                `${roleCall[0]}(${exprs.map(p => p[0]).join(",")})`,
+                `${roleCall[0]}(${exprs.map(p => p[0]).join(", ")})`,
                 [...roleCall[1], ...exprs.flatMap(p => p[1])],
             ]
         } else {
@@ -224,7 +224,7 @@ export function toJacScript(p: VMProgram): JacScriptProgram {
                     const exprs = rest.map(a => processExpression(a))
                     const reg = processExpression(args[0], false)
                     return [
-                        `${reg[0]}.write(${exprs.map(p => p[0]).join(",")})`,
+                        `${reg[0]}.write(${exprs.map(p => p[0]).join(", ")})`,
                         [...reg[1], ...exprs.flatMap(p => p[1])],
                     ]
                 }
