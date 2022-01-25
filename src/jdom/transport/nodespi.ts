@@ -55,6 +55,7 @@ class SpiTransport extends Transport {
         try {
             await this.internalTransportConnectAsync()
         } catch (e) {
+            console.debug(e)
             console.error("SPI configuration failed: make sure to install rpio")
             this.disconnectRpio();
             throw e
