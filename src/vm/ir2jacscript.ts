@@ -34,7 +34,8 @@ export function toJacScript(p: VMProgram): JacScriptProgram {
     handlers.forEach(h => {
         if (h.commands.length === 0) return
         const [head] = processHandler(h.commands[0] as VMCommand)
-        if (head) handlerVisitor(h)
+        if (head === undefined) return
+        else if (head) handlerVisitor(h)
         else startHandlers.push(h)
     })
 
@@ -153,12 +154,12 @@ export function toJacScript(p: VMProgram): JacScriptProgram {
     }
 
     function getInst(cmd: VMCommand) {
-        return (cmd.command.callee as jsep.Identifier)?.name
+        return (cmd.command?.callee as jsep.Identifier)?.name
     }
 
     // these are waits
     function processHandler(handler: VMCommand): [string, string[]] {
-        const args = handler.command.arguments
+        const args = handler.command?.arguments
         const inst = getInst(handler)
         switch (inst) {
             case "awaitEvent": {
@@ -189,6 +190,8 @@ export function toJacScript(p: VMProgram): JacScriptProgram {
             case "start": {
                 return ["", []]
             }
+            case "nop":
+                return []
             default: {
                 console.debug(
                     `jacscript: unknown handler instruction ${inst}`,
