@@ -18,13 +18,13 @@ export function runJacScriptProgram(fn: string, bus: JDBus, delay: number = unde
         const r = new Runner(bus, res.binary, res.dbg)
         if (delay !== undefined)
             r.startDelay = delay
-        r.onError = () => process.exit(1)
-        r.onPanic = code => {
+        r.on("error", () => process.exit(1))
+        r.on("panic", = code => {
             if (code == 0)
                 resolve()
             else
                 process.exit(2)
-        }
+        })
         r.run()
     })
 }
