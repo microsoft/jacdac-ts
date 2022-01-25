@@ -81,9 +81,9 @@ function getInst(cmd: VMCommand) {
 }
 
 // these are waits
-function processHead(head: VMCommand): [string, string[]] {
-    const args = head.command.arguments
-    const inst = getInst(head)
+function processHandler(handler: VMCommand): [string, string[]] {
+    const args = handler.command.arguments
+    const inst = getInst(handler)
     switch (inst) {
         case "awaitEvent": {
             const event = args[0] as jsep.MemberExpression
@@ -107,11 +107,14 @@ function processHead(head: VMCommand): [string, string[]] {
             const [reg, vars1] = processExpression(args[0], false)
             return [`${reg}.onConnected(() => {`, [...vars1]]
         }
+        case "start": {
+            return ['', []];
+        }
         default: {
-            // ERROR
+            console.debug(`jacscript: unknown instruction ${inst}`, handler)
+            return [`error: unknown handler ${inst}`, []]
         }
     }
-    return ["", []]
 }
 
 function processCommand(cmd: VMCommand): [string, string[]] {
@@ -147,7 +150,7 @@ function processCommand(cmd: VMCommand): [string, string[]] {
             }
         }
         console.debug(`jacscript: unknown instruction ${inst}`, cmd)
-        return [`error: unknown command`, []]
+        return [`error: unknown command ${inst}`, []]
     }
 }
 
@@ -167,18 +170,17 @@ export function toJacScript(p: VMProgram): JacScriptProgram {
         program.push(`${" ".repeat(tab * 4)}${code}`)
     }
 
+    // sort handlers, push on start to the end
+
     // pass over program
-    let startHandler: VMHandler = undefined
+    const startHandlers: VMHandler[] = []
     handlers.forEach(h => {
         if (h.commands.length === 0) return
-        const [head] = processHead(h.commands[0] as VMCommand)
+        const [head] = processHandler(h.commands[0] as VMCommand)
         if (head) handlerVisitor(h)
-        else startHandler = h
+        else startHandlers.push(h)
     })
-
-    if (startHandler) {
-        startHandler.commands.forEach(visitBase)
-    }
+    startHandlers.forEach(h => h.commands.slice(1).forEach(visitBase))
 
     // process start blocks
     roles.forEach(r => {
@@ -194,7 +196,7 @@ export function toJacScript(p: VMProgram): JacScriptProgram {
 
     function handlerVisitor(handler: VMHandler) {
         const head = handler.commands[0]
-        add(...processHead(head as VMCommand))
+        add(...processHandler(head as VMCommand))
         tab++
         handler.commands.slice(1).forEach(visitBase)
         tab--
