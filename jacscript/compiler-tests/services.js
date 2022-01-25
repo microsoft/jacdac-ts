@@ -1,5 +1,7 @@
 var r1 = roles.noSuchService() //! no such service
 var r2 = roles.button(1) //! 0 arguments required
+var r3 = roles.lightbulb() //! no such service
+var r4 = roles.lightBulb() // OK
 
 var btn = roles.button()
 var clr = roles.color()

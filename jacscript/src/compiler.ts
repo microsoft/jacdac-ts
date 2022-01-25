@@ -9,7 +9,6 @@ import {
     toUTF8,
     write16,
     write32,
-    serviceSpecificationFromName,
     jdpack,
     camelize,
     CMD_SET_REG,
@@ -21,6 +20,7 @@ import {
     JacscriptCloudEvent,
     JacscriptCloudCmd,
     JacscriptCloudCommandStatus,
+    serviceSpecifications,
 } from "jacdac-ts"
 
 import {
@@ -936,7 +936,8 @@ class Program implements InstrArgResolver {
     stringLiterals: string[] = []
     writer: OpWriter
     proc: Procedure
-    sysSpec = serviceSpecificationFromName("_system")
+    sysSpec: jdspec.ServiceSpec
+    serviceSpecs: Record<string, jdspec.ServiceSpec>
     refreshMS: number[] = [0, 500]
     resolverParams: number[]
     resolverPC: number
@@ -947,7 +948,13 @@ class Program implements InstrArgResolver {
     cloudMethodDispatcher: DelayedCodeSection
     startDispatchers: DelayedCodeSection
 
-    constructor(public host: Host, public source: string) {}
+    constructor(public host: Host, public source: string) {
+        this.serviceSpecs = {}
+        for (const sp of serviceSpecifications()) {
+            this.serviceSpecs[sp.camelName] = sp
+        }
+        this.sysSpec = this.serviceSpecs["system"]
+    }
 
     addString(str: string) {
         return addUnique(this.stringLiterals, str)
@@ -1195,14 +1202,16 @@ class Program implements InstrArgResolver {
                 this,
                 decl,
                 this.roles,
-                serviceSpecificationFromName("jacscriptcondition")
+                this.serviceSpecs["jacscriptCondition"]
             )
         }
         if (expr.callee.type != "MemberExpression") return null
         if (idName(expr.callee.object) != "roles") return null
         const serv = this.forceName(expr.callee.property)
         this.requireArgs(expr, 0)
-        const spec = serviceSpecificationFromName(serv.toLowerCase())
+        const spec = this.serviceSpecs.hasOwnProperty(serv)
+            ? this.serviceSpecs[serv]
+            : undefined
         if (!spec) this.throwError(expr.callee, "no such service: " + serv)
         return new Role(this, decl, this.roles, spec)
     }
@@ -1410,7 +1419,7 @@ class Program implements InstrArgResolver {
             this,
             null,
             this.roles,
-            serviceSpecificationFromName("jacscriptcloud"),
+            this.serviceSpecs["jacscriptCloud"],
             "cloud"
         )
 

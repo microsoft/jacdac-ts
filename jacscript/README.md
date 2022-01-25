@@ -278,7 +278,7 @@ Main dynamic memory usage - function activation records (and fibers).
 
 ## TODO
 
-* force camlized service names in `roles.lightBulb()` etc
+* sub->subscribe
 * add `onStart()`
 
 * add opcode to cache current packet (in onChanged())
