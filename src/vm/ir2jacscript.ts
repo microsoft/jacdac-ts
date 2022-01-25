@@ -1,5 +1,5 @@
 import jsep from "jsep"
-import { snakify } from "../../jacdac-spec/spectool/jdspec"
+import { camelize } from "../../jacdac-spec/spectool/jdspec"
 import { serviceSpecificationFromClassIdentifier } from "../jdom/spec"
 import { throwError } from "../jdom/utils"
 import { VMBase, VMCommand, VMHandler, VMIfThenElse, VMProgram } from "./ir"
@@ -65,7 +65,7 @@ function processExpression(
                 return `${ue.operator}${processExpr(ue.argument)}`
             }
             case "Identifier": {
-                return snakify((e as jsep.Identifier).name)
+                return camelize((e as jsep.Identifier).name)
             }
             case "Literal": {
                 return (e as jsep.Literal).raw
@@ -175,7 +175,7 @@ export function toJacScript(p: VMProgram): JacScriptProgram {
     // process start blocks
     roles.forEach(r => {
         const spec = serviceSpecificationFromClassIdentifier(r.serviceClass)
-        program.unshift(`var ${snakify(r.role)} = roles.${spec.shortId}()`)
+        program.unshift(`var ${camelize(r.role)} = roles.${spec.shortId}()`)
     })
 
     globals.forEach(g => {

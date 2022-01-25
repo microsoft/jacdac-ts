@@ -28,7 +28,7 @@ jobs:
       - run: yarn prettier
       - run: yarn dist
       - run: yarn test
-      - run: cd jacscript && yarn && rm -rf node_modules/jacdac-ts && ln -s ../.. node_modules/jacdac-ts && yarn build && yarn test
+      - run: yarn dist:jsc
       - run: npx semantic-release
         if: ${{ github.ref == 'refs/heads/main' }}
         env:

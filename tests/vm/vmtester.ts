@@ -8,7 +8,7 @@ import { TestDriverInterface } from "../../src/tstester/base"
 import { EventWithHoldAdapter } from "../../src/tstester/eventhold"
 import { VMProgram } from "../../src/vm/ir"
 import { EventHandler } from "../../src/jdom/eventsource"
-import { snakify } from "../../jacdac-spec/spectool/jdspec"
+import { camelize } from "../../jacdac-spec/spectool/jdspec"
 
 class RoleBoundTrigger extends EventWithHoldAdapter<string> {
     constructor(
@@ -47,7 +47,7 @@ export function bindRoles(
     )
 
     const serverRolesMap = program.roles.map(vmRole => {
-        const role = snakify(vmRole.role)
+        const role = camelize(vmRole.role)
         assert(
             role in servers,
             `servers missing role ${role} (${vmRole.role}) required by program (${Object.keys(servers)})`

@@ -35,13 +35,13 @@ function runProgram(fn, real) {
             r.options.disableCloud = true
             r.startDelay = 1
         }
-        r.onError = () => process.exit(1)
-        r.onPanic = code => {
+        r.on("error", () => process.exit(1))
+        r.on("panic", code => {
             if (code == 0)
                 resolve()
             else
                 process.exit(2)
-        }
+        })
         r.run()
     })
 }
