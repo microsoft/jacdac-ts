@@ -2,15 +2,14 @@
   "name": "jacscript",
   "version": "0.0.0",
   "description": "Jacscript VM",
-  "main": "./dist/jacscript.node.js",
+  "main": "./dist/jacscript.node.cjs",
   "module": "./dist/jacscript.js",
   "types": "./dist/types/jacscript.d.ts",
   "scripts": {
     "dist": "yarn install && rm -rf node_modules/jacdac-ts && ln -s ../.. node_modules/jacdac-ts && yarn build && yarn test",
-    "build": "tsc -p src/tsconfig.json && yarn buildnode && yarn buildbrowser",
-    "buildbrowser": "esbuild src/jacscript.ts --bundle --outfile=dist/jacscript.bundle.js --external:jacdac-ts",
-    "buildnode": "esbuild src/jacscript.ts --bundle --outfile=dist/jacscript.node.js --external:jacdac-ts --platform=node --target=node12",
-    "test": "yarn buildnode && node testrunner.js"
+    "build": "node build.js",
+    "watch": "node build.js --watch",
+    "test": "node build.js --fast && node testrunner.js"
   },
   "license": "MIT",
   "devDependencies": {
