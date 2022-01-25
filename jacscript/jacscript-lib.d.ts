@@ -63,3 +63,4 @@ declare function wait(seconds: number): void
 declare function every(seconds: number, callback: () => void): void
 declare function panic(code: number): never
 declare function reboot(): never
+declare function onStart(handler: () => void): void

@@ -278,8 +278,7 @@ Main dynamic memory usage - function activation records (and fibers).
 
 ## TODO
 
-* add `onStart()`
-
+* disallow top-level code?
 * add opcode to cache current packet (in onChanged())
 * extend format strings to include numfmt
 * shift buffer opcode?

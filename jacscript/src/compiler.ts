@@ -293,6 +293,7 @@ const reservedFunctions: SMap<number> = {
     panic: 1,
     reboot: 1,
     isNaN: 1,
+    onStart: 1,
 }
 
 const values = {
@@ -947,6 +948,7 @@ class Program implements InstrArgResolver {
     cloudMethod429: Label
     cloudMethodDispatcher: DelayedCodeSection
     startDispatchers: DelayedCodeSection
+    onStart: DelayedCodeSection
 
     constructor(public host: Host, public source: string) {
         this.serviceSpecs = {}
@@ -1383,6 +1385,7 @@ class Program implements InstrArgResolver {
             "startDispatchers",
             this.main
         )
+        this.onStart = new DelayedCodeSection("onStart", this.main)
         prog.body.forEach(markTopLevel)
         // pre-declare all functions and globals
         for (const s of prog.body) {
@@ -1426,6 +1429,7 @@ class Program implements InstrArgResolver {
         this.withProcedure(this.main, () => {
             this.startDispatchers.callHere()
             for (const s of prog.body) this.emitStmt(s)
+            this.onStart.finalizeRaw()
             this.writer.emitSync(OpSync.RETURN)
             this.finalizeAutoRefresh()
             this.startDispatchers.finalize()
@@ -2179,6 +2183,13 @@ class Program implements InstrArgResolver {
                     every: time,
                 })
                 wr.emitCall(proc, OpCall.BG)
+                return values.zero
+            }
+            case "onStart": {
+                this.requireTopLevel(expr)
+                this.requireArgs(expr, 1)
+                const proc = this.emitHandler("onStart", expr.arguments[0])
+                this.onStart.emit(wr => wr.emitCall(proc))
                 return values.zero
             }
             case "print":
