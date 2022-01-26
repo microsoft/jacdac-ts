@@ -1,5 +1,4 @@
 import { Packet } from "../packet"
-import { toHex } from "../utils"
 import { Transport, TransportOptions } from "./transport"
 
 const debug = (msg: any) => {} //console.debug
