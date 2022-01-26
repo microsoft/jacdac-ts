@@ -1379,6 +1379,8 @@ export class Runner extends JDEventSource {
         if (ctx) {
             this.allowRestart = false
             this.ctx = undefined
+            // the ctx.panic(0) will not call onPanic() handler, so we stop ourselves here
+            this.state = RunnerState.Stopped
             ctx.panic(0)
         }
         const env = this.env
