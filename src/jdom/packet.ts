@@ -541,7 +541,7 @@ function frameToPackets(frame: Uint8Array, timestamp: number) {
             ptr += sz
         }
 
-        debug(`${timestamp | 0}ms: decoded ${res.length} packets`)
+        //debug(`${timestamp | 0}ms: decoded ${res.length} packets`)
         return res
     }
 }
