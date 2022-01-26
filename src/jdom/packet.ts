@@ -50,7 +50,7 @@ import { SRV_CONTROL, SystemCmd } from "../../jacdac-spec/dist/specconstants"
 import { jdpack, jdunpack, PackedValues } from "./pack"
 import { serviceSpecificationFromClassIdentifier } from "./spec"
 
-const { warn } = console
+const { warn, debug } = console
 
 /**
  * A Jacdac packet
@@ -491,41 +491,48 @@ export class Packet {
 }
 
 function frameToPackets(frame: Uint8Array, timestamp: number) {
-    const size = frame[2] || 0
+    const size = frame.length < 12 ? 0 : frame[2]
     if (frame.length < size + 12) {
         warn(
             `${timestamp | 0}ms: got only ${frame.length} bytes; expecting ${
                 size + 12
             }`
         )
+        return []
     } else if (size < 4) {
         warn(`${timestamp | 0}ms: empty packet`)
+        return []
     } else {
         const computed = crc(frame.slice(2, size + 12))
         const actual = read16(frame, 0)
-        if (actual != computed)
+        if (actual != computed) {
             warn(
                 `${
                     timestamp | 0
                 }ms: crc mismatch; sz=${size} got:${actual}, exp:${computed}`
             )
-
-        const res: Packet[] = []
-        if (frame.length != 12 + frame[2])
+            return []
+        }
+        if (frame.length != 12 + size) {
             warn(`${timestamp | 0}ms: unexpected packet len: ${frame.length}`)
-        for (let ptr = 12; ptr < 12 + frame[2]; ) {
+            return []
+        }
+        const res: Packet[] = []
+        for (let ptr = 12; ptr < 12 + size; ) {
             const psz = frame[ptr] + 4
             const sz = ALIGN(psz)
-            const pkt = bufferConcat(
-                frame.slice(0, 12),
-                frame.slice(ptr, ptr + psz)
-            )
-            if (ptr + psz > 12 + frame[2])
+            if (ptr + psz > 12 + size) {
                 warn(
                     `${timestamp | 0}ms: invalid frame compression, res len=${
                         res.length
                     }`
                 )
+                break;
+            }
+            const pkt = bufferConcat(
+                frame.slice(0, 12),
+                frame.slice(ptr, ptr + psz)
+            )
             const p = Packet.fromBinary(pkt)
             p.timestamp = timestamp
             res.push(p)
@@ -534,10 +541,9 @@ function frameToPackets(frame: Uint8Array, timestamp: number) {
             ptr += sz
         }
 
+        debug(`${timestamp | 0}ms: decoded ${res.length} packets`)
         return res
     }
-
-    return []
 }
 
 
