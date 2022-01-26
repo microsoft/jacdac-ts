@@ -3,9 +3,21 @@ import { toHex } from "../utils"
 import { Transport,  TransportOptions } from "./transport"
 
 export interface SpiTransportOptions extends TransportOptions {
+    /**
+     * Physical index of the TX ready pin
+    */
     txReadyPin: number
+    /**
+     * Physical index of the RX ready pin
+    */
     rxReadyPin: number
+    /**
+     * Physical index of the RESET pin
+    */
     resetPin: number
+    /**
+     * SPI bus id, default 0
+    */
     spiBusId: number
 }
 
@@ -19,6 +31,10 @@ interface Rpio {
     HIGH: number
     LOW: number
     POLL_HIGH: number
+    init(options?: {
+        gpiomem?: boolean,
+        mapping?: 'physical'
+    }): void
     open(pin: number, mode: number, flags?: number): void
     close(pin: number): void
     write(pin: number, value: number): void
@@ -40,7 +56,7 @@ interface Rpio {
  */
 class SpiTransport extends Transport {
     readonly sendQueue: Uint8Array[] = []
-    readonly receiveQueue: Packet[] = []
+    readonly receiveQueue: Uint8Array[] = []
 
     constructor(
         readonly controller: Rpio,
@@ -49,12 +65,18 @@ class SpiTransport extends Transport {
         super("spi", options)
         this.handleRxPinRising = this.handleRxPinRising.bind(this)
         this.handleTxPinRising = this.handleTxPinRising.bind(this)
+
+        this.controller.init({
+            gpiomem: false,
+            mapping: 'physical',
+        })
     }
 
     protected async transportConnectAsync(background?: boolean): Promise<void> {
         try {
-            return this.internalTransportConnectAsync()
+            await this.internalTransportConnectAsync()
         } catch (e) {
+            console.debug(e)
             console.error("SPI configuration failed: make sure to install rpio")
             this.disconnectRpio();
             throw e
@@ -62,42 +84,48 @@ class SpiTransport extends Transport {
     }
 
     private async internalTransportConnectAsync(): Promise<void> {
-        console.log("connecting to jacdapter...")
+        console.log("spi: connecting...")
 
         const { txReadyPin, rxReadyPin, resetPin } = this.options
         const { HIGH, LOW, POLL_HIGH, PULL_DOWN, INPUT, OUTPUT } =
             this.controller
 
+        console.log("spi: setup pins")
+
         this.controller.open(txReadyPin, INPUT, PULL_DOWN) // pull down
         this.controller.open(rxReadyPin, INPUT, PULL_DOWN) // pull down
-
         this.controller.open(resetPin, OUTPUT)
+
+        console.log("spi: reset bridge")
+
         this.controller.write(resetPin, LOW)
         await this.bus.delay(10)
         this.controller.write(resetPin, HIGH)
 
         this.controller.mode(resetPin, INPUT)
 
+        console.log("spi: connect spi")
+
         this.controller.spiBegin()
         this.controller.spiChipSelect(0) /* Use CE0 */
         this.controller.spiSetCSPolarity(
             0,
             HIGH
-        ) /* AT93C46 chip select is active-high */
+        ) // AT93C46 chip select is active-high
         this.controller.spiSetClockDivider(
-            128
-        ) /* AT93C46 max is 2MHz, 128 == 1.95MHz */
+            16
+        ) // 250Mhz / 16 ~ 16Mz
         this.controller.spiSetDataMode(0)
 
         this.controller.poll(rxReadyPin, this.handleRxPinRising, POLL_HIGH)
         this.controller.poll(txReadyPin, this.handleTxPinRising, POLL_HIGH)
 
-        console.log("jacdapter ready")
-
+        console.log("spi: ready")
         await this.transfer()
     }
 
     protected async transportDisconnectAsync(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         background?: boolean
     ): Promise<void> {
         this.disconnectRpio()
@@ -137,14 +165,13 @@ class SpiTransport extends Transport {
         while (todo) {
             todo = await this.transferFrame()
             while (this.receiveQueue.length > 0) {
-                const pkt = this.receiveQueue.shift()
-                this.bus.processPacket(pkt)
+                const frame = this.receiveQueue.shift()
+                this.handleFrame(frame)
             }
         }
     }
 
     private async transferFrame(): Promise<boolean> {
-        const now = this.bus.timestamp
         // much be in a locked context
         const { txReadyPin, rxReadyPin } = this.options
         const { HIGH } = this.controller
@@ -169,6 +196,9 @@ class SpiTransport extends Transport {
             txq_ptr += (pkt.length + 3) & ~3
         }
 
+        if (txq_ptr == 0 && !rxReady)
+            return false; // nothing to transfer, nothing to receive        
+
         // attempt transfer
         const ok: boolean = await this.attemptTransferBuffers(txqueue, rxqueue)
         if (!ok) {
@@ -179,15 +209,8 @@ class SpiTransport extends Transport {
         if (rxReady) {
             // consume received frame if any
             let framep = 0
-            while (framep < XFER_SIZE) {
+            while (framep + 4 < XFER_SIZE) {
                 const frame2 = rxqueue[framep + 2]
-                /*
-                if (framep == 0 && frame2 > 0)
-                {
-                    Console.WriteLine($"tx {txReady}, rx {rxReady}, send {this.sendQueue.Count}, recv {this.receiveQueue.Count}");
-                    Console.WriteLine($"rx {HexEncoding.ToString(rxqueue)}");
-                }
-                */
                 if (frame2 == 0) break
                 let sz = frame2 + 12
                 if (framep + sz > XFER_SIZE) {
@@ -205,7 +228,7 @@ class SpiTransport extends Transport {
                 } else {
                     const frame = rxqueue.slice(framep, framep + sz)
                     console.log(`recv frame ${toHex(frame)}`)
-                    this.receiveQueue.push(...Packet.fromFrame(frame, now))
+                    this.receiveQueue.push(frame)
                 }
                 sz = (sz + 3) & ~3
                 framep += sz
@@ -232,16 +255,16 @@ class SpiTransport extends Transport {
     }
 }
 
-const RPI_PIN_TX_READY = 24
-const RPI_PIN_RX_READY = 25
-const RPI_PIN_RST = 22
+// use physical pin index
+const RPI_PIN_TX_READY = 18 // GPIO 24
+const RPI_PIN_RX_READY = 22 // GPIO 25
+const RPI_PIN_RST = 15 // GPIO 22
 const RPI_SPI_BUS_ID = 0
 
 /**
  * A transport for a JacHAT type of adapter.
  * Requires to install the `rpio` package.
  * @param options
- * @returns
  */
 export function createNodeSPITransport(
     controller: Rpio,
