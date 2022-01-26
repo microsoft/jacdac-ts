@@ -2,7 +2,7 @@ import { Packet } from "../packet"
 import { toHex } from "../utils"
 import { Transport, TransportOptions } from "./transport"
 
-const debug = console.debug
+const debug = (msg: any) => {} //console.debug
 
 export interface SpiTransportOptions extends TransportOptions {
     /**
