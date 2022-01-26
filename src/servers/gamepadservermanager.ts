@@ -2,7 +2,7 @@ import { JDBus } from "../jdom/bus"
 import { JDClient } from "../jdom/client"
 import { GamepadVariant } from "../jdom/constants"
 import { JDServerServiceProvider } from "../jdom/servers/serverserviceprovider"
-import { GamepadServer,  GAMEPAD_ARCADE_BUTTONS } from "./gamepadserver"
+import { GamepadServer, GAMEPAD_ARCADE_BUTTONS } from "./gamepadserver"
 
 export class GamepadHostManager extends JDClient {
     private providers: {

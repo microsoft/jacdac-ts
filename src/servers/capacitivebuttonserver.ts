@@ -1,5 +1,5 @@
 import { CapacitiveButtonReg, SRV_CAPACITIVE_BUTTON } from "../jdom/constants"
-import { JDServiceServer,  JDServerOptions } from "../jdom/servers/serviceserver"
+import { JDServiceServer, JDServerOptions } from "../jdom/servers/serviceserver"
 import { JDRegisterServer } from "../jdom/servers/registerserver"
 
 export class CapacitiveButtonServer extends JDServiceServer {

@@ -40,7 +40,6 @@ export interface Scheduler {
     clearInterval(handle: any): void
 }
 
-
 /** @internal */
 export class WallClockScheduler implements Scheduler {
     private _now: () => number

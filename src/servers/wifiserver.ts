@@ -205,4 +205,3 @@ export class WifiServer extends JDServiceServer {
         this.sendEvent(WifiEvent.NetworksChanged)
     }
 }
-

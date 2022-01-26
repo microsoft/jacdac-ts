@@ -314,7 +314,6 @@ export class RoleManager extends JDClient {
     }
 }
 
-
 /**
  * Tracks a set of roles
  * @param bus bus hosting the devices

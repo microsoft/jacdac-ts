@@ -11,7 +11,6 @@ export class JDError extends Error {
     }
 }
 
-
 /**
  * Extract the Jacdac error code if any
  * @param e

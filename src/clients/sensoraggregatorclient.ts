@@ -173,4 +173,3 @@ export class SensorAggregatorClient extends JDServiceClient {
         return info
     }
 }
-

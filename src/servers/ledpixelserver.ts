@@ -30,7 +30,7 @@ import {
 } from "../jdom/lightconstants"
 import { Packet } from "../jdom/packet"
 import { JDRegisterServer } from "../jdom/servers/registerserver"
-import { JDServiceServer,  JDServerOptions } from "../jdom/servers/serviceserver"
+import { JDServiceServer, JDServerOptions } from "../jdom/servers/serviceserver"
 import { isBufferEmpty } from "../jdom/utils"
 
 const PROG_EOF = 0

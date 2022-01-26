@@ -303,4 +303,3 @@ class EventObservable<T> implements Observable<T> {
         }
     }
 }
-

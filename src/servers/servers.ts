@@ -91,7 +91,8 @@ import { JDServiceServer } from "../jdom/servers/serviceserver"
 import { ButtonServer } from "./buttonserver"
 import { BuzzerServer } from "./buzzerserver"
 import { CharacterScreenServer } from "./characterscreenserver"
-import { GamepadServer, 
+import {
+    GamepadServer,
     GAMEPAD_ARCADE_BUTTONS,
     GAMEPAD_DPAD_AB_BUTTONS,
 } from "./gamepadserver"
@@ -103,7 +104,7 @@ import { RainGaugeServer } from "./raingaugeserver"
 import { RealTimeClockServer } from "./realtimeclockserver"
 import { ReflectedLightServer } from "./reflectedlightserver"
 import { RotaryEncoderServer } from "./rotaryencoderserver"
-import { SensorServer,  SensorServiceOptions } from "./sensorserver"
+import { SensorServer, SensorServiceOptions } from "./sensorserver"
 import { ServoServer } from "./servoserver"
 import { SettingsServer } from "./settingsserver"
 import { SpeechSynthesisServer } from "./speechsynthesisserver"
@@ -111,8 +112,9 @@ import { SwitchServer } from "./switchserver"
 import { TrafficLightServer } from "./trafficlightserver"
 import { LEDServer } from "./ledserver"
 import { fromHex, hash, stringToUint8Array, toFullHex } from "../jdom/utils"
-import { SoundPlayerServer,  SoundPlayerSound } from "./soundplayerserver"
-import { AnalogSensorServer, 
+import { SoundPlayerServer, SoundPlayerSound } from "./soundplayerserver"
+import {
+    AnalogSensorServer,
     AnalogSensorServerOptions,
 } from "./analogsensorserver"
 import { RandomNumberGeneratorServer } from "./randomnumbergeneratorserver"

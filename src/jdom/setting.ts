@@ -9,6 +9,6 @@ export function localStorageSetting(key: string): Setting {
             get: () => self.localStorage.getItem(key) ?? undefined,
             set: v => self.localStorage.setItem(key, v),
         }
-    } 
-    return undefined;
+    }
+    return undefined
 }

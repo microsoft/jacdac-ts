@@ -30,4 +30,3 @@ export class JDClient extends JDEventSource {
         this.unmounted = true
     }
 }
-

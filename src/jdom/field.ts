@@ -134,5 +134,3 @@ export class JDField extends JDNode {
         return this.decoded?.value
     }
 }
-
-

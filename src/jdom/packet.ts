@@ -527,7 +527,7 @@ function frameToPackets(frame: Uint8Array, timestamp: number) {
                         res.length
                     }`
                 )
-                break;
+                break
             }
             const pkt = bufferConcat(
                 frame.slice(0, 12),
@@ -545,5 +545,3 @@ function frameToPackets(frame: Uint8Array, timestamp: number) {
         return res
     }
 }
-
-

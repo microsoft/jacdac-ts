@@ -136,7 +136,6 @@ export class ModelRunnerClient extends JDServiceClient {
     }
 }
 
-
 export interface TFModelStats {
     modelSize: number
     arenaSize: number

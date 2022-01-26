@@ -8,7 +8,7 @@ import {
 } from "../jdom/constants"
 import { PackedValues } from "../jdom/pack"
 import { JDRegisterServer } from "../jdom/servers/registerserver"
-import { JDServiceServer,  JDServerOptions } from "../jdom/servers/serviceserver"
+import { JDServiceServer, JDServerOptions } from "../jdom/servers/serviceserver"
 
 /**
  * Creation options for sensor servers

@@ -120,5 +120,3 @@ export abstract class JDServiceMemberNode extends JDNode {
      */
     abstract get decoded(): DecodedPacket
 }
-
-

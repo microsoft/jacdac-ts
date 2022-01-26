@@ -387,5 +387,3 @@ export class JDRegister extends JDServiceMemberNode {
         return this.code - b.code || this.service.compareTo(b.service)
     }
 }
-
-

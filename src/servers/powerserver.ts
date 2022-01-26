@@ -1,6 +1,6 @@
 import { PowerReg, SRV_POWER } from "../jdom/constants"
 import { JDRegisterServer } from "../jdom/servers/registerserver"
-import { JDServiceServer,  JDServerOptions } from "../jdom/servers/serviceserver"
+import { JDServiceServer, JDServerOptions } from "../jdom/servers/serviceserver"
 
 export class PowerServer extends JDServiceServer {
     readonly enabled: JDRegisterServer<[boolean]>

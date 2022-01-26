@@ -5,7 +5,7 @@ import {
     SRV_SERVO,
 } from "../jdom/constants"
 import { JDRegisterServer } from "../jdom/servers/registerserver"
-import { JDServiceServer,  JDServerOptions } from "../jdom/servers/serviceserver"
+import { JDServiceServer, JDServerOptions } from "../jdom/servers/serviceserver"
 
 export class ServoServer extends JDServiceServer {
     readonly angle: JDRegisterServer<[number]>

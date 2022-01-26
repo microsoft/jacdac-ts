@@ -103,4 +103,3 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
         )
     }
 }
-

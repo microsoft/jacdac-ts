@@ -68,7 +68,7 @@ export abstract class JDBridge extends JDClient {
 
     /**
      * Decodes and distributes a payload
-     * @param data 
+     * @param data
      */
     receiveFrameOrPacket(data: Uint8Array, sender?: string) {
         const timestamp = this.bus.timestamp
@@ -120,5 +120,5 @@ class ProxyBridge extends JDBridge {
 }
 
 export function createProxyBridge(sendPacket: (pkt: Uint8Array) => void) {
-    return new ProxyBridge(sendPacket);
+    return new ProxyBridge(sendPacket)
 }

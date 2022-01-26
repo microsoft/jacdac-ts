@@ -6,7 +6,7 @@ import {
     SRV_HID_MOUSE,
 } from "../jdom/constants"
 import { Packet } from "../jdom/packet"
-import { JDServiceServer,  JDServerOptions } from "../jdom/servers/serviceserver"
+import { JDServiceServer, JDServerOptions } from "../jdom/servers/serviceserver"
 
 /**
  * @internal

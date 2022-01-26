@@ -86,5 +86,3 @@ export abstract class JDNode extends JDEventSource {
         return this.friendlyName
     }
 }
-
-
