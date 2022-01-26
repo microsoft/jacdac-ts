@@ -311,6 +311,7 @@ export abstract class Transport extends JDEventSource {
         const pkts = Packet.fromFrame(payload, timestamp)
         for (const pkt of pkts) {
             pkt.sender = this.type
+            console.debug(`process pkt ${pkt.sender}: ${pkt.toString()}`)
             this.bus.processPacket(pkt)
         }
     }
