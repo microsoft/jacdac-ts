@@ -795,7 +795,12 @@ class Fiber {
 
         const pkt = this.ctx.pkt
 
-        if (pkt.isReport && pkt.serviceCommand == this.commandCode) {
+        if (
+            pkt.isReport &&
+            pkt.serviceCommand == this.commandCode &&
+            pkt.device == role.device &&
+            pkt.serviceIndex == role.serviceIndex
+        ) {
             const c = new CachedRegister()
             c.code = pkt.serviceCommand
             c.argument = this.commandArg
