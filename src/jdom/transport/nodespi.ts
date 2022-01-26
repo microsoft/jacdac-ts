@@ -166,7 +166,7 @@ class SpiTransport extends Transport {
             todo = await this.transferFrame()
             while (this.receiveQueue.length > 0) {
                 const frame = this.receiveQueue.shift()
-                this.handlePacket(frame)
+                this.handleFrame(frame)
             }
         }
     }
