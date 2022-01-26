@@ -56,7 +56,7 @@ interface Rpio {
  */
 class SpiTransport extends Transport {
     readonly sendQueue: Uint8Array[] = []
-    readonly receiveQueue: Packet[] = []
+    readonly receiveQueue: Uint8Array[] = []
 
     constructor(
         readonly controller: Rpio,
@@ -165,8 +165,8 @@ class SpiTransport extends Transport {
         while (todo) {
             todo = await this.transferFrame()
             while (this.receiveQueue.length > 0) {
-                const pkt = this.receiveQueue.shift()
-                this.bus.processPacket(pkt)
+                const frame = this.receiveQueue.shift()
+                this.handleFrame(frame)
             }
         }
     }
@@ -197,6 +197,9 @@ class SpiTransport extends Transport {
             txq_ptr += (pkt.length + 3) & ~3
         }
 
+        if (txq_ptr == 0 && !rxReady)
+            return false; // nothing to transfer, nothing to receive        
+
         // attempt transfer
         const ok: boolean = await this.attemptTransferBuffers(txqueue, rxqueue)
         if (!ok) {
@@ -207,15 +210,8 @@ class SpiTransport extends Transport {
         if (rxReady) {
             // consume received frame if any
             let framep = 0
-            while (framep < XFER_SIZE) {
+            while (framep + 4 < XFER_SIZE) {
                 const frame2 = rxqueue[framep + 2]
-                /*
-                if (framep == 0 && frame2 > 0)
-                {
-                    Console.WriteLine($"tx {txReady}, rx {rxReady}, send {this.sendQueue.Count}, recv {this.receiveQueue.Count}");
-                    Console.WriteLine($"rx {HexEncoding.ToString(rxqueue)}");
-                }
-                */
                 if (frame2 == 0) break
                 let sz = frame2 + 12
                 if (framep + sz > XFER_SIZE) {
@@ -233,7 +229,7 @@ class SpiTransport extends Transport {
                 } else {
                     const frame = rxqueue.slice(framep, framep + sz)
                     console.log(`recv frame ${toHex(frame)}`)
-                    this.receiveQueue.push(...Packet.fromFrame(frame, now))
+                    this.receiveQueue.push(frame)
                 }
                 sz = (sz + 3) & ~3
                 framep += sz
