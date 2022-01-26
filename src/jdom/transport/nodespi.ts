@@ -166,13 +166,12 @@ class SpiTransport extends Transport {
             todo = await this.transferFrame()
             while (this.receiveQueue.length > 0) {
                 const frame = this.receiveQueue.shift()
-                this.handleFrame(frame)
+                this.handlePacket(frame)
             }
         }
     }
 
     private async transferFrame(): Promise<boolean> {
-        const now = this.bus.timestamp
         // much be in a locked context
         const { txReadyPin, rxReadyPin } = this.options
         const { HIGH } = this.controller
