@@ -38,8 +38,8 @@
     "prettier": "prettier --write src/**/*.ts tests/**/*.ts",
     "predist": "rm -rf dist",
     "dist": "node build.js",
-    "build:ts": "node build.js",
-    "watch:ts": "node build.js --watch",
+    "build": "node build.js",
+    "watch": "node build.js --watch",
     "dist:jsc": "cd jacscript && yarn dist",
     "test": "(cd tests && node ../node_modules/mocha/bin/mocha --require ts-node/register --watch-extensions ts,tsx -p ./tsconfig.json **/*.spec.ts)",
     "testone": "cd tests && node ../node_modules/mocha/bin/mocha --require ts-node/register --watch-extensions ts,tsx -p ./tsconfig.json **/rolemanager.spec.ts",
@@ -49,8 +49,7 @@
     "buildpxt": "cd pxt-jacdac && sh mk.sh",
     "builddocs": "node node_modules/typedoc/bin/typedoc && cp .nojekyll docs",
     "docs:watch": "node node_modules/typedoc/bin/typedoc --watch",
-    "docs:server": "cd docs && npx live-server --port=8082",
-    "watch": "node node_modules/concurrently/bin/concurrently.js --kill-others \"npm:watch:*\""
+    "docs:server": "cd docs && npx live-server --port=8082"
   },
   "devDependencies": {
     "@semantic-release/exec": "^6.0.3",

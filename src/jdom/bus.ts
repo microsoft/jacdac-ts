@@ -377,6 +377,7 @@ export class JDBus extends JDNode {
         if (this._bridges.indexOf(bridge) < 0) {
             console.debug(`add bridge`, { bridge })
             this._bridges.push(bridge)
+            bridge.bus = this
             this.emit(CHANGE)
         }
         return () => this.removeBridge(bridge)
@@ -387,6 +388,7 @@ export class JDBus extends JDNode {
         if (i > -1) {
             console.debug(`remove bridge`, { bridge })
             this._bridges.splice(i, 1)
+            bridge.bus = undefined
             this.emit(CHANGE)
         }
     }

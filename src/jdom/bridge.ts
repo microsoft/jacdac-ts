@@ -66,7 +66,22 @@ export abstract class JDBridge extends JDClient {
         if (pkt) this.dispatchPackets([pkt])
     }
 
-    private dispatchPackets(pkts: Packet[]) {
+    /**
+     * Decodes and distributes a payload
+     * @param data 
+     */
+    receiveFrameOrPacket(data: Uint8Array, sender?: string) {
+        const timestamp = this.bus.timestamp
+        let pkts = Packet.fromFrame(data, timestamp)
+        if (!pkts.length) {
+            // try as a single packet
+            const pkt = Packet.fromBinary(data, timestamp)
+            pkts = pkt && [pkt]
+        }
+        this.dispatchPackets(pkts, sender)
+    }
+
+    private dispatchPackets(pkts: Packet[], sender?: string) {
         // bail out if no packets
         if (!pkts?.length) return
 
@@ -74,7 +89,7 @@ export abstract class JDBridge extends JDClient {
 
         for (const pkt of pkts) {
             // tracing the source of packets to avoid self-resending
-            pkt.sender = this.bridgeId
+            pkt.sender = sender || this.bridgeId
             // send to native bus
             this.bus.sendPacketAsync(pkt)
             // send to javascript bus
@@ -95,3 +110,15 @@ export abstract class JDBridge extends JDClient {
     protected abstract sendPacket(data: Uint8Array): void
 }
 
+class ProxyBridge extends JDBridge {
+    constructor(readonly _sendPacket: (pkt: Uint8Array) => void) {
+        super(true)
+    }
+    protected sendPacket(data: Uint8Array): void {
+        this._sendPacket(data)
+    }
+}
+
+export function createProxyBridge(sendPacket: (pkt: Uint8Array) => void) {
+    return new ProxyBridge(sendPacket);
+}

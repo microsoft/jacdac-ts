@@ -1,23 +1,24 @@
 import { Packet } from "../packet"
-import { toHex } from "../utils"
-import { Transport,  TransportOptions } from "./transport"
+import { Transport, TransportOptions } from "./transport"
+
+const debug = (msg: any) => {} //console.debug
 
 export interface SpiTransportOptions extends TransportOptions {
     /**
      * Physical index of the TX ready pin
-    */
+     */
     txReadyPin: number
     /**
      * Physical index of the RX ready pin
-    */
+     */
     rxReadyPin: number
     /**
      * Physical index of the RESET pin
-    */
+     */
     resetPin: number
     /**
      * SPI bus id, default 0
-    */
+     */
     spiBusId: number
 }
 
@@ -31,10 +32,7 @@ interface Rpio {
     HIGH: number
     LOW: number
     POLL_HIGH: number
-    init(options?: {
-        gpiomem?: boolean,
-        mapping?: 'physical'
-    }): void
+    init(options?: { gpiomem?: boolean; mapping?: "physical" }): void
     open(pin: number, mode: number, flags?: number): void
     close(pin: number): void
     write(pin: number, value: number): void
@@ -68,7 +66,7 @@ class SpiTransport extends Transport {
 
         this.controller.init({
             gpiomem: false,
-            mapping: 'physical',
+            mapping: "physical",
         })
     }
 
@@ -78,25 +76,25 @@ class SpiTransport extends Transport {
         } catch (e) {
             console.debug(e)
             console.error("SPI configuration failed: make sure to install rpio")
-            this.disconnectRpio();
+            this.disconnectRpio()
             throw e
         }
     }
 
     private async internalTransportConnectAsync(): Promise<void> {
-        console.log("spi: connecting...")
+        debug("spi: connecting...")
 
         const { txReadyPin, rxReadyPin, resetPin } = this.options
         const { HIGH, LOW, POLL_HIGH, PULL_DOWN, INPUT, OUTPUT } =
             this.controller
 
-        console.log("spi: setup pins")
+        debug("spi: setup pins")
 
         this.controller.open(txReadyPin, INPUT, PULL_DOWN) // pull down
         this.controller.open(rxReadyPin, INPUT, PULL_DOWN) // pull down
         this.controller.open(resetPin, OUTPUT)
 
-        console.log("spi: reset bridge")
+        debug("spi: reset bridge")
 
         this.controller.write(resetPin, LOW)
         await this.bus.delay(10)
@@ -104,23 +102,18 @@ class SpiTransport extends Transport {
 
         this.controller.mode(resetPin, INPUT)
 
-        console.log("spi: connect spi")
+        debug("spi: connect spi")
 
         this.controller.spiBegin()
         this.controller.spiChipSelect(0) /* Use CE0 */
-        this.controller.spiSetCSPolarity(
-            0,
-            HIGH
-        ) // AT93C46 chip select is active-high
-        this.controller.spiSetClockDivider(
-            16
-        ) // 250Mhz / 16 ~ 16Mz
+        this.controller.spiSetCSPolarity(0, HIGH) // AT93C46 chip select is active-high
+        this.controller.spiSetClockDivider(16) // 250Mhz / 16 ~ 16Mz
         this.controller.spiSetDataMode(0)
 
         this.controller.poll(rxReadyPin, this.handleRxPinRising, POLL_HIGH)
         this.controller.poll(txReadyPin, this.handleTxPinRising, POLL_HIGH)
 
-        console.log("spi: ready")
+        debug("spi: ready")
         await this.transfer()
     }
 
@@ -140,7 +133,7 @@ class SpiTransport extends Transport {
             this.controller.close(resetPin)
 
             this.controller.spiEnd()
-        } catch(e) {
+        } catch (e) {
             console.debug(e)
         }
     }
@@ -196,13 +189,12 @@ class SpiTransport extends Transport {
             txq_ptr += (pkt.length + 3) & ~3
         }
 
-        if (txq_ptr == 0 && !rxReady)
-            return false; // nothing to transfer, nothing to receive        
+        if (txq_ptr == 0 && !rxReady) return false // nothing to transfer, nothing to receive
 
         // attempt transfer
         const ok: boolean = await this.attemptTransferBuffers(txqueue, rxqueue)
         if (!ok) {
-            console.log("transfer failed")
+            debug("transfer failed")
             return false
         }
 
@@ -214,9 +206,7 @@ class SpiTransport extends Transport {
                 if (frame2 == 0) break
                 let sz = frame2 + 12
                 if (framep + sz > XFER_SIZE) {
-                    console.log(
-                        `packet overflow ${framep} + ${sz} > ${XFER_SIZE}`
-                    )
+                    debug(`packet overflow ${framep} + ${sz} > ${XFER_SIZE}`)
                     break
                 }
                 const frame0 = rxqueue[framep]
@@ -227,7 +217,7 @@ class SpiTransport extends Transport {
                     // skip bogus packet
                 } else {
                     const frame = rxqueue.slice(framep, framep + sz)
-                    console.log(`recv frame ${toHex(frame)}`)
+                    //console.log(`recv frame ${toHex(frame)}`)
                     this.receiveQueue.push(frame)
                 }
                 sz = (sz + 3) & ~3
@@ -247,7 +237,7 @@ class SpiTransport extends Transport {
                 this.controller.spiTransfer(txqueue, rxqueue, txqueue.length)
                 return true
             } catch (ex) {
-                console.log(ex)
+                debug(ex)
                 await this.bus.delay(1)
             }
         }

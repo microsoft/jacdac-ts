@@ -334,5 +334,3 @@ export abstract class Transport extends JDEventSource {
         this._cleanups = []
     }
 }
-
-
