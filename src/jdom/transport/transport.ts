@@ -336,4 +336,23 @@ export abstract class Transport extends JDEventSource {
     }
 }
 
+class ProxyTransport extends Transport {
+    constructor(readonly sendPacket: (pkt: Packet) => void) {
+        super("proxy")
+    }
+    protected async transportSendPacketAsync(p: Packet): Promise<void> {
+        this.sendPacket(p);
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    protected transportConnectAsync(background?: boolean): Promise<void> {
+        return Promise.resolve()
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    protected async transportDisconnectAsync(background?: boolean): Promise<void> {
+        return Promise.resolve()
+    }
+}
 
+export function createProxyTransport(sendPacket: (pkt: Packet) => void) {
+    return new ProxyTransport(sendPacket)
+}
