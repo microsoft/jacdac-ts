@@ -95,3 +95,15 @@ export abstract class JDBridge extends JDClient {
     protected abstract sendPacket(data: Uint8Array): void
 }
 
+class ProxyBridge extends JDBridge {
+    constructor(readonly _sendPacket: (pkt: Uint8Array) => void) {
+        super(true)
+    }
+    protected sendPacket(data: Uint8Array): void {
+        this._sendPacket(data)
+    }
+}
+
+export function createProxyBridge(sendPacket: (pkt: Uint8Array) => void) {
+    return new ProxyBridge(sendPacket);
+}
