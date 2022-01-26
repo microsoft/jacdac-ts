@@ -1379,7 +1379,7 @@ export class Runner extends JDEventSource {
         if (ctx) {
             this.allowRestart = false
             this.ctx = undefined
-            ctx.onPanic(0)
+            ctx.panic(0)
         }
         const env = this.env
         if (env) {
