@@ -109,17 +109,14 @@ export class JDRegister extends JDServiceMemberNode {
      * @returns
      * @category Packets
      */
-    sendSetAsync(data: Uint8Array, autoRefresh?: boolean): Promise<void> {
-        if (this.notImplemented) return Promise.resolve()
+    async sendSetAsync(data: Uint8Array, autoRefresh?: boolean): Promise<void> {
+        if (this.notImplemented) return
+
         const cmd = CMD_SET_REG | this.code
         const pkt = Packet.from(cmd, data)
         this._lastSetTimestamp = this.service.device.bus.timestamp
-        let p = this.service.sendPacketAsync(pkt, this.service.registersUseAcks)
-        if (autoRefresh)
-            p = this.service.device.bus
-                .delay(50)
-                .then(() => this.sendGetAsync())
-        return p
+        await this.service.sendPacketAsync(pkt, this.service.registersUseAcks)
+        if (autoRefresh) this.scheduleRefresh()
     }
 
     /**
