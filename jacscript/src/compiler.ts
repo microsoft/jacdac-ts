@@ -1097,9 +1097,9 @@ class Program implements InstrArgResolver {
                             }
 
                             {
+                                wr.emitLabel(nowDis)
                                 // now==disconnected
                                 if (!disp.disconnected.empty()) {
-                                    wr.emitLabel(nowDis)
                                     wr.push()
                                     const connPrev = wr.forceReg(
                                         disp.wasConnected.value()
