@@ -1335,8 +1335,15 @@ ${dev
             const age = this.timestamp - register.lastGetTimestamp
             const backoff = lastGetAttempts
 
+            // needs refresh and first attempt
+            if (register.needsRefresh && lastGetAttempts == 0) {
+                register.sendGetAsync()
+            }
             // streaming register? use streaming sample
-            if (isReading(specification) && isSensor(service.specification)) {
+            else if (
+                isReading(specification) &&
+                isSensor(service.specification)
+            ) {
                 // compute refresh interval
                 const intervalRegister = service.register(
                     SensorReg.StreamingInterval
@@ -1393,16 +1400,13 @@ ${dev
                     }
                 }
 
-                // needs refresh and first attempt
-                if (register.needsRefresh && lastGetAttempts == 0) {
-                    register.sendGetAsync()
-                }
                 // no data yet
                 else if (noDataYet && age > 500) {
                     register.sendGetAsync()
                 }
             } // regular register, ping if data is old
             else {
+                // check age
                 const volatile = !!specification?.volatile
                 const expiration = volatile
                     ? Math.min(
