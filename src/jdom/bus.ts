@@ -1312,7 +1312,6 @@ ${dev
                                     !reg.data ||
                                     !(
                                         isConstRegister(reg.specification) ||
-                                        reg.code === SystemReg.StatusCode ||
                                         reg.code === SystemReg.ReadingError
                                     )
                             )
