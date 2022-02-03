@@ -12,7 +12,7 @@ import { JDNode } from "./node"
 import { randomDeviceId } from "./random"
 import { JDRegister } from "./register"
 import { JDService } from "./service"
-import { serviceSpecificationFromClassIdentifier } from "./spec"
+import { isReading, serviceSpecificationFromClassIdentifier } from "./spec"
 import { JSONTryParse } from "./utils"
 
 export enum TestState {
@@ -135,6 +135,7 @@ export abstract class TestNode extends JDNode {
             if (this.node) this.bindChild(child)
             else child.node = undefined
             this.emit(CHANGE)
+            this.updateState()
         }
     }
 
@@ -342,10 +343,6 @@ export class RegisterTest extends TestNode {
             }
         } else return TestState.Indeterminate
     }
-
-    override get label() {
-        return `${this.name}, ${this.register?.humanValue || "?"}`
-    }
 }
 
 export interface PanelTestSpec {
@@ -391,18 +388,32 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
                     serviceSpecificationFromClassIdentifier(service)
                 const serviceTest = new ServiceTest(specification.name, service)
                 {
-                    const statusCodeTest = new RegisterTest(
-                        "status code should be ready",
-                        BaseReg.StatusCode,
-                        reg => {
-                            const [code, vendorCode] = reg.unpackedValue
-                            return code === SystemStatusCodes.Ready &&
-                                vendorCode === 0
-                                ? TestState.Pass
-                                : TestState.Fail
-                        }
+                    serviceTest.appendChild(
+                        new RegisterTest(
+                            "status code should be ready",
+                            BaseReg.StatusCode,
+                            reg => {
+                                const [code, vendorCode] = reg.unpackedValue
+                                return code === SystemStatusCodes.Ready &&
+                                    vendorCode === 0
+                                    ? TestState.Pass
+                                    : TestState.Fail
+                            }
+                        )
                     )
-                    serviceTest.appendChild(statusCodeTest)
+
+                    const readingSpec = specification.packets.find(isReading)
+                    if (readingSpec)
+                        serviceTest.appendChild(
+                            new RegisterTest(
+                                "reading register should stream",
+                                readingSpec.identifier,
+                                reg =>
+                                    reg.unpackedValue.length > 0
+                                        ? TestState.Pass
+                                        : TestState.Fail
+                            )
+                        )
                 }
                 deviceTest.appendChild(serviceTest)
             }
