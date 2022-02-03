@@ -5,7 +5,9 @@ import {
     ControlReg,
     DISCONNECT,
     REPORT_UPDATE,
+    SRV_BUTTON,
     SRV_CONTROL,
+    SystemReg,
     SystemStatusCodes,
 } from "./constants"
 import { JDDevice } from "./device"
@@ -365,19 +367,86 @@ export class RegisterTest extends TestNode {
 
 export interface PanelTestSpec {
     id: string
-    devices: PanelDeviceTestSpec[]
+    devices: DeviceTestSpec[]
 }
 
-export interface PanelDeviceTestSpec {
+export interface DeviceTestSpec {
     productIdentifier: number
     count: number
     firmwareVersion?: string
-    services: PanelServiceTestSpec[]
+    services: ServiceTestSpec[]
 }
 
-export interface PanelServiceTestSpec {
+export interface ServiceTestSpec {
     serviceClass: number
     count?: number
+    rules?: ServiceTestRule[]
+}
+
+export interface ServiceTestRule {
+    type: "reading" | "event"
+}
+export interface ReadingTestRule extends ServiceTestRule {
+    type: "reading"
+    value: number
+    tolerance?: number
+}
+export interface EventTestRule extends ServiceTestRule {
+    type: "event"
+    name: string
+}
+
+const builtinTestRules: Record<number, ServiceTestRule[]> = {
+    [SRV_BUTTON]: <ServiceTestRule[]>[
+        <ReadingTestRule>{
+            type: "reading",
+            value: 0,
+            tolerance: 0.001,
+        },
+        <ReadingTestRule>{
+            type: "reading",
+            value: 1,
+            tolerance: 0.001,
+        },
+    ],
+}
+
+function createReadingRule(
+    rule: ReadingTestRule
+): (reg: JDRegister) => TestState {
+    let seen = false
+    const { value, tolerance } = rule
+    return (reg: JDRegister) => {
+        if (!seen) {
+            const [current] = reg.unpackedValue
+            seen =
+                current !== undefined &&
+                (tolerance
+                    ? Math.abs(current - value) <= tolerance
+                    : current === value)
+            console.log(`seen`, { seen, current, value })
+        }
+        return seen ? TestState.Pass : TestState.Fail
+    }
+}
+
+export function compileTestRule(rule: ServiceTestRule): TestNode {
+    const { type } = rule
+    switch (type) {
+        case "reading": {
+            const readingRule = rule as ReadingTestRule
+            const { value, tolerance } = readingRule
+            return new RegisterTest(
+                `observe reading == ${value}${
+                    tolerance ? ` +/-${tolerance}` : ""
+                }`,
+                SystemReg.Reading,
+                createReadingRule(readingRule)
+            )
+        }
+        default:
+            return undefined
+    }
 }
 
 export function tryParsePanelTestSpec(source: string) {
@@ -467,6 +536,13 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
                                             : TestState.Fail
                                 )
                             )
+
+                        const testRules = [...(builtinTestRules[serviceClass] || []), ...(service.rules || [])]
+                                    .map(compileTestRule)
+                                    .filter(r => !!r)
+                        testRules?.forEach(testRule =>
+                            serviceTest.appendChild(testRule)
+                        )
                     }
                     deviceTest.appendChild(serviceTest)
                 }
