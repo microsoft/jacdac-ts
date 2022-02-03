@@ -1,5 +1,11 @@
 import { JDBus } from "./bus"
-import { BaseReg, CHANGE, REPORT_UPDATE, SystemStatusCodes } from "./constants"
+import {
+    BaseReg,
+    CHANGE,
+    DISCONNECT,
+    REPORT_UPDATE,
+    SystemStatusCodes,
+} from "./constants"
 import { JDDevice } from "./device"
 import { JDSubscriptionScope } from "./eventsource"
 import { JDNode } from "./node"
@@ -91,18 +97,21 @@ export abstract class TestNode extends JDNode {
         else this._children.forEach(c => (c.node = undefined))
     }
 
-    private updateState(): void {
+    protected updateState(): void {
         if (this._error) this.state = TestState.Fail
         else {
             // compute local state
-            this.nodeState()
+            const state = this.nodeState()
+            if (this.children.length === 0 || state === TestState.Fail)
+                this.state = state
             // compute child states
-            if (this.state !== TestState.Fail)
-                this.state = this.computeChildrenState()
+            else this.state = this.computeChildrenState()
         }
     }
 
-    protected nodeState() {}
+    protected nodeState(): TestState {
+        return TestState.Indeterminate
+    }
 
     protected mount() {
         this.subscriptions.mount(
@@ -236,6 +245,16 @@ export class DeviceTest extends TestNode {
         return this.productIdentifier === device.productIdentifier
     }
 
+    protected mount(): void {
+        super.mount()
+        const device = this.device
+        this.subscriptions.mount(
+            device.subscribe(DISCONNECT, () => {
+                if (device === this.node) this.node = undefined
+            })
+        )
+    }
+
     override bindChild(node: TestNode): void {
         const serviceTest = node as ServiceTest
         if (serviceTest.service) return
@@ -308,20 +327,20 @@ export class RegisterTest extends TestNode {
                 console.log(`register update ${register}`, {
                     values: register?.unpackedValue,
                 })
-                this.nodeState()
+                this.updateState()
             })
         )
     }
 
-    override nodeState() {
+    override nodeState(): TestState {
         const register = this.register
         if (register) {
             try {
-                this.state = this.computeState(this.register)
+                return this.computeState(this.register)
             } catch (e) {
-                this.setError(e.message)
+                return TestState.Fail
             }
-        } else this.state = TestState.Indeterminate
+        } else return TestState.Indeterminate
     }
 
     override get label() {
