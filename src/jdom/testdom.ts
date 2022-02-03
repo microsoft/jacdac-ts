@@ -236,6 +236,18 @@ export class DeviceTest extends TestNode {
     }
     set device(value: JDDevice) {
         this.node = value
+        if(value) {
+            this.updateNameFromCatalog()
+            const catalog = this.device?.bus?.deviceCatalog
+            this.subscriptions.mount(catalog?.subscribe(CHANGE, this.updateNameFromCatalog.bind(this)))    
+        }
+    }
+
+    private updateNameFromCatalog() {
+        const catalog = this.device?.bus?.deviceCatalog
+        const spec = catalog?.specificationFromProductIdentifier(this.productIdentifier)
+        if (spec)
+            this.name = spec.name
     }
 
     get serviceTests() {
