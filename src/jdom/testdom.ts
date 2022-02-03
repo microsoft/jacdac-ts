@@ -1,5 +1,5 @@
 import { JDBus } from "./bus"
-import { BaseReg, CHANGE } from "./constants"
+import { BaseReg, CHANGE, REPORT_UPDATE, SystemStatusCodes } from "./constants"
 import { JDDevice } from "./device"
 import { JDSubscriptionScope } from "./eventsource"
 import { JDNode } from "./node"
@@ -15,8 +15,6 @@ export enum TestState {
     Running,
     Fail,
 }
-
-export const NODE_CHANGE = "nodeChange"
 
 export abstract class TestNode extends JDNode {
     private _id: string = randomDeviceId()
@@ -66,8 +64,12 @@ export abstract class TestNode extends JDNode {
     }
     set node(value: JDNode) {
         if (value !== this._node) {
+            if (this._node) {
+                console.log(`unbound ${this._node} from ${this}`)
+            }
             this.unmount()
             this._node = value
+            this.bindChildren()
             if (value) {
                 console.log(`bound ${value} to ${this}`)
                 this.mount()
@@ -80,9 +82,13 @@ export abstract class TestNode extends JDNode {
     }
 
     private handleChange() {
-        this._children.filter(c => !c.node).forEach(c => this.bindChild(c))
+        this.bindChildren()
         this.updateState()
-        this.emit(NODE_CHANGE)
+    }
+
+    private bindChildren() {
+        if (this.node) this._children.forEach(c => this.bindChild(c))
+        else this._children.forEach(c => (c.node = undefined))
     }
 
     private updateState(): void {
@@ -113,11 +119,12 @@ export abstract class TestNode extends JDNode {
         return this._children.slice(0)
     }
 
-    appendChild(node: TestNode) {
-        if (node && this._children.indexOf(node) < 0) {
-            this._children.push(node)
-            node.parent = this
-            this.bindChild(node)
+    appendChild(child: TestNode) {
+        if (child && this._children.indexOf(child) < 0) {
+            this._children.push(child)
+            child.parent = this
+            if (this.node) this.bindChild(child)
+            else child.node = undefined
             this.emit(CHANGE)
         }
     }
@@ -136,7 +143,8 @@ export abstract class TestNode extends JDNode {
         if (value != this._state) {
             this._state = value
             this._error = undefined
-            this.emitPropagated(CHANGE)
+            this.emit(CHANGE)
+            this.parent?.updateState()
         }
     }
     setError(error: string) {
@@ -171,12 +179,20 @@ export class PanelTest extends TestNode {
     set bus(value: JDBus) {
         this.node = value
     }
-    get devices() {
+    get deviceTests() {
         return this.children as DeviceTest[]
     }
     override bindChild(node: TestNode): void {
         const deviceTest = node as DeviceTest
-        const deviceTests = this.devices
+
+        // clear bindings if needed
+        if (deviceTest.device) {
+            if (!deviceTest.device.connected) deviceTest.device = undefined
+            // already bound
+            else return
+        }
+
+        const deviceTests = this.deviceTests
         // list unbound devices on the bus
         const unboundDevices = this.bus
             .devices({ ignoreInfrastructure: true })
@@ -184,7 +200,7 @@ export class PanelTest extends TestNode {
             .filter(d => !deviceTests.some(t => t.device === d))
         // quadratic search, find first device that matches a test
         const device = unboundDevices.find(d => deviceTest.test(d))
-        console.log(`binding ${deviceTest}`, {
+        console.log(`binding device ${deviceTest}`, {
             deviceTest,
             deviceTests,
             unboundDevices,
@@ -212,13 +228,31 @@ export class DeviceTest extends TestNode {
         this.node = value
     }
 
+    get serviceTests() {
+        return this.children as ServiceTest[]
+    }
+
     test(device: JDDevice): boolean {
         return this.productIdentifier === device.productIdentifier
     }
 
-    override nodeState(): void {
-        const d = this.device
-        if (d.lost) this.state = TestState.Indeterminate
+    override bindChild(node: TestNode): void {
+        const serviceTest = node as ServiceTest
+        if (serviceTest.service) return
+        const serviceTests = this.serviceTests
+        const unboundServices = this.device
+            .services({
+                serviceClass: serviceTest.serviceClass,
+            })
+            .filter(srv => !serviceTests.find(st => st.node === srv))
+        const service = unboundServices.find(srv => serviceTest.test(srv))
+        console.log(`binding service ${serviceTest}`, {
+            serviceTest,
+            serviceTests,
+            unboundServices,
+            service,
+        })
+        serviceTest.service = service
     }
 }
 
@@ -232,10 +266,30 @@ export class ServiceTest extends TestNode {
     set service(value: JDService) {
         this.node = value
     }
+
+    test(service: JDService) {
+        return service.serviceClass === this.serviceClass
+    }
+
+    override bindChild(node: TestNode): void {
+        const registerTest = node as RegisterTest
+        if (registerTest.register) return
+
+        const register = this.service.register(registerTest.code)
+        console.log(`binding register ${registerTest}`, {
+            registerTest,
+            register,
+        })
+        registerTest.register = register
+    }
 }
 
 export class RegisterTest extends TestNode {
-    constructor(name: string, readonly code: number) {
+    constructor(
+        name: string,
+        readonly code: number,
+        readonly computeState: (reg: JDRegister) => TestState
+    ) {
         super(name)
     }
     get register() {
@@ -243,6 +297,35 @@ export class RegisterTest extends TestNode {
     }
     set register(value: JDRegister) {
         this.node = value
+    }
+
+    override mount() {
+        super.mount()
+        const register = this.register
+        console.log(`register subscribe ${this.code} to ${register}`)
+        this.subscriptions.mount(
+            register.subscribe(REPORT_UPDATE, () => {
+                console.log(`register update ${register}`, {
+                    values: register?.unpackedValue,
+                })
+                this.nodeState()
+            })
+        )
+    }
+
+    override nodeState() {
+        const register = this.register
+        if (register) {
+            try {
+                this.state = this.computeState(this.register)
+            } catch (e) {
+                this.setError(e.message)
+            }
+        } else this.state = TestState.Indeterminate
+    }
+
+    override get label() {
+        return `${this.name}, ${this.register?.humanValue || "?"}`
     }
 }
 
@@ -291,7 +374,14 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
                 {
                     const statusCodeTest = new RegisterTest(
                         "status code should be ready",
-                        BaseReg.StatusCode
+                        BaseReg.StatusCode,
+                        reg => {
+                            const [code, vendorCode] = reg.unpackedValue
+                            return code === SystemStatusCodes.Ready &&
+                                vendorCode === 0
+                                ? TestState.Pass
+                                : TestState.Fail
+                        }
                     )
                     serviceTest.appendChild(statusCodeTest)
                 }
