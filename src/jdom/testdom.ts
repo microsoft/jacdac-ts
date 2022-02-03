@@ -163,9 +163,6 @@ export abstract class TestNode extends JDNode {
             this.updateState()
         }
     }
-    get nodeKind(): string {
-        return "test"
-    }
     protected computeChildrenState() {
         return this._children.reduce(
             (s, c) => Math.max(s, c.state),
@@ -178,11 +175,18 @@ export abstract class TestNode extends JDNode {
     }
 }
 
+export const PANEL_TEST_KIND = "panelTest"
+export const DEVICE_TEST_KIND = "deviceTest"
+export const SERVICE_TEST_KIND = "serviceTest"
+export const REGISTER_TEST_KIND = "registerTest"
+
 export class PanelTest extends TestNode {
     constructor(id: string) {
         super(id || "panel")
     }
-
+    get nodeKind(): string {
+        return PANEL_TEST_KIND
+    }
     get bus() {
         return this.node as JDBus
     }
@@ -230,7 +234,9 @@ export class DeviceTest extends TestNode {
     constructor(readonly productIdentifier: number) {
         super(`0x${productIdentifier.toString(16)}`)
     }
-
+    get nodeKind(): string {
+        return DEVICE_TEST_KIND
+    }
     get device() {
         return this.node as JDDevice
     }
@@ -292,6 +298,9 @@ export class ServiceTest extends TestNode {
     constructor(name: string, readonly serviceClass: number) {
         super(name)
     }
+    get nodeKind(): string {
+        return SERVICE_TEST_KIND
+    }
     get service() {
         return this.node as JDService
     }
@@ -323,6 +332,9 @@ export class RegisterTest extends TestNode {
         readonly computeState: (reg: JDRegister) => TestState
     ) {
         super(name)
+    }
+    get nodeKind(): string {
+        return REGISTER_TEST_KIND
     }
     get register() {
         return this.node as JDRegister
