@@ -231,8 +231,8 @@ export class PanelTest extends TestNode {
 }
 
 export class DeviceTest extends TestNode {
-    constructor(readonly productIdentifier: number) {
-        super(`0x${productIdentifier.toString(16)}`)
+    constructor(readonly productIdentifier: number, readonly specification: jdspec.DeviceSpec) {
+        super(specification?.name || `0x${productIdentifier.toString(16)}`)
     }
     get nodeKind(): string {
         return DEVICE_TEST_KIND
@@ -242,18 +242,6 @@ export class DeviceTest extends TestNode {
     }
     set device(value: JDDevice) {
         this.node = value
-        if(value) {
-            this.updateNameFromCatalog()
-            const catalog = this.device?.bus?.deviceCatalog
-            this.subscriptions.mount(catalog?.subscribe(CHANGE, this.updateNameFromCatalog.bind(this)))    
-        }
-    }
-
-    private updateNameFromCatalog() {
-        const catalog = this.device?.bus?.deviceCatalog
-        const spec = catalog?.specificationFromProductIdentifier(this.productIdentifier)
-        if (spec)
-            this.name = spec.name
     }
 
     get serviceTests() {
@@ -401,12 +389,14 @@ export function tryParsePanelTestSpec(source: string) {
 
 export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
     const { id, devices } = panel
+    const { deviceCatalog } = bus
     const panelTest = new PanelTest(id)
     panelTest.bus = bus
     for (const device of devices) {
         const { productIdentifier, count } = device
         for (let i = 0; i < count; ++i) {
-            const deviceTest = new DeviceTest(productIdentifier)
+            const specification = deviceCatalog.specificationFromProductIdentifier(productIdentifier)
+            const deviceTest = new DeviceTest(productIdentifier, specification)
             for (const service of device.services) {
                 const specification =
                     serviceSpecificationFromClassIdentifier(service)
