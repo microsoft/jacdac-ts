@@ -33,6 +33,7 @@
     "node": ">=14.17.0"
   },
   "scripts": {
+    "setup": "yarn pullsubmodules && yarn install --frozen-lockfile",
     "pullsubmodules": "git submodule update --init --recursive",
     "lint": "node node_modules/eslint/bin/eslint.js src/**/*.ts",
     "prettier": "prettier --write src/**/*.ts tests/**/*.ts",
