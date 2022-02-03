@@ -55,7 +55,7 @@ export abstract class TestNode extends JDNode {
     }
 
     get label(): string {
-        return this._name
+        return this._name;
     }
 
     get id() {
@@ -354,9 +354,6 @@ export class RegisterTest extends TestNode {
         console.log(`register subscribe ${this.code} to ${register}`)
         this.subscriptions.mount(
             register.subscribe(REPORT_UPDATE, () => {
-                console.log(`register update ${register}`, {
-                    values: register?.unpackedValue,
-                })
                 this.updateState()
             })
         )
@@ -436,17 +433,24 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
 function createReadingRule(
     rule: ReadingTestRule
 ): (reg: JDRegister) => TestState {
-    let seen = false
+    const threshold = 2
+    let samples = 0
+    let seen = samples >= threshold
     const { value, tolerance } = rule
     return (reg: JDRegister) => {
         if (!seen) {
             const [current] = reg.unpackedValue
-            seen =
+            const active =
                 current !== undefined &&
                 (tolerance
                     ? Math.abs(current - value) <= tolerance
                     : current === value)
-            console.log(`seen`, { seen, current, value })
+            if (active)
+                samples++
+            else
+                samples = 0
+            // recompute
+            seen = samples >= threshold
         }
         return seen ? TestState.Pass : TestState.Fail
     }
