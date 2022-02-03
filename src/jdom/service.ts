@@ -25,7 +25,6 @@ import {
     isValue,
     isIntensity,
     isOptionalReadingRegisterCode,
-    isConstRegister,
 } from "./spec"
 import { JDEvent } from "./event"
 import { strcmp } from "./utils"
@@ -86,12 +85,8 @@ export class JDService extends JDNode {
 
         const statusCodeChanged = this.event(BaseEvent.StatusCodeChanged)
         statusCodeChanged.on(CHANGE, () => {
-            // todo update status code with event payload
-            const { data } = statusCodeChanged
-            //console.debug(`${this}: status code changed event`, { data })
-            // schedule data update
             const statusCode = this.register(BaseReg.StatusCode)
-            statusCode?.clearGetTimestamp()
+            statusCode?.scheduleRefresh()
         })
     }
 
@@ -240,21 +235,6 @@ export class JDService extends JDNode {
             this._intensityRegister = pkt && this.register(pkt.identifier)
         }
         return this._intensityRegister
-    }
-
-    private _statusCodeRegister: JDRegister
-    /**
-     * Gets the ``status_code`` register associated to this service, if the specification supports it.
-     * @category Registers
-     */
-    get statusCodeRegister(): JDRegister {
-        if (!this._statusCodeRegister) {
-            const pkt = this.specification?.packets.find(
-                pkt => pkt.identifier === SystemReg.StatusCode
-            )
-            this._statusCodeRegister = pkt && this.register(pkt.identifier)
-        }
-        return this._statusCodeRegister
     }
 
     /**

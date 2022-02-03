@@ -83,6 +83,7 @@ async function main() {
         platform: cjs ? "node" : "browser",
         target: "es2019",
         format: mjs ? "esm" : cjs ? "cjs" : "iife",
+        globalName: "jacdac",
         watch
       })
     }

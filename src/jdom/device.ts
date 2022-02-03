@@ -450,7 +450,7 @@ export class JDDevice extends JDNode {
             : undefined
     }
 
-    private refreshFirmwareInfo() {
+    refreshFirmwareInfo() {
         if (this.bus.passive) return
 
         const ctrl = this._services?.[0]
@@ -692,7 +692,6 @@ export class JDDevice extends JDNode {
     processAnnouncement(pkt: Packet) {
         this.stats.processAnnouncement(pkt)
 
-        let changed = false
         const w0 = this._servicesData
             ? getNumber(this._servicesData, NumberFormat.UInt32LE, 0)
             : 0
@@ -711,14 +710,17 @@ export class JDDevice extends JDNode {
             this.stats.processRestart()
             this.bus.emit(DEVICE_RESTART, this)
             this.emit(RESTART)
+
+            // refresh control if restarted
+            // but services did not change
+            if (!servicesChanged) this.refreshFirmwareInfo()
         }
 
         // notify that services got updated
         if (servicesChanged) {
-            if (!changed) this.initServices(true)
+            this.initServices(true)
             this.bus.emit(DEVICE_ANNOUNCE, this)
             this.emit(ANNOUNCE)
-            changed = true
         }
 
         // notify that we've received an announce packet
@@ -726,7 +728,7 @@ export class JDDevice extends JDNode {
         this.emit(PACKET_ANNOUNCE)
 
         // notify of any changes
-        if (changed) {
+        if (servicesChanged) {
             this.bus.emit(DEVICE_CHANGE, this)
             this.bus.emit(CHANGE)
             this.emit(CHANGE)

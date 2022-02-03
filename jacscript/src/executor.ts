@@ -1369,8 +1369,10 @@ export class Runner extends JDEventSource {
             if (this.allowRestart) this.run()
         }
         this.bus.scheduler.setTimeout(() => {
-            this.state = RunnerState.Running
-            this.ctx.startProgram()
+            if (this.ctx) {
+                this.state = RunnerState.Running
+                this.ctx.startProgram()
+            }
         }, this.startDelay)
     }
 

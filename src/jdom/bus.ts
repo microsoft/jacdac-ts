@@ -1312,7 +1312,6 @@ ${dev
                                     !reg.data ||
                                     !(
                                         isConstRegister(reg.specification) ||
-                                        reg.code === SystemReg.StatusCode ||
                                         reg.code === SystemReg.ReadingError
                                     )
                             )
@@ -1330,13 +1329,20 @@ ${dev
 
         // refresh values
         for (const register of registers) {
-            const { service, specification } = register
+            const { lastGetAttempts, service, specification } = register
             const noDataYet = !register.data
             const age = this.timestamp - register.lastGetTimestamp
-            const backoff = register.lastGetAttempts
+            const backoff = lastGetAttempts
 
+            // needs refresh and first attempt
+            if (register.needsRefresh && lastGetAttempts == 0) {
+                register.sendGetAsync()
+            }
             // streaming register? use streaming sample
-            if (isReading(specification) && isSensor(service.specification)) {
+            else if (
+                isReading(specification) &&
+                isSensor(service.specification)
+            ) {
                 // compute refresh interval
                 const intervalRegister = service.register(
                     SensorReg.StreamingInterval
@@ -1393,10 +1399,13 @@ ${dev
                     }
                 }
 
-                // first query, get data asap once per second
-                if (noDataYet && age > 1000) register.sendGetAsync()
+                // no data yet
+                else if (noDataYet && age > 500) {
+                    register.sendGetAsync()
+                }
             } // regular register, ping if data is old
             else {
+                // check age
                 const volatile = !!specification?.volatile
                 const expiration = volatile
                     ? Math.min(

@@ -17,7 +17,9 @@ declare let p5: any
 /**
  * The Jacdac bus
  */
-export const bus = createWebBus()
+export const bus = createWebBus({
+    disableRoleManager: true,
+})
 bus.streaming = true
 
 /**

@@ -545,6 +545,24 @@ export function roundWithPrecision(
     return r
 }
 
+export function renderWithPrecision(
+    x: number,
+    digits: number,
+    round = Math.round
+): string {
+    const r = roundWithPrecision(x, digits, round)
+    let rs = r.toLocaleString()
+    if (digits > 0) {
+        let doti = rs.indexOf(".")
+        if (doti < 0) {
+            rs += "."
+            doti = rs.length - 1
+        }
+        while (rs.length - 1 - doti < digits) rs += "0"
+    }
+    return rs
+}
+
 export function randomRange(min: number, max: number) {
     return Math.round(Math.random() * (max - min) + min)
 }
