@@ -370,9 +370,14 @@ export interface PanelTestSpec {
 
 export interface PanelDeviceTestSpec {
     productIdentifier: number
-    firmwareVersion?: string
-    services: number[]
     count: number
+    firmwareVersion?: string
+    services: PanelServiceTestSpec[]
+}
+
+export interface PanelServiceTestSpec {
+    serviceClass: number
+    count?: number
 }
 
 export function tryParsePanelTestSpec(source: string) {
@@ -386,6 +391,7 @@ export function tryParsePanelTestSpec(source: string) {
                 !!d.productIdentifier &&
                 !!d.services &&
                 Array.isArray(d.services) &&
+                d.services.every(srv => !!srv.serviceClass) &&
                 d.count > 0
         )
     )
@@ -425,38 +431,45 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
             }
 
             for (const service of device.services) {
+                const { serviceClass, count = 1 } = service
                 const specification =
-                    serviceSpecificationFromClassIdentifier(service)
-                const serviceTest = new ServiceTest(specification.shortName.toLowerCase(), service)
-                {
-                    serviceTest.appendChild(
-                        new RegisterTest(
-                            "status code should be ready",
-                            BaseReg.StatusCode,
-                            reg => {
-                                const [code, vendorCode] = reg.unpackedValue
-                                return code === SystemStatusCodes.Ready &&
-                                    vendorCode === 0
-                                    ? TestState.Pass
-                                    : TestState.Fail
-                            }
-                        )
+                    serviceSpecificationFromClassIdentifier(serviceClass)
+                for (let i = 0; i < count; ++i) {
+                    const serviceTest = new ServiceTest(
+                        specification.shortName.toLowerCase(),
+                        serviceClass
                     )
-
-                    const readingSpec = specification.packets.find(isReading)
-                    if (readingSpec)
+                    {
                         serviceTest.appendChild(
                             new RegisterTest(
-                                "reading register should stream",
-                                readingSpec.identifier,
-                                reg =>
-                                    reg.unpackedValue.length > 0
+                                "status code should be ready",
+                                BaseReg.StatusCode,
+                                reg => {
+                                    const [code, vendorCode] = reg.unpackedValue
+                                    return code === SystemStatusCodes.Ready &&
+                                        vendorCode === 0
                                         ? TestState.Pass
                                         : TestState.Fail
+                                }
                             )
                         )
+
+                        const readingSpec =
+                            specification.packets.find(isReading)
+                        if (readingSpec)
+                            serviceTest.appendChild(
+                                new RegisterTest(
+                                    "reading register should stream",
+                                    readingSpec.identifier,
+                                    reg =>
+                                        reg.unpackedValue.length > 0
+                                            ? TestState.Pass
+                                            : TestState.Fail
+                                )
+                            )
+                    }
+                    deviceTest.appendChild(serviceTest)
                 }
-                deviceTest.appendChild(serviceTest)
             }
             panelTest.appendChild(deviceTest)
         }
