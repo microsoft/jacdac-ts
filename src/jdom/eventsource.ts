@@ -280,6 +280,29 @@ export class JDEventSource implements IEventSource {
     }
 }
 
+export class JDSubscriptionScope {
+    private unsubscribers: (() => void)[] = []
+    private _unmounted = false
+
+    get unmounted() {
+        return this._unmounted
+    }
+
+    mount(unsubscribe: () => void): () => void {
+        this._unmounted = false
+        if (unsubscribe && this.unsubscribers.indexOf(unsubscribe) < 0)
+            this.unsubscribers.push(unsubscribe)
+        return unsubscribe
+    }
+
+    unmount() {
+        const us = this.unsubscribers
+        this.unsubscribers = []
+        us.forEach(u => u())
+        this._unmounted = true
+    }    
+}
+
 class EventObservable<T> implements Observable<T> {
     constructor(
         public readonly eventEmitter: JDEventSource,
