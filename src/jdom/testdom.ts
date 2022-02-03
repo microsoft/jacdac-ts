@@ -2,8 +2,10 @@ import { JDBus } from "./bus"
 import {
     BaseReg,
     CHANGE,
+    ControlReg,
     DISCONNECT,
     REPORT_UPDATE,
+    SRV_CONTROL,
     SystemStatusCodes,
 } from "./constants"
 import { JDDevice } from "./device"
@@ -49,8 +51,7 @@ export abstract class TestNode extends JDNode {
     }
 
     get label(): string {
-        if (this.node) return `${this._name} bound to ${this.node}`
-        else return this._name
+        return this._name
     }
 
     get id() {
@@ -231,7 +232,10 @@ export class PanelTest extends TestNode {
 }
 
 export class DeviceTest extends TestNode {
-    constructor(readonly productIdentifier: number, readonly specification: jdspec.DeviceSpec) {
+    constructor(
+        readonly productIdentifier: number,
+        readonly specification: jdspec.DeviceSpec
+    ) {
         super(specification?.name || `0x${productIdentifier.toString(16)}`)
     }
     get nodeKind(): string {
@@ -245,7 +249,9 @@ export class DeviceTest extends TestNode {
     }
 
     get serviceTests() {
-        return this.children as ServiceTest[]
+        return this.children.filter(
+            child => child.nodeKind === SERVICE_TEST_KIND
+        ) as ServiceTest[]
     }
 
     test(device: JDDevice): boolean {
@@ -364,6 +370,7 @@ export interface PanelTestSpec {
 
 export interface PanelDeviceTestSpec {
     productIdentifier: number
+    firmwareVersion?: string
     services: number[]
     count: number
 }
@@ -393,14 +400,34 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
     const panelTest = new PanelTest(id)
     panelTest.bus = bus
     for (const device of devices) {
-        const { productIdentifier, count } = device
+        const { productIdentifier, firmwareVersion, count } = device
         for (let i = 0; i < count; ++i) {
-            const specification = deviceCatalog.specificationFromProductIdentifier(productIdentifier)
+            const specification =
+                deviceCatalog.specificationFromProductIdentifier(
+                    productIdentifier
+                )
             const deviceTest = new DeviceTest(productIdentifier, specification)
+
+            // add test for control
+            if (firmwareVersion) {
+                const controlTest = new ServiceTest("control", SRV_CONTROL)
+                controlTest.appendChild(
+                    new RegisterTest(
+                        `firmware version is ${firmwareVersion}`,
+                        ControlReg.FirmwareVersion,
+                        reg =>
+                            reg.stringValue === firmwareVersion
+                                ? TestState.Pass
+                                : TestState.Fail
+                    )
+                )
+                deviceTest.appendChild(controlTest)
+            }
+
             for (const service of device.services) {
                 const specification =
                     serviceSpecificationFromClassIdentifier(service)
-                const serviceTest = new ServiceTest(specification.name, service)
+                const serviceTest = new ServiceTest(specification.shortName.toLowerCase(), service)
                 {
                     serviceTest.appendChild(
                         new RegisterTest(
