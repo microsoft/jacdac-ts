@@ -3,6 +3,7 @@ import {
     BaseReg,
     CHANGE,
     ControlReg,
+    DEVICE_ANNOUNCE,
     DISCONNECT,
     REPORT_UPDATE,
     SRV_BUTTON,
@@ -114,7 +115,7 @@ export abstract class TestNode extends JDNode {
     }
 
     protected nodeState(): TestState {
-        return TestState.Indeterminate
+        return this.node ? TestState.Running : TestState.Indeterminate
     }
 
     protected mount() {
@@ -232,6 +233,13 @@ export class PanelTest extends TestNode {
         const found = children.filter(c => !!c.node).length
         return `${this.name}, found ${found}/${children.length} devices`
     }
+
+    override mount(): void {
+        super.mount()
+        this.subscriptions.mount(this.bus.subscribe(DEVICE_ANNOUNCE, (dev: JDDevice) => {
+            dev.refreshFirmwareInfo()
+        }))
+    }
 }
 
 export class DeviceTest extends TestNode {
@@ -239,7 +247,7 @@ export class DeviceTest extends TestNode {
         readonly productIdentifier: number,
         readonly specification: jdspec.DeviceSpec
     ) {
-        super(specification?.name || `0x${productIdentifier.toString(16)}`)
+        super(`${specification?.name} (0x${productIdentifier.toString(16)})` || `0x${productIdentifier.toString(16)}`)
     }
     get nodeKind(): string {
         return DEVICE_TEST_KIND
@@ -415,12 +423,12 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         <ReadingTestRule>{
             type: "reading",
             value: 0,
-            tolerance: 0.001,
+            tolerance: 0.01,
         },
         <ReadingTestRule>{
             type: "reading",
             value: 1,
-            tolerance: 0.001,
+            tolerance: 0.01,
         },
     ],
 }
@@ -519,7 +527,7 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
                     serviceSpecificationFromClassIdentifier(serviceClass)
                 for (let i = 0; i < count; ++i) {
                     const serviceTest = new ServiceTest(
-                        specification.shortName.toLowerCase(),
+                        specification?.shortName.toLowerCase() || `0x${serviceClass.toString(16)}`,
                         serviceClass
                     )
                     {
@@ -538,7 +546,7 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
                         )
 
                         const readingSpec =
-                            specification.packets.find(isReading)
+                            specification?.packets?.find(isReading)
                         if (readingSpec)
                             serviceTest.appendChild(
                                 new RegisterTest(
