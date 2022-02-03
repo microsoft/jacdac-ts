@@ -55,7 +55,7 @@ export abstract class TestNode extends JDNode {
     }
 
     get label(): string {
-        return this._name;
+        return this._name
     }
 
     get id() {
@@ -186,7 +186,7 @@ export const SERVICE_TEST_KIND = "serviceTest"
 export const REGISTER_TEST_KIND = "registerTest"
 
 export class PanelTest extends TestNode {
-    constructor(id: string) {
+    constructor(id: string, readonly specification: PanelTestSpec) {
         super(id || "panel")
     }
     get nodeKind(): string {
@@ -211,12 +211,18 @@ export class PanelTest extends TestNode {
             else return
         }
 
-        const deviceTests = this.deviceTests
+        const { deviceTests, specification } = this
+        const { oracles } = specification
+
         // list unbound devices on the bus
         const unboundDevices = this.bus
             .devices({ ignoreInfrastructure: true })
             // ignore devices that are already bound
             .filter(d => !deviceTests.some(t => t.device === d))
+            // ignore oracles
+            .filter(
+                d => !oracles?.find(oracle => oracle.deviceId === d.deviceId)
+            )
         // quadratic search, find first device that matches a test
         const device = unboundDevices.find(d => deviceTest.test(d))
         console.log(`binding device ${deviceTest}`, {
@@ -236,9 +242,11 @@ export class PanelTest extends TestNode {
 
     override mount(): void {
         super.mount()
-        this.subscriptions.mount(this.bus.subscribe(DEVICE_ANNOUNCE, (dev: JDDevice) => {
-            dev.refreshFirmwareInfo()
-        }))
+        this.subscriptions.mount(
+            this.bus.subscribe(DEVICE_ANNOUNCE, (dev: JDDevice) => {
+                dev.refreshFirmwareInfo()
+            })
+        )
     }
 }
 
@@ -247,7 +255,10 @@ export class DeviceTest extends TestNode {
         readonly productIdentifier: number,
         readonly specification: jdspec.DeviceSpec
     ) {
-        super(`${specification?.name} (0x${productIdentifier.toString(16)})` || `0x${productIdentifier.toString(16)}`)
+        super(
+            `${specification?.name} (0x${productIdentifier.toString(16)})` ||
+                `0x${productIdentifier.toString(16)}`
+        )
     }
     get nodeKind(): string {
         return DEVICE_TEST_KIND
@@ -374,6 +385,14 @@ export class RegisterTest extends TestNode {
 export interface PanelTestSpec {
     id: string
     devices: DeviceTestSpec[]
+    oracles?: OrableTestSpec[]
+}
+
+export interface OrableTestSpec {
+    serviceClass: number
+    deviceId: string
+    serviceIndex?: number
+    tolerance?: number
 }
 
 export interface DeviceTestSpec {
@@ -391,16 +410,17 @@ export interface ServiceTestSpec {
 }
 
 export interface ServiceTestRule {
-    type: "reading" | "event"
+    type: "reading" | "oracleReading"
 }
 export interface ReadingTestRule extends ServiceTestRule {
-    type: "reading"
+    type: "reading" | "oracleReading"
     value: number
     tolerance?: number
 }
-export interface EventTestRule extends ServiceTestRule {
-    type: "event"
-    name: string
+export interface OracleReadingTestRule extends ServiceTestRule {
+    type: "oracleReading"
+    oracle: OrableTestSpec
+    tolerance?: number
 }
 
 const builtinTestRules: Record<number, ServiceTestRule[]> = {
@@ -442,13 +462,11 @@ function createReadingRule(
             const [current] = reg.unpackedValue
             const active =
                 current !== undefined &&
-                (tolerance
-                    ? Math.abs(current - value) <= tolerance
-                    : current === value)
-            if (active)
-                samples++
-            else
-                samples = 0
+                (tolerance <= 0
+                    ? current === value
+                    : Math.abs(current - value) <= tolerance)
+            if (active) samples++
+            else samples = 0
             // recompute
             seen = samples >= threshold
         }
@@ -456,7 +474,44 @@ function createReadingRule(
     }
 }
 
-export function compileTestRule(rule: ServiceTestRule): TestNode {
+function createOracleRule(
+    oracle: OrableTestSpec
+): (reg: JDRegister) => TestState {
+    let samples = 0
+    const threshold = 5
+    const { deviceId, serviceClass, serviceIndex, tolerance } = oracle
+    return (reg: JDRegister) => {
+        // find oracle register
+        const oracleDevice = reg.service.device.bus.device(deviceId)
+        if (!oracleDevice) return TestState.Fail
+        const oracleService = oracleDevice.services({
+            serviceClass,
+            serviceIndex,
+        })?.[0]
+        if (!oracleService) return TestState.Fail
+
+        const oracleReading = oracleService.readingRegister
+        const [oracleValue] = (oracleReading.unpackedValue || []) as [number]
+        const [value] = (reg.unpackedValue || []) as [number]
+
+        console.log("oracle", { oracleValue, value })
+        if (
+            tolerance <= 0
+                ? value === oracleValue
+                : Math.abs(value - oracleValue) <= tolerance
+        ) {
+            samples++
+        } else {
+            samples = 0
+        }
+
+        if (samples == 0) return TestState.Fail
+        if (samples < threshold) return TestState.Running
+        else return TestState.Pass
+    }
+}
+
+function compileTestRule(rule: ServiceTestRule): TestNode {
     const { type } = rule
     switch (type) {
         case "reading": {
@@ -486,9 +541,12 @@ export function tryParsePanelTestSpec(source: string) {
                 !!d.productIdentifier &&
                 !!d.services &&
                 Array.isArray(d.services) &&
-                d.services.every(srv => !!srv.serviceClass) &&
+                d.services.every(srv => !!srv?.serviceClass) &&
                 d.count > 0
-        )
+        ) &&
+        (!json.oracles ||
+            (Array.isArray(json.oracles) &&
+                json.oracles.every(o => !!o?.serviceClass && !!o?.deviceId)))
     )
         return json
 
@@ -498,7 +556,7 @@ export function tryParsePanelTestSpec(source: string) {
 export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
     const { id, devices } = panel
     const { deviceCatalog } = bus
-    const panelTest = new PanelTest(id)
+    const panelTest = new PanelTest(id, panel)
     panelTest.bus = bus
     for (const device of devices) {
         const { productIdentifier, firmwareVersion, count } = device
@@ -527,14 +585,19 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
 
             for (const service of device.services) {
                 const { serviceClass, count = 1, disableBuiltinRules } = service
+                const serviceOracle = panel.oracles?.find(
+                    oracle => oracle.serviceClass === serviceClass
+                )
                 const specification =
                     serviceSpecificationFromClassIdentifier(serviceClass)
                 for (let i = 0; i < count; ++i) {
                     const serviceTest = new ServiceTest(
-                        specification?.shortName.toLowerCase() || `0x${serviceClass.toString(16)}`,
+                        specification?.shortName.toLowerCase() ||
+                            `0x${serviceClass.toString(16)}`,
                         serviceClass
                     )
                     {
+                        // add status code
                         serviceTest.appendChild(
                             new RegisterTest(
                                 "status code should be ready",
@@ -548,18 +611,28 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
                                 }
                             )
                         )
-
+                        // reading value rule if any
                         const readingSpec =
                             specification?.packets?.find(isReading)
                         if (readingSpec)
                             serviceTest.appendChild(
                                 new RegisterTest(
-                                    "reading register should stream",
+                                    "reading should stream",
                                     readingSpec.identifier,
                                     reg =>
                                         reg.unpackedValue.length > 0
                                             ? TestState.Pass
                                             : TestState.Fail
+                                )
+                            )
+
+                        // add oracle
+                        if (serviceOracle)
+                            serviceTest.appendChild(
+                                new RegisterTest(
+                                    "reading near oracle",
+                                    SystemReg.Reading,
+                                    createOracleRule(serviceOracle)
                                 )
                             )
 
