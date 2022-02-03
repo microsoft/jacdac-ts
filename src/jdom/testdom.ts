@@ -7,6 +7,7 @@ import {
     REPORT_UPDATE,
     SRV_BUTTON,
     SRV_CONTROL,
+    SRV_POTENTIOMETER,
     SystemReg,
     SystemStatusCodes,
 } from "./constants"
@@ -381,6 +382,7 @@ export interface ServiceTestSpec {
     serviceClass: number
     count?: number
     rules?: ServiceTestRule[]
+    disableBuiltinRules?: boolean
 }
 
 export interface ServiceTestRule {
@@ -398,6 +400,18 @@ export interface EventTestRule extends ServiceTestRule {
 
 const builtinTestRules: Record<number, ServiceTestRule[]> = {
     [SRV_BUTTON]: <ServiceTestRule[]>[
+        <ReadingTestRule>{
+            type: "reading",
+            value: 0,
+            tolerance: 0.001,
+        },
+        <ReadingTestRule>{
+            type: "reading",
+            value: 1,
+            tolerance: 0.001,
+        },
+    ],
+    [SRV_POTENTIOMETER]: <ServiceTestRule[]>[
         <ReadingTestRule>{
             type: "reading",
             value: 0,
@@ -500,7 +514,7 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
             }
 
             for (const service of device.services) {
-                const { serviceClass, count = 1 } = service
+                const { serviceClass, count = 1, disableBuiltinRules } = service
                 const specification =
                     serviceSpecificationFromClassIdentifier(serviceClass)
                 for (let i = 0; i < count; ++i) {
@@ -537,9 +551,14 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
                                 )
                             )
 
-                        const testRules = [...(builtinTestRules[serviceClass] || []), ...(service.rules || [])]
-                                    .map(compileTestRule)
-                                    .filter(r => !!r)
+                        const testRules = [
+                            ...((!disableBuiltinRules &&
+                                builtinTestRules[serviceClass]) ||
+                                []),
+                            ...(service.rules || []),
+                        ]
+                            .map(compileTestRule)
+                            .filter(r => !!r)
                         testRules?.forEach(testRule =>
                             serviceTest.appendChild(testRule)
                         )
