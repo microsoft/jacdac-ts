@@ -638,14 +638,7 @@ export function tryParsePanelTestSpec(source: string) {
         json?.id &&
         json.devices &&
         Array.isArray(json.devices) &&
-        json.devices.every(
-            d =>
-                !!d.productIdentifier &&
-                !!d.services &&
-                Array.isArray(d.services) &&
-                d.services.every(srv => !!srv) &&
-                d.count > 0
-        ) &&
+        json.devices.every(d => !!d.productIdentifier && d.count > 0) &&
         (!json.oracles ||
             (Array.isArray(json.oracles) &&
                 json.oracles.every(o => !!o?.serviceClass && !!o?.deviceId)))
@@ -653,17 +646,19 @@ export function tryParsePanelTestSpec(source: string) {
         // normalize json
         for (const device of json.devices) {
             device.productIdentifier = parseIdentifier(device.productIdentifier)
-            for (const service of device.services) {
-                if (service.name) {
-                    const spec = serviceSpecificationFromName(service.name)
-                    if (!spec) {
-                        console.log(`unknown service ${service.name}`)
-                        return undefined
+            if (device.services) {
+                for (const service of device.services) {
+                    if (service.name) {
+                        const spec = serviceSpecificationFromName(service.name)
+                        if (!spec) {
+                            console.log(`unknown service ${service.name}`)
+                            return undefined
+                        }
+                        service.serviceClass = spec.classIdentifier
                     }
-                    service.serviceClass = spec.classIdentifier
+                    service.serviceClass = parseIdentifier(service.serviceClass)
+                    if (!service.serviceClass) return undefined
                 }
-                service.serviceClass = parseIdentifier(service.serviceClass)
-                if (!service.serviceClass) return undefined
             }
         }
 
@@ -703,7 +698,11 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
                 deviceTest.appendChild(controlTest)
             }
 
-            for (const service of device.services) {
+            const services: ServiceTestSpec[] =
+                device.services ||
+                specification.services.map(srv => ({ serviceClass: srv }))
+
+            for (const service of services) {
                 const { serviceClass, count = 1, disableBuiltinRules } = service
                 const serviceOracle = panel.oracles?.find(
                     oracle => oracle.serviceClass === serviceClass
