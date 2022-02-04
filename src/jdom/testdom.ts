@@ -341,7 +341,7 @@ export class DeviceTest extends TestNode {
         return {
             deviceId: d.deviceId,
             shortId: d.shortId,
-            firmwareVersion: d.firmwareVersion
+            firmwareVersion: d.firmwareVersion,
         }
     }
 }
@@ -379,6 +379,14 @@ export class ServiceTest extends TestNode {
                 eventTest.event = event
                 break
             }
+        }
+    }
+
+    override customProperties(): object {
+        const s = this.service
+        if (!s) return {}
+        return {
+            serviceIndex: s.serviceIndex,
         }
     }
 }
