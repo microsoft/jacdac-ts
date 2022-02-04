@@ -17,6 +17,7 @@ import { JDDevice } from "./device"
 import { JDEvent } from "./event"
 import { JDSubscriptionScope } from "./eventsource"
 import { JDNode } from "./node"
+import { serviceName } from "./pretty"
 import { randomDeviceId } from "./random"
 import { JDRegister } from "./register"
 import { JDService } from "./service"
@@ -28,6 +29,13 @@ import {
 } from "./spec"
 import { JSONTryParse } from "./utils"
 
+export const PANEL_TEST_KIND = "panelTest"
+export const DEVICE_TEST_KIND = "deviceTest"
+export const SERVICE_TEST_KIND = "serviceTest"
+export const REGISTER_TEST_KIND = "registerTest"
+export const EVENT_TEST_KIND = "eventTest"
+export const REGISTER_ORACLE_KIND = "registerOracle"
+
 export enum TestState {
     Pass,
     Indeterminate,
@@ -36,8 +44,7 @@ export enum TestState {
 }
 
 export abstract class TestNode extends JDNode {
-    private _id: string = randomDeviceId()
-    private _name: string
+    private readonly _id: string = randomDeviceId()
     private _parent: TestNode
     private _state: TestState = TestState.Indeterminate
     private _error: string
@@ -45,9 +52,8 @@ export abstract class TestNode extends JDNode {
     private _children: TestNode[] = []
     protected readonly subscriptions = new JDSubscriptionScope()
 
-    constructor(name: string) {
+    constructor(private _name: string) {
         super()
-        this._name = name
     }
 
     get name(): string {
@@ -63,6 +69,10 @@ export abstract class TestNode extends JDNode {
 
     get label(): string {
         return this._name
+    }
+
+    get info(): string {
+        return undefined
     }
 
     get id() {
@@ -105,7 +115,7 @@ export abstract class TestNode extends JDNode {
     }
 
     private bindChildren() {
-        if (this.node) this._children.forEach(c => this.bindChild(c))
+        if (this.node) this._children.forEach(c => c.bind())
         else this._children.forEach(c => (c.node = undefined))
     }
 
@@ -144,15 +154,14 @@ export abstract class TestNode extends JDNode {
         if (child && this._children.indexOf(child) < 0) {
             this._children.push(child)
             child.parent = this
-            if (this.node) this.bindChild(child)
+            if (this.node) child.bind()
             else child.node = undefined
             this.emit(CHANGE)
             this.updateState()
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    protected bindChild(node: TestNode) {}
+    protected bind() {}
 
     get qualifiedName(): string {
         return this._parent ? `${this.parent}:${this.name}` : this.name
@@ -205,12 +214,6 @@ export abstract class TestNode extends JDNode {
     }
 }
 
-export const PANEL_TEST_KIND = "panelTest"
-export const DEVICE_TEST_KIND = "deviceTest"
-export const SERVICE_TEST_KIND = "serviceTest"
-export const REGISTER_TEST_KIND = "registerTest"
-export const EVENT_TEST_KIND = "eventTest"
-
 export class PanelTest extends TestNode {
     constructor(id: string, readonly specification: PanelTestSpec) {
         super(id || "panel")
@@ -227,39 +230,6 @@ export class PanelTest extends TestNode {
     get deviceTests() {
         return this.children as DeviceTest[]
     }
-    override bindChild(node: TestNode): void {
-        const deviceTest = node as DeviceTest
-
-        // clear bindings if needed
-        if (deviceTest.device) {
-            if (!deviceTest.device.connected) deviceTest.device = undefined
-            // already bound
-            else return
-        }
-
-        const { deviceTests, specification } = this
-        const { oracles } = specification
-
-        // list unbound devices on the bus
-        const unboundDevices = this.bus
-            .devices({ ignoreInfrastructure: true })
-            // ignore devices that are already bound
-            .filter(d => !deviceTests.some(t => t.device === d))
-            // ignore oracles
-            .filter(
-                d => !oracles?.find(oracle => oracle.deviceId === d.deviceId)
-            )
-        // quadratic search, find first device that matches a test
-        const device = unboundDevices.find(d => deviceTest.test(d))
-        console.log(`binding device ${deviceTest}`, {
-            deviceTest,
-            deviceTests,
-            unboundDevices,
-            device,
-        })
-        deviceTest.device = device
-    }
-
     override get label() {
         const children = this.children
         const found = children.filter(c => !!c.node).length
@@ -313,6 +283,33 @@ export class DeviceTest extends TestNode {
         return this.productIdentifier === device.productIdentifier
     }
 
+    bind(): void {
+        // clear bindings if needed
+        if (this.device) {
+            if (!this.device.connected) this.device = undefined
+            // already bound
+            else return
+        }
+
+        if (!this.parent) return
+
+        const { deviceTests, specification, bus } = this.parent as PanelTest
+        const { oracles } = specification
+
+        // list unbound devices on the bus
+        const unboundDevices = bus
+            .devices({ ignoreInfrastructure: true })
+            // ignore devices that are already bound
+            .filter(d => !deviceTests.some(t => t.device === d))
+            // ignore oracles
+            .filter(
+                d => !oracles?.find(oracle => oracle.deviceId === d.deviceId)
+            )
+        // quadratic search, find first device that matches a test
+        const device = unboundDevices.find(d => this.test(d))
+        this.device = device
+    }
+
     protected mount(): void {
         super.mount()
         const device = this.device
@@ -321,25 +318,6 @@ export class DeviceTest extends TestNode {
                 if (device === this.node) this.node = undefined
             })
         )
-    }
-
-    override bindChild(node: TestNode): void {
-        const serviceTest = node as ServiceTest
-        if (serviceTest.service) return
-        const serviceTests = this.serviceTests
-        const unboundServices = this.device
-            .services({
-                serviceClass: serviceTest.serviceClass,
-            })
-            .filter(srv => !serviceTests.find(st => st.node === srv))
-        const service = unboundServices.find(srv => serviceTest.test(srv))
-        console.log(`binding service ${serviceTest}`, {
-            serviceTest,
-            serviceTests,
-            unboundServices,
-            service,
-        })
-        serviceTest.service = service
     }
 
     protected customProperties(): object {
@@ -371,22 +349,16 @@ export class ServiceTest extends TestNode {
         return service.serviceClass === this.serviceClass
     }
 
-    override bindChild(node: TestNode): void {
-        if (node.node) return
-        switch (node.nodeKind) {
-            case REGISTER_TEST_KIND: {
-                const registerTest = node as RegisterTest
-                const register = this.service.register(registerTest.code)
-                registerTest.register = register
-                break
-            }
-            case EVENT_TEST_KIND: {
-                const eventTest = node as EventTest
-                const event = this.service.event(eventTest.code)
-                eventTest.event = event
-                break
-            }
-        }
+    override bind(): void {
+        if (this.service || !this.parent) return
+        const { serviceTests, device } = this.parent as DeviceTest
+        const unboundServices = device
+            .services({
+                serviceClass: this.serviceClass,
+            })
+            .filter(srv => !serviceTests.find(st => st.node === srv))
+        const service = unboundServices.find(srv => this.test(srv))
+        this.service = service
     }
 
     override customProperties(): object {
@@ -398,16 +370,9 @@ export class ServiceTest extends TestNode {
     }
 }
 
-export class RegisterTest extends TestNode {
-    constructor(
-        name: string,
-        readonly code: number,
-        readonly computeState: (reg: JDRegister) => TestState
-    ) {
+export abstract class RegisterTestNode extends TestNode {
+    constructor(name: string, readonly code: number) {
         super(name)
-    }
-    get nodeKind(): string {
-        return REGISTER_TEST_KIND
     }
     get register() {
         return this.node as JDRegister
@@ -415,7 +380,6 @@ export class RegisterTest extends TestNode {
     set register(value: JDRegister) {
         this.node = value
     }
-
     override mount() {
         super.mount()
         const register = this.register
@@ -425,6 +389,57 @@ export class RegisterTest extends TestNode {
                 this.updateState()
             })
         )
+    }
+    override get info(): string {
+        return this.register?.humanValue || "?"
+    }
+}
+
+export class RegisterOracle extends RegisterTestNode {
+    constructor(
+        name: string,
+        readonly deviceId: string,
+        readonly serviceIndex: number,
+        readonly serviceClass: number,
+        readonly tolerance: number
+    ) {
+        super(name, SystemReg.Reading)
+    }
+
+    get nodeKind(): string {
+        return REGISTER_ORACLE_KIND
+    }
+
+    override nodeState(): TestState {
+        return this.register?.unpackedValue?.length
+            ? TestState.Pass
+            : TestState.Fail
+    }
+
+    override bind(): void {
+        if (this.register || !this.parent) return
+
+        const { bus } = this.parent as PanelTest
+        const device = bus.device(this.deviceId, true)
+        const service = device?.services({
+            serviceIndex: this.serviceIndex,
+            serviceClass: this.serviceClass,
+        })[0]
+        const register = service?.register(this.code)
+        this.register = register
+    }
+}
+
+export class RegisterTest extends RegisterTestNode {
+    constructor(
+        name: string,
+        code: number,
+        readonly computeState: (reg: JDRegister) => TestState
+    ) {
+        super(name, code)
+    }
+    get nodeKind(): string {
+        return REGISTER_TEST_KIND
     }
 
     override nodeState(): TestState {
@@ -436,6 +451,14 @@ export class RegisterTest extends TestNode {
                 return TestState.Fail
             }
         } else return TestState.Indeterminate
+    }
+
+    override bind(): void {
+        if (!this.parent) return
+
+        const { service } = this.parent as ServiceTest
+        const register = service?.register(this.code)
+        this.register = register
     }
 }
 
@@ -477,6 +500,19 @@ export class EventTest extends TestNode {
                 return TestState.Fail
             }
         } else return TestState.Indeterminate
+    }
+
+    override bind(): void {
+        if (this.event || !this.parent) return
+
+        const { service } = this.parent as ServiceTest
+        const event = service?.event(this.code)
+        this.event = event
+    }
+
+    override get info(): string {
+        const c = this.event?.count
+        return c ? `#${c}` : "?"
     }
 }
 
@@ -686,6 +722,10 @@ export function tryParsePanelTestSpec(source: string) {
             (Array.isArray(json.oracles) &&
                 json.oracles.every(o => !!o?.serviceClass && !!o?.deviceId)))
     ) {
+        for(const oracle of json.oracles || []) {
+            oracle.serviceClass = parseIdentifier(oracle.serviceClass)
+        }
+
         // normalize json
         for (const device of json.devices) {
             device.productIdentifier = parseIdentifier(device.productIdentifier)
@@ -712,10 +752,25 @@ export function tryParsePanelTestSpec(source: string) {
 }
 
 export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
-    const { id, devices } = panel
+    const { id, devices = [], oracles = [] } = panel
     const { deviceCatalog } = bus
     const panelTest = new PanelTest(id, panel)
     panelTest.bus = bus
+
+    // add oracles
+    for (const oracle of oracles) {
+        const { serviceClass, deviceId, serviceIndex, tolerance } = oracle
+        const oracleNode = new RegisterOracle(
+            `oracle for ${serviceName(serviceClass)}`,
+            deviceId,
+            serviceIndex,
+            serviceClass,
+            tolerance
+        )
+        panelTest.appendChild(oracleNode)
+    }
+
+    // add devices
     for (const device of devices) {
         const { productIdentifier, firmwareVersion, count } = device
         for (let i = 0; i < count; ++i) {
