@@ -20,7 +20,12 @@ import { JDNode } from "./node"
 import { randomDeviceId } from "./random"
 import { JDRegister } from "./register"
 import { JDService } from "./service"
-import { isEvent, isReading, serviceSpecificationFromClassIdentifier } from "./spec"
+import {
+    isEvent,
+    isReading,
+    serviceSpecificationFromClassIdentifier,
+    serviceSpecificationFromName,
+} from "./spec"
 import { JSONTryParse } from "./utils"
 
 export enum TestState {
@@ -453,6 +458,7 @@ export interface DeviceTestSpec {
 }
 
 export interface ServiceTestSpec {
+    name?: string
     serviceClass: number
     count?: number
     rules?: ServiceTestRule[]
@@ -584,7 +590,10 @@ function createOracleRule(
     }
 }
 
-function compileTestRule(specification: jdspec.ServiceSpec, rule: ServiceTestRule): TestNode {
+function compileTestRule(
+    specification: jdspec.ServiceSpec,
+    rule: ServiceTestRule
+): TestNode {
     const { type } = rule
     switch (type) {
         case "reading": {
@@ -600,8 +609,10 @@ function compileTestRule(specification: jdspec.ServiceSpec, rule: ServiceTestRul
         }
         case "event": {
             const eventRule = rule as EventTestRule
-            const { name  } = eventRule
-            const pkt = specification.packets.find(pkt => isEvent(pkt) && pkt.name === name)
+            const { name } = eventRule
+            const pkt = specification.packets.find(
+                pkt => isEvent(pkt) && pkt.name === name
+            )
             return new EventTest(
                 `raise event ${name}`,
                 pkt.identifier,
@@ -611,6 +622,14 @@ function compileTestRule(specification: jdspec.ServiceSpec, rule: ServiceTestRul
         default:
             return undefined
     }
+}
+
+function parseIdentifier(value: number | string) {
+    if (typeof value === "string" && /^0x[0-9a-f]+$/i.test(value as string)) {
+        return parseInt(value, 16)
+    } else if (typeof value === "string" && /^[0-9]+$/i.test(value as string))
+        return parseInt(value)
+    return Number(value)
 }
 
 export function tryParsePanelTestSpec(source: string) {
@@ -624,14 +643,32 @@ export function tryParsePanelTestSpec(source: string) {
                 !!d.productIdentifier &&
                 !!d.services &&
                 Array.isArray(d.services) &&
-                d.services.every(srv => !!srv?.serviceClass) &&
+                d.services.every(srv => !!srv) &&
                 d.count > 0
         ) &&
         (!json.oracles ||
             (Array.isArray(json.oracles) &&
                 json.oracles.every(o => !!o?.serviceClass && !!o?.deviceId)))
-    )
+    ) {
+        // normalize json
+        for (const device of json.devices) {
+            device.productIdentifier = parseIdentifier(device.productIdentifier)
+            for (const service of device.services) {
+                if (service.name) {
+                    const spec = serviceSpecificationFromName(service.name)
+                    if (!spec) {
+                        console.log(`unknown service ${service.name}`)
+                        return undefined
+                    }
+                    service.serviceClass = spec.classIdentifier
+                }
+                service.serviceClass = parseIdentifier(service.serviceClass)
+                if (!service.serviceClass) return undefined
+            }
+        }
+
         return json
+    }
 
     return undefined
 }
