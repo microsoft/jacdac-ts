@@ -274,6 +274,13 @@ export class PanelTest extends TestNode {
             })
         )
     }
+
+    override customProperties(): object {
+        return {
+            time: new Date().toUTCString(),
+            userAgent: typeof navigator !== "undefined" && navigator?.userAgent,
+        }
+    }
 }
 
 export class DeviceTest extends TestNode {
