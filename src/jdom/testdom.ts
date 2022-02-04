@@ -5,6 +5,7 @@ import {
     ControlReg,
     DEVICE_ANNOUNCE,
     DISCONNECT,
+    EVENT,
     REPORT_UPDATE,
     SRV_BUTTON,
     SRV_CONTROL,
@@ -13,12 +14,13 @@ import {
     SystemStatusCodes,
 } from "./constants"
 import { JDDevice } from "./device"
+import { JDEvent } from "./event"
 import { JDSubscriptionScope } from "./eventsource"
 import { JDNode } from "./node"
 import { randomDeviceId } from "./random"
 import { JDRegister } from "./register"
 import { JDService } from "./service"
-import { isReading, serviceSpecificationFromClassIdentifier } from "./spec"
+import { isEvent, isReading, serviceSpecificationFromClassIdentifier } from "./spec"
 import { JSONTryParse } from "./utils"
 
 export enum TestState {
@@ -184,6 +186,7 @@ export const PANEL_TEST_KIND = "panelTest"
 export const DEVICE_TEST_KIND = "deviceTest"
 export const SERVICE_TEST_KIND = "serviceTest"
 export const REGISTER_TEST_KIND = "registerTest"
+export const EVENT_TEST_KIND = "eventTest"
 
 export class PanelTest extends TestNode {
     constructor(id: string, readonly specification: PanelTestSpec) {
@@ -329,15 +332,21 @@ export class ServiceTest extends TestNode {
     }
 
     override bindChild(node: TestNode): void {
-        const registerTest = node as RegisterTest
-        if (registerTest.register) return
-
-        const register = this.service.register(registerTest.code)
-        console.log(`binding register ${registerTest}`, {
-            registerTest,
-            register,
-        })
-        registerTest.register = register
+        if (node.node) return
+        switch (node.nodeKind) {
+            case REGISTER_TEST_KIND: {
+                const registerTest = node as RegisterTest
+                const register = this.service.register(registerTest.code)
+                registerTest.register = register
+                break
+            }
+            case EVENT_TEST_KIND: {
+                const eventTest = node as EventTest
+                const event = this.service.event(eventTest.code)
+                eventTest.event = event
+                break
+            }
+        }
     }
 }
 
@@ -382,6 +391,47 @@ export class RegisterTest extends TestNode {
     }
 }
 
+export class EventTest extends TestNode {
+    constructor(
+        name: string,
+        readonly code: number,
+        readonly computeState: (reg: JDEvent) => TestState
+    ) {
+        super(name)
+    }
+    get nodeKind(): string {
+        return EVENT_TEST_KIND
+    }
+    get event() {
+        return this.node as JDEvent
+    }
+    set event(value: JDEvent) {
+        this.node = value
+    }
+
+    override mount() {
+        super.mount()
+        const event = this.event
+        console.log(`event subscribe ${this.code} to ${event}`)
+        this.subscriptions.mount(
+            event.subscribe(EVENT, () => {
+                this.updateState()
+            })
+        )
+    }
+
+    override nodeState(): TestState {
+        const event = this.event
+        if (event) {
+            try {
+                return this.computeState(this.event)
+            } catch (e) {
+                return TestState.Fail
+            }
+        } else return TestState.Indeterminate
+    }
+}
+
 export interface PanelTestSpec {
     id: string
     devices: DeviceTestSpec[]
@@ -410,10 +460,10 @@ export interface ServiceTestSpec {
 }
 
 export interface ServiceTestRule {
-    type: "reading" | "oracleReading"
+    type: "reading" | "oracleReading" | "event"
 }
 export interface ReadingTestRule extends ServiceTestRule {
-    type: "reading" | "oracleReading"
+    type: "reading"
     value: number
     tolerance?: number
 }
@@ -421,6 +471,10 @@ export interface OracleReadingTestRule extends ServiceTestRule {
     type: "oracleReading"
     oracle: OrableTestSpec
     tolerance?: number
+}
+export interface EventTestRule extends ServiceTestRule {
+    type: "event"
+    name: string
 }
 
 const builtinTestRules: Record<number, ServiceTestRule[]> = {
@@ -434,6 +488,18 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
             type: "reading",
             value: 1,
             tolerance: 0.001,
+        },
+        <EventTestRule>{
+            type: "event",
+            name: "down",
+        },
+        <EventTestRule>{
+            type: "event",
+            name: "up",
+        },
+        <EventTestRule>{
+            type: "event",
+            name: "hold",
         },
     ],
     [SRV_POTENTIOMETER]: <ServiceTestRule[]>[
@@ -474,6 +540,13 @@ function createReadingRule(
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function createEventRule(rule: EventTestRule): (ev: JDEvent) => TestState {
+    return (ev: JDEvent) => {
+        return ev.count > 0 ? TestState.Pass : TestState.Fail
+    }
+}
+
 function createOracleRule(
     oracle: OrableTestSpec
 ): (reg: JDRegister) => TestState {
@@ -511,7 +584,7 @@ function createOracleRule(
     }
 }
 
-function compileTestRule(rule: ServiceTestRule): TestNode {
+function compileTestRule(specification: jdspec.ServiceSpec, rule: ServiceTestRule): TestNode {
     const { type } = rule
     switch (type) {
         case "reading": {
@@ -523,6 +596,16 @@ function compileTestRule(rule: ServiceTestRule): TestNode {
                 }`,
                 SystemReg.Reading,
                 createReadingRule(readingRule)
+            )
+        }
+        case "event": {
+            const eventRule = rule as EventTestRule
+            const { name  } = eventRule
+            const pkt = specification.packets.find(pkt => isEvent(pkt) && pkt.name === name)
+            return new EventTest(
+                `raise event ${name}`,
+                pkt.identifier,
+                createEventRule(eventRule)
             )
         }
         default:
@@ -642,7 +725,7 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
                                 []),
                             ...(service.rules || []),
                         ]
-                            .map(compileTestRule)
+                            .map(rule => compileTestRule(specification, rule))
                             .filter(r => !!r)
                         testRules?.forEach(testRule =>
                             serviceTest.appendChild(testRule)
