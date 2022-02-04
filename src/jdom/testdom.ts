@@ -185,6 +185,24 @@ export abstract class TestNode extends JDNode {
     override toString(): string {
         return this.qualifiedName
     }
+
+    export(): object {
+        const children = this.children.map(child => child.export())
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const res: any = {
+            name: this.name,
+            state: TestState[this.state]?.toLowerCase(),
+            kind: this.nodeKind,
+            ...this.customProperties(),
+        }
+        if (children.length > 0) res.children = children
+        if (this._error) res.error = this._error
+        return res
+    }
+
+    protected customProperties(): object {
+        return {}
+    }
 }
 
 export const PANEL_TEST_KIND = "panelTest"
@@ -315,6 +333,16 @@ export class DeviceTest extends TestNode {
             service,
         })
         serviceTest.service = service
+    }
+
+    protected customProperties(): object {
+        const d = this.device
+        if (!d) return {}
+        return {
+            deviceId: d.deviceId,
+            shortId: d.shortId,
+            firmwareVersion: d.firmwareVersion
+        }
     }
 }
 
