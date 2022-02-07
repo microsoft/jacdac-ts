@@ -43,11 +43,18 @@ export enum TestState {
     Fail,
 }
 
+export interface TestResult {
+    state: TestState
+    output?: string
+}
+
+export type TestLogger = (msg: string) => void
+
 export abstract class TestNode extends JDNode {
     private readonly _id: string = randomDeviceId()
     private _parent: TestNode
     private _state: TestState = TestState.Indeterminate
-    private _error: string
+    private _output: string
     private _node: JDNode = undefined
     private _children: TestNode[] = []
     protected readonly subscriptions = new JDSubscriptionScope()
@@ -105,9 +112,6 @@ export abstract class TestNode extends JDNode {
             } else this.state = TestState.Indeterminate
         }
     }
-    get error() {
-        return this._error
-    }
 
     private handleChange() {
         this.bindChildren()
@@ -120,23 +124,23 @@ export abstract class TestNode extends JDNode {
     }
 
     protected updateState(): void {
-        if (this._error) this.state = TestState.Fail
-        else {
-            // compute local state
-            const state = this.nodeState()
-            if (this.children.length === 0 || state === TestState.Fail)
-                this.state = state
-            // compute child states
-            else this.state = this.computeChildrenState()
-        }
+        // compute local state
+        const { state, output } = this.nodeState()
+        this.output = output
+        if (this.children.length === 0 || state === TestState.Fail)
+            this.state = state
+        // compute child states
+        else this.state = this.computeChildrenState()
     }
 
     resolveOracle(reg: JDRegister): RegisterOracle {
         return this.parent?.resolveOracle(reg)
     }
 
-    protected nodeState(): TestState {
-        return this.node ? TestState.Running : TestState.Indeterminate
+    protected nodeState(): TestResult {
+        return {
+            state: this.node ? TestState.Running : TestState.Indeterminate,
+        }
     }
 
     protected mount() {
@@ -177,17 +181,22 @@ export abstract class TestNode extends JDNode {
     set state(value: TestState) {
         if (value != this._state) {
             this._state = value
-            this._error = undefined
             this.emit(CHANGE)
             this.parent?.updateState()
         }
     }
-    setError(error: string) {
-        if (this._error !== error) {
-            this._error = error
-            this.updateState()
+
+    get output() {
+        return this._output
+    }
+
+    protected set output(value: string) {
+        if (this._output !== value) {
+            this._output = value
+            this.emit(CHANGE)
         }
     }
+
     protected computeChildrenState() {
         return this._children.reduce(
             (s, c) => Math.max(s, c.state),
@@ -208,8 +217,8 @@ export abstract class TestNode extends JDNode {
             kind: this.nodeKind,
             ...this.customProperties(),
         }
+        if (this.output) res.output = this.output
         if (children.length > 0) res.children = children
-        if (this._error) res.error = this._error
         return res
     }
 
@@ -238,7 +247,12 @@ export class PanelTest extends TestNode {
         return this.children
             .filter(c => c.nodeKind === REGISTER_ORACLE_KIND)
             .map<RegisterOracle>(c => <RegisterOracle>c)
-            .find((o: RegisterOracle) => o.register === reg)
+            .filter(c => !!c.register)
+            .find(
+                (o: RegisterOracle) =>
+                    o.serviceClass === reg.service.serviceClass &&
+                    o.code === reg.code
+            )
     }
     override get label() {
         const children = this.children.filter(
@@ -422,10 +436,12 @@ export class RegisterOracle extends RegisterTestNode {
         return REGISTER_ORACLE_KIND
     }
 
-    override nodeState(): TestState {
-        return this.register?.unpackedValue?.length
-            ? TestState.Pass
-            : TestState.Fail
+    override nodeState(): TestResult {
+        return {
+            state: this.register?.unpackedValue?.length
+                ? TestState.Pass
+                : TestState.Fail,
+        }
     }
 
     override bind(): void {
@@ -446,7 +462,10 @@ export class RegisterTest extends RegisterTestNode {
     constructor(
         name: string,
         code: number,
-        readonly computeState: (node: RegisterTest) => TestState
+        readonly computeState: (
+            node: RegisterTest,
+            logger: TestLogger
+        ) => TestState
     ) {
         super(name, code)
     }
@@ -454,15 +473,25 @@ export class RegisterTest extends RegisterTestNode {
         return REGISTER_TEST_KIND
     }
 
-    override nodeState(): TestState {
+    override nodeState(): TestResult {
         const register = this.register
+        const log: string[] = []
+        const logger = (msg: string) => {
+            msg && log.push(msg)
+        }
+        let state = TestState.Indeterminate
         if (register) {
             try {
-                return this.computeState(this)
+                state = this.computeState(this, logger)
             } catch (e) {
-                return TestState.Fail
+                state = TestState.Fail
+                logger(e?.toString())
             }
-        } else return TestState.Indeterminate
+        }
+        return {
+            state,
+            output: log.join("\n"),
+        }
     }
 
     override bind(): void {
@@ -478,7 +507,10 @@ export class EventTest extends TestNode {
     constructor(
         name: string,
         readonly code: number,
-        readonly computeState: (reg: JDEvent) => TestState
+        readonly computeState: (
+            node: EventTest,
+            logger: TestLogger
+        ) => TestState
     ) {
         super(name)
     }
@@ -503,15 +535,25 @@ export class EventTest extends TestNode {
         )
     }
 
-    override nodeState(): TestState {
+    override nodeState(): TestResult {
         const event = this.event
+        const log: string[] = []
+        const logger = (msg: string) => {
+            msg && log.push(msg)
+        }
+        let state = TestState.Indeterminate
         if (event) {
             try {
-                return this.computeState(this.event)
+                state = this.computeState(this, logger)
             } catch (e) {
-                return TestState.Fail
+                state = TestState.Fail
+                logger(e?.toString())
             }
-        } else return TestState.Indeterminate
+        }
+        return {
+            state,
+            output: log.join("\n"),
+        }
     }
 
     override bind(): void {
@@ -615,12 +657,12 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
 
 function createReadingRule(
     rule: ReadingTestRule
-): (node: RegisterTest) => TestState {
+): (node: RegisterTest, logger: TestLogger) => TestState {
     const threshold = 2
     let samples = 0
     let seen = samples >= threshold
     const { value, tolerance } = rule
-    return (node: RegisterTest) => {
+    return (node, logger) => {
         if (!seen) {
             const { register } = node
             const [current] = register.unpackedValue
@@ -634,28 +676,37 @@ function createReadingRule(
             // recompute
             seen = samples >= threshold
         }
+        if (!seen) logger(`missing or incorrect reading value`)
         return seen ? TestState.Pass : TestState.Fail
     }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function createEventRule(rule: EventTestRule): (ev: JDEvent) => TestState {
-    return (ev: JDEvent) => {
-        return ev.count > 0 ? TestState.Pass : TestState.Fail
+function createEventRule(
+    rule: EventTestRule
+): (node: EventTest, logger: TestLogger) => TestState {
+    return (node, logger) => {
+        const { event } = node
+        const seen = event?.count > 0
+        if (!seen) logger(`event not observed`)
+        return event?.count > 0 ? TestState.Pass : TestState.Fail
     }
 }
 
 function createOracleRule(
     oracle: OrableTestSpec
-): (node: RegisterTest) => TestState {
+): (node: RegisterTest, logger: TestLogger) => TestState {
     let samples = 0
     const threshold = 5
     const { tolerance } = oracle
-    return (node: RegisterTest) => {
+    return (node, logger) => {
         const { register } = node
         // find oracle register
         const oracleRegister = node.resolveOracle(register)?.register
-        if (!oracleRegister) return TestState.Fail
+        if (!oracleRegister) {
+            logger(`oracle not found`)
+            return TestState.Fail
+        }
 
         const [oracleValue] = (oracleRegister.unpackedValue || []) as [number]
         const [value] = (register.unpackedValue || []) as [number]
@@ -671,9 +722,14 @@ function createOracleRule(
             samples = 0
         }
 
-        if (samples == 0) return TestState.Fail
-        if (samples < threshold) return TestState.Running
-        else return TestState.Pass
+        if (samples == 0) {
+            logger(`register value does not match oracle`)
+            return TestState.Fail
+        }
+        if (samples < threshold) {
+            logger(`sampling register values...`)
+            return TestState.Running
+        } else return TestState.Pass
     }
 }
 
@@ -795,11 +851,14 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
                     new RegisterTest(
                         `firmware version is ${firmwareVersion}`,
                         ControlReg.FirmwareVersion,
-                        node => {
+                        (node, logger) => {
                             const { register } = node
-                            return register?.stringValue === firmwareVersion
-                                ? TestState.Pass
-                                : TestState.Fail
+                            const ok = register?.stringValue === firmwareVersion
+                            if (!ok)
+                                logger(
+                                    `incorrect firmware version, expected ${firmwareVersion}`
+                                )
+                            return ok ? TestState.Pass : TestState.Fail
                         }
                     )
                 )
@@ -829,14 +888,18 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
                             new RegisterTest(
                                 "status code should be ready",
                                 BaseReg.StatusCode,
-                                node => {
+                                (node, logger) => {
                                     const { register } = node
                                     const { unpackedValue = [] } = register
                                     const [code, vendorCode] = unpackedValue
-                                    return code === SystemStatusCodes.Ready &&
+                                    const ok =
+                                        code === SystemStatusCodes.Ready &&
                                         vendorCode === 0
-                                        ? TestState.Pass
-                                        : TestState.Fail
+                                    if (!ok)
+                                        logger(
+                                            `expected status code equals to 0x0,0x0`
+                                        )
+                                    return ok ? TestState.Pass : TestState.Fail
                                 }
                             )
                         )
