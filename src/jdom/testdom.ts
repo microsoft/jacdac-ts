@@ -131,6 +131,10 @@ export abstract class TestNode extends JDNode {
         }
     }
 
+    resolveOracle(reg: JDRegister): RegisterOracle {
+        return this.parent?.resolveOracle(reg)
+    }
+
     protected nodeState(): TestState {
         return this.node ? TestState.Running : TestState.Indeterminate
     }
@@ -230,8 +234,16 @@ export class PanelTest extends TestNode {
     get deviceTests() {
         return this.children as DeviceTest[]
     }
+    override resolveOracle(reg: JDRegister): RegisterOracle {
+        return this.children
+            .filter(c => c.nodeKind === REGISTER_ORACLE_KIND)
+            .map<RegisterOracle>(c => <RegisterOracle>c)
+            .find((o: RegisterOracle) => o.register === reg)
+    }
     override get label() {
-        const children = this.children
+        const children = this.children.filter(
+            c => c.nodeKind === DEVICE_TEST_KIND
+        )
         const found = children.filter(c => !!c.node).length
         return `${this.name}, found ${found}/${children.length} devices`
     }
@@ -434,7 +446,7 @@ export class RegisterTest extends RegisterTestNode {
     constructor(
         name: string,
         code: number,
-        readonly computeState: (reg: JDRegister) => TestState
+        readonly computeState: (node: RegisterTest) => TestState
     ) {
         super(name, code)
     }
@@ -446,7 +458,7 @@ export class RegisterTest extends RegisterTestNode {
         const register = this.register
         if (register) {
             try {
-                return this.computeState(this.register)
+                return this.computeState(this)
             } catch (e) {
                 return TestState.Fail
             }
@@ -603,14 +615,15 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
 
 function createReadingRule(
     rule: ReadingTestRule
-): (reg: JDRegister) => TestState {
+): (node: RegisterTest) => TestState {
     const threshold = 2
     let samples = 0
     let seen = samples >= threshold
     const { value, tolerance } = rule
-    return (reg: JDRegister) => {
+    return (node: RegisterTest) => {
         if (!seen) {
-            const [current] = reg.unpackedValue
+            const { register } = node
+            const [current] = register.unpackedValue
             const active =
                 current !== undefined &&
                 (tolerance <= 0
@@ -634,23 +647,18 @@ function createEventRule(rule: EventTestRule): (ev: JDEvent) => TestState {
 
 function createOracleRule(
     oracle: OrableTestSpec
-): (reg: JDRegister) => TestState {
+): (node: RegisterTest) => TestState {
     let samples = 0
     const threshold = 5
-    const { deviceId, serviceClass, serviceIndex, tolerance } = oracle
-    return (reg: JDRegister) => {
+    const { tolerance } = oracle
+    return (node: RegisterTest) => {
+        const { register } = node
         // find oracle register
-        const oracleDevice = reg.service.device.bus.device(deviceId)
-        if (!oracleDevice) return TestState.Fail
-        const oracleService = oracleDevice.services({
-            serviceClass,
-            serviceIndex,
-        })?.[0]
-        if (!oracleService) return TestState.Fail
+        const oracleRegister = node.resolveOracle(register)?.register
+        if (!oracleRegister) return TestState.Fail
 
-        const oracleReading = oracleService.readingRegister
-        const [oracleValue] = (oracleReading.unpackedValue || []) as [number]
-        const [value] = (reg.unpackedValue || []) as [number]
+        const [oracleValue] = (oracleRegister.unpackedValue || []) as [number]
+        const [value] = (register.unpackedValue || []) as [number]
 
         console.log("oracle", { oracleValue, value })
         if (
@@ -722,7 +730,7 @@ export function tryParsePanelTestSpec(source: string) {
             (Array.isArray(json.oracles) &&
                 json.oracles.every(o => !!o?.serviceClass && !!o?.deviceId)))
     ) {
-        for(const oracle of json.oracles || []) {
+        for (const oracle of json.oracles || []) {
             oracle.serviceClass = parseIdentifier(oracle.serviceClass)
         }
 
@@ -787,10 +795,12 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
                     new RegisterTest(
                         `firmware version is ${firmwareVersion}`,
                         ControlReg.FirmwareVersion,
-                        reg =>
-                            reg.stringValue === firmwareVersion
+                        node => {
+                            const { register } = node
+                            return register?.stringValue === firmwareVersion
                                 ? TestState.Pass
                                 : TestState.Fail
+                        }
                     )
                 )
                 deviceTest.appendChild(controlTest)
@@ -819,8 +829,10 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
                             new RegisterTest(
                                 "status code should be ready",
                                 BaseReg.StatusCode,
-                                reg => {
-                                    const [code, vendorCode] = reg.unpackedValue
+                                node => {
+                                    const { register } = node
+                                    const { unpackedValue = [] } = register
+                                    const [code, vendorCode] = unpackedValue
                                     return code === SystemStatusCodes.Ready &&
                                         vendorCode === 0
                                         ? TestState.Pass
@@ -836,10 +848,13 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
                                 new RegisterTest(
                                     "reading should stream",
                                     readingSpec.identifier,
-                                    reg =>
-                                        reg.unpackedValue.length > 0
+                                    node => {
+                                        const { register } = node
+                                        const { unpackedValue = [] } = register
+                                        return unpackedValue?.length > 0
                                             ? TestState.Pass
                                             : TestState.Fail
+                                    }
                                 )
                             )
 
