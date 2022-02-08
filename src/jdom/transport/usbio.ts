@@ -8,7 +8,7 @@ import { Observable } from "../observable"
 import { Proto } from "./proto"
 import { assert, delay, isCancelError, throwError } from "../utils"
 import { Flags } from "../flags"
-import { JDError,  errorCode } from "../error"
+import { JDError, errorCode } from "../error"
 
 export const USB_FILTERS = {
     filters: [
@@ -136,7 +136,7 @@ export class USBIO implements HF2_IO {
     private async readLoop() {
         if (this.rawMode || this.readLoopStarted) return
         this.readLoopStarted = true
-        console.debug("start read loop")
+        console.debug("usb: start read loop")
 
         // eslint-disable-next-line no-constant-condition
         while (true) {
