@@ -300,7 +300,7 @@ export class JDSubscriptionScope {
         this.unsubscribers = []
         us.forEach(u => u())
         this._unmounted = true
-    }    
+    }
 }
 
 class EventObservable<T> implements Observable<T> {
