@@ -527,7 +527,7 @@ export class EventTest extends TestNode {
     override mount() {
         super.mount()
         const event = this.event
-        console.log(`event subscribe ${this.code} to ${event}`)
+        //console.log(`event subscribe ${this.code} to ${event}`)
         this.subscriptions.mount(
             event.subscribe(EVENT, () => {
                 this.updateState()
