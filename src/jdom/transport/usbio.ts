@@ -204,7 +204,7 @@ export class USBIO implements HF2_IO {
         this.altIface = undefined
         if (!this.dev) return false
         console.debug(
-            "connect device: " +
+            "usb: connect device " +
                 this.dev.manufacturerName +
                 " " +
                 this.dev.productName
@@ -248,7 +248,7 @@ export class USBIO implements HF2_IO {
         await this.tryReconnectAsync(deviceId)
         if (!this.dev && !background) await this.requestDeviceAsync()
         // background call and no device, just give up for now
-        if (!this.dev && background) throwError("device not paired", true)
+        if (!this.dev && background) throwError("usb: device not paired", true)
 
         // let's connect
         await this.openDeviceAsync()
@@ -265,8 +265,8 @@ export class USBIO implements HF2_IO {
     }
 
     private async openDeviceAsync() {
-        if (!this.dev) throwError("device not found", true)
-        if (!this.checkDevice()) throwError("device does not support HF2")
+        if (!this.dev) throwError("usb: device not found", true)
+        if (!this.checkDevice()) throwError("usb: device does not support HF2")
 
         await this.dev.open()
         await this.dev.selectConfiguration(1)
@@ -280,9 +280,9 @@ export class USBIO implements HF2_IO {
             assert(this.epIn.packetSize == 64)
             assert(this.epOut.packetSize == 64)
         }
-        console.debug("claim interface")
+        console.debug(`usb: claim interface ${this.iface.interfaceNumber}`)
         await this.dev.claimInterface(this.iface.interfaceNumber)
-        console.debug("all connected")
+        console.debug("usb: all connected")
         this.ready = true
         /* no await */ this.readLoop()
     }

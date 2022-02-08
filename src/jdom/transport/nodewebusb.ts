@@ -7,21 +7,14 @@ import { USBOptions } from "./usbio"
 export function createNodeUSBOptions(WebUSB: any): USBOptions {
     console.debug(`jacdac: creating usb transport`)
     async function devicesFound(devices: USBDevice[]): Promise<USBDevice> {
-        console.log(`found ${devices.length} devices`)
         for (const device of devices) {
             const { vendorId, productId, deviceVersionMajor } = device
-            console.log(`device`, {
-                device,
-                vendorId,
-                productId,
-                mbitvendor: MICROBIT_V2_VENDOR_ID,
-                mbitproduct: MICROBIT_V2_PRODUCT_ID,
-            })
             // microbit v2
             if (
                 vendorId === MICROBIT_V2_VENDOR_ID &&
                 productId === MICROBIT_V2_PRODUCT_ID
             ) {
+                console.debug(`usb: found micro:bit v2`)
                 return device
             }
             // jacdac device
@@ -50,9 +43,9 @@ export function createNodeUSBOptions(WebUSB: any): USBOptions {
     async function requestDevice(
         options: USBDeviceRequestOptions
     ): Promise<USBDevice> {
-        console.debug(`usb: requesting device...`, options)
+        console.debug(`usb: requesting device...`)
         try {
-            const device = await usb.requestDevice({ filters: [{}] })
+            const device = await usb.requestDevice(options)
             return device
         } catch (e) {
             if (!isCancelError(e)) console.debug(e)
