@@ -886,18 +886,20 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
                         // add status code
                         serviceTest.appendChild(
                             new RegisterTest(
-                                "status code should be ready",
+                                "status code should be ready or sleeping",
                                 BaseReg.StatusCode,
                                 (node, logger) => {
                                     const { register } = node
                                     const { unpackedValue = [] } = register
                                     const [code, vendorCode] = unpackedValue
                                     const ok =
-                                        code === SystemStatusCodes.Ready &&
+                                        (code === SystemStatusCodes.Ready ||
+                                            code ===
+                                                SystemStatusCodes.Sleeping) &&
                                         vendorCode === 0
                                     if (!ok)
                                         logger(
-                                            `expected status code equals to 0x0,0x0`
+                                            `expected status code equals to 0x0,0x0 or 0x3,0x0`
                                         )
                                     return ok ? TestState.Pass : TestState.Fail
                                 }
