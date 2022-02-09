@@ -1,11 +1,11 @@
 import {
     CHANGE,
-    LedPixelCmd,
-    LedPixelLightType,
-    LedPixelReg,
-    LedPixelVariant,
+    LedStripCmd,
+    LedStripLightType,
+    LedStripReg,
+    LedStripVariant,
     RENDER,
-    SRV_LED_PIXEL,
+    SRV_LED_STRIP,
 } from "../jdom/constants"
 import {
     LIGHT_MODE_ADD_RGB,
@@ -110,13 +110,13 @@ function SCALE0(c: number, i: number) {
     return ((c & 0xff) * (1 + (i & 0xff))) >> 8
 }
 
-export class LedPixelServer extends JDServiceServer {
+export class LedStripServer extends JDServiceServer {
     readonly brightness: JDRegisterServer<[number]>
     readonly actualBrightness: JDRegisterServer<[number]>
-    readonly lightType: JDRegisterServer<[LedPixelLightType]>
+    readonly lightType: JDRegisterServer<[LedStripLightType]>
     readonly numPixels: JDRegisterServer<[number]>
     readonly maxPower: JDRegisterServer<[number]>
-    readonly variant: JDRegisterServer<[LedPixelVariant]>
+    readonly variant: JDRegisterServer<[LedStripVariant]>
     readonly maxPixels: JDRegisterServer<[number]>
     readonly numRepeats: JDRegisterServer<[number]>
     readonly numColumns: JDRegisterServer<[number]>
@@ -148,7 +148,7 @@ export class LedPixelServer extends JDServiceServer {
             maxPower?: number
         } & JDServerOptions
     ) {
-        super(SRV_LED_PIXEL, options)
+        super(SRV_LED_STRIP, options)
 
         const {
             numColumns,
@@ -157,36 +157,36 @@ export class LedPixelServer extends JDServiceServer {
             numPixels = 15,
         } = options || {}
 
-        this.brightness = this.addRegister<[number]>(LedPixelReg.Brightness, [
+        this.brightness = this.addRegister<[number]>(LedStripReg.Brightness, [
             15,
         ])
         this.actualBrightness = this.addRegister<[number]>(
-            LedPixelReg.ActualBrightness,
+            LedStripReg.ActualBrightness,
             [15]
         )
-        this.lightType = this.addRegister<[LedPixelLightType]>(
-            LedPixelReg.LightType,
-            [LedPixelLightType.WS2812B_GRB]
+        this.lightType = this.addRegister<[LedStripLightType]>(
+            LedStripReg.LightType,
+            [LedStripLightType.WS2812B_GRB]
         )
-        this.numPixels = this.addRegister<[number]>(LedPixelReg.NumPixels, [
+        this.numPixels = this.addRegister<[number]>(LedStripReg.NumPixels, [
             numPixels,
         ])
-        this.maxPower = this.addRegister<[number]>(LedPixelReg.MaxPower, [
+        this.maxPower = this.addRegister<[number]>(LedStripReg.MaxPower, [
             maxPower,
         ])
-        this.maxPixels = this.addRegister<[number]>(LedPixelReg.MaxPixels, [
+        this.maxPixels = this.addRegister<[number]>(LedStripReg.MaxPixels, [
             maxPixels,
         ])
-        this.variant = this.addRegister<[LedPixelVariant]>(
-            LedPixelReg.Variant,
-            [LedPixelVariant.Strip]
+        this.variant = this.addRegister<[LedStripVariant]>(
+            LedStripReg.Variant,
+            [LedStripVariant.Strip]
         )
-        this.numRepeats = this.addRegister<[number]>(LedPixelReg.NumRepeats, [
+        this.numRepeats = this.addRegister<[number]>(LedStripReg.NumRepeats, [
             0,
         ])
         if (numColumns !== undefined)
             this.numColumns = this.addRegister<[number]>(
-                LedPixelReg.NumColumns,
+                LedStripReg.NumColumns,
                 [numColumns]
             )
 
@@ -197,7 +197,7 @@ export class LedPixelServer extends JDServiceServer {
         this.numPixels.on(CHANGE, this.allocRxBuffer.bind(this))
         this.maxPixels.on(CHANGE, this.allocRxBuffer.bind(this))
 
-        this.addCommand(LedPixelCmd.Run, this.handleRun.bind(this))
+        this.addCommand(LedStripCmd.Run, this.handleRun.bind(this))
 
         this.allocRxBuffer()
     }

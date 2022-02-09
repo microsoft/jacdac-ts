@@ -4,12 +4,12 @@ import {
     DEVICE_ANNOUNCE,
     JDDevice,
     SRV_BUTTON,
-    SRV_LED_PIXEL,
+    SRV_LED_STRIP,
     SRV_POTENTIOMETER,
 } from "../jdom/jacdac-jdom"
 import { TestDriver, ConsoleUi } from "./base"
 import { ButtonTestRoutine } from "./button.spec"
-import { LedPixelTestRoutine } from "./ledpixel.spec"
+import { LedStripTestRoutine } from "./ledstrip.spec"
 import { PotentiometerTestRoutine } from "./potentiometer.spec"
 import { ServiceTester } from "./servicewrapper"
 import { BusTester } from "./testwrappers"
@@ -73,15 +73,15 @@ export function main(document: Document) {
                 throw e
             }
         }
-        const pixelServices = device.services({ serviceClass: SRV_LED_PIXEL })
-        if (pixelServices.length == 1) {
-            const serviceTester = new ServiceTester(pixelServices[0])
+        const ledStripServices = device.services({ serviceClass: SRV_LED_STRIP })
+        if (ledStripServices.length == 1) {
+            const serviceTester = new ServiceTester(ledStripServices[0])
             ui.log(`starting pixel test: ${serviceTester.name}`)
-            const pixelTest = new LedPixelTestRoutine(serviceTester, testdriver)
+            const ledStripTest = new LedStripTestRoutine(serviceTester, testdriver)
             try {
-                await pixelTest.testSolidColors()
-                await pixelTest.testShift()
-                await pixelTest.testSetOne()
+                await ledStripTest.testSolidColors()
+                await ledStripTest.testShift()
+                await ledStripTest.testSetOne()
             } catch (e: unknown) {
                 ui.log(`pixel test: exception: ${e}`)
                 throw e

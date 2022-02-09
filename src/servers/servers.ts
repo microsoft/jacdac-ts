@@ -3,7 +3,7 @@ import {
     CharacterScreenTextDirection,
     CharacterScreenVariant,
     DistanceVariant,
-    LedPixelVariant,
+    LedStripVariant,
     PotentiometerVariant,
     RelayReg,
     RelayVariant,
@@ -16,7 +16,7 @@ import {
     SRV_DISTANCE,
     SRV_E_CO2,
     SRV_HUMIDITY,
-    SRV_LED_PIXEL,
+    SRV_LED_STRIP,
     SRV_MATRIX_KEYPAD,
     SRV_MOTOR,
     SRV_POTENTIOMETER,
@@ -97,7 +97,7 @@ import {
     GAMEPAD_DPAD_AB_BUTTONS,
 } from "./gamepadserver"
 import { DotMatrixServer } from "./dotmatrixserver"
-import { LedPixelServer } from "./ledpixelserver"
+import { LedStripServer } from "./ledstripserver"
 import { MatrixKeypadServer } from "./matrixkeypadserver"
 import { MotorServer } from "./motorserver"
 import { RainGaugeServer } from "./raingaugeserver"
@@ -768,136 +768,136 @@ function initProviders() {
             },
             {
                 name: "LED pixel ring 10",
-                serviceClasses: [SRV_LED_PIXEL],
+                serviceClasses: [SRV_LED_STRIP],
                 services: () => [
-                    new LedPixelServer({
+                    new LedStripServer({
                         numPixels: 10,
-                        variant: LedPixelVariant.Ring,
+                        variant: LedStripVariant.Ring,
                     }),
                 ],
             },
             {
                 name: "LED pixel ring 12",
-                serviceClasses: [SRV_LED_PIXEL],
+                serviceClasses: [SRV_LED_STRIP],
                 services: () => [
-                    new LedPixelServer({
+                    new LedStripServer({
                         numPixels: 12,
-                        variant: LedPixelVariant.Ring,
+                        variant: LedStripVariant.Ring,
                     }),
                 ],
             },
             {
                 name: "LED pixel ring 16",
-                serviceClasses: [SRV_LED_PIXEL],
+                serviceClasses: [SRV_LED_STRIP],
                 services: () => [
-                    new LedPixelServer({
+                    new LedStripServer({
                         numPixels: 16,
-                        variant: LedPixelVariant.Ring,
+                        variant: LedStripVariant.Ring,
                     }),
                 ],
             },
             {
                 name: "LED pixel ring 24",
-                serviceClasses: [SRV_LED_PIXEL],
+                serviceClasses: [SRV_LED_STRIP],
                 services: () => [
-                    new LedPixelServer({
+                    new LedStripServer({
                         numPixels: 24,
-                        variant: LedPixelVariant.Ring,
+                        variant: LedStripVariant.Ring,
                     }),
                 ],
             },
             {
                 name: "LED pixel jewel 7",
-                serviceClasses: [SRV_LED_PIXEL],
+                serviceClasses: [SRV_LED_STRIP],
                 services: () => [
-                    new LedPixelServer({
+                    new LedStripServer({
                         numPixels: 7,
-                        variant: LedPixelVariant.Jewel,
+                        variant: LedStripVariant.Jewel,
                     }),
                 ],
             },
             {
                 name: "LED pixel stick 8",
-                serviceClasses: [SRV_LED_PIXEL],
+                serviceClasses: [SRV_LED_STRIP],
                 services: () => [
-                    new LedPixelServer({
+                    new LedStripServer({
                         numPixels: 8,
-                        variant: LedPixelVariant.Stick,
+                        variant: LedStripVariant.Stick,
                     }),
                 ],
             },
             {
                 name: "LED pixel strip 30",
-                serviceClasses: [SRV_LED_PIXEL],
+                serviceClasses: [SRV_LED_STRIP],
                 services: () => [
-                    new LedPixelServer({
+                    new LedStripServer({
                         numPixels: 60,
                         maxPower: 1000,
-                        variant: LedPixelVariant.Strip,
+                        variant: LedStripVariant.Strip,
                     }),
                 ],
             },
             {
                 name: "LED pixel strip 60",
-                serviceClasses: [SRV_LED_PIXEL],
+                serviceClasses: [SRV_LED_STRIP],
                 services: () => [
-                    new LedPixelServer({
+                    new LedStripServer({
                         numPixels: 60,
                         maxPower: 2000,
-                        variant: LedPixelVariant.Strip,
+                        variant: LedStripVariant.Strip,
                     }),
                 ],
             },
             {
                 name: "LED pixel strip 150",
-                serviceClasses: [SRV_LED_PIXEL],
+                serviceClasses: [SRV_LED_STRIP],
                 services: () => [
-                    new LedPixelServer({
+                    new LedStripServer({
                         numPixels: 150,
                         maxPower: 5000,
-                        variant: LedPixelVariant.Strip,
+                        variant: LedStripVariant.Strip,
                     }),
                 ],
             },
             {
                 name: "LED pixel strip 300",
-                serviceClasses: [SRV_LED_PIXEL],
+                serviceClasses: [SRV_LED_STRIP],
                 services: () => [
-                    new LedPixelServer({
+                    new LedStripServer({
                         numPixels: 300,
                         maxPower: 5000,
-                        variant: LedPixelVariant.Strip,
+                        variant: LedStripVariant.Strip,
                     }),
                 ],
             },
             {
                 name: "LED pixel matrix (4x4)",
-                serviceClasses: [SRV_LED_PIXEL],
+                serviceClasses: [SRV_LED_STRIP],
                 services: () => [
-                    new LedPixelServer({
+                    new LedStripServer({
                         numPixels: 16,
-                        variant: LedPixelVariant.Matrix,
+                        variant: LedStripVariant.Matrix,
                     }),
                 ],
             },
             {
                 name: "LED pixel matrix (8x8)",
-                serviceClasses: [SRV_LED_PIXEL],
+                serviceClasses: [SRV_LED_STRIP],
                 services: () => [
-                    new LedPixelServer({
+                    new LedStripServer({
                         numPixels: 64,
-                        variant: LedPixelVariant.Matrix,
+                        variant: LedStripVariant.Matrix,
                     }),
                 ],
             },
             {
                 name: "LED pixel matrix (16x4)",
-                serviceClasses: [SRV_LED_PIXEL],
+                serviceClasses: [SRV_LED_STRIP],
                 services: () => [
-                    new LedPixelServer({
+                    new LedStripServer({
                         numPixels: 64,
                         numColumns: 16,
-                        variant: LedPixelVariant.Matrix,
+                        variant: LedStripVariant.Matrix,
                     }),
                 ],
             },
@@ -1468,14 +1468,14 @@ function initProviders() {
             },
             {
                 name: "chassis (motor x 2 + sonar + light)",
-                serviceClasses: [SRV_DISTANCE, SRV_LED_PIXEL, SRV_MOTOR],
+                serviceClasses: [SRV_DISTANCE, SRV_LED_STRIP, SRV_MOTOR],
                 services: () => [
                     new MotorServer("L"),
                     new MotorServer("R"),
                     new AnalogSensorServer(SRV_DISTANCE, sonarOptions),
-                    new LedPixelServer({
+                    new LedStripServer({
                         numPixels: 5,
-                        variant: LedPixelVariant.Stick,
+                        variant: LedStripVariant.Stick,
                         instanceName: "lights",
                     }),
                 ],
