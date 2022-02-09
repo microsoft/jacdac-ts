@@ -116,7 +116,6 @@ export class LedStripServer extends JDServiceServer {
     readonly lightType: JDRegisterServer<[LedStripLightType]>
     readonly numPixels: JDRegisterServer<[number]>
     readonly maxPower: JDRegisterServer<[number]>
-    readonly variant: JDRegisterServer<[LedStripVariant]>
     readonly maxPixels: JDRegisterServer<[number]>
     readonly numRepeats: JDRegisterServer<[number]>
     readonly numColumns: JDRegisterServer<[number]>
@@ -177,10 +176,6 @@ export class LedStripServer extends JDServiceServer {
         this.maxPixels = this.addRegister<[number]>(LedStripReg.MaxPixels, [
             maxPixels,
         ])
-        this.variant = this.addRegister<[LedStripVariant]>(
-            LedStripReg.Variant,
-            [LedStripVariant.Strip]
-        )
         this.numRepeats = this.addRegister<[number]>(LedStripReg.NumRepeats, [
             0,
         ])

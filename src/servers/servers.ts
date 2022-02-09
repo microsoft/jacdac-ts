@@ -84,6 +84,8 @@ import {
     SRV_LIGHT_BULB,
     LightBulbReg,
     WifiAPFlags,
+    LedDisplayVariant,
+    SRV_LED_DISPLAY,
 } from "../jdom/constants"
 import { JDServerServiceProvider } from "../jdom/servers/serverserviceprovider"
 import { ProtocolTestServer } from "../jdom/servers/protocoltestserver"
@@ -132,6 +134,7 @@ import { WifiServer } from "./wifiserver"
 import { AccelerometerServer } from "./accelerometerserver"
 import { BrailleDisplayServer } from "./brailledisplayserver"
 import { Flags } from "../jdom/flags"
+import { LedDisplayServer } from "./leddisplayserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "indoor",
@@ -768,61 +771,61 @@ function initProviders() {
             },
             {
                 name: "LED pixel ring 10",
-                serviceClasses: [SRV_LED_STRIP],
+                serviceClasses: [SRV_LED_DISPLAY],
                 services: () => [
-                    new LedStripServer({
+                    new LedDisplayServer({
                         numPixels: 10,
-                        variant: LedStripVariant.Ring,
+                        variant: LedDisplayVariant.Ring,
                     }),
                 ],
             },
             {
                 name: "LED pixel ring 12",
-                serviceClasses: [SRV_LED_STRIP],
+                serviceClasses: [SRV_LED_DISPLAY],
                 services: () => [
-                    new LedStripServer({
+                    new LedDisplayServer({
                         numPixels: 12,
-                        variant: LedStripVariant.Ring,
+                        variant: LedDisplayVariant.Ring,
                     }),
                 ],
             },
             {
                 name: "LED pixel ring 16",
-                serviceClasses: [SRV_LED_STRIP],
+                serviceClasses: [SRV_LED_DISPLAY],
                 services: () => [
-                    new LedStripServer({
+                    new LedDisplayServer({
                         numPixels: 16,
-                        variant: LedStripVariant.Ring,
+                        variant: LedDisplayVariant.Ring,
                     }),
                 ],
             },
             {
                 name: "LED pixel ring 24",
-                serviceClasses: [SRV_LED_STRIP],
+                serviceClasses: [SRV_LED_DISPLAY],
                 services: () => [
-                    new LedStripServer({
+                    new LedDisplayServer({
                         numPixels: 24,
-                        variant: LedStripVariant.Ring,
+                        variant: LedDisplayVariant.Ring,
                     }),
                 ],
             },
             {
                 name: "LED pixel jewel 7",
-                serviceClasses: [SRV_LED_STRIP],
+                serviceClasses: [SRV_LED_DISPLAY],
                 services: () => [
-                    new LedStripServer({
+                    new LedDisplayServer({
                         numPixels: 7,
-                        variant: LedStripVariant.Jewel,
+                        variant: LedDisplayVariant.Jewel,
                     }),
                 ],
             },
             {
                 name: "LED pixel stick 8",
-                serviceClasses: [SRV_LED_STRIP],
+                serviceClasses: [SRV_LED_DISPLAY],
                 services: () => [
-                    new LedStripServer({
+                    new LedDisplayServer({
                         numPixels: 8,
-                        variant: LedStripVariant.Stick,
+                        variant: LedDisplayVariant.Stick,
                     }),
                 ],
             },
@@ -872,32 +875,32 @@ function initProviders() {
             },
             {
                 name: "LED pixel matrix (4x4)",
-                serviceClasses: [SRV_LED_STRIP],
+                serviceClasses: [SRV_LED_DISPLAY],
                 services: () => [
-                    new LedStripServer({
+                    new LedDisplayServer({
                         numPixels: 16,
-                        variant: LedStripVariant.Matrix,
+                        variant: LedDisplayVariant.Matrix,
                     }),
                 ],
             },
             {
                 name: "LED pixel matrix (8x8)",
-                serviceClasses: [SRV_LED_STRIP],
+                serviceClasses: [SRV_LED_DISPLAY],
                 services: () => [
-                    new LedStripServer({
+                    new LedDisplayServer({
                         numPixels: 64,
-                        variant: LedStripVariant.Matrix,
+                        variant: LedDisplayVariant.Matrix,
                     }),
                 ],
             },
             {
                 name: "LED pixel matrix (16x4)",
-                serviceClasses: [SRV_LED_STRIP],
+                serviceClasses: [SRV_LED_DISPLAY],
                 services: () => [
-                    new LedStripServer({
+                    new LedDisplayServer({
                         numPixels: 64,
                         numColumns: 16,
-                        variant: LedStripVariant.Matrix,
+                        variant: LedDisplayVariant.Matrix,
                     }),
                 ],
             },
@@ -1468,14 +1471,14 @@ function initProviders() {
             },
             {
                 name: "chassis (motor x 2 + sonar + light)",
-                serviceClasses: [SRV_DISTANCE, SRV_LED_STRIP, SRV_MOTOR],
+                serviceClasses: [SRV_DISTANCE, SRV_LED_DISPLAY, SRV_MOTOR],
                 services: () => [
                     new MotorServer("L"),
                     new MotorServer("R"),
                     new AnalogSensorServer(SRV_DISTANCE, sonarOptions),
-                    new LedStripServer({
+                    new LedDisplayServer({
                         numPixels: 5,
-                        variant: LedStripVariant.Stick,
+                        variant: LedDisplayVariant.Stick,
                         instanceName: "lights",
                     }),
                 ],

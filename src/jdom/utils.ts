@@ -297,6 +297,12 @@ export function write32(buf: MutableArrayLike<number>, pos: number, v: number) {
     buf[pos + 3] = (v >> 24) & 0xff
 }
 
+export function write24(buf: MutableArrayLike<number>, pos: number, v: number) {
+    buf[pos + 0] = (v >> 0) & 0xff
+    buf[pos + 1] = (v >> 8) & 0xff
+    buf[pos + 2] = (v >> 16) & 0xff
+}
+
 export function write16(buf: MutableArrayLike<number>, pos: number, v: number) {
     buf[pos + 0] = (v >> 0) & 0xff
     buf[pos + 1] = (v >> 8) & 0xff
