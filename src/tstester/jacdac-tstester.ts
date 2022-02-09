@@ -73,11 +73,16 @@ export function main(document: Document) {
                 throw e
             }
         }
-        const ledStripServices = device.services({ serviceClass: SRV_LED_STRIP })
+        const ledStripServices = device.services({
+            serviceClass: SRV_LED_STRIP,
+        })
         if (ledStripServices.length == 1) {
             const serviceTester = new ServiceTester(ledStripServices[0])
             ui.log(`starting pixel test: ${serviceTester.name}`)
-            const ledStripTest = new LedStripTestRoutine(serviceTester, testdriver)
+            const ledStripTest = new LedStripTestRoutine(
+                serviceTester,
+                testdriver
+            )
             try {
                 await ledStripTest.testSolidColors()
                 await ledStripTest.testShift()
