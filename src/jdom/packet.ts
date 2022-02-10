@@ -509,7 +509,7 @@ function frameToPackets(frame: Uint8Array, timestamp: number) {
             warn(
                 `${
                     timestamp | 0
-                }ms: crc mismatch; sz=${size} got:${actual}, exp:${computed}`
+                }ms: crc mismatch; sz=${size} got:${actual}, exp:${computed}, ${toHex(frame)}`
             )
             return []
         }
