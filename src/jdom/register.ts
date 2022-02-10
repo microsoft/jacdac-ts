@@ -339,13 +339,7 @@ export class JDRegister extends JDServiceMemberNode {
      * @internal
      */
     processPacket(pkt: Packet) {
-        // sanity check
-        console.assert(
-            !this.notImplemented,
-            `register not implemented received packet`,
-            { pkt }
-        )
-
+        if (this.notImplemented) return
         if (pkt.isRegisterGet) this.processReport(pkt)
         else if (pkt.isRegisterSet) {
             // another device sent a set packet to this register
