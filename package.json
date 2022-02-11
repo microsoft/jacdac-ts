@@ -30,7 +30,7 @@
   },
   "license": "MIT",
   "engines": {
-    "node": ">=14.17.0"
+    "node": ">=12.0.0"
   },
   "scripts": {
     "setup": "yarn pullsubmodules && yarn install --frozen-lockfile",
