@@ -276,6 +276,8 @@ const RPI_SPI_BUS_ID = 0
 /**
  * A transport for a JacHAT type of adapter.
  * Requires to install the `rpio` package.
+ * @param rpio module loaded with require
+ * @param spi module loaded with require
  * @param options
  */
 export function createNodeSPITransport(
