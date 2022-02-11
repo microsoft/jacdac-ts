@@ -62,7 +62,7 @@
     "colors": "^1.4.0",
     "concurrently": "^7.0.0",
     "cross-env": "^7.0.3",
-    "esbuild": "^0.14.20",
+    "esbuild": "^0.14.21",
     "eslint": "^8.8.0",
     "heap-js": "^2.1.6",
     "jsep": "^1.2.0",
@@ -80,7 +80,7 @@
     "yargs-parser": "^21.0.0"
   },
   "dependencies": {
-    "@types/node": "^17.0.16",
+    "@types/node": "^17.0.17",
     "@types/w3c-web-serial": "^1.0.2",
     "@types/w3c-web-usb": "^1.0.5",
     "@types/web-bluetooth": "^0.0.12"
