@@ -490,11 +490,7 @@ export class Packet {
     }
 }
 
-function frameToPackets(
-    frame: Uint8Array,
-    timestamp: number,
-    skipCrc = false
-) {
+function frameToPackets(frame: Uint8Array, timestamp: number, skipCrc = false) {
     const size = frame.length < 12 ? 0 : frame[2]
     if (frame.length < size + 12) {
         warn(
