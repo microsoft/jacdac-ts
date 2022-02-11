@@ -305,10 +305,10 @@ export abstract class Transport extends JDEventSource {
         this.bus.processPacket(pkt)
     }
 
-    protected handleFrame(payload: Uint8Array) {
+    protected handleFrame(payload: Uint8Array, skipCrc = false) {
         const { timestamp } = this.bus
         this._lastReceivedTime = timestamp
-        const pkts = Packet.fromFrame(payload, timestamp)
+        const pkts = Packet.fromFrame(payload, timestamp, skipCrc)
         for (const pkt of pkts) {
             pkt.sender = this.type
             this.bus.processPacket(pkt)

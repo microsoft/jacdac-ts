@@ -1,4 +1,5 @@
 import { Packet } from "../packet"
+import { crc, read16 } from "../utils"
 import { Transport, TransportOptions } from "./transport"
 
 const debug = (msg: any) => {} //console.debug
@@ -159,7 +160,7 @@ class SpiTransport extends Transport {
             todo = await this.transferFrame()
             while (this.receiveQueue.length > 0) {
                 const frame = this.receiveQueue.shift()
-                this.handleFrame(frame)
+                this.handleFrame(frame, true)
             }
         }
     }
@@ -216,8 +217,13 @@ class SpiTransport extends Transport {
                 if (frame0 == 0xff && frame1 == 0xff && frame3 == 0xff) {
                     // skip bogus packet
                 } else {
+                    const computed = crc(rxqueue.slice(framep + 2, framep + sz))
+                    const actual = read16(rxqueue, framep)
+                    if (computed != actual) {
+                        debug(`invalid crc ${computed} != ${actual}`)
+                        break
+                    }
                     const frame = rxqueue.slice(framep, framep + sz)
-                    //console.log(`recv frame ${toHex(frame)}`)
                     this.receiveQueue.push(frame)
                 }
                 sz = (sz + 3) & ~3

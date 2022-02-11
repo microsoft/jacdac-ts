@@ -419,8 +419,8 @@ export class Packet {
         return this.sendCoreAsync(bus)
     }
 
-    static fromFrame(frame: Uint8Array, timestamp: number) {
-        return frameToPackets(frame, timestamp)
+    static fromFrame(frame: Uint8Array, timestamp: number, skipCrc = false) {
+        return frameToPackets(frame, timestamp, skipCrc)
     }
 
     static jdpacked<T extends PackedValues>(
@@ -490,7 +490,11 @@ export class Packet {
     }
 }
 
-function frameToPackets(frame: Uint8Array, timestamp: number) {
+function frameToPackets(
+    frame: Uint8Array,
+    timestamp: number,
+    skipCrc = false
+) {
     const size = frame.length < 12 ? 0 : frame[2]
     if (frame.length < size + 12) {
         warn(
@@ -503,15 +507,19 @@ function frameToPackets(frame: Uint8Array, timestamp: number) {
         warn(`${timestamp | 0}ms: empty packet`)
         return []
     } else {
-        const computed = crc(frame.slice(2, size + 12))
-        const actual = read16(frame, 0)
-        if (actual != computed) {
-            warn(
-                `${
-                    timestamp | 0
-                }ms: crc mismatch; sz=${size} got:${actual}, exp:${computed}, ${toHex(frame)}`
-            )
-            return []
+        if (!skipCrc) {
+            const computed = crc(frame.slice(2, size + 12))
+            const actual = read16(frame, 0)
+            if (actual != computed) {
+                warn(
+                    `${
+                        timestamp | 0
+                    }ms: crc mismatch; sz=${size} got:${actual}, exp:${computed}, ${toHex(
+                        frame
+                    )}`
+                )
+                return []
+            }
         }
         if (frame.length != 12 + size) {
             warn(`${timestamp | 0}ms: unexpected packet len: ${frame.length}`)
