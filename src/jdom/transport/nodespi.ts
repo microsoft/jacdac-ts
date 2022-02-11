@@ -40,19 +40,9 @@ interface Rpio {
     read(pin: number): number
     mode(pin: number, mode: number, flags?: number): void
     poll(pin: number, cb: () => void, direction?: number): void
-
-    /*
-    spiBegin(): void
-    spiChipSelect(chip: number): void
-    spiSetDataMode(mode: number): void
-    spiSetCSPolarity(a: number, b: number): void
-    spiSetClockDivider(ck: number): void
-    spiTransfer(tx: Uint8Array, rx: Uint8Array, length: number): void
-    spiEnd(): void
-    */
 }
 
-interface SpiDeviceModule {
+interface SpiDev {
     MODE0: number
     openSync(busNumber: number, deviceNumber: number): SpiDevice
 }
@@ -80,7 +70,7 @@ class SpiTransport extends Transport {
 
     constructor(
         readonly rpio: Rpio,
-        readonly spi: SpiDeviceModule,
+        readonly spi: SpiDev,
         readonly options: SpiTransportOptions
     ) {
         super("spi", options)
@@ -88,7 +78,7 @@ class SpiTransport extends Transport {
         this.handleTxPinRising = this.handleTxPinRising.bind(this)
 
         this.rpio.init({
-            gpiomem: false,
+            gpiomem: true,
             mapping: "physical",
         })
     }
@@ -127,14 +117,6 @@ class SpiTransport extends Transport {
         debug("spi: connect spi")
 
         this.spiDevice = this.spi.openSync(0, 0)
-
-        /*        
-        this.rpio.spiBegin()
-        this.rpio.spiChipSelect(0) // Use CE0
-        this.rpio.spiSetCSPolarity(0, HIGH) // AT93C46 chip select is active-high
-        this.rpio.spiSetClockDivider(16) // 250Mhz / 16 ~ 16Mz
-        this.rpio.spiSetDataMode(0)
-*/
 
         this.rpio.poll(rxReadyPin, this.handleRxPinRising, POLL_HIGH)
         this.rpio.poll(txReadyPin, this.handleTxPinRising, POLL_HIGH)
@@ -267,16 +249,14 @@ class SpiTransport extends Transport {
         // attempt transfer
         for (let i = 0; i < SPI_TRANSFER_ATTEMPT_COUNT; i++) {
             try {
-                const msg: SpiMessage[] = [
-                    {
-                        sendBuffer: Buffer.from(txqueue),
-                        receiveBuffer: Buffer.from(rxqueue),
-                        byteLength: txqueue.length,
-                        speedHz: 15600000,
-                    },
-                ]
-                this.spiDevice.transferSync(msg)
-                //this.rpio.spiTransfer(txqueue, rxqueue, txqueue.length)
+                const msg: SpiMessage = {
+                    sendBuffer: Buffer.from(txqueue),
+                    receiveBuffer: Buffer.alloc(rxqueue.length),
+                    byteLength: txqueue.length,
+                    speedHz: 15600000,
+                }
+                this.spiDevice.transferSync([msg])
+                msg.receiveBuffer.copy(rxqueue, 0, 0, rxqueue.length)
                 return true
             } catch (ex) {
                 debug(ex)
@@ -299,7 +279,8 @@ const RPI_SPI_BUS_ID = 0
  * @param options
  */
 export function createNodeSPITransport(
-    controller: Rpio,
+    rpio: Rpio,
+    spi: SpiDev,
     options?: SpiTransportOptions
 ): Transport {
     if (!options) {
@@ -310,5 +291,5 @@ export function createNodeSPITransport(
             spiBusId: RPI_SPI_BUS_ID,
         }
     }
-    return new SpiTransport(controller, options)
+    return new SpiTransport(rpio, spi, options)
 }
