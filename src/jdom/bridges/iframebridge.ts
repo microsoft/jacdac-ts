@@ -9,7 +9,7 @@ class IFrameBridge extends JDBridge {
         this.mount(() =>
             window.removeEventListener("message", this.handleMessage)
         )
-        console.debug(`jacdac: iframe bridge created`)
+        //console.debug(`jacdac: iframe bridge created`)
     }
 
     private handleMessage(msg: MessageEvent) {

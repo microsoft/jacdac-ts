@@ -54,7 +54,7 @@ export const JD_ADVERTISEMENT_0_ACK_SUPPORTED = 0x00000100
 // time withouth seeing a package to be considered "lost", 2x announce interval
 export const JD_DEVICE_LOST_DELAY = 1500
 // time without seeing a packet to be considered "disconnected"
-export const JD_DEVICE_DISCONNECTED_DELAY = 5000
+export const JD_DEVICE_DISCONNECTED_DELAY = 3000
 
 export const RESET_IN_TIME_US = 2000000
 
