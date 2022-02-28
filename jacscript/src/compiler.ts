@@ -2020,7 +2020,11 @@ class Program implements InstrArgResolver {
                 return values.zero
             case "console.log":
                 this.writer.push()
-                this.emitFmt(expr, OpSync.LOG_FORMAT)
+                this.writer.emitAsync(
+                    OpAsync.LOG_FORMAT,
+                    this.emitFmtArgs(expr),
+                    expr.arguments.length - 1
+                )
                 this.writer.pop()
                 return values.zero
             default:
@@ -2199,20 +2203,22 @@ class Program implements InstrArgResolver {
             }
             case "format":
                 wr.push()
-                const r = this.emitFmt(expr, OpSync.FORMAT)
+                const r = wr.allocBuf()
+                wr.emitSync(
+                    OpSync.FORMAT,
+                    this.emitFmtArgs(expr),
+                    expr.arguments.length - 1
+                )
                 wr.popExcept(r)
                 return r
         }
         this.throwError(expr, "unhandled call")
     }
 
-    private emitFmt(expr: estree.CallExpression, op: OpSync) {
-        const wr = this.writer
+    private emitFmtArgs(expr: estree.CallExpression) {
         const fmtString = this.forceStringLiteral(expr.arguments[0])
         this.emitArgs(expr.arguments.slice(1))
-        const r = wr.allocBuf()
-        wr.emitSync(op, fmtString.index, expr.arguments.length - 1)
-        return r
+        return fmtString.index
     }
 
     private emitIdentifier(expr: estree.Identifier): ValueDesc {

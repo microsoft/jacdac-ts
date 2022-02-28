@@ -674,15 +674,6 @@ class Activation {
                                 : 0
                         break
                     }
-                    case OpSync.LOG_FORMAT: // A-string-index B-numargs
-                        const msg = strFormat(
-                            ctx.info.stringLiterals[a],
-                            ctx.registers.slice(0, b)
-                        )
-                        console.log(
-                            "JSCR: " + fromUTF8(uint8ArrayToString(msg))
-                        )
-                        break
                     case OpSync.MATH1:
                         ctx.registers[0] = opMath1(a, ctx.registers[0])
                         break
@@ -730,6 +721,16 @@ class Activation {
                         break
                     case OpAsync.QUERY_IDX_REG:
                         ctx.getReg(ctx.roles[a], b & 0xff, c, b >> 8)
+                        break
+                    case OpAsync.LOG_FORMAT: // A-string-index B-numargs
+                        const msg = strFormat(
+                            ctx.info.stringLiterals[a],
+                            ctx.registers.slice(0, b)
+                        )
+                        console.log(
+                            "JSCR: " + fromUTF8(uint8ArrayToString(msg))
+                        )
+                        this.fiber.sleep(0)
                         break
                     default:
                         oops()

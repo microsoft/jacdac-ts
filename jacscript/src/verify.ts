@@ -340,7 +340,6 @@ export function verifyBinary(
                         case OpSync.SETUP_BUFFER: // A-size
                             check(a <= 236, "setup buffer size in range")
                             break
-                        case OpSync.LOG_FORMAT:
                         case OpSync.FORMAT: // A-string-index B-numargs
                             check(c <= 236, "offset in range")
                             rdRegs(b)
@@ -399,6 +398,15 @@ export function verifyBinary(
                             check(a < numRoles, "role idx")
                             check(b >> 8 != 0, "arg!=0")
                             check(b >> 8 < numStrings, "num str")
+                            break
+                        case OpAsync.LOG_FORMAT: // A-string-index B-numargs
+                            rdRegs(b)
+                            const argmask = (1 << b) - 1
+                            check(
+                                (d & argmask) == argmask,
+                                "log regs are saved"
+                            )
+                            check(a < numStrings, "str in range")
                             break
                         default:
                             check(false, "invalid async code")

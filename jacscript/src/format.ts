@@ -40,7 +40,8 @@ export enum OpAsync {
     QUERY_REG = 3, // A-role, B-code, C-timeout
     SEND_CMD = 4, // A-role, B-code
     QUERY_IDX_REG = 5, // A-role, B-STRIDX:CMD[8], C-timeout
-    _LAST = 6,
+    LOG_FORMAT = 6, // A-string-index B-numargs
+    _LAST = 7,
 }
 
 export enum OpSync {
@@ -49,7 +50,7 @@ export enum OpSync {
     FORMAT = 2, // A-string-index B-numargs C-offset
     MEMCPY = 3, // A-string-index C-offset
     STR0EQ = 4, // A-string-index C-offset result in R0
-    LOG_FORMAT = 5, // A-string-index B-numargs
+    _UNUSED_5 = 5,
     MATH1 = 6, // A-OpMath1, R0 := op(R0)
     MATH2 = 7, // A-OpMath2, R0 := op(R0, R1)
     PANIC = 8, // A-error code
@@ -451,8 +452,6 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
                 return `setup_buffer(size=${a})`
             case OpSync.FORMAT: // A-string-index B-numargs
                 return `format(str=${a} #${b}) @${c}`
-            case OpSync.LOG_FORMAT: // A-string-index B-numargs
-                return `log(str=${a} #${b})`
             case OpSync.MEMCPY: // A-string-index
                 return `memcpy(str=${a}) @${c}`
             case OpSync.STR0EQ: // A-string-index
@@ -484,6 +483,8 @@ export function stringifyInstr(instr: number, resolver?: InstrArgResolver) {
                 } timeout=${c}ms)`
             case OpAsync.SEND_CMD: // A-role, B-code
                 return `send(${jdreg()})`
+            case OpAsync.LOG_FORMAT: // A-string-index B-numargs
+                return `log(str=${a} #${b})`
             default:
                 return `Async_0x${arg8.toString(16)}`
         }
