@@ -200,6 +200,10 @@ export class JDDevice extends JDNode {
     private _servicesData: Uint8Array
     private _statusLight: LEDController
     /**
+     * Timestamp when the device was first seen
+     */
+    readonly created: number
+    /**
      * Timestamp of the last packet received from the device
      * @category Lifecycle
      */
@@ -246,7 +250,7 @@ export class JDDevice extends JDNode {
         this.connected = true
         this._lost = false
         this._identifying = false
-        this.lastSeen = bus.timestamp
+        this.created = this.lastSeen = bus.timestamp
 
         this._source = pkt?.sender
         this._replay = !!pkt?.replay
