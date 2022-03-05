@@ -285,8 +285,9 @@ export class DeviceTest extends TestNode {
         readonly specification: jdspec.DeviceSpec
     ) {
         super(
-            `${specification?.name} (0x${productIdentifier.toString(16)})` ||
-                `0x${productIdentifier.toString(16)}`
+            specification
+                ? `${specification.name} (0x${productIdentifier.toString(16)})`
+                : `0x${productIdentifier.toString(16)}`
         )
     }
     get nodeKind(): string {
