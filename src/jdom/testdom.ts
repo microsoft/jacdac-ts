@@ -100,13 +100,13 @@ export abstract class TestNode extends JDNode {
     set node(value: JDNode) {
         if (value !== this._node) {
             if (this._node) {
-                console.log(`unbound ${this._node} from ${this}`)
+                //console.log(`unbound ${this._node} from ${this}`)
             }
             this.unmount()
             this._node = value
             this.bindChildren()
             if (value) {
-                console.log(`bound ${value} to ${this}`)
+                //console.log(`bound ${value} to ${this}`)
                 this.mount()
                 this.updateState()
             } else this.state = TestState.Indeterminate
@@ -409,7 +409,7 @@ export abstract class RegisterTestNode extends TestNode {
     override mount() {
         super.mount()
         const register = this.register
-        console.log(`register subscribe ${this.code} to ${register}`)
+        //console.log(`register subscribe ${this.code} to ${register}`)
         this.subscriptions.mount(
             register.subscribe(REPORT_UPDATE, () => {
                 this.updateState()
@@ -571,7 +571,7 @@ export class EventTest extends TestNode {
 }
 
 export interface PanelTestSpec {
-    id: string
+    id?: string
     devices: DeviceTestSpec[]
     oracles?: OrableTestSpec[]
 }
@@ -635,10 +635,6 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         <EventTestRule>{
             type: "event",
             name: "up",
-        },
-        <EventTestRule>{
-            type: "event",
-            name: "hold",
         },
     ],
     [SRV_POTENTIOMETER]: <ServiceTestRule[]>[
@@ -711,7 +707,7 @@ function createOracleRule(
         const [oracleValue] = (oracleRegister.unpackedValue || []) as [number]
         const [value] = (register.unpackedValue || []) as [number]
 
-        console.log("oracle", { oracleValue, value })
+        //console.log("oracle", { oracleValue, value })
         if (
             tolerance <= 0
                 ? value === oracleValue
@@ -778,7 +774,6 @@ function parseIdentifier(value: number | string) {
 export function tryParsePanelTestSpec(source: string) {
     const json = JSONTryParse(source) as PanelTestSpec
     if (
-        json?.id &&
         json.devices &&
         Array.isArray(json.devices) &&
         json.devices.every(d => !!d.productIdentifier && d.count > 0) &&
