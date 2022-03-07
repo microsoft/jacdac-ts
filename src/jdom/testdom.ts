@@ -694,30 +694,36 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         },
     ],
 }
+
+const testColors = [0xff0000, 0x00ff00, 0x0000ff, 0]
 const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
     [SRV_LED_DISPLAY]: {
         name: "cycle red, gree, blue colors on all LEDs",
         start: test => {
             const service = test.service
-            const numPixels = service.register(LedDisplayReg.NumPixels)
-            numPixels.refresh(true)
-            const n: number = numPixels.unpackedValue[0]
-            const pixels = new Uint8Array(n * 3)
             let mounted = true
             const work = async () => {
-                const service = test.service
-                const colors = [0x0000ff, 0x00ff00, 0xff0000]
+                const pixelsRegister = service.register(LedDisplayReg.Pixels)
+                const numPixelsRegister = service.register(
+                    LedDisplayReg.NumPixels
+                )
+                let n: number = undefined
+                while (n === undefined && mounted) {
+                    await numPixelsRegister.refresh(true)
+                    n = numPixelsRegister.uintValue
+                }
+                const pixels = new Uint8Array(n * 3)
                 let k = 0
                 while (mounted) {
-                    const color = colors[k++]
-                    k = k % colors.length
+                    const color = testColors[k++ % testColors.length]
                     for (let i = 0; i < n; ++i) {
                         pixels[i * 3] = (color >> 16) & 0xff
                         pixels[i * 3 + 1] = (color >> 8) & 0xff
                         pixels[i * 3 + 2] = (color >> 0) & 0xff
                     }
-                    await service?.sendCmdPackedAsync(LedDisplayReg.Pixels, [pixels])
+                    await pixelsRegister.sendSetPackedAsync([pixels], true)
                     await delay(500)
+                    if (k > testColors.length) test.state = TestState.Pass
                 }
             }
             work()
@@ -732,11 +738,9 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
             let mounted = true
             const work = async () => {
                 const service = test.service
-                const colors = [0x0000ff, 0x00ff00, 0xff0000]
                 let k = 0
                 while (mounted) {
-                    const color = colors[k++]
-                    k = k % colors.length
+                    const color = testColors[k++ % testColors.length]
                     const encoded = lightEncode(
                         `setall #
                             show 20`,
@@ -744,6 +748,8 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     )
                     await service?.sendCmdAsync(LedStripCmd.Run, encoded)
                     await delay(500)
+
+                    if (k > testColors.length) test.state = TestState.Pass
                 }
             }
             work()
