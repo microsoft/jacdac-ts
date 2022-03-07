@@ -6,9 +6,13 @@ import {
     DEVICE_ANNOUNCE,
     DISCONNECT,
     EVENT,
+    LedCmd,
+    LedStripCmd,
     REPORT_UPDATE,
     SRV_BUTTON,
     SRV_CONTROL,
+    SRV_LED,
+    SRV_LED_STRIP,
     SRV_POTENTIOMETER,
     SystemReg,
     SystemStatusCodes,
@@ -16,7 +20,9 @@ import {
 import { JDDevice } from "./device"
 import { JDEvent } from "./event"
 import { JDSubscriptionScope } from "./eventsource"
+import { lightEncode } from "./light"
 import { JDNode } from "./node"
+import { jdpack } from "./pack"
 import { serviceName } from "./pretty"
 import { randomDeviceId } from "./random"
 import { JDRegister } from "./register"
@@ -27,11 +33,12 @@ import {
     serviceSpecificationFromClassIdentifier,
     serviceSpecificationFromName,
 } from "./spec"
-import { JSONTryParse } from "./utils"
+import { delay, JSONTryParse } from "./utils"
 
 export const PANEL_TEST_KIND = "panelTest"
 export const DEVICE_TEST_KIND = "deviceTest"
 export const SERVICE_TEST_KIND = "serviceTest"
+export const SERVICE_COMMAND_TEST_KIND = "serviceCommandTest"
 export const REGISTER_TEST_KIND = "registerTest"
 export const EVENT_TEST_KIND = "eventTest"
 export const REGISTER_ORACLE_KIND = "registerOracle"
@@ -397,7 +404,45 @@ export class ServiceTest extends TestNode {
     }
 }
 
-export abstract class RegisterTestNode extends TestNode {
+export abstract class ServiceMemberTestNode extends TestNode {
+    constructor(name: string) {
+        super(name)
+    }
+    get service(): JDService {
+        if (!this.parent) return undefined
+        const { service } = this.parent as ServiceTest
+        return service
+    }
+}
+
+export interface ServiceMemberOptions {
+    name: string
+    start: (test: ServiceMemberTestNode) => () => void
+}
+
+export class ServiceCommandsTest extends ServiceMemberTestNode {
+    constructor(readonly options: ServiceMemberOptions) {
+        super(options.name)
+    }
+    get nodeKind(): string {
+        return SERVICE_COMMAND_TEST_KIND
+    }
+    override mount(): void {
+        super.mount()
+
+        const service = this.service
+        const { start } = this.options
+        if (service) {
+            const unsubscribe = start(this)
+            this.subscriptions.mount(unsubscribe)
+        }
+    }
+    override bind() {
+        this.node = this.service
+    }
+}
+
+export abstract class RegisterTestNode extends ServiceMemberTestNode {
     constructor(name: string, readonly code: number) {
         super(name)
     }
@@ -496,15 +541,13 @@ export class RegisterTest extends RegisterTestNode {
     }
 
     override bind(): void {
-        if (!this.parent) return
-
-        const { service } = this.parent as ServiceTest
+        const service = this.service
         const register = service?.register(this.code)
         this.register = register
     }
 }
 
-export class EventTest extends TestNode {
+export class EventTest extends ServiceMemberTestNode {
     constructor(
         name: string,
         readonly code: number,
@@ -558,9 +601,7 @@ export class EventTest extends TestNode {
     }
 
     override bind(): void {
-        if (this.event || !this.parent) return
-
-        const { service } = this.parent as ServiceTest
+        const service = this.service
         const event = service?.event(this.code)
         this.event = event
     }
@@ -650,6 +691,94 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
             tolerance: 0.01,
         },
     ],
+}
+const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
+    [SRV_LED_STRIP]: {
+        name: "cycle reg, green, blue colors on all LEDs",
+        start: test => {
+            let mounted = true
+            const work = async () => {
+                const service = test.service
+                const colors = [0x0000ff, 0x00ff00, 0xff0000]
+                let k = 0
+                while (mounted) {
+                    const color = colors[k++]
+                    k = k % colors.length
+                    const encoded = lightEncode(
+                        `setall #
+                            show 20`,
+                        [color]
+                    )
+                    await service?.sendCmdAsync(LedStripCmd.Run, encoded)
+                    await delay(500)
+                }
+            }
+            work()
+            return () => {
+                mounted = false
+            }
+        },
+    },
+    [SRV_LED]: {
+        name: "cycles through RGB every 0.5s",
+        start: test => {
+            let mounted = true
+            const pack = (
+                r: number,
+                g: number,
+                b: number,
+                animDelay: number
+            ) => {
+                const unpacked: [number, number, number, number] = [
+                    r,
+                    g,
+                    b,
+                    animDelay,
+                ]
+                return jdpack("u8 u8 u8 u8", unpacked)
+            }
+            const work = async () => {
+                test.state = TestState.Running
+                while (mounted) {
+                    const service = test.service
+                    if (!service) {
+                        await delay(500)
+                        return
+                    }
+                    await service.sendCmdAsync(
+                        LedCmd.Animate,
+                        pack(255, 0, 0, 200)
+                    )
+                    await delay(500)
+                    if (!mounted) return
+                    await service.sendCmdAsync(
+                        LedCmd.Animate,
+                        pack(0, 255, 0, 200)
+                    )
+                    await delay(500)
+                    if (!mounted) return
+                    await service.sendCmdAsync(
+                        LedCmd.Animate,
+                        pack(0, 0, 255, 200)
+                    )
+                    await delay(500)
+                    if (!mounted) return
+                    await service.sendCmdAsync(
+                        LedCmd.Animate,
+                        pack(0, 0, 0, 200)
+                    )
+                    await delay(500)
+
+                    test.state = TestState.Pass
+                }
+            }
+            // start work async
+            work()
+            return () => {
+                mounted = false
+            }
+        },
+    },
 }
 
 function createReadingRule(
@@ -887,6 +1016,8 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
                                 (node, logger) => {
                                     const { register } = node
                                     const { unpackedValue = [] } = register
+                                    if (!unpackedValue.length)
+                                        return TestState.Pass // not implemented
                                     const [code, vendorCode] = unpackedValue
                                     const ok =
                                         (code === SystemStatusCodes.Ready ||
@@ -929,7 +1060,8 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
                                 )
                             )
 
-                        const testRules = [
+                        // import additional test nodes
+                        const testNodes = [
                             ...((!disableBuiltinRules &&
                                 builtinTestRules[serviceClass]) ||
                                 []),
@@ -937,9 +1069,17 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
                         ]
                             .map(rule => compileTestRule(specification, rule))
                             .filter(r => !!r)
-                        testRules?.forEach(testRule =>
+                        testNodes?.forEach(testRule =>
                             serviceTest.appendChild(testRule)
                         )
+
+                        // import member tests
+                        const testCommand =
+                            builtinServiceCommandTests[serviceClass]
+                        if (testCommand)
+                            serviceTest.appendChild(
+                                new ServiceCommandsTest(testCommand)
+                            )
                     }
                     deviceTest.appendChild(serviceTest)
                 }
