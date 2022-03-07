@@ -35,7 +35,7 @@ import {
     serviceSpecificationFromClassIdentifier,
     serviceSpecificationFromName,
 } from "./spec"
-import { delay, JSONTryParse } from "./utils"
+import { arrayConcatMany, delay, JSONTryParse } from "./utils"
 
 export const PANEL_TEST_KIND = "panelTest"
 export const DEVICE_TEST_KIND = "deviceTest"
@@ -165,6 +165,13 @@ export abstract class TestNode extends JDNode {
 
     get children(): TestNode[] {
         return this._children.slice(0)
+    }
+
+    get descendants(): TestNode[] {
+        return [
+            ...this._children,
+            ...arrayConcatMany(this._children.map(child => child.descendants)),
+        ]
     }
 
     appendChild(child: TestNode) {
