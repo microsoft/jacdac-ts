@@ -7,11 +7,13 @@ import {
     DISCONNECT,
     EVENT,
     LedCmd,
+    LedDisplayReg,
     LedStripCmd,
     REPORT_UPDATE,
     SRV_BUTTON,
     SRV_CONTROL,
     SRV_LED,
+    SRV_LED_DISPLAY,
     SRV_LED_STRIP,
     SRV_POTENTIOMETER,
     SystemReg,
@@ -693,8 +695,39 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
     ],
 }
 const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
+    [SRV_LED_DISPLAY]: {
+        name: "cycle red, gree, blue colors on all LEDs",
+        start: test => {
+            const service = test.service
+            const numPixels = service.register(LedDisplayReg.NumPixels)
+            numPixels.refresh(true)
+            const n: number = numPixels.unpackedValue[0]
+            const pixels = new Uint8Array(n * 3)
+            let mounted = true
+            const work = async () => {
+                const service = test.service
+                const colors = [0x0000ff, 0x00ff00, 0xff0000]
+                let k = 0
+                while (mounted) {
+                    const color = colors[k++]
+                    k = k % colors.length
+                    for (let i = 0; i < n; ++i) {
+                        pixels[i * 3] = (color >> 16) & 0xff
+                        pixels[i * 3 + 1] = (color >> 8) & 0xff
+                        pixels[i * 3 + 2] = (color >> 0) & 0xff
+                    }
+                    await service?.sendCmdPackedAsync(LedDisplayReg.Pixels, [pixels])
+                    await delay(500)
+                }
+            }
+            work()
+            return () => {
+                mounted = false
+            }
+        },
+    },
     [SRV_LED_STRIP]: {
-        name: "cycle reg, green, blue colors on all LEDs",
+        name: "cycle red, green, blue colors on all LEDs",
         start: test => {
             let mounted = true
             const work = async () => {
