@@ -695,10 +695,31 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
     ],
 }
 
-const testColors = [0xff0000, 0x00ff00, 0x0000ff, 0]
+const testColors = [0x990000, 0x009900, 0x000099, 0]
 const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
+    [SRV_CONTROL]: {
+        name: "cycle red, green, blue on status led",
+        start: test => {
+            let mounted = true
+            const service = test.service
+            const statusLight = service.device.statusLight
+            let k = 0
+            const work = async () => {
+                while (mounted) {
+                    const color = testColors[k++ % testColors.length]
+                    statusLight.blink(color, 0x000000, 400, 1)
+                    await delay(500)
+                    if (k > testColors.length) test.state = TestState.Pass
+                }
+            }
+            work()
+            return () => {
+                mounted = false
+            }
+        },
+    },
     [SRV_LED_DISPLAY]: {
-        name: "cycle red, gree, blue colors on all LEDs",
+        name: "cycle red, green, blue colors on all LEDs",
         start: test => {
             const service = test.service
             let mounted = true
@@ -1009,8 +1030,11 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
             const deviceTest = new DeviceTest(productIdentifier, specification)
 
             // add test for control
+            const controlTest = new ServiceTest("control", SRV_CONTROL)
+            controlTest.appendChild(
+                new ServiceCommandsTest(builtinServiceCommandTests[SRV_CONTROL])
+            )
             if (firmwareVersion) {
-                const controlTest = new ServiceTest("control", SRV_CONTROL)
                 controlTest.appendChild(
                     new RegisterTest(
                         `firmware version is ${firmwareVersion}`,
@@ -1026,8 +1050,8 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
                         }
                     )
                 )
-                deviceTest.appendChild(controlTest)
             }
+            deviceTest.appendChild(controlTest)
 
             const services: ServiceTestSpec[] =
                 device.services ||
@@ -1071,6 +1095,7 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
                                 }
                             )
                         )
+
                         // reading value rule if any
                         const readingSpec =
                             specification?.packets?.find(isReading)
