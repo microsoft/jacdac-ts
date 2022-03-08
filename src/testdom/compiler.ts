@@ -24,8 +24,27 @@ import {
     serviceSpecificationFromName,
 } from "../jdom/spec"
 import { delay, JSONTryParse } from "../jdom/utils"
-import { DeviceTest, EventTest, PanelTest, RegisterOracle, RegisterTest, ServiceCommandsTest, ServiceMemberOptions, ServiceTest, TestLogger, TestNode } from "./nodes"
-import { EventTestRule, OrableTestSpec, PanelTestSpec, ReadingTestRule, ServiceTestRule, ServiceTestSpec, TestState } from "./spec"
+import {
+    DeviceTest,
+    EventTest,
+    PanelTest,
+    RegisterOracle,
+    RegisterTest,
+    ServiceCommandsTest,
+    ServiceMemberOptions,
+    ServiceTest,
+    TestLogger,
+    TestNode,
+} from "./nodes"
+import {
+    EventTestRule,
+    OrableTestSpec,
+    PanelTestSpec,
+    ReadingTestRule,
+    ServiceTestRule,
+    ServiceTestSpec,
+    TestState,
+} from "./spec"
 
 const builtinTestRules: Record<number, ServiceTestRule[]> = {
     [SRV_BUTTON]: <ServiceTestRule[]>[
