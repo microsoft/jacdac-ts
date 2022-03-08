@@ -91,12 +91,13 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
             const statusLight = service.device.statusLight
             let k = 0
             const work = async () => {
-                while (mounted) {
+                while (mounted && statusLight) {
                     const color = testColors[k++ % testColors.length]
                     statusLight.blink(color, 0x000000, 400, 1)
                     await delay(500)
                     if (k > testColors.length) test.state = TestState.Pass
                 }
+                test.state = TestState.Pass                
             }
             work()
             return () => {
