@@ -268,11 +268,11 @@ export class CMSISProto implements Proto {
             let beg = 0
             while (ptr < buf.length) {
                 if (buf[ptr] == 10 || buf[ptr] == 13) {
-                    const line = buf.slice(beg, ptr)
-                    if (line.length)
-                        console.debug(
-                            "microbit: " + fromUTF8(uint8ArrayToString(line))
-                        )
+                    // const line = buf.slice(beg, ptr)
+                    // if (line.length)
+                    //     console.debug(
+                    //         "microbit: " + fromUTF8(uint8ArrayToString(line))
+                    //     )
                     beg = ptr + 1
                 }
                 ptr++
