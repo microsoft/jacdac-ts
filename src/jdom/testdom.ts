@@ -468,6 +468,7 @@ export abstract class RegisterTestNode extends ServiceMemberTestNode {
         this.subscriptions.mount(
             register.subscribe(REPORT_UPDATE, () => {
                 this.updateState()
+                this.emit(CHANGE)
             })
         )
     }
