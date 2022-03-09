@@ -39,6 +39,7 @@ import {
     TestNode,
 } from "./nodes"
 import {
+    DeviceTestSpec,
     EventTestRule,
     OrableTestSpec,
     PanelTestSpec,
@@ -389,11 +390,136 @@ export function tryParsePanelTestSpec(source: string) {
     return undefined
 }
 
+export function createDeviceTest(
+    bus: JDBus,
+    device: DeviceTestSpec,
+    panel?: PanelTestSpec
+): DeviceTest {
+    const { deviceCatalog } = bus
+    const { productIdentifier, firmwareVersion } = device
+    const specification =
+        deviceCatalog.specificationFromProductIdentifier(productIdentifier)
+    const deviceTest = new DeviceTest(productIdentifier, specification)
+
+    // add status light
+    deviceTest.appendChild(new StatusLightTest())
+
+    // add test for control
+    if (firmwareVersion) {
+        const controlTest = new ServiceTest("control", SRV_CONTROL)
+        controlTest.appendChild(
+            new RegisterTest(
+                `firmware version is ${firmwareVersion}`,
+                ControlReg.FirmwareVersion,
+                (node, logger) => {
+                    const { register } = node
+                    const ok = register?.stringValue === firmwareVersion
+                    if (!ok)
+                        logger(
+                            `incorrect firmware version, expected ${firmwareVersion}`
+                        )
+                    return ok ? TestState.Pass : TestState.Fail
+                }
+            )
+        )
+        deviceTest.appendChild(controlTest)
+    }
+
+    const services: ServiceTestSpec[] =
+        device.services ||
+        specification.services.map(srv => ({ serviceClass: srv }))
+
+    for (const service of services) {
+        const { serviceClass, count = 1, disableBuiltinRules } = service
+        const serviceOracle = panel?.oracles?.find(
+            oracle => oracle.serviceClass === serviceClass
+        )
+        const specification =
+            serviceSpecificationFromClassIdentifier(serviceClass)
+        for (let i = 0; i < count; ++i) {
+            const serviceTest = new ServiceTest(
+                specification?.shortName.toLowerCase() ||
+                    `0x${serviceClass.toString(16)}`,
+                serviceClass
+            )
+            {
+                // add status code
+                serviceTest.appendChild(
+                    new RegisterTest(
+                        "status code should be ready or sleeping",
+                        BaseReg.StatusCode,
+                        (node, logger) => {
+                            const { register } = node
+                            const { unpackedValue = [] } = register
+                            if (!unpackedValue.length) return TestState.Pass // not implemented
+                            const [code, vendorCode] = unpackedValue
+                            const ok =
+                                (code === SystemStatusCodes.Ready ||
+                                    code === SystemStatusCodes.Sleeping) &&
+                                vendorCode === 0
+                            if (!ok)
+                                logger(
+                                    `expected status code equals to 0x0,0x0 or 0x3,0x0`
+                                )
+                            return ok ? TestState.Pass : TestState.Fail
+                        }
+                    )
+                )
+
+                // reading value rule if any
+                const readingSpec = specification?.packets?.find(isReading)
+                if (readingSpec)
+                    serviceTest.appendChild(
+                        new RegisterTest(
+                            "reading should stream",
+                            readingSpec.identifier,
+                            node => {
+                                const { register } = node
+                                const { unpackedValue = [] } = register
+                                return unpackedValue?.length > 0
+                                    ? TestState.Pass
+                                    : TestState.Fail
+                            }
+                        )
+                    )
+
+                // add oracle
+                if (serviceOracle)
+                    serviceTest.appendChild(
+                        new RegisterTest(
+                            "reading near oracle",
+                            SystemReg.Reading,
+                            createOracleRule(serviceOracle)
+                        )
+                    )
+
+                // import additional test nodes
+                const testNodes = [
+                    ...((!disableBuiltinRules &&
+                        builtinTestRules[serviceClass]) ||
+                        []),
+                    ...(service.rules || []),
+                ]
+                    .map(rule => compileTestRule(specification, rule))
+                    .filter(r => !!r)
+                testNodes?.forEach(testRule =>
+                    serviceTest.appendChild(testRule)
+                )
+
+                // import member tests
+                const testCommand = builtinServiceCommandTests[serviceClass]
+                if (testCommand)
+                    serviceTest.appendChild(new ServiceCommandTest(testCommand))
+            }
+            deviceTest.appendChild(serviceTest)
+        }
+    }
+    return deviceTest
+}
+
 export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
     const { id, devices = [], oracles = [] } = panel
-    const { deviceCatalog } = bus
     const panelTest = new PanelTest(id, panel)
-    panelTest.bus = bus
 
     // add oracles
     for (const oracle of oracles) {
@@ -410,133 +536,9 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
 
     // add devices
     for (const device of devices) {
-        const { productIdentifier, firmwareVersion, count } = device
+        const { count = 1 } = device
         for (let i = 0; i < count; ++i) {
-            const specification =
-                deviceCatalog.specificationFromProductIdentifier(
-                    productIdentifier
-                )
-            const deviceTest = new DeviceTest(productIdentifier, specification)
-
-            // add status light
-            deviceTest.appendChild(new StatusLightTest())
-
-            // add test for control
-            if (firmwareVersion) {
-                const controlTest = new ServiceTest("control", SRV_CONTROL)
-                controlTest.appendChild(
-                    new RegisterTest(
-                        `firmware version is ${firmwareVersion}`,
-                        ControlReg.FirmwareVersion,
-                        (node, logger) => {
-                            const { register } = node
-                            const ok = register?.stringValue === firmwareVersion
-                            if (!ok)
-                                logger(
-                                    `incorrect firmware version, expected ${firmwareVersion}`
-                                )
-                            return ok ? TestState.Pass : TestState.Fail
-                        }
-                    )
-                )
-                deviceTest.appendChild(controlTest)
-            }
-
-            const services: ServiceTestSpec[] =
-                device.services ||
-                specification.services.map(srv => ({ serviceClass: srv }))
-
-            for (const service of services) {
-                const { serviceClass, count = 1, disableBuiltinRules } = service
-                const serviceOracle = panel.oracles?.find(
-                    oracle => oracle.serviceClass === serviceClass
-                )
-                const specification =
-                    serviceSpecificationFromClassIdentifier(serviceClass)
-                for (let i = 0; i < count; ++i) {
-                    const serviceTest = new ServiceTest(
-                        specification?.shortName.toLowerCase() ||
-                            `0x${serviceClass.toString(16)}`,
-                        serviceClass
-                    )
-                    {
-                        // add status code
-                        serviceTest.appendChild(
-                            new RegisterTest(
-                                "status code should be ready or sleeping",
-                                BaseReg.StatusCode,
-                                (node, logger) => {
-                                    const { register } = node
-                                    const { unpackedValue = [] } = register
-                                    if (!unpackedValue.length)
-                                        return TestState.Pass // not implemented
-                                    const [code, vendorCode] = unpackedValue
-                                    const ok =
-                                        (code === SystemStatusCodes.Ready ||
-                                            code ===
-                                                SystemStatusCodes.Sleeping) &&
-                                        vendorCode === 0
-                                    if (!ok)
-                                        logger(
-                                            `expected status code equals to 0x0,0x0 or 0x3,0x0`
-                                        )
-                                    return ok ? TestState.Pass : TestState.Fail
-                                }
-                            )
-                        )
-
-                        // reading value rule if any
-                        const readingSpec =
-                            specification?.packets?.find(isReading)
-                        if (readingSpec)
-                            serviceTest.appendChild(
-                                new RegisterTest(
-                                    "reading should stream",
-                                    readingSpec.identifier,
-                                    node => {
-                                        const { register } = node
-                                        const { unpackedValue = [] } = register
-                                        return unpackedValue?.length > 0
-                                            ? TestState.Pass
-                                            : TestState.Fail
-                                    }
-                                )
-                            )
-
-                        // add oracle
-                        if (serviceOracle)
-                            serviceTest.appendChild(
-                                new RegisterTest(
-                                    "reading near oracle",
-                                    SystemReg.Reading,
-                                    createOracleRule(serviceOracle)
-                                )
-                            )
-
-                        // import additional test nodes
-                        const testNodes = [
-                            ...((!disableBuiltinRules &&
-                                builtinTestRules[serviceClass]) ||
-                                []),
-                            ...(service.rules || []),
-                        ]
-                            .map(rule => compileTestRule(specification, rule))
-                            .filter(r => !!r)
-                        testNodes?.forEach(testRule =>
-                            serviceTest.appendChild(testRule)
-                        )
-
-                        // import member tests
-                        const testCommand =
-                            builtinServiceCommandTests[serviceClass]
-                        if (testCommand)
-                            serviceTest.appendChild(
-                                new ServiceCommandTest(testCommand)
-                            )
-                    }
-                    deviceTest.appendChild(serviceTest)
-                }
-            }
+            const deviceTest = createDeviceTest(bus, device, panel)
             panelTest.appendChild(deviceTest)
         }
     }
