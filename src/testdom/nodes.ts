@@ -14,11 +14,12 @@ import { JDNode } from "../jdom/node"
 import { randomDeviceId } from "../jdom/random"
 import { JDRegister } from "../jdom/register"
 import { JDService } from "../jdom/service"
-import { arrayConcatMany } from "../jdom/utils"
+import { arrayConcatMany, delay } from "../jdom/utils"
 import { PanelTestSpec, TestResult, TestState } from "./spec"
 
 export const PANEL_TEST_KIND = "panelTest"
 export const DEVICE_TEST_KIND = "deviceTest"
+export const STATUS_LIGHT_TEST_KIND = "statusLightTestKind"
 export const SERVICE_TEST_KIND = "serviceTest"
 export const SERVICE_COMMAND_TEST_KIND = "serviceCommandTest"
 export const REGISTER_TEST_KIND = "registerTest"
@@ -339,6 +340,53 @@ export class DeviceTest extends TestNode {
             shortId: d.shortId,
             firmwareVersion: d.firmwareVersion,
         }
+    }
+}
+
+export class StatusLightTest extends TestNode {
+    constructor() {
+        super("status light")
+    }
+    get nodeKind(): string {
+        return STATUS_LIGHT_TEST_KIND
+    }
+    get device(): JDDevice {
+        return this.node as JDDevice
+    }
+    bind() {
+        const { device } = (this.parent || {}) as DeviceTest
+        this.node = device
+    }
+    override mount(): void {
+        super.mount()
+        const device = this.device
+        const statusLight = device?.statusLight
+        if (!statusLight) return
+
+        let mounted = true
+        const work = async () => {
+            while (mounted && statusLight) {
+                switch (this.parent.state) {
+                    case TestState.Pass:
+                        statusLight.blink(0x009900, 0x000000, 500, 1)
+                        break
+                    case TestState.Fail:
+                        statusLight.blink(0x770000, 0x000000, 250, 4)
+                        break
+                    default:
+                        statusLight.blink(0x000099, 0x000000, 350, 3)
+                        break
+                }
+                await delay(1000)
+            }
+        }
+        work()
+        this.subscriptions.mount(() => {
+            mounted = false
+        })
+    }
+    updateState() {
+        this.state = TestState.Pass
     }
 }
 

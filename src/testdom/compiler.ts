@@ -11,6 +11,7 @@ import {
     SRV_LED_DISPLAY,
     SRV_LED_STRIP,
     SRV_POTENTIOMETER,
+    SRV_ROTARY_ENCODER,
     SystemReg,
     SystemStatusCodes,
 } from "../jdom/constants"
@@ -33,6 +34,7 @@ import {
     ServiceCommandTest,
     ServiceMemberOptions,
     ServiceTest,
+    StatusLightTest,
     TestLogger,
     TestNode,
 } from "./nodes"
@@ -79,39 +81,32 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
             tolerance: 0.01,
         },
     ],
+    [SRV_ROTARY_ENCODER]: <ServiceTestRule[]>[
+        <ReadingTestRule>{
+            type: "reading",
+            value: -4,
+        },
+        <ReadingTestRule>{
+            type: "reading",
+            value: -1,
+        },
+        <ReadingTestRule>{
+            type: "reading",
+            value: 0,
+        },
+        <ReadingTestRule>{
+            type: "reading",
+            value: 1,
+        },
+        <ReadingTestRule>{
+            type: "reading",
+            value: 4,
+        },
+    ],
 }
 
 const testColors = [0x990000, 0x009900, 0x000099, 0]
 const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
-    [SRV_CONTROL]: {
-        name: "cycle red, green, blue on status led",
-        start: test => {
-            let mounted = true
-            const service = test.service
-            const statusLight = service.device.statusLight
-            const work = async () => {
-                test.state = TestState.Pass
-                while (mounted && statusLight) {
-                    switch (test.parent.state) {
-                        case TestState.Pass:
-                            statusLight.blink(0x009900, 0x000000, 500, 1)
-                            break
-                        case TestState.Fail:
-                            statusLight.blink(0x770000, 0x000000, 250, 4)
-                            break
-                        default:
-                            statusLight.blink(0x000099, 0x000000, 350, 3)
-                            break
-                    }
-                    await delay(1000)
-                }
-            }
-            work()
-            return () => {
-                mounted = false
-            }
-        },
-    },
     [SRV_LED_DISPLAY]: {
         name: "cycle red, green, blue colors on all LEDs",
         start: test => {
@@ -248,7 +243,7 @@ function createReadingRule(
             const [current] = register.unpackedValue
             const active =
                 current !== undefined &&
-                (tolerance <= 0
+                (isNaN(tolerance) || tolerance <= 0
                     ? current === value
                     : Math.abs(current - value) <= tolerance)
             if (active) samples++
@@ -423,12 +418,12 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
                 )
             const deviceTest = new DeviceTest(productIdentifier, specification)
 
+            // add status light
+            deviceTest.appendChild(new StatusLightTest())
+
             // add test for control
-            const controlTest = new ServiceTest("control", SRV_CONTROL)
-            controlTest.appendChild(
-                new ServiceCommandTest(builtinServiceCommandTests[SRV_CONTROL])
-            )
             if (firmwareVersion) {
+                const controlTest = new ServiceTest("control", SRV_CONTROL)
                 controlTest.appendChild(
                     new RegisterTest(
                         `firmware version is ${firmwareVersion}`,
@@ -444,8 +439,8 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
                         }
                     )
                 )
+                deviceTest.appendChild(controlTest)
             }
-            deviceTest.appendChild(controlTest)
 
             const services: ServiceTestSpec[] =
                 device.services ||
