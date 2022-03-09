@@ -10,8 +10,10 @@ import {
     SRV_LED,
     SRV_LED_DISPLAY,
     SRV_LED_STRIP,
+    SRV_MOTION,
     SRV_POTENTIOMETER,
     SRV_ROTARY_ENCODER,
+    SRV_SWITCH,
     SystemReg,
     SystemStatusCodes,
 } from "../jdom/constants"
@@ -50,6 +52,16 @@ import {
 } from "./spec"
 
 const builtinTestRules: Record<number, ServiceTestRule[]> = {
+    [SRV_SWITCH]: <ServiceTestRule[]>[
+        <ReadingTestRule>{
+            type: "reading",
+            value: 0,
+        },
+        <ReadingTestRule>{
+            type: "reading",
+            value: 1,
+        },
+    ],
     [SRV_BUTTON]: <ServiceTestRule[]>[
         <ReadingTestRule>{
             type: "reading",
@@ -68,6 +80,20 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         <EventTestRule>{
             type: "event",
             name: "up",
+        },
+    ],
+    [SRV_MOTION]: <ServiceTestRule[]>[
+        <ReadingTestRule>{
+            type: "reading",
+            value: 0,
+        },
+        <ReadingTestRule>{
+            type: "reading",
+            value: 1,
+        },
+        <EventTestRule>{
+            type: "event",
+            name: "movement",
         },
     ],
     [SRV_POTENTIOMETER]: <ServiceTestRule[]>[
