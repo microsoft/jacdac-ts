@@ -1320,7 +1320,6 @@ function initProviders() {
                 services: () => [
                     new SwitchServer({
                         variant: SwitchVariant.Proximity,
-                        autoOffDelay: 30,
                     }),
                 ],
             },
