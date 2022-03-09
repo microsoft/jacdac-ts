@@ -9,20 +9,14 @@ import { SensorServer } from "./sensorserver"
 
 export class SwitchServer extends SensorServer<[boolean]> {
     readonly variant: JDRegisterServer<[SwitchVariant]>
-    readonly autoOffDelay: JDRegisterServer<[number]>
-    private autoOffInterval: any
 
-    constructor(options?: { autoOffDelay?: number; variant?: SwitchVariant }) {
+    constructor(options?: { variant?: SwitchVariant }) {
         super(SRV_SWITCH, { readingValues: [false], streamingInterval: 50 })
-        const { autoOffDelay, variant } = options || {}
+        const { variant } = options || {}
 
         this.variant = this.addRegister(
             SwitchReg.Variant,
             variant !== undefined ? [variant] : undefined
-        )
-        this.autoOffDelay = this.addRegister(
-            SwitchReg.AutoOffDelay,
-            autoOffDelay !== undefined ? [autoOffDelay] : undefined
         )
     }
 
@@ -37,7 +31,6 @@ export class SwitchServer extends SensorServer<[boolean]> {
         if (!v) {
             this.reading.setValues([true])
             await this.sendEvent(SwitchEvent.On)
-            this.startAutoOff()
         }
     }
 
@@ -46,22 +39,6 @@ export class SwitchServer extends SensorServer<[boolean]> {
         if (v) {
             this.reading.setValues([false])
             await this.sendEvent(SwitchEvent.Off)
-            this.stopAutoOff()
-        }
-    }
-
-    private startAutoOff() {
-        this.stopAutoOff()
-        if (this.autoOffDelay.data !== undefined) {
-            const [delay] = this.autoOffDelay.values()
-            this.autoOffInterval = setTimeout(this.switchOn.bind(this), delay)
-        }
-    }
-
-    private stopAutoOff() {
-        if (this.autoOffInterval) {
-            clearTimeout(this.autoOffInterval)
-            this.autoOffInterval = undefined
         }
     }
 }
