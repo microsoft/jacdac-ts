@@ -30,7 +30,7 @@ import {
     PanelTest,
     RegisterOracle,
     RegisterTest,
-    ServiceCommandsTest,
+    ServiceCommandTest,
     ServiceMemberOptions,
     ServiceTest,
     TestLogger,
@@ -89,15 +89,22 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
             let mounted = true
             const service = test.service
             const statusLight = service.device.statusLight
-            let k = 0
             const work = async () => {
+                test.state = TestState.Pass
                 while (mounted && statusLight) {
-                    const color = testColors[k++ % testColors.length]
-                    statusLight.blink(color, 0x000000, 400, 1)
-                    await delay(500)
-                    if (k > testColors.length) test.state = TestState.Pass
+                    switch (test.parent.state) {
+                        case TestState.Pass:
+                            statusLight.blink(0x009900, 0x000000, 500, 1)
+                            break
+                        case TestState.Fail:
+                            statusLight.blink(0x770000, 0x000000, 250, 4)
+                            break
+                        default:
+                            statusLight.blink(0x000099, 0x000000, 350, 3)
+                            break
+                    }
+                    await delay(1000)
                 }
-                test.state = TestState.Pass                
             }
             work()
             return () => {
@@ -419,7 +426,7 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
             // add test for control
             const controlTest = new ServiceTest("control", SRV_CONTROL)
             controlTest.appendChild(
-                new ServiceCommandsTest(builtinServiceCommandTests[SRV_CONTROL])
+                new ServiceCommandTest(builtinServiceCommandTests[SRV_CONTROL])
             )
             if (firmwareVersion) {
                 controlTest.appendChild(
@@ -529,7 +536,7 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
                             builtinServiceCommandTests[serviceClass]
                         if (testCommand)
                             serviceTest.appendChild(
-                                new ServiceCommandsTest(testCommand)
+                                new ServiceCommandTest(testCommand)
                             )
                     }
                     deviceTest.appendChild(serviceTest)

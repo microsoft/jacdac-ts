@@ -397,7 +397,7 @@ export interface ServiceMemberOptions {
     start: (test: ServiceMemberTestNode) => () => void
 }
 
-export class ServiceCommandsTest extends ServiceMemberTestNode {
+export class ServiceCommandTest extends ServiceMemberTestNode {
     constructor(readonly options: ServiceMemberOptions) {
         super(options.name)
     }
@@ -414,6 +414,7 @@ export class ServiceCommandsTest extends ServiceMemberTestNode {
             this.subscriptions.mount(unsubscribe)
         }
     }
+    updateState() {}
     override bind() {
         this.node = this.service
     }
