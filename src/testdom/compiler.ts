@@ -2,31 +2,19 @@ import { JDBus } from "../jdom/bus"
 import {
     BaseReg,
     ControlReg,
-    LedCmd,
-    LedDisplayReg,
-    LedStripCmd,
-    SRV_BUTTON,
     SRV_CONTROL,
-    SRV_LED,
-    SRV_LED_DISPLAY,
-    SRV_LED_STRIP,
-    SRV_MOTION,
-    SRV_POTENTIOMETER,
-    SRV_ROTARY_ENCODER,
-    SRV_SWITCH,
     SystemReg,
     SystemStatusCodes,
 } from "../jdom/constants"
-import { lightEncode } from "../jdom/light"
-import { jdpack } from "../jdom/pack"
 import { serviceName } from "../jdom/pretty"
 import {
     isEvent,
     isReading,
+    isRegister,
     serviceSpecificationFromClassIdentifier,
     serviceSpecificationFromName,
 } from "../jdom/spec"
-import { delay, JSONTryParse } from "../jdom/utils"
+import { JSONTryParse } from "../jdom/utils"
 import {
     DeviceTest,
     EventTest,
@@ -34,7 +22,6 @@ import {
     RegisterOracle,
     RegisterTest,
     ServiceCommandTest,
-    ServiceMemberOptions,
     ServiceTest,
     StatusLightTest,
     TestLogger,
@@ -136,14 +123,25 @@ function compileTestRule(
 ): TestNode {
     const { type } = rule
     switch (type) {
+        case "value":
+        case "intensity":
         case "reading": {
             const readingRule = rule as ReadingTestRule
             const { value, tolerance } = readingRule
+            const registerId =
+                type === "reading"
+                    ? SystemReg.Reading
+                    : type === "intensity"
+                    ? SystemReg.Intensity
+                    : SystemReg.Value
+            const registerSpec = specification.packets.find(
+                pkt => isRegister(pkt) && pkt.identifier === registerId
+            )
             return new RegisterTest(
-                `observe reading == ${value}${
+                `observe ${registerSpec.name} == ${value}${
                     tolerance ? ` +/-${tolerance}` : ""
                 }`,
-                SystemReg.Reading,
+                registerId,
                 createReadingRule(readingRule)
             )
         }

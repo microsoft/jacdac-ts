@@ -488,6 +488,7 @@ export abstract class RegisterTestNode extends ServiceMemberTestNode {
                 this.emit(CHANGE)
             })
         )
+        this.updateState()
     }
     override get info(): string {
         return this.register?.humanValue || "?"

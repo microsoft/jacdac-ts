@@ -10,6 +10,7 @@ import {
     SRV_LED_STRIP,
     SRV_MOTION,
     SRV_POTENTIOMETER,
+    SRV_RELAY,
     SRV_ROTARY_ENCODER,
     SRV_SWITCH,
 } from "../jdom/constants"
@@ -33,6 +34,16 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         },
         <ReadingTestRule>{
             type: "reading",
+            value: 1,
+        },
+    ],
+    [SRV_RELAY]: <ServiceTestRule[]>[
+        <IntensityTestRule>{
+            type: "intensity",
+            value: 0,
+        },
+        <IntensityTestRule>{
+            type: "intensity",
             value: 1,
         },
     ],

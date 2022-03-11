@@ -39,10 +39,10 @@ export interface ServiceTestSpec {
 }
 
 export interface ServiceTestRule {
-    type: "reading" | "oracleReading" | "event"
+    type: "reading" | "intensity" | "value" | "oracleReading" | "event"
 }
 export interface ReadingTestRule extends ServiceTestRule {
-    type: "reading"
+    type: "reading" | "intensity" | "value"
     value: number
     tolerance?: number
 }
