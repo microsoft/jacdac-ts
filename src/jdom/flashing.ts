@@ -151,7 +151,7 @@ class FlashClient {
     private async endFlashAsync() {
         for (const f of this.classClients) {
             await this.bus.delay(10)
-            await f.device.sendCtrlCommand(ControlCmd.Reset)
+            await f.device.reset()
         }
     }
 

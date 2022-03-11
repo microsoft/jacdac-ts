@@ -1279,11 +1279,12 @@ ${dev
             device =>
                 device.announced && // needs services
                 !device.lost && // ignore lost devices
-                !device.hasService(SRV_PROXY) // just ignore proxies
+                !device.hasService(SRV_PROXY) && // just ignore proxies
+                !device.flashing
         )
 
         // skip if no devices or any device is currently flashing
-        if (!devices.length || devices.some(dev => dev.flashing)) return // no devices, we're done
+        if (!devices.length) return // no devices, we're done
 
         // collect registers
         const registers = arrayConcatMany(

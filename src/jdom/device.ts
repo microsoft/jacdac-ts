@@ -841,7 +841,7 @@ export class JDDevice extends JDNode {
      * @category Lifecycle
      */
     reset() {
-        return this.service(0)?.sendCmdAsync(ControlCmd.Reset)
+        return this.sendCtrlCommand(ControlCmd.Reset)
     }
 
     /**
@@ -849,7 +849,7 @@ export class JDDevice extends JDNode {
      * @returns
      */
     startProxy() {
-        return this.service(0)?.sendCmdAsync(ControlCmd.Proxy)
+        return this.sendCtrlCommand(ControlCmd.Proxy)
     }
 
     /**
