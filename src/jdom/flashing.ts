@@ -533,9 +533,11 @@ export async function flashFirmwareBlob(
     _startTime = Date.now()
     log(`resetting ${updateCandidates.length} device(s)`)
     for (const d of updateCandidates) {
-        const device = bus.device(d.deviceId)
-        log(`resetting ${device}`)
-        await device.sendCtrlCommand(ControlCmd.Reset)
+        const device = bus.device(d.deviceId, true)
+        if (device) {
+            log(`resetting ${device}`)
+            await device.sendCtrlCommand(ControlCmd.Reset)
+        }
     }
     const allFlashers = await createFlashers(bus)
     const flashers = allFlashers
