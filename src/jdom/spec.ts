@@ -547,6 +547,12 @@ export function parseDeviceId(id: string): Uint8Array {
     return fromHex(id)
 }
 
+export function parseDualDeviceId(id: string) {
+    const rid = parseDeviceId(id)
+    toggleBit(rid, 0)
+    return rid
+}
+
 /**
  * Check if the left device identifier is a bootloader dual of the right identifier
  * @param left
@@ -555,7 +561,6 @@ export function parseDeviceId(id: string): Uint8Array {
  */
 export function isDualDeviceId(left: string, right: string) {
     const lid = parseDeviceId(left)
-    const rid = parseDeviceId(right)
-    toggleBit(rid, 7)
+    const rid = parseDualDeviceId(right)
     return bufferEq(lid, rid)
 }
