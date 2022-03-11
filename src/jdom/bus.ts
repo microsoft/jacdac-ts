@@ -1207,7 +1207,7 @@ ${dev
     }
 
     public async sendStopStreaming(): Promise<void> {
-        console.debug(`bus: stop streaming`)
+        //console.debug(`bus: stop streaming`)
         const readingRegisters = this.services({
             announced: true,
             ignoreInfrastructure: true,
