@@ -1,8 +1,10 @@
 import {
+    DotMatrixReg,
     LedCmd,
     LedDisplayReg,
     LedStripCmd,
     SRV_BUTTON,
+    SRV_DOT_MATRIX,
     SRV_LED,
     SRV_LED_DISPLAY,
     SRV_LED_STRIP,
@@ -14,9 +16,7 @@ import {
 import { lightEncode } from "../jdom/light"
 import { jdpack } from "../jdom/pack"
 import { delay } from "../jdom/utils"
-import {
-    ServiceMemberOptions,
-} from "./nodes"
+import { ServiceMemberOptions } from "./nodes"
 import {
     EventTestRule,
     ReadingTestRule,
@@ -111,6 +111,43 @@ export function resolveTestRules(serviceClass: number) {
 }
 
 const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
+    [SRV_DOT_MATRIX]: {
+        name: "blink matrix",
+        start: test => {
+            const service = test.service
+            let mounted = true
+            const work = async () => {
+                const dotsRegister = service.register(DotMatrixReg.Dots)
+                const brightnessRegister = service.register(
+                    DotMatrixReg.Brightness
+                )
+                let dots: Uint8Array = undefined
+                while (dots === undefined && mounted) {
+                    await dotsRegister.refresh(true)
+                    dots = dotsRegister.unpackedValue[0]
+                }
+                let state = 0xff
+                let brightness = 1
+                while (mounted) {
+                    dots.fill(state)
+                    await Promise.all([
+                        brightnessRegister.sendSetPackedAsync([brightness]),
+                        dotsRegister.sendSetPackedAsync([dots]),
+                    ])
+                    brightnessRegister.scheduleRefresh()
+                    dotsRegister.scheduleRefresh()
+                    if (state > 0) brightness = (brightness + 0.1) % 1.01
+                    state = ~state
+                    await delay(500)
+                    test.state = TestState.Pass
+                }
+            }
+            work()
+            return () => {
+                mounted = false
+            }
+        },
+    },
     [SRV_LED_DISPLAY]: {
         name: "cycle red, green, blue colors on all LEDs",
         start: test => {
