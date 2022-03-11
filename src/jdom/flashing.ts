@@ -465,7 +465,7 @@ export async function parseFirmwareFile(
     return uf2Blobs
 }
 
-async function createFlashers(bus: JDBus) {
+async function createFlashers(bus: JDBus, bootloaderDeviceIds?: string[]) {
     const flashers: FlashClient[] = []
     const numTries = 10
     const tryDelay = 10
@@ -488,22 +488,22 @@ async function createFlashers(bus: JDBus) {
     try {
         bus.on(PACKET_REPORT, handlePkt)
         for (let i = 0; i < numTries; ++i) {
-            //if (bootloaderDeviceIds.length > 1) {
-            // also ask BL services if any
-            const bl_announce = Packet.onlyHeader(CMD_ADVERTISEMENT_DATA)
-            await bl_announce.sendAsMultiCommandAsync(bus, SRV_BOOTLOADER)
-            await bus.delay(tryDelay)
-            // } else {
-            //     for (const id of bootloaderDeviceIds) {
-            //         const bl_announce = Packet.onlyHeader(
-            //             CMD_ADVERTISEMENT_DATA
-            //         )
-            //         bl_announce.serviceIndex = 1
-            //         bl_announce.deviceIdentifier = id
-            //         bl_announce.isCommand = true
-            //         await bus.sendPacketAsync(bl_announce)
-            //     }
-            // }
+            if (bootloaderDeviceIds?.length > 1) {
+                // also ask BL services if any
+                const bl_announce = Packet.onlyHeader(CMD_ADVERTISEMENT_DATA)
+                await bl_announce.sendAsMultiCommandAsync(bus, SRV_BOOTLOADER)
+                await bus.delay(tryDelay)
+            } else {
+                for (const id of bootloaderDeviceIds) {
+                    const bl_announce = Packet.onlyHeader(
+                        CMD_ADVERTISEMENT_DATA
+                    )
+                    bl_announce.serviceIndex = 1
+                    bl_announce.deviceIdentifier = id
+                    bl_announce.isCommand = true
+                    await bus.sendPacketAsync(bl_announce)
+                }
+            }
             await bus.delay(tryDelay)
         }
     } finally {
@@ -548,14 +548,22 @@ export async function flashFirmwareBlob(
 
     _startTime = Date.now()
     log(`resetting ${updateCandidates.length} device(s)`)
+    const bootloaderDeviceIds: string[] = []
     for (const d of updateCandidates) {
         const device = bus.device(d.deviceId, true)
-        if (device) {
+        if (!device) {
+            log("device not found")
+            return
+        }
+        if (!device.bootloader) {
             log(`resetting ${device}`)
+            bootloaderDeviceIds.push(dualDeviceId(device.deviceId))
             await device.sendCtrlCommand(ControlCmd.Reset)
+        } else {
+            bootloaderDeviceIds.push(device.deviceId)
         }
     }
-    const allFlashers = await createFlashers(bus)
+    const allFlashers = await createFlashers(bus, bootloaderDeviceIds)
     const flashers = allFlashers
         .filter(
             f => !!ignoreFirmwareCheck || f.dev_class == blob.productIdentifier

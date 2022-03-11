@@ -39,6 +39,7 @@ import {
     SRV_PROXY,
     SRV_UNIQUE_BRAIN,
     CMD_EVENT_COUNTER_MASK,
+    SRV_BOOTLOADER,
 } from "./constants"
 import { read32, bufferEq, setAckError, read16 } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
@@ -573,6 +574,14 @@ export class JDDevice extends JDNode {
         const ex = this._ports[key]
         if (!ex) return (this._ports[key] = {})
         return ex
+    }
+
+    /**
+     * Indicates if the service is in bootloader mode
+     * @category Services
+     */
+    get bootloader() {
+        return this.hasService(SRV_BOOTLOADER)
     }
 
     /**
