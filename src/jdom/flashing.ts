@@ -526,17 +526,23 @@ export async function flashFirmwareBlob(
         await device.sendCtrlCommand(ControlCmd.Reset)
     }
     const allFlashers = await createFlashers(bus)
-    const flashers = allFlashers.filter(
-        f => !!ignoreFirmwareCheck || f.dev_class == blob.productIdentifier
-    )
+    const flashers = allFlashers
+        .filter(
+            f => !!ignoreFirmwareCheck || f.dev_class == blob.productIdentifier
+        )
+        .filter(f =>
+            updateCandidates.find(uc => uc.deviceId === f.device.deviceId)
+        )
     if (!flashers.length) {
         log(`no devices to flash`)
         return
     }
-    if (flashers.length != updateCandidates.length)
+    if (flashers.length != updateCandidates.length) {
         console.error(
             `expected ${updateCandidates.length} flashers, got ${flashers.length}`
         )
+        return
+    }
     flashers[0].classClients = flashers
     log(`flashing ${blob.name}`)
     await flashers[0].flashFirmwareBlob(blob, progress)
