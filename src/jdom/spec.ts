@@ -553,6 +553,10 @@ export function parseDualDeviceId(id: string) {
     return rid
 }
 
+export function dualDeviceId(id: string): string {
+    return toHex(parseDualDeviceId(id))
+}
+
 /**
  * Check if the left device identifier is a bootloader dual of the right identifier
  * @param left

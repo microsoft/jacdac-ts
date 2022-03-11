@@ -8,6 +8,8 @@ import {
     SRV_BOOTLOADER,
     CMD_ADVERTISEMENT_DATA,
     PACKET_REPORT,
+    PROGRESS,
+    CHANGE,
 } from "./constants"
 import {
     assert,
@@ -19,7 +21,8 @@ import { jdpack, jdunpack } from "./pack"
 import { BootloaderError } from "./constants"
 import { prettySize } from "./pretty"
 import { Flags } from "./flags"
-import { isDualDeviceId } from "./spec"
+import { dualDeviceId, isDualDeviceId } from "./spec"
+import { JDEventSource } from "./eventsource"
 
 const BL_SUBPAGE_SIZE = 208
 const BL_RETRIES = 15
@@ -69,7 +72,13 @@ function log(msg: string) {
     if (Flags.diagnostics) console.debug(`BL [${timestamp()}ms]: ${msg}`)
 }
 
-class FlashClient {
+export class FirmwareUpdater extends JDEventSource {
+    constructor() {
+        super()
+    }
+}
+
+class FlashClient extends FirmwareUpdater {
     private pageSize: number
     private flashSize: number
     private sessionId: number
@@ -79,13 +88,21 @@ class FlashClient {
     public dev_class: number
     public device: JDDevice
 
-    constructor(private bus: JDBus, adpkt: Packet) {
+    private progressTotal: number
+    private progressIndex: number
+
+    constructor(private readonly bus: JDBus, adpkt: Packet) {
+        super()
         const d = bufferToArray(adpkt.data, NumberFormat.UInt32LE)
         this.pageSize = d[1]
         this.flashSize = d[2]
         this.dev_class = d[3]
         this.device = adpkt.device
         this.handlePacket = this.handlePacket.bind(this)
+    }
+
+    get progress() {
+        return this.progressTotal ? this.progressIndex / this.progressTotal : 0
     }
 
     private handlePacket(pkt: Packet) {
@@ -276,18 +293,16 @@ class FlashClient {
         throw new Error("too many retries")
     }
 
-    public async flashFirmwareBlob(
-        fw: FirmwareBlob,
-        progress?: (perc: number) => void
-    ) {
+    public async flashFirmwareBlob(fw: FirmwareBlob) {
         const waitCycles = 15
-        const total = fw.pages.length + waitCycles + 3
-        let idx = 0
+        this.progressTotal = fw.pages.length + waitCycles + 3
+        this.progressIndex = 0
         const prog = () => {
-            if (progress) progress((100 * idx) / total)
-            idx++
+            this.emit(PROGRESS, this.progress)
+            this.progressIndex++
         }
         try {
+            this.emit(CHANGE)
             prog()
             await this.startFlashAsync()
             prog()
@@ -311,6 +326,7 @@ class FlashClient {
                     d.stop()
                 }
             }
+            this.emit(CHANGE)
         }
     }
 }
@@ -510,10 +526,10 @@ export async function flashFirmwareBlob(
     bus: JDBus,
     blob: FirmwareBlob,
     updateCandidates: FirmwareInfo[],
-    ignoreFirmwareCheck: boolean,
-    progress?: (perc: number) => void
+    ignoreFirmwareCheck: boolean
 ) {
     if (!updateCandidates?.length) return
+
     _startTime = Date.now()
     log(`resetting ${updateCandidates.length} device(s)`)
     for (const d of updateCandidates) {
@@ -543,9 +559,28 @@ export async function flashFirmwareBlob(
         )
         return
     }
-    flashers[0].classClients = flashers
+    if (flashers.some(f => f.device.firmwareUpdater)) {
+        console.error(`some devices are flashing`)
+        return
+    }
+
     log(`flashing ${blob.name}`)
-    await flashers[0].flashFirmwareBlob(blob, progress)
+    flashers[0].classClients = flashers
+    const unmounts: (() => void)[] = []
+    try {
+        flashers.forEach(f => {
+            f.device.firmwareUpdater = f
+            const dualDevice = bus.device(dualDeviceId(f.device.deviceId), true)
+            if (dualDevice) dualDevice.firmwareUpdater = f
+            unmounts.push(() => {
+                f.device.firmwareUpdater = undefined
+                if (dualDevice) dualDevice.firmwareUpdater = undefined
+            })
+        })
+        await flashers[0].flashFirmwareBlob(blob)
+    } finally {
+        unmounts.forEach(u => u())
+    }
 }
 
 /**

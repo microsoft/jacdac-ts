@@ -522,7 +522,7 @@ export class JDBus extends JDNode {
         if (enabled && !this._safeBootInterval) {
             this._safeBootInterval = this.scheduler.setInterval(() => {
                 // don't send message if any device is flashing
-                if (this._devices.some(d => d.flashing)) return
+                if (this._devices.some(d => d.firmwareUpdater)) return
                 sendStayInBootloaderCommand(this)
             }, 50)
             this.emit(CHANGE)
@@ -1280,7 +1280,7 @@ ${dev
                 device.announced && // needs services
                 !device.lost && // ignore lost devices
                 !device.hasService(SRV_PROXY) && // just ignore proxies
-                !device.flashing
+                !device.firmwareUpdater
         )
 
         // skip if no devices or any device is currently flashing

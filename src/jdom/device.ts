@@ -47,7 +47,7 @@ import { JDService } from "./service"
 import { serviceClass, shortDeviceId } from "./pretty"
 import { JDNode } from "./node"
 import { isInstanceOf, isSensor } from "./spec"
-import { FirmwareInfo } from "./flashing"
+import { FirmwareInfo, FirmwareUpdater } from "./flashing"
 import { LEDController } from "./ledcontroller"
 import { JDEventSource } from "./eventsource"
 import { ServiceFilter } from "./filters/servicefilter"
@@ -218,7 +218,7 @@ export class JDDevice extends JDNode {
     private _services: JDService[]
     private _ports: Record<string, PipeInfo>
     private _ackAwaiting: AckAwaiter[]
-    private _flashing = false
+    private _firmwareUpdater: FirmwareUpdater
     private _identifying: boolean
     private _eventCounter: number
     /**
@@ -508,24 +508,23 @@ export class JDDevice extends JDNode {
     }
 
     /**
-     * A flashing sequence is in progress
-     * @category Firmware
+     * Firmware updater, defined if a firmware update is in progress
      */
-    get flashing() {
-        return this._flashing
+    get firmwareUpdater(): FirmwareUpdater {
+        return this._firmwareUpdater
     }
 
     /**
      * Sets the flashing sequence state
      * @category Firmware
      */
-    set flashing(value: boolean) {
-        if (value !== this._flashing) {
-            this._flashing = value
+    set firmwareUpdater(value: FirmwareUpdater) {
+        if (value !== this._firmwareUpdater) {
+            this._firmwareUpdater = value
             this.emit(CHANGE)
             this.bus.emit(DEVICE_CHANGE, this)
             this.bus.emit(CHANGE)
-            if (this._flashing) this.bus.sendStopStreaming()
+            if (this._firmwareUpdater) this.bus.sendStopStreaming()
         }
     }
 

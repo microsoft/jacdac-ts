@@ -162,7 +162,7 @@ export abstract class Transport extends JDEventSource {
         if (!this.connected) return // ignore while connected
         if (this.bus.safeBoot) return // don't mess with flashing bootloaders
         const devices = this.bus.devices()
-        if (devices.some(dev => dev.flashing))
+        if (devices.some(dev => dev.firmwareUpdater))
             // don't mess with flashing
             return
 
