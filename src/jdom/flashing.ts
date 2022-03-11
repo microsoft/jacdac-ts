@@ -6,24 +6,20 @@ import {
     BootloaderCmd,
     ControlCmd,
     SRV_BOOTLOADER,
-    SRV_CONTROL,
     CMD_ADVERTISEMENT_DATA,
-    CMD_GET_REG,
-    CMD_REG_MASK,
-    ControlReg,
     PACKET_REPORT,
 } from "./constants"
 import {
     assert,
     bufferConcat,
     bufferToString,
-    strcmp,
     readBlobToUint8Array,
 } from "./utils"
 import { jdpack, jdunpack } from "./pack"
 import { BootloaderError } from "./constants"
 import { prettySize } from "./pretty"
 import { Flags } from "./flags"
+import { isDualDeviceId } from "./spec"
 
 const BL_SUBPAGE_SIZE = 208
 const BL_RETRIES = 15
@@ -531,7 +527,11 @@ export async function flashFirmwareBlob(
             f => !!ignoreFirmwareCheck || f.dev_class == blob.productIdentifier
         )
         .filter(f =>
-            updateCandidates.find(uc => uc.deviceId === f.device.deviceId)
+            updateCandidates.find(
+                uc =>
+                    uc.deviceId === f.device.deviceId ||
+                    isDualDeviceId(uc.deviceId, f.device.deviceId)
+            )
         )
     if (!flashers.length) {
         log(`no devices to flash`)

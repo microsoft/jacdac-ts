@@ -38,11 +38,11 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         },
     ],
     [SRV_RELAY]: <ServiceTestRule[]>[
-        <IntensityTestRule>{
+        <ReadingTestRule>{
             type: "intensity",
             value: 0,
         },
-        <IntensityTestRule>{
+        <ReadingTestRule>{
             type: "intensity",
             value: 1,
         },

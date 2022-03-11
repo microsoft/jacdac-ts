@@ -3,7 +3,7 @@
 
 import { NumberFormat } from "./buffer"
 import serviceSpecificationData from "../../jacdac-spec/dist/services.json"
-import { fromHex, toHex } from "./utils"
+import { bufferEq, fromHex, toggleBit, toHex } from "./utils"
 import {
     SystemEvent,
     SystemReg,
@@ -545,4 +545,17 @@ export function parseDeviceId(id: string): Uint8Array {
     id = id.replace(/\s/g, "")
     if (id.length != 16 || !/^[a-f0-9]+$/i.test(id)) return undefined
     return fromHex(id)
+}
+
+/**
+ * Check if the left device identifier is a bootloader dual of the right identifier
+ * @param left
+ * @param right
+ * @returns
+ */
+export function isDualDeviceId(left: string, right: string) {
+    const lid = parseDeviceId(left)
+    const rid = parseDeviceId(right)
+    toggleBit(rid, 7)
+    return bufferEq(lid, rid)
 }
