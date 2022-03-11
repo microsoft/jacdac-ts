@@ -239,7 +239,10 @@ class FlashClient extends FirmwareUpdater {
                 )
                 // in first round, just broadcast everything
                 // in other rounds, broadcast everything except for last packet
-                if (i == 0 || currSubpage < numSubpage)
+                if (
+                    this.classClients.length > 1 &&
+                    (i == 0 || currSubpage < numSubpage)
+                )
                     await p.sendAsMultiCommandAsync(this.bus, SRV_BOOTLOADER)
                 else {
                     for (const f of this.classClients)
@@ -485,9 +488,22 @@ async function createFlashers(bus: JDBus) {
     try {
         bus.on(PACKET_REPORT, handlePkt)
         for (let i = 0; i < numTries; ++i) {
+            //if (bootloaderDeviceIds.length > 1) {
             // also ask BL services if any
             const bl_announce = Packet.onlyHeader(CMD_ADVERTISEMENT_DATA)
             await bl_announce.sendAsMultiCommandAsync(bus, SRV_BOOTLOADER)
+            await bus.delay(tryDelay)
+            // } else {
+            //     for (const id of bootloaderDeviceIds) {
+            //         const bl_announce = Packet.onlyHeader(
+            //             CMD_ADVERTISEMENT_DATA
+            //         )
+            //         bl_announce.serviceIndex = 1
+            //         bl_announce.deviceIdentifier = id
+            //         bl_announce.isCommand = true
+            //         await bus.sendPacketAsync(bl_announce)
+            //     }
+            // }
             await bus.delay(tryDelay)
         }
     } finally {
