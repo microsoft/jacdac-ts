@@ -73,12 +73,91 @@ function log(msg: string) {
 }
 
 export class FirmwareUpdater extends JDEventSource {
-    constructor() {
+    constructor(readonly bus: JDBus, readonly blob: FirmwareBlob) {
         super()
+    }
+
+    /**
+     * Flash firmware blob onto device
+     * @param bus
+     * @param blob
+     * @param updateCandidates
+     * @param ignoreFirmwareCheck
+     * @param progress
+     * @returns
+     * @category Firmware
+     */
+    async flash(
+        updateCandidates: FirmwareInfo[],
+        ignoreFirmwareCheck: boolean
+    ) {
+        if (!updateCandidates?.length) return
+        const { bus, blob } = this
+        _startTime = Date.now()
+        log(`resetting ${updateCandidates.length} device(s)`)
+        const bootloaderDeviceIds: string[] = []
+        for (const d of updateCandidates) {
+            const device = bus.device(d.deviceId, true)
+            if (!device) {
+                log("device not found")
+                return
+            }
+            if (!device.bootloader) {
+                log(`resetting ${device}`)
+                bootloaderDeviceIds.push(dualDeviceId(device.deviceId))
+                await device.sendCtrlCommand(ControlCmd.Reset)
+            } else {
+                bootloaderDeviceIds.push(device.deviceId)
+            }
+        }
+        const allFlashers = await createFlashers(this, bootloaderDeviceIds)
+        const flashers = allFlashers
+            .filter(
+                f =>
+                    !!ignoreFirmwareCheck ||
+                    f.dev_class == blob.productIdentifier
+            )
+            .filter(f =>
+                updateCandidates.find(
+                    uc =>
+                        uc.deviceId === f.device.deviceId ||
+                        isDualDeviceId(uc.deviceId, f.device.deviceId)
+                )
+            )
+        if (!flashers.length) {
+            log(`no devices to flash`)
+            return
+        }
+        if (flashers.length != updateCandidates.length) {
+            console.error(
+                `expected ${updateCandidates.length} flashers, got ${flashers.length}`
+            )
+            return
+        }
+        log(`flashing ${blob.name}`)
+        flashers[0].classClients = flashers
+        const unmounts: (() => void)[] = []
+        try {
+            flashers.forEach(f => {
+                f.device.firmwareUpdater = this
+                const dualDevice = bus.device(
+                    dualDeviceId(f.device.deviceId),
+                    true
+                )
+                if (dualDevice) dualDevice.firmwareUpdater = this
+                unmounts.push(() => {
+                    f.device.firmwareUpdater = undefined
+                    if (dualDevice) dualDevice.firmwareUpdater = undefined
+                })
+            })
+            await flashers[0].flashFirmwareBlob(blob)
+        } finally {
+            unmounts.forEach(u => u())
+        }
     }
 }
 
-class FlashClient extends FirmwareUpdater {
+class FlashClient {
     private pageSize: number
     private flashSize: number
     private sessionId: number
@@ -91,14 +170,17 @@ class FlashClient extends FirmwareUpdater {
     private progressTotal: number
     private progressIndex: number
 
-    constructor(private readonly bus: JDBus, adpkt: Packet) {
-        super()
+    constructor(readonly updater: FirmwareUpdater, adpkt: Packet) {
         const d = bufferToArray(adpkt.data, NumberFormat.UInt32LE)
         this.pageSize = d[1]
         this.flashSize = d[2]
         this.dev_class = d[3]
         this.device = adpkt.device
         this.handlePacket = this.handlePacket.bind(this)
+    }
+
+    get bus() {
+        return this.updater.bus
     }
 
     get progress() {
@@ -301,11 +383,11 @@ class FlashClient extends FirmwareUpdater {
         this.progressTotal = fw.pages.length + waitCycles + 3
         this.progressIndex = 0
         const prog = () => {
-            this.emit(PROGRESS, this.progress)
+            this.updater.emit(PROGRESS, this.progress)
             this.progressIndex++
         }
         try {
-            this.emit(CHANGE)
+            this.updater.emit(CHANGE)
             prog()
             await this.startFlashAsync()
             prog()
@@ -329,7 +411,7 @@ class FlashClient extends FirmwareUpdater {
                     d.stop()
                 }
             }
-            this.emit(CHANGE)
+            this.updater.emit(CHANGE)
         }
     }
 }
@@ -465,7 +547,11 @@ export async function parseFirmwareFile(
     return uf2Blobs
 }
 
-async function createFlashers(bus: JDBus, bootloaderDeviceIds?: string[]) {
+async function createFlashers(
+    updater: FirmwareUpdater,
+    bootloaderDeviceIds?: string[]
+) {
+    const bus = updater.bus
     const flashers: FlashClient[] = []
     const numTries = 10
     const tryDelay = 10
@@ -480,7 +566,7 @@ async function createFlashers(bus: JDBus, bootloaderDeviceIds?: string[]) {
         ) {
             if (!flashers.find(f => f.device.deviceId == p.deviceIdentifier)) {
                 log(`new flasher`)
-                flashers.push(new FlashClient(bus, p))
+                flashers.push(new FlashClient(updater, p))
             }
         }
     }
@@ -526,87 +612,6 @@ export function updateApplicable(dev: FirmwareInfo, blob: FirmwareBlob) {
         dev.bootloaderProductIdentifier == blob.productIdentifier &&
         dev.version !== blob.version
     )
-}
-
-/**
- * Flash firmware blob onto device
- * @param bus
- * @param blob
- * @param updateCandidates
- * @param ignoreFirmwareCheck
- * @param progress
- * @returns
- * @category Firmware
- */
-export async function flashFirmwareBlob(
-    bus: JDBus,
-    blob: FirmwareBlob,
-    updateCandidates: FirmwareInfo[],
-    ignoreFirmwareCheck: boolean
-) {
-    if (!updateCandidates?.length) return
-
-    _startTime = Date.now()
-    log(`resetting ${updateCandidates.length} device(s)`)
-    const bootloaderDeviceIds: string[] = []
-    for (const d of updateCandidates) {
-        const device = bus.device(d.deviceId, true)
-        if (!device) {
-            log("device not found")
-            return
-        }
-        if (!device.bootloader) {
-            log(`resetting ${device}`)
-            bootloaderDeviceIds.push(dualDeviceId(device.deviceId))
-            await device.sendCtrlCommand(ControlCmd.Reset)
-        } else {
-            bootloaderDeviceIds.push(device.deviceId)
-        }
-    }
-    const allFlashers = await createFlashers(bus, bootloaderDeviceIds)
-    const flashers = allFlashers
-        .filter(
-            f => !!ignoreFirmwareCheck || f.dev_class == blob.productIdentifier
-        )
-        .filter(f =>
-            updateCandidates.find(
-                uc =>
-                    uc.deviceId === f.device.deviceId ||
-                    isDualDeviceId(uc.deviceId, f.device.deviceId)
-            )
-        )
-    if (!flashers.length) {
-        log(`no devices to flash`)
-        return
-    }
-    if (flashers.length != updateCandidates.length) {
-        console.error(
-            `expected ${updateCandidates.length} flashers, got ${flashers.length}`
-        )
-        return
-    }
-    if (flashers.some(f => f.device.firmwareUpdater)) {
-        console.error(`some devices are flashing`)
-        return
-    }
-
-    log(`flashing ${blob.name}`)
-    flashers[0].classClients = flashers
-    const unmounts: (() => void)[] = []
-    try {
-        flashers.forEach(f => {
-            f.device.firmwareUpdater = f
-            const dualDevice = bus.device(dualDeviceId(f.device.deviceId), true)
-            if (dualDevice) dualDevice.firmwareUpdater = f
-            unmounts.push(() => {
-                f.device.firmwareUpdater = undefined
-                if (dualDevice) dualDevice.firmwareUpdater = undefined
-            })
-        })
-        await flashers[0].flashFirmwareBlob(blob)
-    } finally {
-        unmounts.forEach(u => u())
-    }
 }
 
 /**

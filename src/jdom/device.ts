@@ -522,6 +522,13 @@ export class JDDevice extends JDNode {
     set firmwareUpdater(value: FirmwareUpdater) {
         if (value !== this._firmwareUpdater) {
             this._firmwareUpdater = value
+            if (!this._firmwareUpdater) {
+                // clear firmware info
+                const reg = this.service(0)?.register(
+                    ControlReg.FirmwareVersion
+                )
+                reg?.clearData()
+            }
             this.emit(CHANGE)
             this.bus.emit(DEVICE_CHANGE, this)
             this.bus.emit(CHANGE)

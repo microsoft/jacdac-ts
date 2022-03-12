@@ -42,6 +42,18 @@ export class JDRegister extends JDServiceMemberNode {
     }
 
     /**
+     * Clears all cached data from the register
+     */
+    clearData() {
+        this._lastReportPkt = undefined
+        this._lastGetTimestamp = -Infinity
+        this._lastGetAttempts = 0
+        this.emit(REPORT_RECEIVE, this)
+        this.emitPropagated(REPORT_UPDATE, this)
+        this.emit(CHANGE)
+    }
+
+    /**
      * Returns ``REGISTER_NODE_NAME``
      * @category JDOM
      */
