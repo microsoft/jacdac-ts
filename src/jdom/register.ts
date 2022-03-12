@@ -211,7 +211,12 @@ export class JDRegister extends JDServiceMemberNode {
     get unpackedValue(): PackedValues {
         const d = this.data
         const fmt = this.specification?.packFormat
-        return d && fmt && jdunpack(this.data, fmt)
+        try {
+            return d && fmt && jdunpack(this.data, fmt)
+        } catch (e) {
+            console.error(e)
+            return undefined
+        }
     }
 
     /**
