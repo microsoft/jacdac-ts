@@ -54,6 +54,7 @@ import {
     REGISTER_POLL_REPORT_VOLATILE_INTERVAL,
     SRV_INFRASTRUCTURE,
     CONNECTION_STATE,
+    PACKET_RECEIVE_NO_DEVICE,
 } from "./constants"
 import { serviceClass } from "./pretty"
 import { JDNode } from "./node"
@@ -1008,7 +1009,7 @@ ${dev
         pkt?: Packet
     ): JDDevice | undefined {
         if (id === "0000000000000000" && !skipCreate) {
-            console.warn("jadac: trying to access device 0000000000000000")
+            console.warn("jacdac: trying to access device 0000000000000000")
             return undefined
         }
         let d = this._devices.find(d => d.deviceId == id)
@@ -1104,6 +1105,7 @@ ${dev
                 console.debug(`unknown pkt device ${pkt.deviceIdentifier}`, {
                     pkt,
                 })
+            this.emit(PACKET_RECEIVE_NO_DEVICE, pkt)
             return
         }
         this.emit(PACKET_PRE_PROCESS, pkt)

@@ -738,6 +738,8 @@ export class JDDevice extends JDNode {
         // notify that services got updated
         if (servicesChanged) {
             this.initServices(true)
+            // make sure pkt.isRepeatedAnnounce is correct - important during reply
+            this.lastServiceUpdate = pkt.timestamp
             this.bus.emit(DEVICE_ANNOUNCE, this)
             this.emit(ANNOUNCE)
         }
