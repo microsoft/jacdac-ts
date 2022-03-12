@@ -224,13 +224,18 @@ export function jdunpack<T extends PackedValues>(
     // hot path for buffers
     if (fmt === "b") return [buf.slice(0)] as T
     // hot path
-    const nf = numberFormatOfType(fmt)
+    let nf = numberFormatOfType(fmt)
     if (nf !== null) {
-        const sz = sizeOfNumberFormat(nf)
-        if (buf.length < sz)
+        let sz = sizeOfNumberFormat(nf)
+        if (buf.length === 4 && nf === NumberFormat.UInt64LE) {
+            nf = NumberFormat.UInt32LE
+            sz = 4
+        }
+        if (buf.length < sz) {
             throw new Error(
                 `size mistmatch, expected ${fmt} (${sz} bytes), got ${buf.length}`
             )
+        }
         return [getNumber(buf, nf, 0)] as T
     }
     // slow path

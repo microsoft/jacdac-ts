@@ -30,7 +30,8 @@ export function cleanStack(text: string) {
 
 export function serializeToTrace(pkt: Packet, start?: number) {
     const data = toHex(pkt.toBuffer()).padEnd(84, " ")
-    const t = roundWithPrecision(pkt.timestamp - (start || 0), 3)
+    let t = roundWithPrecision(pkt.timestamp - (start || 0), 3).toString()
+    while (t.length < 7) t += " "
     const descr =
         pkt.meta[META_TRACE_DESCRIPTION] ||
         printPacket(pkt, {}).replace(/\r?\n/g, " ")
@@ -145,8 +146,8 @@ export class Trace {
     }
 
     resolveDevices(bus: JDBus) {
-        this.packets.filter(pkt => !pkt.device)
-            .forEach(pkt => pkt.assignDevice(bus));
+        this.packets
+            .filter(pkt => !pkt.device)
+            .forEach(pkt => pkt.assignDevice(bus))
     }
 }
-
