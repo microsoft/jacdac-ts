@@ -691,6 +691,8 @@ export function printPacket(
                 "; Announce services: " +
                 pkt.device.serviceClasses.map(serviceName).join(", ")
         }
+    } else if (pkt.isRepeatedEvent) {
+        pdesc = ` ------ ${pdesc} EVENT[${pkt.eventCounter}]`
     } else {
         const decoded = pkt.decoded
         if (decoded) {
