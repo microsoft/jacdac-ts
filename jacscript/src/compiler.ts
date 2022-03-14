@@ -2656,6 +2656,8 @@ class Program implements InstrArgResolver {
             s.finalize(off)
             off += s.size
         }
+        const mask = BinFmt.BinarySizeAlign - 1
+        off = (off + mask) & ~mask
         const outp = new Uint8Array(off)
 
         // shift offsets from strData-local to global
@@ -2674,7 +2676,9 @@ class Program implements InstrArgResolver {
                 off += d.length
             }
         }
-        assert(off == outp.length)
+
+        const left = outp.length - off
+        assert(0 <= left && left < BinFmt.BinarySizeAlign)
 
         return outp
     }

@@ -5,6 +5,7 @@ export enum BinFmt {
     SectionHeaderSize = 8,
     FunctionHeaderSize = 16,
     RoleHeaderSize = 8,
+    BinarySizeAlign = 32,
 }
 
 export interface SMap<T> {
