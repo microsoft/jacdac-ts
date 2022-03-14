@@ -111,7 +111,9 @@ export abstract class JDBridge extends JDClient {
 }
 
 class ProxyBridge extends JDBridge {
-    constructor(readonly _sendPacket: (pkt: Uint8Array, sender: string) => void) {
+    constructor(
+        readonly _sendPacket: (pkt: Uint8Array, sender: string) => void
+    ) {
         super(true)
     }
     protected sendPacket(data: Uint8Array, sender: string): void {
@@ -119,6 +121,8 @@ class ProxyBridge extends JDBridge {
     }
 }
 
-export function createProxyBridge(sendPacket: (pkt: Uint8Array, sender: string) => void) {
+export function createProxyBridge(
+    sendPacket: (pkt: Uint8Array, sender: string) => void
+) {
     return new ProxyBridge(sendPacket)
 }
