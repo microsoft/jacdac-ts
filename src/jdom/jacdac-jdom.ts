@@ -1,5 +1,6 @@
 export * from "./constants"
 export * from "../../jacdac-spec/spectool/jdspec"
+export * from "./random"
 export * from "./utils"
 export * from "./buffer"
 export * from "./observable"

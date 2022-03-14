@@ -20,12 +20,12 @@ class IFrameBridge extends JDBridge {
         }
     }
 
-    protected sendPacket(data: Uint8Array): void {
+    protected sendPacket(data: Uint8Array, sender: string): void {
         const msg = {
             type: "messagepacket",
             channel: "jacdac",
             data,
-            sender: this.bridgeId,
+            sender,
             broadcast: true,
         }
         window.parent.postMessage(msg, this.targetOrigin)

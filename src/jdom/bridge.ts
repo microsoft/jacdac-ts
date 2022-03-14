@@ -100,25 +100,25 @@ export abstract class JDBridge extends JDClient {
     private handleSendPacket(pkt: Packet) {
         if (!this._bus || pkt.sender === this.bridgeId) return
         this.packetSent++
-        this.sendPacket(pkt.toBuffer())
+        this.sendPacket(pkt.toBuffer(), pkt.sender)
     }
 
     /**
      * Sends packet data over the bridge
      * @param pkt
      */
-    protected abstract sendPacket(data: Uint8Array): void
+    protected abstract sendPacket(data: Uint8Array, sender: string): void
 }
 
 class ProxyBridge extends JDBridge {
-    constructor(readonly _sendPacket: (pkt: Uint8Array) => void) {
+    constructor(readonly _sendPacket: (pkt: Uint8Array, sender: string) => void) {
         super(true)
     }
-    protected sendPacket(data: Uint8Array): void {
-        this._sendPacket(data)
+    protected sendPacket(data: Uint8Array, sender: string): void {
+        this._sendPacket(data, sender)
     }
 }
 
-export function createProxyBridge(sendPacket: (pkt: Uint8Array) => void) {
+export function createProxyBridge(sendPacket: (pkt: Uint8Array, sender: string) => void) {
     return new ProxyBridge(sendPacket)
 }
