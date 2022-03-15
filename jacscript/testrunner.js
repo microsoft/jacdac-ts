@@ -7,6 +7,7 @@ const samples = "samples"
 const rtest = "run-tests"
 const distPath = "dist"
 let verbose = false
+let deploy = false
 let bus = null
 
 function runProgram(fn, real) {
@@ -28,6 +29,10 @@ function runProgram(fn, real) {
     if (!res.success) process.exit(1)
 
     if (!bus) bus = jacscript.nodeBus()
+
+    if (deploy) {
+        return jacscript.deployBytecode(bus, res.binary)
+    }
 
     return new Promise(resolve => {
         const r = new jacscript.Runner(bus, res.binary, res.dbg)
@@ -57,6 +62,11 @@ async function main() {
     if (args[0] == "-v") {
         args.shift()
         verbose = true
+    }
+
+    if (args[0] == "-d") {
+        args.shift()
+        deploy = true
     }
 
     try {
