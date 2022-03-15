@@ -13,8 +13,9 @@ import { Packet } from "./packet"
 import { JDBus } from "./bus"
 import { signal, fromHex, throwError, toHex } from "./utils"
 import { JDClient } from "./client"
-import { jdpack } from "./pack"
+import { jdpack, jdunpack } from "./pack"
 import { randomUInt } from "./random"
+import { JDService } from "./service"
 
 const { warn } = console
 
@@ -93,6 +94,38 @@ export class OutPipe {
     async close() {
         await this.sendData(new Uint8Array(0), PIPE_CLOSE_MASK)
         this.free()
+    }
+
+    static async sendBytes(
+        service: JDService,
+        cmd: number,
+        data: Uint8Array,
+        onProgress?: (p: number) => void
+    ): Promise<void> {
+        const { device } = service
+
+        onProgress?.(0)
+        const resp = await service.sendCmdAwaitResponseAsync(
+            Packet.jdpacked(cmd, "u32", [data.length]),
+            3000
+        )
+        onProgress?.(0.05)
+        const [pipePort] = jdunpack<[number]>(resp.data, "u16")
+        if (!pipePort) throw new Error("wrong port " + pipePort)
+
+        const pipe = new OutPipe(device, pipePort)
+        const chunkSize = 224 // has to be divisible by 8
+        for (let i = 0; i < data.length; i += chunkSize) {
+            await pipe.send(data.slice(i, i + chunkSize))
+            onProgress?.(0.05 + (i / data.length) * 0.9)
+        }
+        try {
+            await pipe.close()
+        } catch (e) {
+            // the device may restart before we manage to close
+            console.debug(e)
+        }
+        onProgress?.(1)
     }
 }
 

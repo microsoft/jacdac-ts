@@ -78,26 +78,7 @@ export class ModelRunnerClient extends JDServiceClient {
     }
 
     async deployModel(model: Uint8Array, onProgress?: (p: number) => void) {
-        onProgress?.(0)
-        const resp = await this.service.sendCmdAwaitResponseAsync(
-            Packet.jdpacked(ModelRunnerCmd.SetModel, "u32", [model.length]),
-            3000
-        )
-        onProgress?.(0.05)
-        const [pipePort] = jdunpack<[number]>(resp.data, "u16")
-        if (!pipePort) throw new Error("wrong port " + pipePort)
-        const pipe = new OutPipe(this.service.device, pipePort)
-        const chunkSize = 224 // has to be divisible by 8
-        for (let i = 0; i < model.length; i += chunkSize) {
-            await pipe.send(model.slice(i, i + chunkSize))
-            onProgress?.(0.05 + (i / model.length) * 0.9)
-        }
-        try {
-            await pipe.close()
-        } catch {
-            // the device may restart before we manage to close
-        }
-        onProgress?.(1)
+        return OutPipe.sendBytes(this.service, ModelRunnerCmd.SetModel, model, onProgress)
     }
 
     async autoInvoke(everySamples = 1) {
