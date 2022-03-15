@@ -19,7 +19,14 @@ export function nodeBus() {
     return bus
 }
 
-export async function deployBytecode(bus: JDBus, bytecode: Uint8Array) {
+export async function deployBytecode(
+    bus: JDBus,
+    bytecode: Uint8Array,
+    options?: {
+        once?: boolean
+        logging?: boolean
+    }
+) {
     for (let i = 0; i < 10; ++i) {
         const devs = bus.devices({ serviceClass: SRV_JACSCRIPT_MANAGER })
         if (devs.length > 0) {
@@ -27,12 +34,13 @@ export async function deployBytecode(bus: JDBus, bytecode: Uint8Array) {
                 for (const serv of d.services({
                     serviceClass: SRV_JACSCRIPT_MANAGER,
                 })) {
-                    await new JacscriptManagerClient(serv).deployBytecode(
-                        bytecode,
-                        p => {
-                            console.log(`deploy to ${d.shortId}; ${p}`)
-                        }
-                    )
+                    const client = new JacscriptManagerClient(serv)
+                    await client.setAutoStart(!options?.once)
+                    await client.setLogging(!!options?.logging)
+                    await client.deployBytecode(bytecode, p => {
+                        console.log(`deploy to ${d.shortId}; ${p}`)
+                    })
+                    if (options?.once) await client.setRunning(true)
                 }
             }
             return

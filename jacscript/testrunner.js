@@ -31,7 +31,7 @@ function runProgram(fn, real) {
     if (!bus) bus = jacscript.nodeBus()
 
     if (deploy) {
-        return jacscript.deployBytecode(bus, res.binary)
+        return jacscript.deployBytecode(bus, res.binary, { once: true, logging: true })
     }
 
     return new Promise(resolve => {
