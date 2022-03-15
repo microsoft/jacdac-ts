@@ -721,7 +721,7 @@ export class JDDevice extends JDNode {
                 (w0 & JD_ADVERTISEMENT_0_COUNTER_MASK)
 
         // compare service data
-        const servicesChanged = !bufferEq(pkt.data, this._servicesData, 4)
+        let servicesChanged = !bufferEq(pkt.data, this._servicesData, 4)
         this._servicesData = pkt.data
 
         // check for restart
@@ -730,9 +730,11 @@ export class JDDevice extends JDNode {
             this.bus.emit(DEVICE_RESTART, this)
             this.emit(RESTART)
 
-            // refresh control if restarted
-            // but services did not change
-            if (!servicesChanged) this.refreshFirmwareInfo()
+            // always re-compute services on device restart - eg., const registers might have changed
+            servicesChanged = true
+
+            // In fact the spec says that the service can *only* change on device restart,
+            // but we are more lenient here.
         }
 
         // notify that services got updated
