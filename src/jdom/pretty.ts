@@ -629,7 +629,7 @@ export function toAscii(d: ArrayLike<number>) {
     let r = ""
     for (let i = 0; i < d.length; ++i) {
         const c = d[i]
-        if (c < 32 || c >= 128) r += "."
+        if (c < 32 || c >= 127) r += "."
         else r += String.fromCharCode(c)
     }
     return r
