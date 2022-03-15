@@ -71,7 +71,7 @@ export function parseLogicLog(logcontents: string): Frame[] {
         }
 
         // this is format of trace.jd.txt file saved from website
-        m = /^([\d\.]+)\t([0-9a-f]{32,512})/i.exec(ln)
+        m = /^([\d\.]+)\s+([0-9a-f]{32,512})\s+/i.exec(ln)
         if (m) {
             res.push({
                 timestamp: parseFloat(m[1]) | 0,
