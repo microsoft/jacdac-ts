@@ -11,7 +11,7 @@ import {
 } from "./constants"
 import { Packet } from "./packet"
 import { JDBus } from "./bus"
-import { signal, fromHex, throwError, toHex } from "./utils"
+import { signal, fromHex, throwError, toHex, assert } from "./utils"
 import { JDClient } from "./client"
 import { jdpack, jdunpack } from "./pack"
 import { randomUInt } from "./random"
@@ -220,6 +220,19 @@ export class InPipeReader extends InPipe {
     async readData(timeout = 500): Promise<Uint8Array[]> {
         const r = await this.readAll(timeout)
         return r.output.map(p => p.data).filter(b => !!b?.length)
+    }
+
+    async readBytes(timeout = 500): Promise<Uint8Array> {
+        const data = await this.readData(timeout)
+        const n = data.reduce((n, b) => n + b.length, 0)
+        const res = new Uint8Array(n)
+        let i = 0
+        data.forEach(d => {
+            res.set(d, i)
+            i += d.length
+        })
+        assert(i === n)
+        return res
     }
 
     async readAll(timeout = 500) {
