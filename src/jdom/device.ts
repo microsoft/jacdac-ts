@@ -733,6 +733,8 @@ export class JDDevice extends JDNode {
             // always re-compute services on device restart - eg., const registers might have changed
             servicesChanged = true
 
+            this._eventCounter = undefined
+
             // In fact the spec says that the service can *only* change on device restart,
             // but we are more lenient here.
         }
@@ -760,6 +762,12 @@ export class JDDevice extends JDNode {
 
     private markRepeatedEvent(pkt: Packet) {
         if (!pkt.isEvent || !pkt.isReport) return
+
+        // is it first event we get?
+        if (this.eventCounter === undefined) {
+            this.eventCounter = pkt.eventCounter
+            return
+        }
 
         const ec = (this.eventCounter || 0) + 1
         // how many packets ahead and behind current are we?
