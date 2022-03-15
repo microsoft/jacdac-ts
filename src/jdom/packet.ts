@@ -474,15 +474,6 @@ export class Packet {
                 pkt => pkt.kind === "event" && pkt.identifier === code
             )
             cmdname = pkt?.name
-        } else if (this.isReport) {
-            const spec = serviceSpecificationFromClassIdentifier(
-                this.serviceClass
-            )
-            const code = this.serviceCommand & ~CMD_GET_REG
-            const pkt = spec?.packets.find(
-                pkt => pkt.kind === "report" && pkt.identifier === code
-            )
-            cmdname = pkt?.name
         } else {
             cmdname = commandName(cmd, this.serviceClass)
         }

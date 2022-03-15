@@ -609,7 +609,9 @@ export function commandName(n: number, serviceClass?: number): string {
         const serviceSpec =
             serviceSpecificationFromClassIdentifier(serviceClass)
         r = serviceSpec?.packets.find(
-            pkt => pkt.kind === "command" && pkt.identifier === n
+            pkt =>
+                (pkt.kind === "command" || pkt.kind === "report") &&
+                pkt.identifier === n
         )?.name
     }
     return r
