@@ -86,6 +86,7 @@ import {
     WifiAPFlags,
     LedDisplayVariant,
     SRV_LED_DISPLAY,
+    SRV_POWER_SUPPLY,
 } from "../jdom/constants"
 import { JDServerServiceProvider } from "../jdom/servers/serverserviceprovider"
 import { ProtocolTestServer } from "../jdom/servers/protocoltestserver"
@@ -135,6 +136,7 @@ import { AccelerometerServer } from "./accelerometerserver"
 import { BrailleDisplayServer } from "./brailledisplayserver"
 import { Flags } from "../jdom/flags"
 import { LedDisplayServer } from "./leddisplayserver"
+import { PowerSupplyServer } from "./powersupplyserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "indoor",
@@ -1051,6 +1053,17 @@ function initProviders() {
                     new SensorServer<[number]>(SRV_PULSE_OXIMETER, {
                         readingValues: [98],
                         streamingInterval: 1000,
+                    }),
+                ],
+            },
+            {
+                name: "power supply (5v)",
+                serviceClasses: [SRV_POWER_SUPPLY],
+                services: () => [
+                    new PowerSupplyServer({
+                        outputVoltage: 1000,
+                        minVoltage: 0,
+                        maxVoltage: 5000,
                     }),
                 ],
             },
