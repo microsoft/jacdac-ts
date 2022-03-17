@@ -718,3 +718,11 @@ export function toggleBit(data: Uint8Array, bitindex: number) {
     // save
     data[bitindex >> 3] = byte
 }
+
+export function parseIdentifier(value: number | string) {
+    if (typeof value === "string" && /^0x[0-9a-f]+$/i.test(value as string)) {
+        return parseInt(value, 16)
+    } else if (typeof value === "string" && /^[0-9]+$/i.test(value as string))
+        return parseInt(value)
+    return Number(value)
+}

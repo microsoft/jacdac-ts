@@ -14,7 +14,7 @@ import {
     serviceSpecificationFromClassIdentifier,
     serviceSpecificationFromName,
 } from "../jdom/spec"
-import { JSONTryParse } from "../jdom/utils"
+import { JSONTryParse, parseIdentifier } from "../jdom/utils"
 import {
     DeviceTest,
     EventTest,
@@ -160,14 +160,6 @@ function compileTestRule(
         default:
             return undefined
     }
-}
-
-function parseIdentifier(value: number | string) {
-    if (typeof value === "string" && /^0x[0-9a-f]+$/i.test(value as string)) {
-        return parseInt(value, 16)
-    } else if (typeof value === "string" && /^[0-9]+$/i.test(value as string))
-        return parseInt(value)
-    return Number(value)
 }
 
 export function tryParsePanelTestSpec(source: string) {
