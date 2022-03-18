@@ -1,14 +1,17 @@
 import { fnv1 } from "../jdom/utils"
 import {
     CHANGE,
+    JacscriptManagerCmd,
     JacscriptManagerEvent,
     JacscriptManagerReg,
     SRV_JACSCRIPT_MANAGER,
 } from "../jdom/constants"
 import { JDRegisterServer } from "../jdom/servers/registerserver"
 import { JDServiceServer } from "../jdom/servers/serviceserver"
+import { OutPipe } from "../jdom/pipes"
+import { Packet } from "../jdom/packet"
 
-export abstract class JacscriptManagerServer extends JDServiceServer {
+export class JacscriptManagerServer extends JDServiceServer {
     readonly running: JDRegisterServer<[boolean]>
     readonly autoStart: JDRegisterServer<[boolean]>
     readonly logging: JDRegisterServer<[boolean]>
@@ -29,6 +32,15 @@ export abstract class JacscriptManagerServer extends JDServiceServer {
         this.programHash = this.addRegister(JacscriptManagerReg.ProgramHash, [
             fnv1(this._bytecode),
         ])
+
+        this.addCommand(
+            JacscriptManagerCmd.DeployBytecode,
+            this.handleDeployBytecode.bind(this)
+        )
+        this.addCommand(
+            JacscriptManagerCmd.ReadBytecode,
+            this.handleReadBytecode.bind(this)
+        )
     }
 
     get bytecode() {
@@ -36,6 +48,7 @@ export abstract class JacscriptManagerServer extends JDServiceServer {
     }
 
     set bytecode(value: Uint8Array) {
+        value = value || new Uint8Array(0)
         const [hash] = this.programHash.values()
         const valueHash = fnv1(value)
 
@@ -46,5 +59,15 @@ export abstract class JacscriptManagerServer extends JDServiceServer {
             this.emit(CHANGE)
             this.sendEvent(JacscriptManagerEvent.ProgramChange)
         }
+    }
+
+    private handleDeployBytecode(pkt: Packet) {
+        // TODO
+    }
+
+    private async handleReadBytecode(pkt: Packet) {
+        const pipe = OutPipe.from(this.device.bus, pkt, true)
+        await pipe.sendBytes(this._bytecode)
+        await pipe.close()
     }
 }

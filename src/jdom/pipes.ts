@@ -96,6 +96,13 @@ export class OutPipe {
         this.free()
     }
 
+    async sendBytes(data: Uint8Array) {
+        const chunkSize = 224 // has to be divisible by 8
+        for (let i = 0; i < data.length; i += chunkSize) {
+            await this.send(data.slice(i, i + chunkSize))
+        }
+    }
+
     static async sendBytes(
         service: JDService,
         cmd: number,
