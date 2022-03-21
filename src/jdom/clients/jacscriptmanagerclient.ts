@@ -3,7 +3,9 @@ import {
     EVENT,
     JacscriptManagerCmd,
     JacscriptManagerEvent,
+    JacscriptManagerReg,
 } from "../constants"
+import { jdpack } from "../pack"
 import { OutPipe } from "../pipes"
 import { JDService } from "../service"
 import { JDServiceClient } from "../serviceclient"
@@ -42,5 +44,20 @@ export class JacscriptManagerClient extends JDServiceClient {
             bytecode,
             onProgress
         )
+    }
+
+    async setRunning(value: boolean) {
+        const reg = this.service.register(JacscriptManagerReg.Running)
+        await reg.sendSetAsync(jdpack("u8", [value ? 1 : 0]))
+    }
+
+    async setAutoStart(value: boolean) {
+        const reg = this.service.register(JacscriptManagerReg.Autostart)
+        await reg.sendSetAsync(jdpack("u8", [value ? 1 : 0]))
+    }
+
+    async setLogging(value: boolean) {
+        const reg = this.service.register(JacscriptManagerReg.Logging)
+        await reg.sendSetAsync(jdpack("u8", [value ? 1 : 0]))
     }
 }

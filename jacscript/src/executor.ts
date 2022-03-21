@@ -1080,10 +1080,11 @@ class Ctx {
     panic(code: number, exn?: Error) {
         if (!code) code = RESTART_PANIC_CODE
         if (!this.panicCode) {
-            if (code == RESTART_PANIC_CODE) console.error(`RESTART requested`)
+            if (code == RESTART_PANIC_CODE)
+                console.debug(`jdvm: RESTART requested`)
             else if (code == INTERNAL_ERROR_PANIC_CODE)
-                console.error(`INTERNAL ERROR`)
-            else console.error(`PANIC ${code}`)
+                console.error(`jdvm: INTERNAL ERROR`)
+            else console.error(`jdvm: PANIC ${code}`)
             this.panicCode = code
         }
         this.clearWakeTimer()
@@ -1384,7 +1385,11 @@ export class Runner extends JDEventSource {
             this.ctx = undefined
             // the ctx.panic(0) will not call onPanic() handler, so we stop ourselves here
             this.state = RunnerState.Stopped
-            ctx.panic(0)
+            try {
+                ctx.panic(0)
+            } catch (e) {
+                //console.debug(e)
+            }
         }
         const env = this.env
         if (env) {
