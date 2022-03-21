@@ -63,7 +63,7 @@ export class JDBusJacsEnv extends JDClient implements JacsEnv {
     }
 
     send(pkt: Packet): void {
-        console.log(new Date(), "SEND", printPacket(pkt))
+        //console.log(new Date(), "SEND", printPacket(pkt))
         pkt = pkt.clone()
         this.bus.sendPacketAsync(pkt)
     }
