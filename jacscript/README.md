@@ -1,4 +1,4 @@
-# JacScript
+# Jacscript
 
 ## Design goals for Jacscript VM
 

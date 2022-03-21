@@ -8,12 +8,12 @@ import { VMBase, VMCommand, VMHandler, VMIfThenElse, VMProgram } from "./ir"
 // - insert read() after register in a read context
 // - write a register with fields
 
-export interface JacScriptProgram {
+export interface JacscriptProgram {
     program: string[]
     debug: string[]
 }
 
-export function toJacScript(p: VMProgram): JacScriptProgram {
+export function toJacscript(p: VMProgram): JacscriptProgram {
     if (!p) return null
     const { roles, serverRoles, handlers } = p
     if (serverRoles?.length) throwError("server roles not supported")

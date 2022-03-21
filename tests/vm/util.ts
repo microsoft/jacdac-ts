@@ -2,7 +2,7 @@ import { JDBus } from "../../src/jdom/bus"
 import { compile } from "../../jacscript/src/compiler"
 import { Runner } from "../../jacscript/src/executor"
 
-export function runJacScriptProgram(fn: string, bus: JDBus, delay: number = undefined) {
+export function runJacscriptProgram(fn: string, bus: JDBus, delay: number = undefined) {
     const res = compile(
         {
             write: (fn, cont) => {},

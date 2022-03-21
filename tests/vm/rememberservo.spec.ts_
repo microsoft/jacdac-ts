@@ -12,14 +12,14 @@ import { bindRoles } from "./vmtester"
 import { FastForwardTester } from "../jdom/fastforwardtester"
 import { RegisterTester } from "../../src/tstester/registerwrapper"
 import { ServoReg } from "../../jacdac-spec/dist/specconstants"
-import { runJacScriptProgram } from "./util"
+import { runJacscriptProgram } from "./util"
 
 suite("remember servo", () => {
     const program: VMProgram = JSON.parse(
         readFileSync("vm/suites/rememberservo.json", "utf8")
     )
 
-    const jacscript = toJacScript(program)
+    const jacscript = toJacscript(program)
     const output = jacscript.program.join("\n")
 
     function makeVmTest(
@@ -52,7 +52,7 @@ suite("remember servo", () => {
                 servo.service.register(ServoReg.Angle)
             )
 
-            await runJacScriptProgram(output, tester.bus)
+            await runJacscriptProgram(output, tester.bus)
             // await tester.scheduler.runForDelay(1)
 
             await testBody(

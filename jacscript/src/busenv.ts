@@ -37,8 +37,8 @@ export class JDBusJacsEnv extends JDClient implements JacsEnv {
         this.mount(this.bus.subscribe(DEVICE_CONNECT, (dev: JDDevice) => this.onConnect?.(dev)))
         this.mount(this.bus.subscribe(PACKET_PROCESS, (pkt: Packet) => this.onPacket?.(pkt)))
 
-        const jacScriptServiceProvider = addServiceProvider(this.bus, {
-            name: "JacScript Helper",
+        const jacscriptServiceProvider = addServiceProvider(this.bus, {
+            name: "Jacscript Helper",
             serviceClasses: [SRV_ROLE_MANAGER],
             services: () => {
                 const roleServer = new RoleManagerServer(
@@ -59,7 +59,7 @@ export class JDBusJacsEnv extends JDClient implements JacsEnv {
                 }
             },
         })
-        this.mount(() => this.bus.removeServiceProvider(jacScriptServiceProvider))
+        this.mount(() => this.bus.removeServiceProvider(jacscriptServiceProvider))
     }
 
     send(pkt: Packet): void {
