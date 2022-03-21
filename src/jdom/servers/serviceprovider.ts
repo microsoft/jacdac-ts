@@ -1,5 +1,10 @@
 import { JDBus } from "../bus"
-import { PACKET_PROCESS, PACKET_SEND, SELF_ANNOUNCE } from "../constants"
+import {
+    CHANGE,
+    PACKET_PROCESS,
+    PACKET_SEND,
+    SELF_ANNOUNCE,
+} from "../constants"
 import { JDEventSource } from "../eventsource"
 import { Packet } from "../packet"
 import { shortDeviceId } from "../pretty"
@@ -35,6 +40,7 @@ export abstract class JDServiceProvider extends JDEventSource {
             this.stop()
             this._bus = value
             if (this._bus) this.start()
+            this.emit(CHANGE)
         }
     }
 
@@ -58,4 +64,3 @@ export abstract class JDServiceProvider extends JDEventSource {
     protected handleSelfAnnounce(): void {}
     protected abstract handlePacket(pkt: Packet): void
 }
-

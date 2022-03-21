@@ -3,9 +3,7 @@ import {
     EVENT,
     JacscriptManagerCmd,
     JacscriptManagerEvent,
-    JacscriptManagerReg,
 } from "../constants"
-import { jdpack } from "../pack"
 import { OutPipe } from "../pipes"
 import { JDService } from "../service"
 import { JDServiceClient } from "../serviceclient"
@@ -44,45 +42,5 @@ export class JacscriptManagerClient extends JDServiceClient {
             bytecode,
             onProgress
         )
-    }
-
-    get running() {
-        const reg = this.service.register(JacscriptManagerReg.Running)
-        return reg?.boolValue
-    }
-
-    async setRunning(value: boolean) {
-        const reg = this.service.register(JacscriptManagerReg.Running)
-        await reg.sendSetAsync(jdpack("u8", [value ? 1 : 0]))
-    }
-
-    get autoStart() {
-        const reg = this.service.register(JacscriptManagerReg.Autostart)
-        return reg?.boolValue
-    }
-
-    async setAutoStart(value: boolean) {
-        const reg = this.service.register(JacscriptManagerReg.Autostart)
-        await reg.sendSetAsync(jdpack("u8", [value ? 1 : 0]))
-    }
-
-    get logging() {
-        const reg = this.service.register(JacscriptManagerReg.Logging)
-        return reg?.boolValue
-    }
-
-    async setLogging(value: boolean) {
-        const reg = this.service.register(JacscriptManagerReg.Logging)
-        await reg.sendSetAsync(jdpack("u8", [value ? 1 : 0]))
-    }
-
-    get programSize() {
-        const reg = this.service.register(JacscriptManagerReg.ProgramSize)
-        return reg?.uintValue
-    }
-
-    get programHash() {
-        const reg = this.service.register(JacscriptManagerReg.ProgramHash)
-        return reg?.uintValue
     }
 }

@@ -18,19 +18,22 @@ export class JacscriptManagerServer extends JDServiceServer {
     readonly programSize: JDRegisterServer<[number]>
     readonly programHash: JDRegisterServer<[number]>
 
-    private _bytecode: Uint8Array = new Uint8Array(0)
+    private _binary: Uint8Array = new Uint8Array(0)
+    private _debugInfo: unknown
+
+    static PROGRAM_CHANGE = "programChange"
 
     constructor() {
         super(SRV_JACSCRIPT_MANAGER)
 
         this.running = this.addRegister(JacscriptManagerReg.Running, [false])
-        this.autoStart = this.addRegister(JacscriptManagerReg.Running, [true])
+        this.autoStart = this.addRegister(JacscriptManagerReg.Autostart, [true])
         this.logging = this.addRegister(JacscriptManagerReg.Logging, [true])
         this.programSize = this.addRegister(JacscriptManagerReg.ProgramSize, [
-            this._bytecode.length,
+            this._binary.length,
         ])
         this.programHash = this.addRegister(JacscriptManagerReg.ProgramHash, [
-            fnv1(this._bytecode),
+            fnv1(this._binary),
         ])
 
         this.addCommand(
@@ -43,19 +46,25 @@ export class JacscriptManagerServer extends JDServiceServer {
         )
     }
 
-    get bytecode() {
-        return this._bytecode
+    get binary() {
+        return this._binary
     }
 
-    set bytecode(value: Uint8Array) {
-        value = value || new Uint8Array(0)
+    get debugInfo() {
+        return this._debugInfo
+    }
+
+    setBytecode(binary: Uint8Array, debugInfo: unknown) {
+        binary = binary || new Uint8Array(0)
         const [hash] = this.programHash.values()
-        const valueHash = fnv1(value)
+        const valueHash = fnv1(binary)
 
         if (hash !== valueHash) {
-            this._bytecode = value
-            this.programSize.setValues([value.length])
+            this._binary = binary
+            this._debugInfo = debugInfo
+            this.programSize.setValues([binary.length])
             this.programHash.setValues([valueHash])
+            this.emit(JacscriptManagerServer.PROGRAM_CHANGE)
             this.emit(CHANGE)
             this.sendEvent(JacscriptManagerEvent.ProgramChange)
         }
@@ -67,7 +76,7 @@ export class JacscriptManagerServer extends JDServiceServer {
 
     private async handleReadBytecode(pkt: Packet) {
         const pipe = OutPipe.from(this.device.bus, pkt, true)
-        await pipe.sendBytes(this._bytecode)
+        await pipe.sendBytes(this._binary)
         await pipe.close()
     }
 }
