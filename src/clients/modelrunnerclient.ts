@@ -78,7 +78,12 @@ export class ModelRunnerClient extends JDServiceClient {
     }
 
     async deployModel(model: Uint8Array, onProgress?: (p: number) => void) {
-        return OutPipe.sendBytes(this.service, ModelRunnerCmd.SetModel, model, onProgress)
+        return OutPipe.sendBytes(
+            this.service,
+            ModelRunnerCmd.SetModel,
+            model,
+            onProgress
+        )
     }
 
     async autoInvoke(everySamples = 1) {
