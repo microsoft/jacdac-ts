@@ -696,7 +696,9 @@ ${dev
                     reg =>
                         `        ${reg.specification?.kind || "reg"} ${
                             reg.name
-                        }: ${reg.humanValue} (${toHex(reg.data)})`
+                        }: ${reg.humanValue} (${toHex(reg.data)}) ${
+                            reg.notImplemented ? "- not implemented" : ""
+                        }`
                 ),
             ...srv.events.map(ev => `        event ${ev.name}: ${ev.count}`),
         ].join("\n")
