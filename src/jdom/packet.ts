@@ -378,7 +378,9 @@ export class Packet {
     toString(): string {
         let msg = `${shortDeviceId(this.deviceIdentifier)}/${
             this.serviceIndex
-        }[${this.frameFlags}]: 0x${this.serviceCommand.toString(16)} sz=${this.size}`
+        }[${this.frameFlags}]: 0x${this.serviceCommand.toString(16)} sz=${
+            this.size
+        }`
         if (this.size < 20) msg += ": " + toHex(this.data)
         else msg += ": " + toHex(this.data.slice(0, 20)) + "..."
         return msg
