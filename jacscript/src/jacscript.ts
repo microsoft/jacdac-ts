@@ -38,7 +38,7 @@ export async function deployBytecode(
                     await client.setAutoStart(!options?.once)
                     await client.setLogging(!!options?.logging)
                     await client.deployBytecode(bytecode, p => {
-                        console.log(`deploy to ${d.shortId}; ${p}`)
+                        console.log(`deploy to ${d.shortId}; ${p.toFixed(3)}`)
                     })
                     if (options?.once) await client.setRunning(true)
                 }
