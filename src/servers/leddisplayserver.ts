@@ -2,7 +2,7 @@ import {
     CHANGE,
     LedDisplayLightType,
     LedDisplayReg,
-    MAX_PIXELS_LENGTH,
+    CONST_LED_DISPLAY_MAX_PIXELS_LENGTH,
     SRV_LED_DISPLAY,
 } from "../jdom/constants"
 import { JDRegisterServer } from "../jdom/servers/registerserver"
@@ -32,7 +32,7 @@ export class LedDisplayServer extends JDServiceServer {
 
         const { numColumns, maxPower = 200, numPixels = 10 } = options || {}
 
-        const n = Math.min(MAX_PIXELS_LENGTH, numPixels)
+        const n = Math.min(CONST_LED_DISPLAY_MAX_PIXELS_LENGTH, numPixels)
 
         this.pixels = this.addRegister<[Uint8Array]>(LedDisplayReg.Pixels, [
             new Uint8Array(n * 3),

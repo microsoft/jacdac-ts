@@ -277,8 +277,9 @@ export function createDeviceTest(
                     )
                 )
 
+                const packets = specification?.packets
                 // reading value rule if any
-                const readingSpec = specification?.packets?.find(isReading)
+                const readingSpec = packets?.find(isReading)
                 if (readingSpec)
                     serviceTest.appendChild(
                         new RegisterTest(
@@ -293,7 +294,6 @@ export function createDeviceTest(
                             }
                         )
                     )
-
                 // add oracle
                 if (serviceOracle)
                     serviceTest.appendChild(
@@ -303,6 +303,34 @@ export function createDeviceTest(
                             createOracleRule(serviceOracle)
                         )
                     )
+
+                // read values of all mandatory registers
+                packets
+                    ?.filter(
+                        p =>
+                            !p.optional &&
+                            !p.client &&
+                            isRegister(p) &&
+                            !isReading(p) &&
+                            p.identifier !== SystemReg.StreamingInterval &&
+                            p.identifier !== SystemReg.StreamingSamples
+                    )
+                    ?.map(
+                        p =>
+                            new RegisterTest(
+                                `${p.name} has value`,
+                                p.identifier,
+                                node => {
+                                    const { register } = node
+                                    const { unpackedValue = [] } = register
+                                    if (unpackedValue?.length > 0)
+                                        return TestState.Pass
+                                    register.scheduleRefresh()
+                                    return TestState.Fail
+                                }
+                            )
+                    )
+                    ?.forEach(node => serviceTest.appendChild(node))
 
                 // import additional test nodes
                 const testNodes = [
