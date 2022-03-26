@@ -1,9 +1,11 @@
 import {
+    BuzzerCmd,
     DotMatrixReg,
     LedCmd,
     LedDisplayReg,
     LedStripCmd,
     SRV_BUTTON,
+    SRV_BUZZER,
     SRV_DOT_MATRIX,
     SRV_LED,
     SRV_LED_DISPLAY,
@@ -214,6 +216,45 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     if (k > testColors.length) test.state = TestState.Pass
                 }
             }
+            work()
+            return () => {
+                mounted = false
+            }
+        },
+    },
+    [SRV_BUZZER]: {
+        name: "beeps every 200ms every 1s, with increasing frequency",
+        start: test => {
+            let mounted = true
+            const pack = (frequency: number, ms: number, volume: number) => {
+                const period = (1000000 / frequency) | 0
+                const duty = (period * volume) >> 11
+                return jdpack<[number, number, number]>("u16 u16 u16", [
+                    period,
+                    duty,
+                    ms,
+                ])
+            }
+            const work = async () => {
+                test.state = TestState.Running
+                let f = 440
+                while (mounted) {
+                    const service = test.service
+                    if (!service) {
+                        await delay(500)
+                        return
+                    }
+                    await service.sendCmdAsync(
+                        BuzzerCmd.PlayTone,
+                        pack(f, 200, 20)
+                    )
+                    await delay(1000)
+                    f = f >> 1
+                    if (f > 4096) f = 440
+                    test.state = TestState.Pass
+                }
+            }
+            // start work async
             work()
             return () => {
                 mounted = false
