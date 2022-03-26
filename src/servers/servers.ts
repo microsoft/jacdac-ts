@@ -8,7 +8,7 @@ import {
     RelayReg,
     RelayVariant,
     SRV_ACCELEROMETER,
-    SRV_BAROMETER,
+    SRV_AIR_PRESSURE,
     SRV_BUTTON,
     SRV_BUZZER,
     SRV_CHARACTER_SCREEN,
@@ -365,9 +365,9 @@ function initProviders() {
             },
             {
                 name: "barometer",
-                serviceClasses: [SRV_BAROMETER],
+                serviceClasses: [SRV_AIR_PRESSURE],
                 services: () => [
-                    new AnalogSensorServer(SRV_BAROMETER, barometerOptions),
+                    new AnalogSensorServer(SRV_AIR_PRESSURE, barometerOptions),
                 ],
             },
             {
@@ -628,7 +628,11 @@ function initProviders() {
             },
             {
                 name: "humidity + temperature + barometer",
-                serviceClasses: [SRV_HUMIDITY, SRV_TEMPERATURE, SRV_BAROMETER],
+                serviceClasses: [
+                    SRV_HUMIDITY,
+                    SRV_TEMPERATURE,
+                    SRV_AIR_PRESSURE,
+                ],
                 services: () => [
                     new AnalogSensorServer(
                         SRV_TEMPERATURE,
@@ -638,7 +642,7 @@ function initProviders() {
                         SRV_HUMIDITY,
                         outdoorHumidityOptions
                     ),
-                    new AnalogSensorServer(SRV_BAROMETER, barometerOptions),
+                    new AnalogSensorServer(SRV_AIR_PRESSURE, barometerOptions),
                 ],
             },
             {
