@@ -496,6 +496,11 @@ function frameToPackets(frame: Uint8Array, timestamp: number, skipCrc = false) {
         warn(`${timestamp | 0}ms: empty packet`)
         return []
     } else {
+        // check length first - if length doesn't CRC also won't
+        if (frame.length != 12 + size) {
+            warn(`${timestamp | 0}ms: unexpected packet len: ${frame.length}`)
+            return []
+        }
         if (!skipCrc) {
             const computed = crc(frame.slice(2, size + 12))
             const actual = read16(frame, 0)
@@ -509,10 +514,6 @@ function frameToPackets(frame: Uint8Array, timestamp: number, skipCrc = false) {
                 )
                 return []
             }
-        }
-        if (frame.length != 12 + size) {
-            warn(`${timestamp | 0}ms: unexpected packet len: ${frame.length}`)
-            return []
         }
         const res: Packet[] = []
         for (let ptr = 12; ptr < 12 + size; ) {
