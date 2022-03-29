@@ -24,6 +24,7 @@ import {
     EventTestRule,
     ReadingTestRule,
     ServiceTestRule,
+    SetIntensityAndValueTestRule,
     TestState,
 } from "./spec"
 
@@ -48,6 +49,20 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
             type: "intensity",
             value: 1,
         },
+        <SetIntensityAndValueTestRule>{
+            type: "setIntensityAndValue",
+            name: "activate every 2s",
+            steps: [
+                {
+                    duration: 2000,
+                    intensity: 0,
+                },
+                {
+                    duration: 2000,
+                    intensity: 1,
+                },
+            ],
+        },
     ],
     [SRV_BUTTON]: <ServiceTestRule[]>[
         <ReadingTestRule>{
@@ -62,11 +77,11 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         },
         <EventTestRule>{
             type: "event",
-            name: "down",
+            eventName: "down",
         },
         <EventTestRule>{
             type: "event",
-            name: "up",
+            eventName: "up",
         },
     ],
     [SRV_MOTION]: <ServiceTestRule[]>[
@@ -98,7 +113,7 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
     [SRV_ROTARY_ENCODER]: <ServiceTestRule[]>[
         <ReadingTestRule>{
             type: "reading",
-            value: -4,
+            value: -2,
         },
         <ReadingTestRule>{
             type: "reading",
@@ -114,7 +129,7 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         },
         <ReadingTestRule>{
             type: "reading",
-            value: 4,
+            value: 2,
         },
     ],
 }

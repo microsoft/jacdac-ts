@@ -6,7 +6,7 @@ import {
     SystemReg,
     SystemStatusCodes,
 } from "../jdom/constants"
-import { serviceName } from "../jdom/pretty"
+import { prettyDuration, serviceName } from "../jdom/pretty"
 import {
     isEvent,
     isReading,
@@ -14,7 +14,7 @@ import {
     serviceSpecificationFromClassIdentifier,
     serviceSpecificationFromName,
 } from "../jdom/spec"
-import { JSONTryParse, parseIdentifier } from "../jdom/utils"
+import { delay, JSONTryParse, parseIdentifier } from "../jdom/utils"
 import {
     DeviceTest,
     EventTest,
@@ -35,9 +35,58 @@ import {
     ReadingTestRule,
     ServiceTestRule,
     ServiceTestSpec,
+    SetIntensityAndValueTestRule,
     TestState,
 } from "./spec"
 import { resolveServiceCommandTest, resolveTestRules } from "./testrules"
+
+function createSetIntensityAndValueRule(
+    rule: SetIntensityAndValueTestRule
+): TestNode {
+    const { name: ruleName, steps } = rule
+    const name =
+        ruleName ||
+        `set intensity, value to ${steps
+            .map(
+                ({ duration, intensity, value }) =>
+                    `${prettyDuration(duration)}: ${
+                        intensity !== undefined ? `i:${intensity}, ` : ""
+                    }${value !== undefined ? `v:${value}}` : ""}`
+            )
+            .join(", ")}`
+    return new ServiceCommandTest({
+        name,
+        start: test => {
+            let mounted = true
+            const work = async () => {
+                const service = test.service
+                const intensityRegister = service.intensityRegister
+                const valueRegister = service.valueRegister
+                let k = 0
+                while (mounted) {
+                    const step = steps[k++ % steps.length]
+                    const { duration, intensity, value } = step
+
+                    if (intensity !== undefined)
+                        await intensityRegister.sendSetPackedAsync(
+                            [intensity],
+                            true
+                        )
+                    if (value !== undefined)
+                        await valueRegister.sendSetPackedAsync([value], true)
+
+                    await delay(duration)
+
+                    if (k > steps.length) test.state = TestState.Pass
+                }
+            }
+            work()
+            return () => {
+                mounted = false
+            }
+        },
+    })
+}
 
 function createReadingRule(
     rule: ReadingTestRule
@@ -123,11 +172,15 @@ function compileTestRule(
 ): TestNode {
     const { type } = rule
     switch (type) {
+        case "setIntensityAndValue":
+            return createSetIntensityAndValueRule(
+                rule as SetIntensityAndValueTestRule
+            )
         case "value":
         case "intensity":
         case "reading": {
             const readingRule = rule as ReadingTestRule
-            const { value, tolerance } = readingRule
+            const { name, value, tolerance } = readingRule
             const registerId =
                 type === "reading"
                     ? SystemReg.Reading
@@ -138,21 +191,22 @@ function compileTestRule(
                 pkt => isRegister(pkt) && pkt.identifier === registerId
             )
             return new RegisterTest(
-                `observe ${registerSpec.name} == ${value}${
-                    tolerance ? ` +/-${tolerance}` : ""
-                }`,
+                name ||
+                    `observe ${registerSpec.name} == ${value}${
+                        tolerance ? ` +/-${tolerance}` : ""
+                    }`,
                 registerId,
                 createReadingRule(readingRule)
             )
         }
         case "event": {
             const eventRule = rule as EventTestRule
-            const { name } = eventRule
+            const { name, eventName } = eventRule
             const pkt = specification.packets.find(
-                pkt => isEvent(pkt) && pkt.name === name
+                pkt => isEvent(pkt) && pkt.name === eventName
             )
             return new EventTest(
-                `raise event ${name}`,
+                name || `raise event ${name}`,
                 pkt.identifier,
                 createEventRule(eventRule)
             )
