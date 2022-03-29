@@ -7,6 +7,7 @@ import {
     PotentiometerVariant,
     RelayReg,
     RelayVariant,
+    SRV_ACIDITY,
     SRV_ACCELEROMETER,
     SRV_AIR_PRESSURE,
     SRV_BUTTON,
@@ -362,6 +363,19 @@ function initProviders() {
                 name: "accelerometer",
                 serviceClasses: [SRV_ACCELEROMETER],
                 services: () => [new AccelerometerServer()],
+            },
+            {
+                name: "water acidity (pH)",
+                serviceClasses: [SRV_ACIDITY],
+                services: () => [
+                    new AnalogSensorServer(SRV_ACIDITY, {
+                        minReading: 2.5,
+                        maxReading: 10,
+                        readingValues: [7],
+                        readingError: [0.1],
+                        readingResolution: 0.1,
+                    }),
+                ],
             },
             {
                 name: "barometer",
