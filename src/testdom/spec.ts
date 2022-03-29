@@ -39,7 +39,13 @@ export interface ServiceTestSpec {
 }
 
 export interface ServiceTestRule {
-    type: "reading" | "intensity" | "value" | "oracleReading" | "event" | "setIntensityAndValue"
+    type:
+        | "reading"
+        | "intensity"
+        | "value"
+        | "oracleReading"
+        | "event"
+        | "setIntensityAndValue"
     name?: string
 }
 export interface ReadingTestRule extends ServiceTestRule {
@@ -50,8 +56,8 @@ export interface ReadingTestRule extends ServiceTestRule {
 export interface SetIntensityAndValueTestRule extends ServiceTestRule {
     type: "setIntensityAndValue"
     steps: {
-        duration: number,
-        intensity?: number,
+        duration: number
+        intensity?: number
         value?: number
     }[]
 }
