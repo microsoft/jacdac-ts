@@ -13,10 +13,10 @@ export interface TestResult {
 export interface PanelTestSpec {
     id?: string
     devices: DeviceTestSpec[]
-    oracles?: OrableTestSpec[]
+    oracles?: OracleTestSpec[]
 }
 
-export interface OrableTestSpec {
+export interface OracleTestSpec {
     serviceClass: number
     deviceId: string
     serviceIndex?: number
@@ -48,7 +48,7 @@ export interface ReadingTestRule extends ServiceTestRule {
 }
 export interface OracleReadingTestRule extends ServiceTestRule {
     type: "oracleReading"
-    oracle: OrableTestSpec
+    oracle: OracleTestSpec
     tolerance?: number
 }
 export interface EventTestRule extends ServiceTestRule {

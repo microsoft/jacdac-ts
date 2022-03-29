@@ -30,7 +30,7 @@ import {
 import {
     DeviceTestSpec,
     EventTestRule,
-    OrableTestSpec,
+    OracleTestSpec,
     PanelTestSpec,
     ReadingTestRule,
     ServiceTestRule,
@@ -78,7 +78,7 @@ function createEventRule(
 }
 
 function createOracleRule(
-    oracle: OrableTestSpec
+    oracle: OracleTestSpec
 ): (node: RegisterTest, logger: TestLogger) => TestState {
     let samples = 0
     const threshold = 5
