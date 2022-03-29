@@ -86,9 +86,12 @@ export class DeviceCatalog extends JDEventSource {
      * @param serviceClass
      * @category Specification
      */
-    specificationsForService(serviceClass: number): jdspec.DeviceSpec[] {
+    specificationsForService(
+        serviceClass: number,
+        options?: DeviceSpecificationOptions
+    ): jdspec.DeviceSpec[] {
         if (isNaN(serviceClass)) return undefined
-        return this._specifications.filter(
+        return this.specifications(options).filter(
             spec => spec.services?.indexOf(serviceClass) > -1
         )
     }
