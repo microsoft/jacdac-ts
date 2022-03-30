@@ -41,6 +41,10 @@ export abstract class TestNode extends JDNode {
         super()
     }
 
+    get description(): string {
+        return ""
+    }
+
     get name(): string {
         return this._name
     }
@@ -478,6 +482,12 @@ export abstract class RegisterTestNode extends ServiceMemberTestNode {
     set register(value: JDRegister) {
         this.node = value
     }
+
+    get description(): string {
+        const specification = this.register?.specification
+        return specification?.description
+    }
+
     override mount() {
         super.mount()
         const register = this.register
@@ -594,6 +604,10 @@ export class EventTest extends ServiceMemberTestNode {
     }
     set event(value: JDEvent) {
         this.node = value
+    }
+    get description(): string {
+        const specification = this.event?.specification
+        return specification?.description
     }
 
     override mount() {
