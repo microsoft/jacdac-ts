@@ -52,6 +52,7 @@ export interface ReadingTestRule extends ServiceTestRule {
     type: "reading" | "intensity" | "value"
     value: number
     tolerance?: number
+    samples?: number
 }
 export interface SetIntensityAndValueTestRule extends ServiceTestRule {
     type: "setIntensityAndValue"

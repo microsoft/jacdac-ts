@@ -91,10 +91,9 @@ function createSetIntensityAndValueRule(
 function createReadingRule(
     rule: ReadingTestRule
 ): (node: RegisterTest, logger: TestLogger) => TestState {
-    const threshold = 2
-    let samples = 0
-    let seen = samples >= threshold
-    const { value, tolerance } = rule
+    const { value, tolerance, samples = 2, type } = rule
+    let count = 0
+    let seen = count >= samples
     return (node, logger) => {
         if (!seen) {
             const { register } = node
@@ -104,12 +103,12 @@ function createReadingRule(
                 (isNaN(tolerance) || tolerance <= 0
                     ? current === value
                     : Math.abs(current - value) <= tolerance)
-            if (active) samples++
-            else samples = 0
+            if (active) count++
+            else count = 0
             // recompute
-            seen = samples >= threshold
+            seen = count >= samples
         }
-        if (!seen) logger(`missing or incorrect reading value`)
+        if (!seen) logger(`missing or incorrect ${type} value`)
         return seen ? TestState.Pass : TestState.Fail
     }
 }
