@@ -4,6 +4,7 @@ import {
     LedCmd,
     LedDisplayReg,
     LedStripCmd,
+    SRV_ACCELEROMETER,
     SRV_BUTTON,
     SRV_BUZZER,
     SRV_DOT_MATRIX,
@@ -62,6 +63,36 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
                     intensity: 1,
                 },
             ],
+        },
+    ],
+    [SRV_ACCELEROMETER]: <ServiceTestRule[]>[
+        <EventTestRule>{
+            type: "event",
+            eventName: "face_up",
+        },
+        <EventTestRule>{
+            type: "event",
+            eventName: "face_down",
+        },
+        <EventTestRule>{
+            type: "event",
+            eventName: "tilt_up",
+        },
+        <EventTestRule>{
+            type: "event",
+            eventName: "tilt_down",
+        },
+        <EventTestRule>{
+            type: "event",
+            eventName: "tilt_left",
+        },
+        <EventTestRule>{
+            type: "event",
+            eventName: "tilt_right",
+        },
+        <EventTestRule>{
+            type: "event",
+            eventName: "shake",
         },
     ],
     [SRV_BUTTON]: <ServiceTestRule[]>[
