@@ -206,7 +206,7 @@ function compileTestRule(
                 pkt => isEvent(pkt) && pkt.name === eventName
             )
             return new EventTest(
-                name || `raise event ${name}`,
+                name || `raise event ${eventName}`,
                 pkt.identifier,
                 createEventRule(eventRule)
             )
