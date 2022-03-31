@@ -6,6 +6,7 @@ import {
     SystemReg,
     SystemStatusCodes,
 } from "../jdom/constants"
+import { JDDevice } from "../jdom/device"
 import { prettyDuration, serviceName } from "../jdom/pretty"
 import {
     isEvent,
@@ -404,7 +405,7 @@ export function createDeviceTest(
                     serviceTest.appendChild(new ServiceCommandTest(testCommand))
             }
             deviceTest.appendChild(serviceTest)
-            const dynamicServiceTest = createDynamicTest(deviceTest, i)
+            const dynamicServiceTest = createDynamicTest(deviceTest, serviceClass, i)
             if (dynamicServiceTest)
                 deviceTest.appendChild(dynamicServiceTest)
         }
@@ -442,10 +443,7 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
 
 export function addDynamicServiceTestFactory(
     serviceClass: number,
-    handler: (
-        deviceTest: DeviceTest, 
-        serviceTest: DynamicServiceTest, 
-     ) => void
+    handler: (serviceTest: DynamicServiceTest) => void
 ) {
     factories.push(new DynamicServiceTestFactory(serviceClass, handler))
 }
@@ -453,7 +451,7 @@ export function addDynamicServiceTestFactory(
 class DynamicServiceTestFactory {
     constructor(
         public serviceClass: number,
-        public handler: (deviceTest: DeviceTest, serviceTest: DynamicServiceTest) => void
+        public handler: (serviceTest: DynamicServiceTest) => void
     ) {
 
     }
@@ -461,13 +459,11 @@ class DynamicServiceTestFactory {
 
 const factories: DynamicServiceTestFactory[] = []
 
-function createDynamicTest(deviceTest: DeviceTest, serviceIndex: number) {
-    const { device } = deviceTest
-    const serviceClass = device.serviceClassAt(serviceIndex)
+function createDynamicTest(deviceTest: DeviceTest, serviceClass: number, serviceIndex: number) {
     const factory = factories.find(f => f.serviceClass === serviceClass)
     if (factory)  { 
-        const newTest = new DynamicServiceTest("", serviceClass, serviceIndex)
-        factory.handler(deviceTest, newTest)
+        const newTest = new DynamicServiceTest("TEST", serviceClass, serviceIndex,
+            factory.handler)
         return newTest
     }
     return null
@@ -479,8 +475,10 @@ export class DynamicServiceTest extends ServiceTest {
 
     constructor(name: string,
         serviceClass: number,
-        public serviceIndex: number
+        public serviceIndex: number,
+        public handler: (serviceTest: DynamicServiceTest) => void
     ) {
         super(name, serviceClass)
+        this.handler(this)
     }
 }
