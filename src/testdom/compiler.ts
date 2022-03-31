@@ -404,6 +404,9 @@ export function createDeviceTest(
                     serviceTest.appendChild(new ServiceCommandTest(testCommand))
             }
             deviceTest.appendChild(serviceTest)
+            const dynamicServiceTest = createDynamicTest(deviceTest, i)
+            if (dynamicServiceTest)
+                deviceTest.appendChild(dynamicServiceTest)
         }
     }
     return deviceTest
@@ -435,4 +438,49 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
         }
     }
     return panelTest
+}
+
+export function addDynamicServiceTestFactory(
+    serviceClass: number,
+    handler: (
+        deviceTest: DeviceTest, 
+        serviceTest: DynamicServiceTest, 
+     ) => void
+) {
+    factories.push(new DynamicServiceTestFactory(serviceClass, handler))
+}
+
+class DynamicServiceTestFactory {
+    constructor(
+        public serviceClass: number,
+        public handler: (deviceTest: DeviceTest, serviceTest: DynamicServiceTest) => void
+    ) {
+
+    }
+}
+
+const factories: DynamicServiceTestFactory[] = []
+
+function createDynamicTest(deviceTest: DeviceTest, serviceIndex: number) {
+    const { device } = deviceTest
+    const serviceClass = device.serviceClassAt(serviceIndex)
+    const factory = factories.find(f => f.serviceClass === serviceClass)
+    if (factory)  { 
+        const newTest = new DynamicServiceTest("", serviceClass, serviceIndex)
+        factory.handler(deviceTest, newTest)
+        return newTest
+    }
+    return null
+}
+
+// this class encapsulates the logic to watch for changes 
+// to a device state and update the test
+export class DynamicServiceTest extends ServiceTest {
+
+    constructor(name: string,
+        serviceClass: number,
+        public serviceIndex: number
+    ) {
+        super(name, serviceClass)
+    }
 }
