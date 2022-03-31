@@ -255,12 +255,12 @@ export function concatBufferArray(chunks: Uint8Array[]) {
 
 export async function sha256(buffers: Uint8Array[]) {
     const concat = concatBufferArray(buffers)
-    if (typeof window == "undefined" || !window.crypto) {
+    if (typeof self === "undefined" || !window.crypto) {
         const s = require("crypto").createHash("sha256")
         s.update(concat)
         return Promise.resolve(new Uint8Array(s.digest()))
     }
-    const r = await window.crypto.subtle.digest("SHA-256", concat)
+    const r = await self.crypto.subtle.digest("SHA-256", concat)
     return new Uint8Array(r)
 }
 

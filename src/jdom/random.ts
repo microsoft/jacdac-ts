@@ -1,7 +1,7 @@
 import { toHex } from "./utils"
 
 export function cryptoRandomUint32(length: number): Uint32Array {
-    if (typeof window === "undefined") return undefined // not supported
+    if (typeof self === "undefined") return undefined // not supported
     const vals = new Uint32Array(length)
     window.crypto.getRandomValues(vals)
     return vals

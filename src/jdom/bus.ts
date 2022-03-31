@@ -232,7 +232,7 @@ export class JDBus extends JDNode {
     private configureBroadcastChannel() {
         if (
             typeof BroadcastChannel === "undefined" ||
-            typeof window === "undefined"
+            typeof self === "undefined"
         )
             return
 
