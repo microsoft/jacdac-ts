@@ -193,16 +193,13 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
     [SRV_GAMEPAD]: {
         name: "gamepad events",
         start: test => {
-            console.log("HERE")
             const service = test.service
             const buttonsAvailable = service.register(GamepadReg.ButtonsAvailable)
             buttonsAvailable.refresh(true).then(() => {
                 const buttons = buttonsAvailable.unpackedValue[0]
-                console.log(`buttons = ${buttons}`)
                 for (const key in GamepadButtons) {
                     const value = parseInt(GamepadButtons[key])
                     if (!isNaN(value)) {
-                        // console.log(`key ${key} value ${value}`)
                         if (value & buttons) {
                             makeEventTest(test, key, value)
                         }
@@ -221,9 +218,6 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
             return () => {
            
             }
-        },
-        update: test => {
-            // TODO: this might be called on too many updates
         }
     },
     [SRV_DOT_MATRIX]: {
