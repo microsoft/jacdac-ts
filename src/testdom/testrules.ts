@@ -3,6 +3,7 @@ import {
     DotMatrixReg,
     GamepadReg,
     GamepadEvent,
+    GamepadButtons,
     LedCmd,
     LedDisplayReg,
     LedStripCmd,
@@ -176,18 +177,29 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
     [SRV_GAMEPAD]: {
         name: "gamepad events",
         start: test => {
-            // const service = test.service
-            if (test.children?.length === 0) {
-                test.appendChild(
-                    new EventTest(
-                        "handle Up",
-                        GamepadEvent.ButtonsChanged,
-                        (node, logger) => {
-                            return TestState.Fail
+            const service = test.service
+            const buttonsAvailable = service.register(GamepadReg.ButtonsAvailable)
+            buttonsAvailable.refresh(true).then(() => {
+                const buttons = buttonsAvailable.unpackedValue[0]
+                console.log(`buttons = ${buttons}`)
+                for (const key in GamepadButtons) {
+                    const value = parseInt(GamepadButtons[key])
+                    if (!isNaN(value)) {
+                        // console.log(`key ${key} value ${value}`)
+                        if (value & buttons) {
+                            test.appendChild(
+                                new EventTest(
+                                    `handle ${key}`,
+                                    GamepadEvent.ButtonsChanged,
+                                    (node, logger) => {
+                                        return TestState.Fail
+                                    }
+                                )
+                            )
                         }
-                    )
-                )
-            }
+                    }
+                }
+            })
             return () => {
            
             }
