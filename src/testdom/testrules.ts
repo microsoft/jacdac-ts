@@ -24,7 +24,7 @@ import {
 import { lightEncode } from "../jdom/light"
 import { jdpack } from "../jdom/pack"
 import { delay } from "../jdom/utils"
-import { EventTest, ServiceMemberOptions } from "./nodes"
+import { EventTest, ServiceMemberOptions, ServiceMemberTestNode } from "./nodes"
 import {
     EventTestRule,
     ReadingTestRule,
@@ -173,10 +173,27 @@ export function resolveTestRules(serviceClass: number) {
     return builtinTestRules[serviceClass]
 }
 
+function makeEventTest(test: ServiceMemberTestNode, event:string, flag: number) {
+    test.appendChild(
+        new EventTest(
+            `${event}`,
+            GamepadEvent.ButtonsChanged,
+            (node, logger) => {
+                const { event } = node
+                const seen = !!(event?.count > 0 && event?.data[0] & flag)
+                if (!node.seen && !seen) logger(`event not observed`)
+                else if (seen) node.seen = seen         
+                return node.seen ? TestState.Pass : TestState.Fail
+            }
+        )
+    )
+}
+
 const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
     [SRV_GAMEPAD]: {
         name: "gamepad events",
         start: test => {
+            console.log("HERE")
             const service = test.service
             const buttonsAvailable = service.register(GamepadReg.ButtonsAvailable)
             buttonsAvailable.refresh(true).then(() => {
@@ -187,17 +204,18 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     if (!isNaN(value)) {
                         // console.log(`key ${key} value ${value}`)
                         if (value & buttons) {
-                            test.appendChild(
-                                new EventTest(
-                                    `handle ${key}`,
-                                    GamepadEvent.ButtonsChanged,
-                                    (node, logger) => {
-                                        return TestState.Fail
-                                    }
-                                )
-                            )
+                            makeEventTest(test, key, value)
                         }
                     }
+                }
+                // if buttons doesn't have any of L/R/D/U, then add 
+                // as we have a analog joystick 
+                const LRUD: number[] = [ GamepadButtons.Down , GamepadButtons.Up, GamepadButtons.Left, GamepadButtons.Right ]
+                if (!(buttons & LRUD.reduceRight((prev,curr) => (prev | curr),0))) {
+                    LRUD.forEach(value => {
+                        const key = GamepadButtons[value]
+                        makeEventTest(test, key, value)
+                    })
                 }
             })
             return () => {
