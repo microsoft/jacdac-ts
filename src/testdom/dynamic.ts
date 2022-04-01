@@ -1,3 +1,4 @@
+/*
 import { addDynamicServiceTestFactory } from "./compiler"
 import {
     SRV_GAMEPAD,
@@ -22,3 +23,4 @@ addDynamicServiceTestFactory(
         }
     }
 )
+*/

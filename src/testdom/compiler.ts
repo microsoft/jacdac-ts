@@ -6,7 +6,6 @@ import {
     SystemReg,
     SystemStatusCodes,
 } from "../jdom/constants"
-import { JDDevice } from "../jdom/device"
 import { prettyDuration, serviceName } from "../jdom/pretty"
 import {
     isEvent,
@@ -405,9 +404,6 @@ export function createDeviceTest(
                     serviceTest.appendChild(new ServiceCommandTest(testCommand))
             }
             deviceTest.appendChild(serviceTest)
-            const dynamicServiceTest = createDynamicTest(deviceTest, serviceClass, i)
-            if (dynamicServiceTest)
-                deviceTest.appendChild(dynamicServiceTest)
         }
     }
     return deviceTest
@@ -439,46 +435,4 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
         }
     }
     return panelTest
-}
-
-export function addDynamicServiceTestFactory(
-    serviceClass: number,
-    handler: (serviceTest: DynamicServiceTest) => void
-) {
-    factories.push(new DynamicServiceTestFactory(serviceClass, handler))
-}
-
-class DynamicServiceTestFactory {
-    constructor(
-        public serviceClass: number,
-        public handler: (serviceTest: DynamicServiceTest) => void
-    ) {
-
-    }
-}
-
-const factories: DynamicServiceTestFactory[] = []
-
-function createDynamicTest(deviceTest: DeviceTest, serviceClass: number, serviceIndex: number) {
-    const factory = factories.find(f => f.serviceClass === serviceClass)
-    if (factory)  { 
-        const newTest = new DynamicServiceTest("TEST", serviceClass, serviceIndex,
-            factory.handler)
-        return newTest
-    }
-    return null
-}
-
-// this class encapsulates the logic to watch for changes 
-// to a device state and update the test
-export class DynamicServiceTest extends ServiceTest {
-
-    constructor(name: string,
-        serviceClass: number,
-        public serviceIndex: number,
-        public handler: (serviceTest: DynamicServiceTest) => void
-    ) {
-        super(name, serviceClass)
-        this.handler(this)
-    }
 }

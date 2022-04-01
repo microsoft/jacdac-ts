@@ -1,6 +1,8 @@
 import {
     BuzzerCmd,
     DotMatrixReg,
+    GamepadReg,
+    GamepadEvent,
     LedCmd,
     LedDisplayReg,
     LedStripCmd,
@@ -8,6 +10,7 @@ import {
     SRV_BUTTON,
     SRV_BUZZER,
     SRV_DOT_MATRIX,
+    SRV_GAMEPAD,
     SRV_LED,
     SRV_LED_DISPLAY,
     SRV_LED_STRIP,
@@ -20,7 +23,7 @@ import {
 import { lightEncode } from "../jdom/light"
 import { jdpack } from "../jdom/pack"
 import { delay } from "../jdom/utils"
-import { ServiceMemberOptions } from "./nodes"
+import { EventTest, ServiceMemberOptions } from "./nodes"
 import {
     EventTestRule,
     ReadingTestRule,
@@ -170,6 +173,29 @@ export function resolveTestRules(serviceClass: number) {
 }
 
 const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
+    [SRV_GAMEPAD]: {
+        name: "gamepad events",
+        start: test => {
+            // const service = test.service
+            if (test.children?.length === 0) {
+                test.appendChild(
+                    new EventTest(
+                        "handle Up",
+                        GamepadEvent.ButtonsChanged,
+                        (node, logger) => {
+                            return TestState.Fail
+                        }
+                    )
+                )
+            }
+            return () => {
+           
+            }
+        },
+        update: test => {
+            // TODO: this might be called on too many updates
+        }
+    },
     [SRV_DOT_MATRIX]: {
         name: "blink matrix",
         start: test => {

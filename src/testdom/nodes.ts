@@ -444,9 +444,16 @@ export abstract class ServiceMemberTestNode extends TestNode {
     }
 }
 
+
+export interface ServiceMemberDynamicTestOptions {
+    name: string
+    start: (test: ServiceMemberTestNode) => () => void
+}
+
 export interface ServiceMemberOptions {
     name: string
     start: (test: ServiceMemberTestNode) => () => void
+    update?: (test: ServiceMemberTestNode) => void
 }
 
 export class ServiceCommandTest extends ServiceMemberTestNode {
@@ -466,7 +473,11 @@ export class ServiceCommandTest extends ServiceMemberTestNode {
             this.subscriptions.mount(unsubscribe)
         }
     }
-    updateState() {}
+    updateState() {
+        if (this.options.update) {
+            this.options.update(this)
+        }
+    }
     override bind() {
         this.node = this.service
     }
