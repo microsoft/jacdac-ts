@@ -52,14 +52,14 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         },
         <SetIntensityAndValueTestRule>{
             type: "setIntensityAndValue",
-            name: "activate every 2s",
+            name: "activate and deactive every 5s",
             steps: [
                 {
-                    duration: 2000,
+                    duration: 5000,
                     intensity: 0,
                 },
                 {
-                    duration: 2000,
+                    duration: 5000,
                     intensity: 1,
                 },
             ],
