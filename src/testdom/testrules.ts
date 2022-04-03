@@ -173,7 +173,7 @@ export function resolveTestRules(serviceClass: number) {
     return builtinTestRules[serviceClass]
 }
 
-function makeEventTest(test: ServiceMemberTestNode, event:string, flag: number) {
+function createEventWithArgumentTest(test: ServiceMemberTestNode, event:string, flag: number) {
     test.appendChild(
         new EventTest(
             `${event}`,
@@ -201,17 +201,17 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     const value = parseInt(GamepadButtons[key])
                     if (!isNaN(value)) {
                         if (value & buttons) {
-                            makeEventTest(test, key, value)
+                            createEventWithArgumentTest(test, key, value)
                         }
                     }
                 }
-                // if buttons doesn't have any of L/R/D/U, then add 
-                // as we have a analog joystick 
+                // if buttons doesn't have any of L/R/D/U, then add the four events,
+                // as we have a analog joystick that will generate them
                 const LRUD: number[] = [ GamepadButtons.Down , GamepadButtons.Up, GamepadButtons.Left, GamepadButtons.Right ]
-                if (!(buttons & LRUD.reduceRight((prev,curr) => (prev | curr),0))) {
+                if (!(buttons & (GamepadButtons.Down | GamepadButtons.Up | GamepadButtons.Left | GamepadButtons.Right))) {
                     LRUD.forEach(value => {
                         const key = GamepadButtons[value]
-                        makeEventTest(test, key, value)
+                        createEventWithArgumentTest(test, key, value)
                     })
                 }
             })
