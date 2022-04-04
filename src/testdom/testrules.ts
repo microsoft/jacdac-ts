@@ -20,6 +20,7 @@ import {
     SRV_RELAY,
     SRV_ROTARY_ENCODER,
     SRV_SWITCH,
+    REPORT_UPDATE,
 } from "../jdom/constants"
 import { lightEncode } from "../jdom/light"
 import { jdpack } from "../jdom/pack"
@@ -174,6 +175,7 @@ export function resolveTestRules(serviceClass: number) {
 }
 
 function createEventWithArgumentTests(test: ServiceMemberTestNode, buttons: number) {
+    let seenEventArg = false
     const addTest = (event: string, flag: number) =>
         test.appendChild(
             new EventTest(
@@ -182,12 +184,15 @@ function createEventWithArgumentTests(test: ServiceMemberTestNode, buttons: numb
                 (node, logger) => {
                     const { event } = node
                     const seen = !!(event?.count > 0 && event?.data[0] & flag)
-                    if (!node.seen && !seen) logger(`event not observed`)
-                    else if (seen) node.seen = seen         
-                    return node.seen ? TestState.Pass : TestState.Fail
+                    if (!seenEventArg && !seen) logger(`event not observed`)
+                    else if (seen) seenEventArg = seen         
+                    return seenEventArg ? TestState.Pass : TestState.Fail
                 }
             )
         )
+
+    if (test.children.length !== 0)
+        return; // TODO: revisit this
 
     for (const key in GamepadButtons) {
         const value = parseInt(GamepadButtons[key])
@@ -214,14 +219,17 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
         start: test => {
             const service = test.service
             const buttonsAvailable = service.register(GamepadReg.ButtonsAvailable)
-            const buttons = buttonsAvailable.unpackedValue[0]
-            if (buttons && buttons.length > 0 && test.children.length === 0) {
-                createEventWithArgumentTests(test, buttons)
+            const buttons = buttonsAvailable.unpackedValue
+            if (buttons?.length > 0) {
+                createEventWithArgumentTests(test, buttons[0])
+                return () => {}
             } else {
-                // subscript to REPORT_UPDATE
-            }
-            return () => {
-           
+                const unsubscribe = buttonsAvailable.subscribe(REPORT_UPDATE, () => {
+                    createEventWithArgumentTests(test, buttonsAvailable.unpackedValue[0])
+                })
+                return () => {
+                    unsubscribe()
+                }
             }
         }
     },

@@ -586,7 +586,6 @@ export class RegisterTest extends RegisterTestNode {
 }
 
 export class EventTest extends ServiceMemberTestNode {
-    public seen = false
     constructor(
         name: string,
         readonly code: number,
