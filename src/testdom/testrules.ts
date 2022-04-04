@@ -173,20 +173,39 @@ export function resolveTestRules(serviceClass: number) {
     return builtinTestRules[serviceClass]
 }
 
-function createEventWithArgumentTest(test: ServiceMemberTestNode, event:string, flag: number) {
-    test.appendChild(
-        new EventTest(
-            `${event}`,
-            GamepadEvent.ButtonsChanged,
-            (node, logger) => {
-                const { event } = node
-                const seen = !!(event?.count > 0 && event?.data[0] & flag)
-                if (!node.seen && !seen) logger(`event not observed`)
-                else if (seen) node.seen = seen         
-                return node.seen ? TestState.Pass : TestState.Fail
-            }
+function createEventWithArgumentTests(test: ServiceMemberTestNode, buttons: number) {
+    const addTest = (event: string, flag: number) =>
+        test.appendChild(
+            new EventTest(
+                `${event}`,
+                GamepadEvent.ButtonsChanged,
+                (node, logger) => {
+                    const { event } = node
+                    const seen = !!(event?.count > 0 && event?.data[0] & flag)
+                    if (!node.seen && !seen) logger(`event not observed`)
+                    else if (seen) node.seen = seen         
+                    return node.seen ? TestState.Pass : TestState.Fail
+                }
+            )
         )
-    )
+
+    for (const key in GamepadButtons) {
+        const value = parseInt(GamepadButtons[key])
+        if (!isNaN(value)) {
+            if (value & buttons) {
+                addTest(key, value)
+            }
+        }
+    }
+    // if buttons doesn't have any of L/R/D/U, then add the four events,
+    // as we have a analog joystick that will generate them
+    const LRUD: number[] = [ GamepadButtons.Down , GamepadButtons.Up, GamepadButtons.Left, GamepadButtons.Right ]
+    if (!(buttons & (GamepadButtons.Down | GamepadButtons.Up | GamepadButtons.Left | GamepadButtons.Right))) {
+        LRUD.forEach(value => {
+            const key = GamepadButtons[value]
+            addTest(key, value)
+        })
+    }
 }
 
 const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
@@ -195,26 +214,12 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
         start: test => {
             const service = test.service
             const buttonsAvailable = service.register(GamepadReg.ButtonsAvailable)
-            buttonsAvailable.refresh(true).then(() => {
-                const buttons = buttonsAvailable.unpackedValue[0]
-                for (const key in GamepadButtons) {
-                    const value = parseInt(GamepadButtons[key])
-                    if (!isNaN(value)) {
-                        if (value & buttons) {
-                            createEventWithArgumentTest(test, key, value)
-                        }
-                    }
-                }
-                // if buttons doesn't have any of L/R/D/U, then add the four events,
-                // as we have a analog joystick that will generate them
-                const LRUD: number[] = [ GamepadButtons.Down , GamepadButtons.Up, GamepadButtons.Left, GamepadButtons.Right ]
-                if (!(buttons & (GamepadButtons.Down | GamepadButtons.Up | GamepadButtons.Left | GamepadButtons.Right))) {
-                    LRUD.forEach(value => {
-                        const key = GamepadButtons[value]
-                        createEventWithArgumentTest(test, key, value)
-                    })
-                }
-            })
+            const buttons = buttonsAvailable.unpackedValue[0]
+            if (buttons && buttons.length > 0 && test.children.length === 0) {
+                createEventWithArgumentTests(test, buttons)
+            } else {
+                // subscript to REPORT_UPDATE
+            }
             return () => {
            
             }
