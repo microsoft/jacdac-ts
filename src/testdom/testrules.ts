@@ -175,8 +175,9 @@ export function resolveTestRules(serviceClass: number) {
 }
 
 function createEventWithArgumentTests(test: ServiceMemberTestNode, buttons: number) {
-    let seenEventArg = false
-    const addTest = (event: string, flag: number) =>
+
+    const addTest = (event: string, flag: number) => {
+        let seenEventArg = false
         test.appendChild(
             new EventTest(
                 `${event}`,
@@ -190,7 +191,7 @@ function createEventWithArgumentTests(test: ServiceMemberTestNode, buttons: numb
                 }
             )
         )
-
+    }
     if (test.children.length !== 0)
         return; // TODO: revisit this
 
