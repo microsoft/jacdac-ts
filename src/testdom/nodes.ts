@@ -466,7 +466,6 @@ export class ServiceCommandTest extends ServiceMemberTestNode {
             this.subscriptions.mount(unsubscribe)
         }
     }
-    updateState() {}
     override bind() {
         this.node = this.service
     }

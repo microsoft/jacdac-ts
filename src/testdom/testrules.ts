@@ -186,7 +186,9 @@ function createEventWithArgumentTests(test: ServiceMemberTestNode, buttons: numb
                     const { event } = node
                     const seen = !!(event?.count > 0 && event?.data[0] & flag)
                     if (!seenEventArg && !seen) logger(`event not observed`)
-                    else if (seen) seenEventArg = seen         
+                    else if (seen) { 
+                        seenEventArg = seen
+                    }         
                     return seenEventArg ? TestState.Pass : TestState.Fail
                 }
             )
