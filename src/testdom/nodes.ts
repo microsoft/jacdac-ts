@@ -447,6 +447,7 @@ export abstract class ServiceMemberTestNode extends TestNode {
 export interface ServiceMemberOptions {
     name: string
     start: (test: ServiceMemberTestNode) => () => void
+    hasChildren?: boolean
 }
 
 export class ServiceCommandTest extends ServiceMemberTestNode {
@@ -455,6 +456,10 @@ export class ServiceCommandTest extends ServiceMemberTestNode {
     }
     get nodeKind(): string {
         return SERVICE_COMMAND_TEST_KIND
+    }
+    override updateState() {
+        if (this.options?.hasChildren)
+            super.updateState()
     }
     override mount(): void {
         super.mount()

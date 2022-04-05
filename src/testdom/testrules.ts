@@ -234,7 +234,8 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     unsubscribe()
                 }
             }
-        }
+        },
+        hasChildren: true
     },
     [SRV_DOT_MATRIX]: {
         name: "blink matrix",
