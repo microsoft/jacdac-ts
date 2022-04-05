@@ -1,6 +1,9 @@
 import {
     BuzzerCmd,
     DotMatrixReg,
+    GamepadReg,
+    GamepadEvent,
+    GamepadButtons,
     LedCmd,
     LedDisplayReg,
     LedStripCmd,
@@ -8,6 +11,7 @@ import {
     SRV_BUTTON,
     SRV_BUZZER,
     SRV_DOT_MATRIX,
+    SRV_GAMEPAD,
     SRV_LED,
     SRV_LED_DISPLAY,
     SRV_LED_STRIP,
@@ -16,11 +20,12 @@ import {
     SRV_RELAY,
     SRV_ROTARY_ENCODER,
     SRV_SWITCH,
+    REPORT_UPDATE,
 } from "../jdom/constants"
 import { lightEncode } from "../jdom/light"
 import { jdpack } from "../jdom/pack"
 import { delay } from "../jdom/utils"
-import { ServiceMemberOptions } from "./nodes"
+import { EventTest, ServiceMemberOptions, ServiceMemberTestNode } from "./nodes"
 import {
     EventTestRule,
     ReadingTestRule,
@@ -169,7 +174,68 @@ export function resolveTestRules(serviceClass: number) {
     return builtinTestRules[serviceClass]
 }
 
+function createEventWithArgumentTests(test: ServiceMemberTestNode, buttons: number) {
+
+    const addTest = (event: string, flag: number) => {
+        let seenEventArg = false
+        test.appendChild(
+            new EventTest(
+                `${event}`,
+                GamepadEvent.ButtonsChanged,
+                (node, logger) => {
+                    const { event } = node
+                    const seen = !!(event?.count > 0 && event?.data[0] & flag)
+                    if (!seenEventArg && !seen) logger(`event not observed`)
+                    else if (seen) { 
+                        seenEventArg = seen
+                    }         
+                    return seenEventArg ? TestState.Pass : TestState.Fail
+                }
+            )
+        )
+    }
+    if (test.children.length !== 0)
+        return; // TODO: revisit this
+
+    for (const key in GamepadButtons) {
+        const value = parseInt(GamepadButtons[key])
+        if (!isNaN(value)) {
+            if (value & buttons) {
+                addTest(key, value)
+            }
+        }
+    }
+    // if buttons doesn't have any of L/R/D/U, then add the four events,
+    // as we have a analog joystick that will generate them
+    const LRUD: number[] = [ GamepadButtons.Down , GamepadButtons.Up, GamepadButtons.Left, GamepadButtons.Right ]
+    if (!(buttons & (GamepadButtons.Down | GamepadButtons.Up | GamepadButtons.Left | GamepadButtons.Right))) {
+        LRUD.forEach(value => {
+            const key = GamepadButtons[value]
+            addTest(key, value)
+        })
+    }
+}
+
 const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
+    [SRV_GAMEPAD]: {
+        name: "gamepad events",
+        start: test => {
+            const service = test.service
+            const buttonsAvailable = service.register(GamepadReg.ButtonsAvailable)
+            const buttons = buttonsAvailable.unpackedValue
+            if (buttons?.length > 0) {
+                createEventWithArgumentTests(test, buttons[0])
+                return () => {}
+            } else {
+                const unsubscribe = buttonsAvailable.subscribe(REPORT_UPDATE, () => {
+                    createEventWithArgumentTests(test, buttonsAvailable.unpackedValue[0])
+                })
+                return () => {
+                    unsubscribe()
+                }
+            }
+        }
+    },
     [SRV_DOT_MATRIX]: {
         name: "blink matrix",
         start: test => {
