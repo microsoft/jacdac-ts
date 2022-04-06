@@ -1062,7 +1062,6 @@ ${dev
     }
 
     private gcDevices() {
-        console.log(`gc devices`)
         this.emit(DEVICE_CLEAN)
         if (this.devicesFrozen) {
             console.debug("devices frozen")
@@ -1080,6 +1079,7 @@ ${dev
         const devs = this._devices.slice(0)
         while (devs.length) {
             const dev = devs.pop()
+            if (dev === this.selfDevice) continue
             if (dev.firmwareUpdater) continue
             if (dev.lastSeen < disconnectedCutoff) {
                 const i = this._devices.indexOf(dev)
@@ -1090,9 +1090,12 @@ ${dev
                 changed = true
             } else if (dev.lastSeen < lostCutoff) {
                 dev.lost = true
+                changed = true
             }
         }
-        if (changed) this.emit(CHANGE)
+        if (changed) {
+            this.emit(CHANGE)
+        }
     }
 
     /**
