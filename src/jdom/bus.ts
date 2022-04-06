@@ -461,7 +461,7 @@ export class JDBus extends JDNode {
         this.backgroundRefreshRegisters = true
         if (!this._gcInterval)
             this._gcInterval = this.scheduler.setInterval(
-                () => this.gcDevices(),
+                this.gcDevices.bind(this),
                 JD_DEVICE_DISCONNECTED_DELAY
             )
     }
@@ -1062,6 +1062,7 @@ ${dev
     }
 
     private gcDevices() {
+        console.log(`gc devices`)
         this.emit(DEVICE_CLEAN)
         if (this.devicesFrozen) {
             console.debug("devices frozen")
@@ -1070,28 +1071,28 @@ ${dev
 
         const LOST_DELAY = JD_DEVICE_LOST_DELAY
         const DISCONNECTED_DELAY = JD_DEVICE_DISCONNECTED_DELAY
-        const lostCutoff = this.timestamp - LOST_DELAY
-        const disconnectedCutoff = this.timestamp - DISCONNECTED_DELAY
+        const now = this.timestamp
+        const lostCutoff = now - LOST_DELAY
+        const disconnectedCutoff = now - DISCONNECTED_DELAY
 
         // cycle through events and disconnect devices that are long gone
-        for (let i = 0; i < this._devices.length; ++i) {
-            const dev = this._devices[i]
+        let changed = false
+        const devs = this._devices.slice(0)
+        while (devs.length) {
+            const dev = devs.pop()
             if (dev.firmwareUpdater) continue
             if (dev.lastSeen < disconnectedCutoff) {
-                this._devices.splice(i, 1)
-                i--
-                this.disconnectDevice(dev)
+                const i = this._devices.indexOf(dev)
+                if (i > -1) this._devices.splice(i, 1)
+                dev.disconnect()
+                this.emit(DEVICE_DISCONNECT, dev)
+                this.emit(DEVICE_CHANGE, dev)
+                changed = true
             } else if (dev.lastSeen < lostCutoff) {
                 dev.lost = true
             }
         }
-    }
-
-    private disconnectDevice(dev: JDDevice) {
-        dev.disconnect()
-        this.emit(DEVICE_DISCONNECT, dev)
-        this.emit(DEVICE_CHANGE, dev)
-        this.emit(CHANGE)
+        if (changed) this.emit(CHANGE)
     }
 
     /**
