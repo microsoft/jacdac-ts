@@ -131,7 +131,7 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         },
         <EventTestRule>{
             type: "event",
-            name: "movement",
+            eventName: "movement",
         },
     ],
     [SRV_POTENTIOMETER]: <ServiceTestRule[]>[
