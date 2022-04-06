@@ -174,8 +174,10 @@ export function resolveTestRules(serviceClass: number) {
     return builtinTestRules[serviceClass]
 }
 
-function createEventWithArgumentTests(test: ServiceMemberTestNode, buttons: number) {
-
+function createEventWithArgumentTests(
+    test: ServiceMemberTestNode,
+    buttons: number
+) {
     const addTest = (event: string, flag: number) => {
         let seenEventArg = false
         test.appendChild(
@@ -186,16 +188,15 @@ function createEventWithArgumentTests(test: ServiceMemberTestNode, buttons: numb
                     const { event } = node
                     const seen = !!(event?.count > 0 && event?.data[0] & flag)
                     if (!seenEventArg && !seen) logger(`event not observed`)
-                    else if (seen) { 
+                    else if (seen) {
                         seenEventArg = seen
-                    }         
+                    }
                     return seenEventArg ? TestState.Pass : TestState.Fail
                 }
             )
         )
     }
-    if (test.children.length !== 0)
-        return; // TODO: revisit this
+    if (test.children.length !== 0) return // TODO: revisit this
 
     for (const key in GamepadButtons) {
         const value = parseInt(GamepadButtons[key])
@@ -207,8 +208,21 @@ function createEventWithArgumentTests(test: ServiceMemberTestNode, buttons: numb
     }
     // if buttons doesn't have any of L/R/D/U, then add the four events,
     // as we have a analog joystick that will generate them
-    const LRUD: number[] = [ GamepadButtons.Down , GamepadButtons.Up, GamepadButtons.Left, GamepadButtons.Right ]
-    if (!(buttons & (GamepadButtons.Down | GamepadButtons.Up | GamepadButtons.Left | GamepadButtons.Right))) {
+    const LRUD: number[] = [
+        GamepadButtons.Down,
+        GamepadButtons.Up,
+        GamepadButtons.Left,
+        GamepadButtons.Right,
+    ]
+    if (
+        !(
+            buttons &
+            (GamepadButtons.Down |
+                GamepadButtons.Up |
+                GamepadButtons.Left |
+                GamepadButtons.Right)
+        )
+    ) {
         LRUD.forEach(value => {
             const key = GamepadButtons[value]
             addTest(key, value)
@@ -221,21 +235,28 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
         name: "gamepad events",
         start: test => {
             const service = test.service
-            const buttonsAvailable = service.register(GamepadReg.ButtonsAvailable)
+            const buttonsAvailable = service.register(
+                GamepadReg.ButtonsAvailable
+            )
             const buttons = buttonsAvailable.unpackedValue
             if (buttons?.length > 0) {
                 createEventWithArgumentTests(test, buttons[0])
-                return () => {}
+                return undefined
             } else {
-                const unsubscribe = buttonsAvailable.subscribe(REPORT_UPDATE, () => {
-                    createEventWithArgumentTests(test, buttonsAvailable.unpackedValue[0])
-                })
-                return () => {
-                    unsubscribe()
-                }
+                const unsubscribe = buttonsAvailable.subscribe(
+                    REPORT_UPDATE,
+                    () => {
+                        unsubscribe()
+                        createEventWithArgumentTests(
+                            test,
+                            buttonsAvailable.unpackedValue[0]
+                        )
+                    }
+                )
+                return unsubscribe
             }
         },
-        hasChildren: true
+        hasChildren: true,
     },
     [SRV_DOT_MATRIX]: {
         name: "blink matrix",
@@ -362,7 +383,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                         pack(f, 200, 20)
                     )
                     await delay(1000)
-                    f = f >> 1
+                    f = f << 1
                     if (f > 4096) f = 440
                     test.state = TestState.Pass
                 }
