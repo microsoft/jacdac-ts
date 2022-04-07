@@ -19,7 +19,7 @@ export class SpeechSynthesisServer extends JDServiceServer {
     constructor() {
         super(SRV_SPEECH_SYNTHESIS)
 
-        this.synthesis = typeof window !== "undefined" && window.speechSynthesis
+        this.synthesis = typeof self !== "undefined" && window.speechSynthesis
 
         this.enabled = this.addRegister<[boolean]>(SpeechSynthesisReg.Enabled, [
             !this.synthesis?.paused,
