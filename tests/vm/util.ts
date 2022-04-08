@@ -2,11 +2,15 @@ import { JDBus } from "../../src/jdom/bus"
 import { compile } from "../../jacscript/src/compiler"
 import { Runner } from "../../jacscript/src/executor"
 
-export function runJacscriptProgram(fn: string, bus: JDBus, delay: number = undefined) {
+export function runJacscriptProgram(
+    fn: string,
+    bus: JDBus,
+    delay: number = undefined
+) {
     const res = compile(
         {
             write: (fn, cont) => {},
-            log: msg => { } // console.log(msg) },
+            log: msg => {}, // console.log(msg) },
         },
         fn
     )
@@ -16,14 +20,11 @@ export function runJacscriptProgram(fn: string, bus: JDBus, delay: number = unde
     return new Promise<void>(resolve => {
         console.log(`*** run ${fn}`)
         const r = new Runner(bus, res.binary, res.dbg)
-        if (delay !== undefined)
-            r.startDelay = delay
+        if (delay !== undefined) r.startDelay = delay
         r.on("error", () => process.exit(1))
         r.on("panic", code => {
-            if (code == 0)
-                resolve()
-            else
-                process.exit(2)
+            if (code == 0) resolve()
+            else process.exit(2)
         })
         r.run()
     })

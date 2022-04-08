@@ -215,7 +215,8 @@ suite("rolemanager", () => {
                 button2.service.device.deviceId
             )
             assert(
-                roles.find(r => r.role === "button2").service === button.service,
+                roles.find(r => r.role === "button2").service ===
+                    button.service,
                 "double button not bound"
             )
             assert(

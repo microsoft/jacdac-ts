@@ -50,7 +50,9 @@ export function bindRoles(
         const role = camelize(vmRole.role)
         assert(
             role in servers,
-            `servers missing role ${role} (${vmRole.role}) required by program (${Object.keys(servers)})`
+            `servers missing role ${role} (${
+                vmRole.role
+            }) required by program (${Object.keys(servers)})`
         )
         const service = servers[role]
         assert(

@@ -458,8 +458,7 @@ export class ServiceCommandTest extends ServiceMemberTestNode {
         return SERVICE_COMMAND_TEST_KIND
     }
     override updateState() {
-        if (this.options?.hasChildren)
-            super.updateState()
+        if (this.options?.hasChildren) super.updateState()
     }
     override mount(): void {
         super.mount()
