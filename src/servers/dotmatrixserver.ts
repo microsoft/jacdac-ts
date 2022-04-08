@@ -51,10 +51,8 @@ export class DotMatrixServer extends JDServiceServer {
         const [rows] = this.rows.values()
         const [columns] = this.columns.values()
 
-        // there's probably a much smarter way to do this
-        const columnspadded = columns + (8 - (columns % 8))
-        // total bits needed
-        const n = rows * columnspadded
+        // total bytes needed
+        const n = columns * ((rows + 7) >> 3)
 
         if (this.dots.data?.length !== n) {
             this.dots.data = new Uint8Array(n)
