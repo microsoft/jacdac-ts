@@ -260,8 +260,8 @@ const microbitSounds: SoundPlayerSound[] = [
 ]
 const soundLevel: AnalogSensorServerOptions = {
     readingValues: [0],
-    inactiveThreshold: 10,
-    activeThreshold: 70,
+    inactiveThreshold: 0.10,
+    activeThreshold: 0.70,
     intensityValues: [false],
 }
 const soundSpectrum: SensorServiceOptions<[Uint8Array]> = {
