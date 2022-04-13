@@ -2,6 +2,7 @@ import {
     addServiceProvider,
     serviceProviderDefinitionFromServiceClass,
 } from "../../servers/servers"
+import { JDBus } from "../bus"
 import {
     CHANGE,
     DEVICE_ANNOUNCE,
@@ -10,12 +11,6 @@ import {
     RoleManagerCmd,
     ROLE_MANAGER_POLL,
     SELF_ANNOUNCE,
-    SRV_CONTROL,
-    SRV_INFRASTRUCTURE,
-    SRV_LOGGER,
-    SRV_PROXY,
-    SRV_ROLE_MANAGER,
-    SRV_UNIQUE_BRAIN,
     SystemEvent,
 } from "../constants"
 import { jdpack, jdunpack } from "../pack"
@@ -23,6 +18,7 @@ import { Packet } from "../packet"
 import { InPipeReader } from "../pipes"
 import { JDService } from "../service"
 import { JDServiceClient } from "../serviceclient"
+import { isInfrastructure } from "../spec"
 import {
     arrayConcatMany,
     debounceAsync,
@@ -52,6 +48,19 @@ export interface Role {
      * Role name
      */
     name: string
+    /**
+     * Query argument (optional)
+     */
+    query?: string
+}
+function parentName(bus: JDBus, role: Role) {
+    if (role.query) {
+        const args = role.query.split("&").map(a => a.split("=", 2))
+        const deviceId = args.find(a => a[0] === "device")?.[1]
+        if (deviceId === "self") return bus.selfDeviceId
+        return deviceId
+    }
+    return role.name.split("/", 1)[0]
 }
 
 /**
@@ -130,15 +139,17 @@ export class RoleManagerClient extends JDServiceClient {
             // collect all roles
             const roles: Role[] = []
             for (const buf of await inp.readData(1000)) {
-                const [devidbuf, serviceClass, serviceIndex, name] = jdunpack<
+                const [devidbuf, serviceClass, serviceIndex, full] = jdunpack<
                     [Uint8Array, number, number, string]
                 >(buf, "b[8] u32 u8 s")
                 const deviceId = toHex(devidbuf)
+                const [name, query] = full.split("?", 2)
                 const role: Role = {
                     deviceId,
                     serviceClass,
                     serviceIndex,
                     name,
+                    query,
                 }
                 roles.push(role)
             }
@@ -153,22 +164,10 @@ export class RoleManagerClient extends JDServiceClient {
         }
     }
 
-    static unroledSrvs = [
-        SRV_CONTROL,
-        SRV_ROLE_MANAGER,
-        SRV_LOGGER,
-        SRV_UNIQUE_BRAIN,
-        SRV_PROXY,
-        SRV_INFRASTRUCTURE,
-    ]
-
     private assignRoles() {
         this.bus
             .services()
-            .filter(
-                srv =>
-                    RoleManagerClient.unroledSrvs.indexOf(srv.serviceClass) < 0
-            )
+            .filter(srv => !isInfrastructure(srv.specification))
             .forEach(srv => this.assignRole(srv))
     }
 
@@ -260,11 +259,12 @@ export class RoleManagerClient extends JDServiceClient {
                     ),
                 }))
                 .filter(todo => !!todo.hostDefinition),
-            todo => parentName(todo.role.name) || ""
+            todo => parentName(this.bus, todo.role) || ""
         )
 
         // spawn devices with group of devices
-        Object.keys(todos).forEach(parent => {
+        const parents = Object.keys(todos)
+        parents.forEach(parent => {
             const todo = todos[parent]
             // no parent, spawn individual services
             if (!parent) {
@@ -283,10 +283,5 @@ export class RoleManagerClient extends JDServiceClient {
                 })
             }
         })
-
-        function parentName(role: string) {
-            return role.split("/", 1)[0]
-        }
     }
 }
-
