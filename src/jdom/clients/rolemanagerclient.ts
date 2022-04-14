@@ -245,13 +245,19 @@ export class RoleManagerClient extends JDServiceClient {
         }
     }
 
+    allRolesBound() {
+        return this._roles.every(role => !!this.bus.device(role.deviceId, true))
+    }
+
     startSimulators() {
-        if (!this._roles?.length) return
+        const roles = this._roles.filter(
+            role => !this.bus.device(role.deviceId, true)
+        )
+        if (!roles?.length) return
 
         // collect roles that need to be bound
         const todos = groupBy(
-            this._roles
-                .filter(role => !this.bus.device(role.deviceId, true))
+            roles
                 .map(role => ({
                     role,
                     hostDefinition: serviceProviderDefinitionFromServiceClass(
