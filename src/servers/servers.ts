@@ -260,8 +260,8 @@ const microbitSounds: SoundPlayerSound[] = [
 ]
 const soundLevel: AnalogSensorServerOptions = {
     readingValues: [0],
-    inactiveThreshold: 0.10,
-    activeThreshold: 0.70,
+    inactiveThreshold: 0.1,
+    activeThreshold: 0.7,
     intensityValues: [false],
 }
 const soundSpectrum: SensorServiceOptions<[Uint8Array]> = {
@@ -488,45 +488,6 @@ function initProviders() {
                         rows: 8,
                         variant: CharacterScreenVariant.OLED,
                         textDirection: CharacterScreenTextDirection.RightToLeft,
-                    }),
-                ],
-            },
-            {
-                name: "character screen (Braille, 4x1)",
-                serviceClasses: [SRV_CHARACTER_SCREEN],
-                services: () => [
-                    new CharacterScreenServer({
-                        message: "hi",
-                        columns: 4,
-                        rows: 1,
-                        variant: CharacterScreenVariant.Braille,
-                        textDirection: CharacterScreenTextDirection.LeftToRight,
-                    }),
-                ],
-            },
-            {
-                name: "character screen (Braille, 16x1)",
-                serviceClasses: [SRV_CHARACTER_SCREEN],
-                services: () => [
-                    new CharacterScreenServer({
-                        message: "hi",
-                        columns: 16,
-                        rows: 1,
-                        variant: CharacterScreenVariant.Braille,
-                        textDirection: CharacterScreenTextDirection.LeftToRight,
-                    }),
-                ],
-            },
-            {
-                name: "character screen (Braille, 32x1)",
-                serviceClasses: [SRV_CHARACTER_SCREEN],
-                services: () => [
-                    new CharacterScreenServer({
-                        message: "hi",
-                        columns: 32,
-                        rows: 1,
-                        variant: CharacterScreenVariant.Braille,
-                        textDirection: CharacterScreenTextDirection.LeftToRight,
                     }),
                 ],
             },
