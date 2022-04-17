@@ -232,7 +232,8 @@ export class JDBus extends JDNode {
     private configureBroadcastChannel() {
         if (
             typeof BroadcastChannel === "undefined" ||
-            typeof self === "undefined"
+            typeof self === "undefined" ||
+            this._unsubscribeBroadcastChannel
         )
             return
 
@@ -266,7 +267,7 @@ export class JDBus extends JDNode {
             msg: MessageEvent<{
                 id: string
                 event: string
-                visibilityState?: VisibilityState
+                visibilityState?: DocumentVisibilityState
                 transports: { type: string; connectionState: string }[]
             }>
         ) => {
