@@ -267,7 +267,7 @@ export class JDBus extends JDNode {
             msg: MessageEvent<{
                 id: string
                 event: string
-                visibilityState?: DocumentVisibilityState
+                visibilityState?: "hidden" | "visible"
                 transports: { type: string; connectionState: string }[]
             }>
         ) => {
