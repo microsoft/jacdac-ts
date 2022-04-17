@@ -174,7 +174,7 @@ export function resolveTestRules(serviceClass: number) {
     return builtinTestRules[serviceClass]
 }
 
-function createEventWithArgumentTests(
+function createGamepadEventTests(
     test: ServiceMemberTestNode,
     buttons: number
 ) {
@@ -240,14 +240,14 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
             )
             const buttons = buttonsAvailable.unpackedValue
             if (buttons?.length > 0) {
-                createEventWithArgumentTests(test, buttons[0])
+                createGamepadEventTests(test, buttons[0])
                 return undefined
             } else {
                 const unsubscribe = buttonsAvailable.subscribe(
                     REPORT_UPDATE,
                     () => {
                         unsubscribe()
-                        createEventWithArgumentTests(
+                        createGamepadEventTests(
                             test,
                             buttonsAvailable.unpackedValue[0]
                         )
