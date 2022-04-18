@@ -225,6 +225,7 @@ function createGamepadEventTests(test: ServiceMemberTestNode, buttons: number) {
         test.appendChild(
             new EventTest(
                 `${event}`,
+                undefined,
                 GamepadEvent.ButtonsChanged,
                 (node, logger) => {
                     const { event } = node
