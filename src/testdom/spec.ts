@@ -38,6 +38,10 @@ export interface ServiceTestSpec {
     disableBuiltinRules?: boolean
 }
 
+export interface ManualSteps {
+    prepare?: string
+}
+
 export interface ServiceTestRule {
     type:
         | "reading"
@@ -47,6 +51,7 @@ export interface ServiceTestRule {
         | "event"
         | "setIntensityAndValue"
     name?: string
+    manualSteps?: ManualSteps
 }
 export interface ReadingTestRule extends ServiceTestRule {
     type: "reading" | "intensity" | "value"

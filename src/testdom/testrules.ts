@@ -40,10 +40,16 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         <ReadingTestRule>{
             type: "reading",
             value: 0,
+            manualSteps: {
+                prepare: "switch to inactive",
+            },
         },
         <ReadingTestRule>{
             type: "reading",
             value: 1,
+            manualSteps: {
+                prepare: "switch to active",
+            },
         },
     ],
     [SRV_RELAY]: <ServiceTestRule[]>[
@@ -74,30 +80,51 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         <EventTestRule>{
             type: "event",
             eventName: "face_up",
+            manualSteps: {
+                prepare: "turn face up",
+            },
         },
         <EventTestRule>{
             type: "event",
             eventName: "face_down",
+            manualSteps: {
+                prepare: "turn face down",
+            },
         },
         <EventTestRule>{
             type: "event",
             eventName: "tilt_up",
+            manualSteps: {
+                prepare: "tilt up",
+            },
         },
         <EventTestRule>{
             type: "event",
             eventName: "tilt_down",
+            manualSteps: {
+                prepare: "tilt down",
+            },
         },
         <EventTestRule>{
             type: "event",
             eventName: "tilt_left",
+            manualSteps: {
+                prepare: "tilt left",
+            },
         },
         <EventTestRule>{
             type: "event",
             eventName: "tilt_right",
+            manualSteps: {
+                prepare: "tilt right",
+            },
         },
         <EventTestRule>{
             type: "event",
             eventName: "shake",
+            manualSteps: {
+                prepare: "shake device",
+            },
         },
     ],
     [SRV_BUTTON]: <ServiceTestRule[]>[
@@ -105,11 +132,17 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
             type: "reading",
             value: 0,
             tolerance: 0.001,
+            manualSteps: {
+                prepare: "release button",
+            },
         },
         <ReadingTestRule>{
             type: "reading",
             value: 1,
             tolerance: 0.001,
+            manualSteps: {
+                prepare: "press button",
+            },
         },
         <EventTestRule>{
             type: "event",
@@ -124,10 +157,16 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         <ReadingTestRule>{
             type: "reading",
             value: 0,
+            manualSteps: {
+                prepare: "do not move",
+            },
         },
         <ReadingTestRule>{
             type: "reading",
             value: 1,
+            manualSteps: {
+                prepare: "move",
+            },
         },
         <EventTestRule>{
             type: "event",
@@ -139,11 +178,17 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
             type: "reading",
             value: 0,
             tolerance: 0.01,
+            manualSteps: {
+                prepare: "slide to minimum",
+            },
         },
         <ReadingTestRule>{
             type: "reading",
             value: 1,
             tolerance: 0.01,
+            manualSteps: {
+                prepare: "slide to maximum",
+            },
         },
     ],
     [SRV_ROTARY_ENCODER]: <ServiceTestRule[]>[
@@ -174,10 +219,7 @@ export function resolveTestRules(serviceClass: number) {
     return builtinTestRules[serviceClass]
 }
 
-function createGamepadEventTests(
-    test: ServiceMemberTestNode,
-    buttons: number
-) {
+function createGamepadEventTests(test: ServiceMemberTestNode, buttons: number) {
     const addTest = (event: string, flag: number) => {
         let seenEventArg = false
         test.appendChild(

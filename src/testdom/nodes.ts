@@ -15,7 +15,7 @@ import { randomDeviceId } from "../jdom/random"
 import { JDRegister } from "../jdom/register"
 import { JDService } from "../jdom/service"
 import { arrayConcatMany, delay } from "../jdom/utils"
-import { PanelTestSpec, TestResult, TestState } from "./spec"
+import { ManualSteps, PanelTestSpec, TestResult, TestState } from "./spec"
 
 export const PANEL_TEST_KIND = "panelTest"
 export const DEVICE_TEST_KIND = "deviceTest"
@@ -37,8 +37,15 @@ export abstract class TestNode extends JDNode {
     private _children: TestNode[] = []
     protected readonly subscriptions = new JDSubscriptionScope()
 
-    constructor(private _name: string) {
+    constructor(
+        private _name: string,
+        private _manualSteps: ManualSteps = undefined
+    ) {
         super()
+    }
+
+    get manualSteps() {
+        return this._manualSteps
     }
 
     get description(): string {
@@ -106,6 +113,9 @@ export abstract class TestNode extends JDNode {
     }
 
     protected updateState(): void {
+        const { prepare } = this.manualSteps || {}
+        if (prepare && this.state == TestState.Indeterminate) return
+
         // compute local state
         const { state, output } = this.nodeState()
         this.output = output
@@ -434,8 +444,8 @@ export class ServiceTest extends TestNode {
 }
 
 export abstract class ServiceMemberTestNode extends TestNode {
-    constructor(name: string) {
-        super(name)
+    constructor(name: string, manualSteps: ManualSteps) {
+        super(name, manualSteps)
     }
     get service(): JDService {
         if (!this.parent) return undefined
@@ -446,13 +456,14 @@ export abstract class ServiceMemberTestNode extends TestNode {
 
 export interface ServiceMemberOptions {
     name: string
+    manualSteps?: ManualSteps
     start: (test: ServiceMemberTestNode) => () => void
     hasChildren?: boolean
 }
 
 export class ServiceCommandTest extends ServiceMemberTestNode {
     constructor(readonly options: ServiceMemberOptions) {
-        super(options.name)
+        super(options.name, options.manualSteps)
     }
     get nodeKind(): string {
         return SERVICE_COMMAND_TEST_KIND
@@ -476,8 +487,8 @@ export class ServiceCommandTest extends ServiceMemberTestNode {
 }
 
 export abstract class RegisterTestNode extends ServiceMemberTestNode {
-    constructor(name: string, readonly code: number) {
-        super(name)
+    constructor(name: string, manualSteps: ManualSteps, readonly code: number) {
+        super(name, manualSteps)
     }
     get register() {
         return this.node as JDRegister
@@ -516,7 +527,7 @@ export class RegisterOracle extends RegisterTestNode {
         readonly serviceClass: number,
         readonly tolerance: number
     ) {
-        super(name, SystemReg.Reading)
+        super(name, undefined, SystemReg.Reading)
     }
 
     get nodeKind(): string {
@@ -548,13 +559,14 @@ export class RegisterOracle extends RegisterTestNode {
 export class RegisterTest extends RegisterTestNode {
     constructor(
         name: string,
+        manualSteps: ManualSteps,
         code: number,
         readonly computeState: (
             node: RegisterTest,
             logger: TestLogger
         ) => TestState
     ) {
-        super(name, code)
+        super(name, manualSteps, code)
     }
     get nodeKind(): string {
         return REGISTER_TEST_KIND
@@ -591,13 +603,14 @@ export class RegisterTest extends RegisterTestNode {
 export class EventTest extends ServiceMemberTestNode {
     constructor(
         name: string,
+        manualSteps: ManualSteps,
         readonly code: number,
         readonly computeState: (
             node: EventTest,
             logger: TestLogger
         ) => TestState
     ) {
-        super(name)
+        super(name, manualSteps)
     }
     get nodeKind(): string {
         return EVENT_TEST_KIND

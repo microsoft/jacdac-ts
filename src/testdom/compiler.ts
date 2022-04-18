@@ -165,6 +165,47 @@ function createOracleRule(
     }
 }
 
+function createReadingTest(
+    specification: jdspec.ServiceSpec,
+    readingRule: ReadingTestRule
+) {
+    const { type, name, value, tolerance, manualSteps } = readingRule
+    const registerId =
+        type === "reading"
+            ? SystemReg.Reading
+            : type === "intensity"
+            ? SystemReg.Intensity
+            : SystemReg.Value
+    const registerSpec = specification.packets.find(
+        pkt => isRegister(pkt) && pkt.identifier === registerId
+    )
+    return new RegisterTest(
+        name ||
+            `observe ${registerSpec.name} == ${value}${
+                tolerance ? ` +/-${tolerance}` : ""
+            }`,
+        manualSteps,
+        registerId,
+        createReadingRule(readingRule)
+    )
+}
+
+function createEventTest(
+    specification: jdspec.ServiceSpec,
+    eventRule: EventTestRule
+) {
+    const { name, eventName, manualSteps } = eventRule
+    const pkt = specification.packets.find(
+        pkt => isEvent(pkt) && pkt.name === eventName
+    )
+    return new EventTest(
+        name || `raise event ${eventName}`,
+        manualSteps,
+        pkt.identifier,
+        createEventRule(eventRule)
+    )
+}
+
 function compileTestRule(
     specification: jdspec.ServiceSpec,
     rule: ServiceTestRule
@@ -177,39 +218,10 @@ function compileTestRule(
             )
         case "value":
         case "intensity":
-        case "reading": {
-            const readingRule = rule as ReadingTestRule
-            const { name, value, tolerance } = readingRule
-            const registerId =
-                type === "reading"
-                    ? SystemReg.Reading
-                    : type === "intensity"
-                    ? SystemReg.Intensity
-                    : SystemReg.Value
-            const registerSpec = specification.packets.find(
-                pkt => isRegister(pkt) && pkt.identifier === registerId
-            )
-            return new RegisterTest(
-                name ||
-                    `observe ${registerSpec.name} == ${value}${
-                        tolerance ? ` +/-${tolerance}` : ""
-                    }`,
-                registerId,
-                createReadingRule(readingRule)
-            )
-        }
-        case "event": {
-            const eventRule = rule as EventTestRule
-            const { name, eventName } = eventRule
-            const pkt = specification.packets.find(
-                pkt => isEvent(pkt) && pkt.name === eventName
-            )
-            return new EventTest(
-                name || `raise event ${eventName}`,
-                pkt.identifier,
-                createEventRule(eventRule)
-            )
-        }
+        case "reading":
+            return createReadingTest(specification, rule as ReadingTestRule)
+        case "event":
+            return createEventTest(specification, rule as EventTestRule)
         default:
             return undefined
     }
@@ -274,6 +286,7 @@ export function createDeviceTest(
         controlTest.appendChild(
             new RegisterTest(
                 `firmware version is ${firmwareVersion}`,
+                undefined,
                 ControlReg.FirmwareVersion,
                 (node, logger) => {
                     const { register } = node
@@ -311,6 +324,7 @@ export function createDeviceTest(
                 serviceTest.appendChild(
                     new RegisterTest(
                         "status code should be ready or sleeping",
+                        undefined,
                         BaseReg.StatusCode,
                         (node, logger) => {
                             const { register } = node
@@ -337,6 +351,7 @@ export function createDeviceTest(
                     serviceTest.appendChild(
                         new RegisterTest(
                             "reading should stream",
+                            undefined,
                             readingSpec.identifier,
                             node => {
                                 const { register } = node
@@ -352,6 +367,7 @@ export function createDeviceTest(
                     serviceTest.appendChild(
                         new RegisterTest(
                             "reading near oracle",
+                            undefined,
                             SystemReg.Reading,
                             createOracleRule(serviceOracle)
                         )
@@ -372,6 +388,7 @@ export function createDeviceTest(
                         p =>
                             new RegisterTest(
                                 `${p.name} has value`,
+                                undefined,
                                 p.identifier,
                                 node => {
                                     const { register } = node
