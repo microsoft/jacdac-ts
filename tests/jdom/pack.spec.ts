@@ -109,4 +109,6 @@ describe("jdpack", () => {
     testOne("i16.16", [0.1], { maxError: err })
     testOne("i16.16", [1], { maxError: err })
     testOne("i16.16", [Math.PI], { maxError: err })
+    testOne("r: u16", [[[0], [1]]])
+    testOne("u16 r: u16", [1, [[2], [3]]])
 })
