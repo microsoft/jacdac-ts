@@ -114,7 +114,12 @@ export abstract class TestNode extends JDNode {
 
     protected updateState(): void {
         const { prepare } = this.manualSteps || {}
-        if (prepare && this.state == TestState.Indeterminate) return
+        if (
+            prepare &&
+            (this.state == TestState.Indeterminate ||
+                this.state == TestState.Fail)
+        )
+            return
 
         // compute local state
         const { state, output } = this.nodeState()
@@ -128,6 +133,7 @@ export abstract class TestNode extends JDNode {
     prepared() {
         this.state = TestState.Running
         this.updateState()
+        if (this.state != <any>TestState.Pass) this.state = TestState.Fail
     }
 
     resolveOracle(reg: JDRegister): RegisterOracle {
