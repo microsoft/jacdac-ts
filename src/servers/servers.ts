@@ -77,6 +77,7 @@ import {
     GamepadButtons,
     SRV_HID_KEYBOARD,
     SRV_HID_MOUSE,
+    SRV_HID_JOYSTICK,
     //    SRV_AZURE_IOT_HUB,
     SRV_AZURE_IOT_HUB_HEALTH,
     DotMatrixVariant,
@@ -138,6 +139,7 @@ import { BrailleDisplayServer } from "./brailledisplayserver"
 import { Flags } from "../jdom/flags"
 import { LedDisplayServer } from "./leddisplayserver"
 import { PowerSupplyServer } from "./powersupplyserver"
+import { HIDJoystickServer } from "./hidjoystickserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "indoor",
@@ -621,12 +623,17 @@ function initProviders() {
                 ],
             },
             {
-                name: "HID keyboard",
+                name: "HID keyboard (simulated)",
                 serviceClasses: [SRV_HID_KEYBOARD],
                 services: () => [new HIDKeyboardServer()],
             },
             {
-                name: "HID mouse",
+                name: "HID joystick (simulated)",
+                serviceClasses: [SRV_HID_JOYSTICK],
+                services: () => [new HIDJoystickServer()],
+            },
+            {
+                name: "HID mouse (simulated)",
                 serviceClasses: [SRV_HID_MOUSE],
                 services: () => [new HIDMouseServer()],
             },
