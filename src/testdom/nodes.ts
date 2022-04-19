@@ -125,6 +125,13 @@ export abstract class TestNode extends JDNode {
         else this.state = this.computeChildrenState()
     }
 
+    prepared() {
+        if (this.state !== TestState.Indeterminate) return
+
+        this.state = TestState.Running
+        this.updateState()
+    }
+
     resolveOracle(reg: JDRegister): RegisterOracle {
         return this.parent?.resolveOracle(reg)
     }

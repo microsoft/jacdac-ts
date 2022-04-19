@@ -91,7 +91,7 @@ function createSetIntensityAndValueRule(
 function createReadingRule(
     rule: ReadingTestRule
 ): (node: RegisterTest, logger: TestLogger) => TestState {
-    const { value, tolerance, samples = 2, type } = rule
+    const { value, tolerance, samples = 1, type } = rule
     let count = 0
     let seen = count >= samples
     return (node, logger) => {
@@ -109,7 +109,7 @@ function createReadingRule(
             seen = count >= samples
         }
         if (!seen) logger(`missing or incorrect ${type} value`)
-        return seen ? TestState.Pass : TestState.Fail
+        return seen ? TestState.Pass : TestState.Running
     }
 }
 
@@ -121,7 +121,7 @@ function createEventRule(
         const { event } = node
         const seen = event?.count > 0
         if (!seen) logger(`event not observed`)
-        return event?.count > 0 ? TestState.Pass : TestState.Fail
+        return event?.count > 0 ? TestState.Pass : TestState.Running
     }
 }
 
@@ -358,7 +358,7 @@ export function createDeviceTest(
                                 const { unpackedValue = [] } = register
                                 return unpackedValue?.length > 0
                                     ? TestState.Pass
-                                    : TestState.Fail
+                                    : TestState.Running
                             }
                         )
                     )
@@ -396,7 +396,7 @@ export function createDeviceTest(
                                     if (unpackedValue?.length > 0)
                                         return TestState.Pass
                                     register.scheduleRefresh()
-                                    return TestState.Fail
+                                    return TestState.Running
                                 }
                             )
                     )
