@@ -758,7 +758,7 @@ function initProviders() {
                 ],
             },
             {
-                name: "LED pixel ring 10",
+                name: "LED display ring 10",
                 serviceClasses: [SRV_LED_DISPLAY],
                 services: () => [
                     new LedDisplayServer({
@@ -768,7 +768,7 @@ function initProviders() {
                 ],
             },
             {
-                name: "LED pixel ring 12",
+                name: "LED display ring 12",
                 serviceClasses: [SRV_LED_DISPLAY],
                 services: () => [
                     new LedDisplayServer({
@@ -778,7 +778,7 @@ function initProviders() {
                 ],
             },
             {
-                name: "LED pixel ring 16",
+                name: "LED display ring 16",
                 serviceClasses: [SRV_LED_DISPLAY],
                 services: () => [
                     new LedDisplayServer({
@@ -788,7 +788,7 @@ function initProviders() {
                 ],
             },
             {
-                name: "LED pixel ring 24",
+                name: "LED display ring 24",
                 serviceClasses: [SRV_LED_DISPLAY],
                 services: () => [
                     new LedDisplayServer({
@@ -798,7 +798,7 @@ function initProviders() {
                 ],
             },
             {
-                name: "LED pixel jewel 7",
+                name: "LED display jewel 7",
                 serviceClasses: [SRV_LED_DISPLAY],
                 services: () => [
                     new LedDisplayServer({
@@ -808,7 +808,7 @@ function initProviders() {
                 ],
             },
             {
-                name: "LED pixel stick 8",
+                name: "LED display stick 8",
                 serviceClasses: [SRV_LED_DISPLAY],
                 services: () => [
                     new LedDisplayServer({
