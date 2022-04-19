@@ -225,13 +225,13 @@ const microServo360Options = {
 const windDirectionOptions: AnalogSensorServerOptions = {
     readingValues: [0],
     readingError: [5],
-    streamingInterval: 1000,
+    streamingInterval: 5000,
 }
 const windSpeedOptions: AnalogSensorServerOptions = {
     readingValues: [0],
-    readingError: [0.5],
-    streamingInterval: 1000,
-    registerValues: [{ code: WindSpeedReg.MaxWindSpeed, values: [55] }],
+    readingError: [2],
+    streamingInterval: 5000,
+    registerValues: [{ code: WindSpeedReg.MaxWindSpeed, values: [80] }],
 }
 const eCO2Options: AnalogSensorServerOptions = {
     readingValues: [4000],
