@@ -1,4 +1,6 @@
+import { bufferEq } from "../jdom/utils"
 import {
+    CHANGE,
     HidJoystickCmd,
     HidJoystickReg,
     SRV_HID_JOYSTICK,
@@ -36,9 +38,15 @@ export class HIDJoystickServer extends JDServiceServer {
     }
 
     private handleSetButtons(pkt: Packet) {
-        this.buttons = pkt.data
+        if (!bufferEq(this.buttons, pkt.data)) {
+            this.buttons = pkt.data
+            this.emit(CHANGE)
+        }
     }
     private handleSetAxis(pkt: Packet) {
-        this.axis = pkt.data
+        if (!bufferEq(this.axis, pkt.data)) {
+            this.axis = pkt.data
+            this.emit(CHANGE)
+        }
     }
 }
