@@ -126,8 +126,6 @@ export abstract class TestNode extends JDNode {
     }
 
     prepared() {
-        if (this.state !== TestState.Indeterminate) return
-
         this.state = TestState.Running
         this.updateState()
     }
