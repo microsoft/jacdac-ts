@@ -21,6 +21,7 @@ import {
     SRV_ROTARY_ENCODER,
     SRV_SWITCH,
     REPORT_UPDATE,
+    RotaryEncoderReg,
 } from "../jdom/constants"
 import { lightEncode } from "../jdom/light"
 import { jdpack } from "../jdom/pack"
@@ -432,6 +433,56 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                 }
             }
             // start work async
+            work()
+            return () => {
+                mounted = false
+            }
+        },
+    },
+    [SRV_ROTARY_ENCODER]: {
+        name: "rotate clockwize 1 full turn",
+        start: test => {
+            let mounted = true
+            const work = async () => {
+                test.state = TestState.Running
+                const service = test.service
+                const clicksPerTurnRegister = service.register(
+                    RotaryEncoderReg.ClicksPerTurn
+                )
+                const positionRegister = service.register(
+                    RotaryEncoderReg.Position
+                )
+
+                // read number of clicks
+                let clicksPerTurn = 0
+                while (mounted && !clicksPerTurn) {
+                    await clicksPerTurnRegister.refresh()
+                    clicksPerTurn = clicksPerTurnRegister
+                        .unpackedValue[0] as number
+                }
+
+                let lastPosition: number = undefined
+                let count = 0
+                while (mounted) {
+                    await positionRegister.refresh()
+                    const position = positionRegister.unpackedValue[0]
+                    if (lastPosition === position) await delay(20)
+                    else if (
+                        lastPosition === undefined ||
+                        lastPosition + 1 === position % clicksPerTurn
+                    ) {
+                        lastPosition = position % clicksPerTurn
+                        count++
+                        if (count === clicksPerTurn) {
+                            test.state = TestState.Pass
+                            break
+                        }
+                    } else {
+                        count = 0
+                    }
+                }
+                // look for full sequence
+            }
             work()
             return () => {
                 mounted = false
