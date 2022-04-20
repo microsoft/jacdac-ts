@@ -493,7 +493,10 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
         },
     },
     [SRV_LED]: {
-        name: "cycles through RGB every 0.5s",
+        name: "cycles through red, green, blue every 0.5s",
+        manualSteps: {
+            validate: "verify colors on LED"
+        },
         start: test => {
             let mounted = true
             const pack = (
@@ -541,8 +544,6 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                         pack(0, 0, 0, 200)
                     )
                     await delay(500)
-
-                    test.state = TestState.Pass
                 }
             }
             // start work async

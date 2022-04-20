@@ -40,6 +40,7 @@ export interface ServiceTestSpec {
 
 export interface ManualSteps {
     prepare?: string
+    validate?: string
 }
 
 export interface ServiceTestRule {
