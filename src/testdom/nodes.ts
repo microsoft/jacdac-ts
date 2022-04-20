@@ -123,7 +123,7 @@ export abstract class TestNode extends JDNode {
 
         // compute local state
         const { state, output } = this.nodeState()
-        this.output = output
+        if (output !== undefined) this.output = output
         if (this.children.length === 0 || state === TestState.Fail)
             this.state = state
         // compute child states
@@ -200,7 +200,7 @@ export abstract class TestNode extends JDNode {
         return this._output
     }
 
-    protected set output(value: string) {
+    set output(value: string) {
         if (this._output !== value) {
             this._output = value
             this.emit(CHANGE)
@@ -603,7 +603,7 @@ export class RegisterTest extends RegisterTestNode {
         }
         return {
             state,
-            output: log.join("\n"),
+            output: log.length ? log.join("\n") : undefined,
         }
     }
 
