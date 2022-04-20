@@ -440,7 +440,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
         },
     },
     [SRV_ROTARY_ENCODER]: {
-        name: "rotate clockwise 1 full turn",
+        name: "rotate clockwise slowly 1 full turn, without missing a click",
         start: test => {
             let mounted = true
             const work = async () => {
@@ -467,20 +467,22 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     await positionRegister.refresh()
                     const position = positionRegister.unpackedValue[0]
                     if (lastPosition === position) await delay(20)
-                    else if (
-                        lastPosition === undefined ||
-                        lastPosition + 1 === position % clicksPerTurn
-                    ) {
-                        lastPosition = position % clicksPerTurn
-                        count++
-                        test.setOutput(`${count}/${clicksPerTurn}`)
-                        if (count === clicksPerTurn) {
-                            test.state = TestState.Pass
-                            break
+                    else { 
+                        if (
+                            lastPosition === undefined ||
+                            lastPosition + 1 === position % clicksPerTurn
+                        ) {
+                            lastPosition = position % clicksPerTurn
+                            count++
+                            test.setOutput(`${count}/${clicksPerTurn} @ ${lastPosition}`)
+                            if (count === clicksPerTurn) {
+                                test.state = TestState.Pass
+                                break
+                            }
+                        } else {
+                            count = 0
+                            test.setOutput(`${count}/${clicksPerTurn} @ ${lastPosition}`)
                         }
-                    } else {
-                        count = 0
-                        test.setOutput(`${count}/${clicksPerTurn}`)
                     }
                 }
                 // look for full sequence
