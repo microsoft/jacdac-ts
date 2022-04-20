@@ -440,7 +440,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
         },
     },
     [SRV_ROTARY_ENCODER]: {
-        name: "rotate clockwize 1 full turn",
+        name: "rotate clockwise slowly 1 full turn, without missing a click",
         start: test => {
             let mounted = true
             const work = async () => {
@@ -475,17 +475,16 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                         lastPosition = position % clicksPerTurn
                         count++
                         if (count === clicksPerTurn) {
+                            test.output = `${count}/${clicksPerTurn} from ${lastPosition}`
                             test.state = TestState.Pass
                             break
                         }
                     } else {
                         count = 0
                     }
-
-                    test.output = `${count} ticks observed`
+                    test.output = `${count}/${clicksPerTurn} from ${lastPosition}`
                 }
                 // look for full sequence
-                test.output = undefined
             }
             work()
             return () => {
