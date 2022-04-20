@@ -468,7 +468,7 @@ export abstract class ServiceMemberTestNode extends TestNode {
 export interface ServiceMemberOptions {
     name: string
     manualSteps?: ManualSteps
-    start: (test: ServiceCommandTest) => () => void
+    start: (test: ServiceMemberTestNode) => () => void
     hasChildren?: boolean
 }
 
@@ -481,9 +481,6 @@ export class ServiceCommandTest extends ServiceMemberTestNode {
     }
     override updateState() {
         if (this.options?.hasChildren) super.updateState()
-    }
-    public setOutput(s: string) {
-        this.output = s
     }
     override mount(): void {
         super.mount()

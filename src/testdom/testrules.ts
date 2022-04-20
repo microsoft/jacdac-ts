@@ -468,28 +468,24 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     await positionRegister.refresh()
                     const position = positionRegister.unpackedValue[0]
                     if (lastPosition === position) await delay(20)
-                    else { 
-                        if (
-                            lastPosition === undefined ||
-                            lastPosition + 1 === position % clicksPerTurn
-                        ) {
-                            lastPosition = position % clicksPerTurn
-                            count++
-                            test.setOutput(`${count}/${clicksPerTurn} @ ${lastPosition}`)
-                            if (count === clicksPerTurn) {
-                                test.state = TestState.Pass
-                                break
-                            }
-                        } else {
-                            count = 0
-                            test.setOutput(`${count}/${clicksPerTurn} @ ${lastPosition}`)
+                    else if (
+                        lastPosition === undefined ||
+                        lastPosition + 1 === position % clicksPerTurn
+                    ) {
+                        lastPosition = position % clicksPerTurn
+                        count++
+                        if (count === clicksPerTurn) {
+                            test.output = `${count}/${clicksPerTurn} @ ${lastPosition} observed ${position}`
+                            test.state = TestState.Pass
+                            break
                         }
+                    } else {
+                        count = 0
                     }
-
-                    test.output = `${count} ticks observed`
+                    test.output = `${count}/${clicksPerTurn} @ ${lastPosition} observed ${position}`
                 }
                 // look for full sequence
-                test.output = undefined
+                // test.output = undefined
             }
             work()
             return () => {
