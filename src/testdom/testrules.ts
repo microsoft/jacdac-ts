@@ -454,6 +454,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                 )
 
                 // read number of clicks
+                test.output = "reading clicks per turn"
                 let clicksPerTurn = 0
                 while (mounted && !clicksPerTurn) {
                     await clicksPerTurnRegister.refresh()
@@ -480,8 +481,11 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     } else {
                         count = 0
                     }
+
+                    test.output = `${count} ticks observed`
                 }
                 // look for full sequence
+                test.output = undefined
             }
             work()
             return () => {
