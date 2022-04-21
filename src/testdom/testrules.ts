@@ -457,16 +457,17 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                 test.output = "reading clicks per turn"
                 let clicksPerTurn = 0
                 while (mounted && !clicksPerTurn) {
+                    await delay(100)
                     await clicksPerTurnRegister.refresh()
                     clicksPerTurn = clicksPerTurnRegister
-                        .unpackedValue[0] as number
+                        .unpackedValue?.[0] as number
                 }
 
                 let lastPosition: number = undefined
                 let count = 0
                 while (mounted) {
                     await positionRegister.refresh()
-                    const position = positionRegister.unpackedValue[0]
+                    const position = positionRegister.unpackedValue?.[0]
                     if (lastPosition === position) await delay(20)
                     else if (
                         lastPosition === undefined ||
