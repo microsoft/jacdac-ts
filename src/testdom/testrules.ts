@@ -210,7 +210,7 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
                 prepare: "apply bright light to sensor",
             },
         },
-    ],    
+    ],
     [SRV_ROTARY_ENCODER]: <ServiceTestRule[]>[
         <ReadingTestRule>{
             type: "reading",
@@ -544,6 +544,8 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
             }
             const work = async () => {
                 test.state = TestState.Running
+                const brightness = 0x22
+                const interval = 500
                 while (mounted) {
                     const service = test.service
                     if (!service) {
@@ -552,25 +554,25 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     }
                     await service.sendCmdAsync(
                         LedCmd.Animate,
-                        pack(255, 0, 0, 200)
+                        pack(brightness, 0, 0, interval)
                     )
                     await delay(500)
                     if (!mounted) return
                     await service.sendCmdAsync(
                         LedCmd.Animate,
-                        pack(0, 255, 0, 200)
+                        pack(0, brightness, 0, interval)
                     )
                     await delay(500)
                     if (!mounted) return
                     await service.sendCmdAsync(
                         LedCmd.Animate,
-                        pack(0, 0, 255, 200)
+                        pack(0, 0, brightness, interval)
                     )
                     await delay(500)
                     if (!mounted) return
                     await service.sendCmdAsync(
                         LedCmd.Animate,
-                        pack(0, 0, 0, 200)
+                        pack(0, 0, 0, interval)
                     )
                     await delay(500)
                 }
