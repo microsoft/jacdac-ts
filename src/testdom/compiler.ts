@@ -266,6 +266,41 @@ export function tryParsePanelTestSpec(source: string) {
     return undefined
 }
 
+function createStatusCodeTest() {
+    return new RegisterTest(
+        "status code should be ready, sleeping or not implemented",
+        undefined,
+        BaseReg.StatusCode,
+        (node, logger) => {
+            const { register } = node
+            const { unpackedValue = [] } = register
+            if (register.notImplemented || !unpackedValue.length) {
+                logger(`not implemented`)
+                return TestState.Pass
+            }
+            const [code, vendorCode] = unpackedValue
+            if (vendorCode !== 0) {
+                logger(`vendor code in error mode`)
+                return TestState.Fail
+            }
+            if (code === SystemStatusCodes.Initializing) {
+                logger(`initializing...`)
+                return TestState.Running
+            } else if (code === SystemStatusCodes.Calibrating) {
+                logger(`calibrating...`)
+                return TestState.Running
+            }
+            const ok =
+                code === SystemStatusCodes.Ready ||
+                code === SystemStatusCodes.Sleeping
+            if (ok) return TestState.Pass
+
+            logger(`expected status code equals to 0x0,0x0 or 0x3,0x0`)
+            return TestState.Fail
+        }
+    )
+}
+
 export function createDeviceTest(
     bus: JDBus,
     device: DeviceTestSpec,
@@ -281,8 +316,9 @@ export function createDeviceTest(
     deviceTest.appendChild(new StatusLightTest())
 
     // add test for control
+    const controlTest = new ServiceTest("control", SRV_CONTROL)
+    controlTest.appendChild(createStatusCodeTest())
     if (firmwareVersion) {
-        const controlTest = new ServiceTest("control", SRV_CONTROL)
         controlTest.appendChild(
             new RegisterTest(
                 `firmware version is ${firmwareVersion}`,
@@ -290,17 +326,22 @@ export function createDeviceTest(
                 ControlReg.FirmwareVersion,
                 (node, logger) => {
                     const { register } = node
-                    const ok = register?.stringValue === firmwareVersion
-                    if (!ok)
+                    const value = register?.stringValue
+                    const ok = value === firmwareVersion
+                    if (value && !ok)
                         logger(
                             `incorrect firmware version, expected ${firmwareVersion}`
                         )
-                    return ok ? TestState.Pass : TestState.Fail
+                    return ok
+                        ? TestState.Pass
+                        : value
+                        ? TestState.Fail
+                        : TestState.Running
                 }
             )
         )
-        deviceTest.appendChild(controlTest)
     }
+    deviceTest.appendChild(controlTest)
 
     const services: ServiceTestSpec[] =
         device.services ||
@@ -321,28 +362,7 @@ export function createDeviceTest(
             )
             {
                 // add status code
-                serviceTest.appendChild(
-                    new RegisterTest(
-                        "status code should be ready or sleeping",
-                        undefined,
-                        BaseReg.StatusCode,
-                        (node, logger) => {
-                            const { register } = node
-                            const { unpackedValue = [] } = register
-                            if (!unpackedValue.length) return TestState.Pass // not implemented
-                            const [code, vendorCode] = unpackedValue
-                            const ok =
-                                (code === SystemStatusCodes.Ready ||
-                                    code === SystemStatusCodes.Sleeping) &&
-                                vendorCode === 0
-                            if (!ok)
-                                logger(
-                                    `expected status code equals to 0x0,0x0 or 0x3,0x0`
-                                )
-                            return ok ? TestState.Pass : TestState.Fail
-                        }
-                    )
-                )
+                serviceTest.appendChild(createStatusCodeTest())
 
                 const packets = specification?.packets
                 // reading value rule if any
@@ -350,7 +370,7 @@ export function createDeviceTest(
                 if (readingSpec)
                     serviceTest.appendChild(
                         new RegisterTest(
-                            "reading should stream",
+                            `${readingSpec.name} data should stream`,
                             undefined,
                             readingSpec.identifier,
                             node => {
@@ -363,10 +383,10 @@ export function createDeviceTest(
                         )
                     )
                 // add oracle
-                if (serviceOracle)
+                if (readingSpec && serviceOracle)
                     serviceTest.appendChild(
                         new RegisterTest(
-                            "reading near oracle",
+                            `${readingSpec.name} near oracle`,
                             undefined,
                             SystemReg.Reading,
                             createOracleRule(serviceOracle)

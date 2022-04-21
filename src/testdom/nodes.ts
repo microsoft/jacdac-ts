@@ -372,6 +372,9 @@ export class StatusLightTest extends TestNode {
     constructor() {
         super("status light")
     }
+    get description(): string {
+        return "slow green blink = pass, fast red blink = fail, medium blue blink = running"
+    }
     get nodeKind(): string {
         return STATUS_LIGHT_TEST_KIND
     }
