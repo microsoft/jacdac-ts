@@ -27,7 +27,12 @@ import {
 import { lightEncode } from "../jdom/light"
 import { jdpack } from "../jdom/pack"
 import { delay } from "../jdom/utils"
-import { EventTest, ServiceMemberOptions, ServiceMemberTestNode } from "./nodes"
+import {
+    EventTest,
+    RegisterTest,
+    ServiceMemberOptions,
+    ServiceMemberTestNode,
+} from "./nodes"
 import {
     EventTestRule,
     ReadingTestRule,
@@ -239,18 +244,51 @@ export function resolveTestRules(serviceClass: number) {
     return builtinTestRules[serviceClass]
 }
 
-function createGamepadEventTests(test: ServiceMemberTestNode, buttons: number) {
-    const addTest = (event: string, flag: number) => {
+function createGamepadButtonTests(
+    test: ServiceMemberTestNode,
+    buttons: number
+) {
+    const addReadingTest = (name: string, flag: number) => {
+        let seenEventArg = false
+        test.appendChild(
+            new RegisterTest(
+                `${name} reading`,
+                {
+                    prepare: `press ${name} button`,
+                },
+                GamepadReg.Direction,
+                (node, logger) => {
+                    const { register } = node
+                    const [buttons] = (register.unpackedValue || []) as [
+                        GamepadButtons,
+                        number,
+                        number
+                    ]
+                    const seen = !!(buttons & flag)
+                    if (!seenEventArg && !seen)
+                        logger(`reading not observed or incorrect flag`)
+                    else if (seen) {
+                        seenEventArg = seen
+                    }
+                    return seenEventArg ? TestState.Pass : TestState.Running
+                }
+            )
+        )
+    }
+    const addEventTest = (name: string, flag: number) => {
         let seenEventArg = false
         test.appendChild(
             new EventTest(
-                `${event}`,
-                undefined,
+                `${name} event`,
+                {
+                    prepare: `press ${name} button to raise event`,
+                },
                 GamepadEvent.ButtonsChanged,
                 (node, logger) => {
                     const { event } = node
                     const seen = !!(event?.count > 0 && event?.data[0] & flag)
-                    if (!seenEventArg && !seen) logger(`event not observed`)
+                    if (!seenEventArg && !seen)
+                        logger(`event not observed or incorrect flag`)
                     else if (seen) {
                         seenEventArg = seen
                     }
@@ -265,7 +303,8 @@ function createGamepadEventTests(test: ServiceMemberTestNode, buttons: number) {
         const value = parseInt(GamepadButtons[key])
         if (!isNaN(value)) {
             if (value & buttons) {
-                addTest(key, value)
+                addReadingTest(key, value)
+                addEventTest(key, value)
             }
         }
     }
@@ -288,14 +327,14 @@ function createGamepadEventTests(test: ServiceMemberTestNode, buttons: number) {
     ) {
         LRUD.forEach(value => {
             const key = GamepadButtons[value]
-            addTest(key, value)
+            addEventTest(key, value)
         })
     }
 }
 
 const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
     [SRV_GAMEPAD]: {
-        name: "gamepad events",
+        name: "buttons and events",
         start: test => {
             const service = test.service
             const buttonsAvailable = service.register(
@@ -303,14 +342,14 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
             )
             const buttons = buttonsAvailable.unpackedValue
             if (buttons?.length > 0) {
-                createGamepadEventTests(test, buttons[0])
+                createGamepadButtonTests(test, buttons[0])
                 return undefined
             } else {
                 const unsubscribe = buttonsAvailable.subscribe(
                     REPORT_UPDATE,
                     () => {
                         unsubscribe()
-                        createGamepadEventTests(
+                        createGamepadButtonTests(
                             test,
                             buttonsAvailable.unpackedValue[0]
                         )
