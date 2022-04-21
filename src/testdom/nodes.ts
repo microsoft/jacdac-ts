@@ -647,6 +647,7 @@ export class EventTest extends ServiceMemberTestNode {
         this.subscriptions.mount(
             event.subscribe(EVENT, () => {
                 this.updateState()
+                this.emit(CHANGE)
             })
         )
     }
