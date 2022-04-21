@@ -22,6 +22,7 @@ import {
     SRV_SWITCH,
     REPORT_UPDATE,
     RotaryEncoderReg,
+    SRV_LIGHT_LEVEL,
 } from "../jdom/constants"
 import { lightEncode } from "../jdom/light"
 import { jdpack } from "../jdom/pack"
@@ -192,6 +193,24 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
             },
         },
     ],
+    [SRV_LIGHT_LEVEL]: <ServiceTestRule[]>[
+        <ReadingTestRule>{
+            type: "reading",
+            value: 0,
+            tolerance: 0.1,
+            manualSteps: {
+                prepare: "cover sensor to block light",
+            },
+        },
+        <ReadingTestRule>{
+            type: "reading",
+            value: 1,
+            tolerance: 0.1,
+            manualSteps: {
+                prepare: "apply bright light to sensor",
+            },
+        },
+    ],    
     [SRV_ROTARY_ENCODER]: <ServiceTestRule[]>[
         <ReadingTestRule>{
             type: "reading",
