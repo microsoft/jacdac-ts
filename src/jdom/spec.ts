@@ -21,6 +21,7 @@ import {
     SRV_BRIDGE,
     SRV_JACSCRIPT_CLOUD,
     SRV_JACSCRIPT_CONDITION,
+    SRV_JACSCRIPT_MANAGER,
 } from "./constants"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -134,6 +135,7 @@ export function isInfrastructure(spec: jdspec.ServiceSpec) {
             SRV_BRIDGE,
             SRV_JACSCRIPT_CLOUD,
             SRV_JACSCRIPT_CONDITION,
+            SRV_JACSCRIPT_MANAGER,
         ].indexOf(spec.classIdentifier) > -1 ||
             spec.shortId[0] === "_")
     )
