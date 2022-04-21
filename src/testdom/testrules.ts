@@ -235,7 +235,7 @@ function createGamepadEventTests(test: ServiceMemberTestNode, buttons: number) {
                     else if (seen) {
                         seenEventArg = seen
                     }
-                    return seenEventArg ? TestState.Pass : TestState.Fail
+                    return seenEventArg ? TestState.Pass : TestState.Running
                 }
             )
         )
@@ -304,6 +304,9 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
     },
     [SRV_DOT_MATRIX]: {
         name: "blink matrix",
+        manualSteps: {
+            validate: "verify all LEDs blink",
+        },
         start: test => {
             const service = test.service
             let mounted = true
@@ -341,6 +344,9 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
     },
     [SRV_LED_DISPLAY]: {
         name: "cycle red, green, blue colors on all LEDs",
+        manualSteps: {
+            validate: "verify colors on LED",
+        },
         start: test => {
             const service = test.service
             let mounted = true
@@ -376,6 +382,9 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
     },
     [SRV_LED_STRIP]: {
         name: "cycle red, green, blue colors on all LEDs",
+        manualSteps: {
+            validate: "verify colors on LED",
+        },
         start: test => {
             let mounted = true
             const work = async () => {
