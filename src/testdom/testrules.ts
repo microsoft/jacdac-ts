@@ -41,7 +41,7 @@ import {
     TestState,
 } from "./spec"
 
-const testColors = [0x990000, 0x009900, 0x000099, 0]
+const testColors = [0x220000, 0x002200, 0x000022, 0]
 const builtinTestRules: Record<number, ServiceTestRule[]> = {
     [SRV_SWITCH]: <ServiceTestRule[]>[
         <ReadingTestRule>{
@@ -370,6 +370,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
             const service = test.service
             let mounted = true
             const work = async () => {
+                test.state = TestState.Running
                 const dotsRegister = service.register(DotMatrixReg.Dots)
                 const brightnessRegister = service.register(
                     DotMatrixReg.Brightness
@@ -410,6 +411,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
             const service = test.service
             let mounted = true
             const work = async () => {
+                test.state = TestState.Running
                 const pixelsRegister = service.register(LedDisplayReg.Pixels)
                 const numPixelsRegister = service.register(
                     LedDisplayReg.NumPixels
@@ -430,7 +432,6 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     }
                     await pixelsRegister.sendSetPackedAsync([pixels], true)
                     await delay(500)
-                    if (k > testColors.length) test.state = TestState.Pass
                 }
             }
             work()
@@ -447,6 +448,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
         start: test => {
             let mounted = true
             const work = async () => {
+                test.state = TestState.Running
                 const service = test.service
                 let k = 0
                 while (mounted) {
@@ -458,8 +460,6 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     )
                     await service?.sendCmdAsync(LedStripCmd.Run, encoded)
                     await delay(500)
-
-                    if (k > testColors.length) test.state = TestState.Pass
                 }
             }
             work()
@@ -470,6 +470,9 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
     },
     [SRV_BUZZER]: {
         name: "beeps every 200ms every 1s, with increasing frequency",
+        manualSteps: {
+            validate: "sounds can be heard",
+        },
         start: test => {
             let mounted = true
             const pack = (frequency: number, ms: number, volume: number) => {
