@@ -496,7 +496,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
     [SRV_LED]: {
         name: "cycles through red, green, blue every 0.5s",
         manualSteps: {
-            validate: "verify colors on LED"
+            validate: "verify colors on LED",
         },
         start: test => {
             let mounted = true
