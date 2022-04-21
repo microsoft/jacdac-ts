@@ -3,17 +3,32 @@ import { JDRegisterServer } from "../jdom/servers/registerserver"
 import { JDServiceServer } from "../jdom/servers/serviceserver"
 
 export class MotorServer extends JDServiceServer {
-    readonly duty: JDRegisterServer<[number]>
+    readonly speed: JDRegisterServer<[number]>
     readonly enabled: JDRegisterServer<[boolean]>
     readonly loadTorque: JDRegisterServer<[number]>
-    readonly loadSpeed: JDRegisterServer<[number]>
+    readonly loadRotationSpeed: JDRegisterServer<[number]>
 
-    constructor(instanceName?: string) {
+    constructor(
+        instanceName?: string,
+        options?: {
+            loadTorque?: number
+            loadRotationSpeed?: number
+        }
+    ) {
         super(SRV_MOTOR, { instanceName })
 
-        this.duty = this.addRegister<[number]>(MotorReg.Duty, [0])
+        const { loadTorque, loadRotationSpeed } = options || {}
+
+        this.speed = this.addRegister<[number]>(MotorReg.Speed, [0])
         this.enabled = this.addRegister<[boolean]>(MotorReg.Enabled, [false])
-        this.loadTorque = this.addRegister<[number]>(MotorReg.LoadTorque)
-        this.loadSpeed = this.addRegister<[number]>(MotorReg.LoadSpeed)
+        if (loadTorque)
+            this.loadTorque = this.addRegister<[number]>(MotorReg.LoadTorque, [
+                loadTorque,
+            ])
+        if (loadRotationSpeed)
+            this.loadRotationSpeed = this.addRegister<[number]>(
+                MotorReg.LoadRotationSpeed,
+                [loadRotationSpeed]
+            )
     }
 }
