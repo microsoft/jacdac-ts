@@ -327,6 +327,7 @@ function createGamepadButtonTests(
     ) {
         LRUD.forEach(value => {
             const key = GamepadButtons[value]
+            addReadingTest(key, value)
             addEventTest(key, value)
         })
     }
