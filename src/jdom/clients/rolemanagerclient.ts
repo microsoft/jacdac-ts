@@ -180,7 +180,6 @@ export class RoleManagerClient extends JDServiceClient {
         const role = this._roles.find(
             r => r.deviceId === deviceId && r.serviceIndex === serviceIndex
         )
-        //console.debug(`role ${service.id} -> ${role?.role}`, { service })
         service.role = role?.name
     }
 
@@ -234,9 +233,7 @@ export class RoleManagerClient extends JDServiceClient {
 
         // clear previous role assignment
         if (previous) {
-            this.log(
-                `clear role ${previous.deviceId}:${previous.serviceIndex}`
-            )
+            this.log(`clear role ${previous.deviceId}:${previous.serviceIndex}`)
             const data = jdpack<[Uint8Array, number, string]>("b[8] u8 s", [
                 fromHex(previous.deviceId),
                 previous.serviceIndex,
@@ -254,11 +251,13 @@ export class RoleManagerClient extends JDServiceClient {
     }
 
     startSimulators() {
+        this.log(`start role sims`, { roles: this._roles })
         const roles = this._roles.filter(
             role => !this.bus.device(role.deviceId, true)
         )
         if (!roles?.length) return
 
+        this.log(`unbound roles: ${roles.length}`, { roles })
         // collect roles that need to be bound
         const todos = groupBy(
             roles
@@ -271,6 +270,7 @@ export class RoleManagerClient extends JDServiceClient {
                 .filter(todo => !!todo.hostDefinition),
             todo => parentName(this.bus, todo.role) || ""
         )
+        this.log(`simulateable roles`, todos)
 
         // spawn devices with group of devices
         const parents = Object.keys(todos)

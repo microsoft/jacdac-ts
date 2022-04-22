@@ -12,8 +12,8 @@ export class JDClient extends JDEventSource {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    protected log(msg: any) {
-        console.debug(msg)
+    protected log(msg: any, arg?: any) {
+        console.debug(msg, arg)
     }
 
     mount(unsubscribe: () => void): () => void {

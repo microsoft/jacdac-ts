@@ -71,7 +71,7 @@ export class RealTimeClockServer extends SensorServer<RealTimeClockReadingType> 
     }
 
     private handleSetTime(pkt: Packet) {
-        console.debug(`set time`, { pkt })
+        //console.debug(`set time`, { pkt })
     }
 
     private refreshTime() {
