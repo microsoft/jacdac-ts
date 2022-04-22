@@ -3,7 +3,7 @@ import { inIFrame } from "../iframeclient"
 
 class IFrameBridge extends JDBridge {
     constructor(readonly targetOrigin: string) {
-        super()
+        super("iframe")
         this.handleMessage = this.handleMessage.bind(this)
         window.addEventListener("message", this.handleMessage, false)
         this.mount(() =>

@@ -10,12 +10,13 @@ import { randomDeviceId } from "./random"
  */
 export abstract class JDBridge extends JDClient {
     private _bus: JDBus
-    readonly bridgeId = `bridge-` + randomDeviceId()
+    readonly bridgeId: string
     packetSent = 0
     packetProcessed = 0
 
-    constructor(public readonly infrastructure: boolean = false) {
+    constructor(name: string, public readonly infrastructure: boolean = false) {
         super()
+        this.bridgeId = `bridge-${name}-` + randomDeviceId()
         this.handleSendPacket = this.handleSendPacket.bind(this)
     }
 
@@ -114,7 +115,7 @@ class ProxyBridge extends JDBridge {
     constructor(
         readonly _sendPacket: (pkt: Uint8Array, sender: string) => void
     ) {
-        super(true)
+        super("proxy", true)
     }
     protected sendPacket(data: Uint8Array, sender: string): void {
         this._sendPacket(data, sender)
