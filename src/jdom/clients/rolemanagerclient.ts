@@ -234,7 +234,7 @@ export class RoleManagerClient extends JDServiceClient {
         }
 
         // clear previous role assignment
-        if (previous) {
+        if (previous && previous.deviceId != "0000000000000000") {
             this.log(`clear role ${previous.deviceId}:${previous.serviceIndex}`)
             const data = jdpack<[Uint8Array, number, string]>("b[8] u8 s", [
                 fromHex(previous.deviceId),
