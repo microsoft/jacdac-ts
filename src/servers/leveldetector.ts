@@ -38,13 +38,13 @@ export class LevelDetector extends JDClient {
             return
         }
 
-        const [active] = this.service.activeThreshold?.values()
+        const [active] = this.service.activeThreshold?.values() || []
         if (active !== undefined && level >= active) {
             this.setState(SystemReadingThreshold.Active)
             return
         }
 
-        const [inactive] = this.service.inactiveThreshold?.values()
+        const [inactive] = this.service.inactiveThreshold?.values() || []
         if (inactive !== undefined && level <= inactive) {
             this.setState(SystemReadingThreshold.Inactive)
             return
