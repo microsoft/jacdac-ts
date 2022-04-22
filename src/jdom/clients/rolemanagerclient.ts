@@ -139,7 +139,7 @@ export class RoleManagerClient extends JDServiceClient {
             )
             // collect all roles
             const roles: Role[] = []
-            for (const buf of await inp.readData(1000)) {
+            for (const buf of await inp.readData(1500)) {
                 const [devidbuf, serviceClass, serviceIndex, full] = jdunpack<
                     [Uint8Array, number, number, string]
                 >(buf, "b[8] u32 u8 s")
@@ -156,7 +156,7 @@ export class RoleManagerClient extends JDServiceClient {
             }
             // store result if changed
             if (JSON.stringify(roles) !== previousRolesHash) {
-                this.log(`roles updated`)
+                this.log(`roles updated`, roles)
                 this._roles = roles
                 this.emit(CHANGE)
             }
