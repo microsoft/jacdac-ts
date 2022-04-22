@@ -542,19 +542,20 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     if (lastPosition === position) await delay(20)
                     else if (
                         lastPosition === undefined ||
-                        lastPosition + 1 === position % clicksPerTurn
+                        (lastPosition + 1) % clicksPerTurn === position % clicksPerTurn
                     ) {
                         lastPosition = position % clicksPerTurn
                         count++
                         if (count === clicksPerTurn) {
-                            test.output = `${count}/${clicksPerTurn} from ${lastPosition}`
+                            test.output = `${count}/${clicksPerTurn} at ${lastPosition}`
                             test.state = TestState.Pass
                             break
                         }
                     } else {
+                        lastPosition = position % clicksPerTurn
                         count = 0
                     }
-                    test.output = `${count}/${clicksPerTurn} from ${lastPosition}`
+                    test.output = `${count}/${clicksPerTurn} at ${lastPosition}`
                 }
                 // look for full sequence
             }
