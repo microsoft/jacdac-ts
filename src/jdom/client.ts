@@ -13,7 +13,7 @@ export class JDClient extends JDEventSource {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     protected log(msg: any) {
-        console.log(msg)
+        console.debug(msg)
     }
 
     mount(unsubscribe: () => void): () => void {

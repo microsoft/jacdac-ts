@@ -142,7 +142,6 @@ import { PowerSupplyServer } from "./powersupplyserver"
 import { HIDJoystickServer } from "./hidjoystickserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
-    instanceName: "indoor",
     readingValues: [21.5],
     streamingInterval: 1000,
     minReading: -5,
@@ -151,7 +150,6 @@ const indoorThermometerOptions: AnalogSensorServerOptions = {
     variant: TemperatureVariant.Indoor,
 }
 const outdoorThermometerOptions: AnalogSensorServerOptions = {
-    instanceName: "temperature",
     readingValues: [21.5],
     streamingInterval: 1000,
     minReading: -40,
@@ -160,7 +158,6 @@ const outdoorThermometerOptions: AnalogSensorServerOptions = {
     variant: TemperatureVariant.Outdoor,
 }
 const outdoorHumidityOptions: AnalogSensorServerOptions = {
-    instanceName: "humidity",
     streamingInterval: 1000,
     readingValues: [40],
     readingError: [0.1],
@@ -168,7 +165,6 @@ const outdoorHumidityOptions: AnalogSensorServerOptions = {
     maxReading: 99,
 }
 const soilThermometerOptions: AnalogSensorServerOptions = {
-    instanceName: "temperature",
     readingValues: [15],
     streamingInterval: 1000,
     minReading: -55,
@@ -177,7 +173,6 @@ const soilThermometerOptions: AnalogSensorServerOptions = {
     variant: TemperatureVariant.Outdoor,
 }
 const medicalThermometerOptions: AnalogSensorServerOptions = {
-    instanceName: "medical",
     readingValues: [37.5],
     streamingInterval: 1000,
     minReading: 35,
@@ -186,7 +181,6 @@ const medicalThermometerOptions: AnalogSensorServerOptions = {
     variant: TemperatureVariant.Body,
 }
 const barometerOptions: AnalogSensorServerOptions = {
-    instanceName: "pressure",
     readingValues: [1013],
     readingError: [0.4],
     streamingInterval: 1000,
@@ -1477,7 +1471,6 @@ function initProviders() {
                     new LedDisplayServer({
                         numPixels: 5,
                         variant: LedDisplayVariant.Stick,
-                        instanceName: "lights",
                     }),
                 ],
             },

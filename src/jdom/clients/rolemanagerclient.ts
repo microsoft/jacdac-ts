@@ -128,6 +128,7 @@ export class RoleManagerClient extends JDServiceClient {
     }
 
     private async collectRoles() {
+        this.log(`collecting roles`)
         this._lastRefreshAttempt = this.bus.timestamp
         const previousRolesHash = JSON.stringify(this._roles)
         try {
@@ -155,10 +156,12 @@ export class RoleManagerClient extends JDServiceClient {
             }
             // store result if changed
             if (JSON.stringify(roles) !== previousRolesHash) {
+                this.log(`roles updated`)
                 this._roles = roles
                 this.emit(CHANGE)
             }
         } catch (e) {
+            this.log(`collect roles failed`)
             this._needRefresh = true
             this.emit(ERROR, e)
         }
@@ -211,12 +214,13 @@ export class RoleManagerClient extends JDServiceClient {
             previous.serviceIndex === serviceIndex
         ) {
             // nothing todo
-            console.debug(`role unmodified, skipping`)
+            this.log(`role unmodified, skipping`)
             return
         }
 
         // set new role assignment
         {
+            this.log(`assign role ${deviceId}[${serviceIndex}] -> ${name}`)
             const data = jdpack<[Uint8Array, number, string]>("b[8] u8 s", [
                 fromHex(deviceId),
                 serviceIndex,
@@ -230,7 +234,7 @@ export class RoleManagerClient extends JDServiceClient {
 
         // clear previous role assignment
         if (previous) {
-            console.debug(
+            this.log(
                 `clear role ${previous.deviceId}:${previous.serviceIndex}`
             )
             const data = jdpack<[Uint8Array, number, string]>("b[8] u8 s", [
