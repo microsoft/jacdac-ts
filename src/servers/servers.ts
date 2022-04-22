@@ -140,6 +140,8 @@ import { Flags } from "../jdom/flags"
 import { LedDisplayServer } from "./leddisplayserver"
 import { PowerSupplyServer } from "./powersupplyserver"
 import { HIDJoystickServer } from "./hidjoystickserver"
+import { isConstRegister } from "../jdom/spec"
+import { PackedValues } from "../jdom/pack"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     readingValues: [21.5],
@@ -308,6 +310,11 @@ export interface ServiceProviderDefinition {
      * Custom factory to wrap the services into a service provider
      */
     factory?: (services: JDServiceServer[]) => JDServiceProvider
+
+    /**
+     * Additional service options
+     */
+    serviceOptions?: ServiceProviderOptions[]
 }
 
 let _providerDefinitions: ServiceProviderDefinition[]
@@ -474,17 +481,26 @@ function initProviders() {
                     new CharacterScreenServer({ message: "hello\nworld!" }),
                 ],
             },
-            {
+            <ServiceProviderDefinition>{
                 name: "character screen (OLED, 32x8, RTL)",
                 serviceClasses: [SRV_CHARACTER_SCREEN],
                 services: () => [
                     new CharacterScreenServer({
                         message: "hello\nworld!",
-                        columns: 32,
-                        rows: 8,
-                        variant: CharacterScreenVariant.OLED,
-                        textDirection: CharacterScreenTextDirection.RightToLeft,
                     }),
+                ],
+                serviceOptions: [
+                    {
+                        serviceIndex: 1,
+                        constants: {
+                            columns: [32],
+                            rows: [9],
+                            variant: [CharacterScreenVariant.OLED],
+                            textDirection: [
+                                CharacterScreenTextDirection.RightToLeft,
+                            ],
+                        },
+                    },
                 ],
             },
             {
@@ -1651,6 +1667,11 @@ function stableSimulatorDeviceId(bus: JDBus, template: string): string {
     return id.slice(2)
 }
 
+export interface ServiceProviderOptions {
+    serviceIndex: number
+    constants: Record<string, PackedValues>
+}
+
 /**
  * Instantiates a new service provider instance and adds it to the bus
  * @category Servers
@@ -1660,6 +1681,29 @@ export function addServiceProvider(
     definition: ServiceProviderDefinition
 ) {
     const services = definition.services()
+    const { serviceOptions } = definition
+    if (serviceOptions)
+        serviceOptions.forEach(({ serviceIndex, constants }) => {
+            const service = services[serviceIndex - 1]
+            const { specification } = service
+            Object.entries(constants).forEach(([name, values]) => {
+                const spec = specification.packets.find(
+                    pkt => isConstRegister(pkt) && pkt.name === name
+                )
+                if (!spec)
+                    console.warn(
+                        `service provider: unknown register ${specification.name}.${name}`
+                    )
+                else {
+                    const reg = service.register(spec.identifier)
+                    if (!reg)
+                        console.warn(
+                            `service provider: register ${specification.name}.${spec.name} not supported`
+                        )
+                    else reg.setValues(values)
+                }
+            })
+        })
     services.forEach(srv => srv.lock())
     const deviceId = stableSimulatorDeviceId(bus, definition.name)
     const options = {
