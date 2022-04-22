@@ -180,6 +180,8 @@ export class RoleManagerClient extends JDServiceClient {
         const role = this._roles.find(
             r => r.deviceId === deviceId && r.serviceIndex === serviceIndex
         )
+        if (service.role !== role?.name)
+            this.log(`role ${service} -> ${role?.name || ""}`, { role })
         service.role = role?.name
     }
 
