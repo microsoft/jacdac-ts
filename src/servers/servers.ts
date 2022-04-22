@@ -707,7 +707,7 @@ function initProviders() {
                 serviceClasses: [SRV_LED],
                 services: () => [
                     new LedServer({
-                        ledCount: 1,
+                        ledsPerPixel: 1,
                         color: [255, 0, 0],
                     }),
                 ],
@@ -718,7 +718,7 @@ function initProviders() {
                 services: () => [
                     new LedServer({
                         waveLength: 450,
-                        ledCount: 5,
+                        ledsPerPixel: 5,
                         color: [0, 0, 255],
                     }),
                 ],
