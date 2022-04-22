@@ -4,8 +4,7 @@ import {
     GamepadReg,
     GamepadEvent,
     GamepadButtons,
-    LedCmd,
-    LedDisplayReg,
+    LedReg,
     LedStripCmd,
     SRV_ACCELEROMETER,
     SRV_BUTTON,
@@ -13,7 +12,6 @@ import {
     SRV_DOT_MATRIX,
     SRV_GAMEPAD,
     SRV_LED,
-    SRV_LED_DISPLAY,
     SRV_LED_STRIP,
     SRV_MOTION,
     SRV_POTENTIOMETER,
@@ -402,7 +400,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
             }
         },
     },
-    [SRV_LED_DISPLAY]: {
+    [SRV_LED]: {
         name: "cycle red, green, blue colors on all LEDs",
         manualSteps: {
             validate: "verify colors on LED",
@@ -412,9 +410,9 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
             let mounted = true
             const work = async () => {
                 test.state = TestState.Running
-                const pixelsRegister = service.register(LedDisplayReg.Pixels)
+                const pixelsRegister = service.register(LedReg.Pixels)
                 const numPixelsRegister = service.register(
-                    LedDisplayReg.NumPixels
+                    LedReg.NumPixels
                 )
                 let n: number = undefined
                 while (n === undefined && mounted) {
@@ -542,7 +540,8 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     if (lastPosition === position) await delay(20)
                     else if (
                         lastPosition === undefined ||
-                        (lastPosition + 1) % clicksPerTurn === position % clicksPerTurn
+                        (lastPosition + 1) % clicksPerTurn ===
+                            position % clicksPerTurn
                     ) {
                         lastPosition = position % clicksPerTurn
                         count++
@@ -559,69 +558,6 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                 }
                 // look for full sequence
             }
-            work()
-            return () => {
-                mounted = false
-            }
-        },
-    },
-    [SRV_LED]: {
-        name: "cycles through red, green, blue every 0.5s",
-        manualSteps: {
-            validate: "verify colors on LED",
-        },
-        start: test => {
-            let mounted = true
-            const pack = (
-                r: number,
-                g: number,
-                b: number,
-                animDelay: number
-            ) => {
-                const unpacked: [number, number, number, number] = [
-                    r,
-                    g,
-                    b,
-                    animDelay,
-                ]
-                return jdpack("u8 u8 u8 u8", unpacked)
-            }
-            const work = async () => {
-                test.state = TestState.Running
-                const brightness = 0x22
-                const interval = 500
-                while (mounted) {
-                    const service = test.service
-                    if (!service) {
-                        await delay(500)
-                        return
-                    }
-                    await service.sendCmdAsync(
-                        LedCmd.Animate,
-                        pack(brightness, 0, 0, interval)
-                    )
-                    await delay(500)
-                    if (!mounted) return
-                    await service.sendCmdAsync(
-                        LedCmd.Animate,
-                        pack(0, brightness, 0, interval)
-                    )
-                    await delay(500)
-                    if (!mounted) return
-                    await service.sendCmdAsync(
-                        LedCmd.Animate,
-                        pack(0, 0, brightness, interval)
-                    )
-                    await delay(500)
-                    if (!mounted) return
-                    await service.sendCmdAsync(
-                        LedCmd.Animate,
-                        pack(0, 0, 0, interval)
-                    )
-                    await delay(500)
-                }
-            }
-            // start work async
             work()
             return () => {
                 mounted = false

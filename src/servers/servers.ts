@@ -86,8 +86,6 @@ import {
     SRV_LIGHT_BULB,
     LightBulbReg,
     WifiAPFlags,
-    LedDisplayVariant,
-    SRV_LED_DISPLAY,
     SRV_POWER_SUPPLY,
 } from "../jdom/constants"
 import { JDServerServiceProvider } from "../jdom/servers/serverserviceprovider"
@@ -115,7 +113,6 @@ import { SettingsServer } from "./settingsserver"
 import { SpeechSynthesisServer } from "./speechsynthesisserver"
 import { SwitchServer } from "./switchserver"
 import { TrafficLightServer } from "./trafficlightserver"
-import { LEDServer } from "./ledserver"
 import { fromHex, hash, stringToUint8Array, toFullHex } from "../jdom/utils"
 import { SoundPlayerServer, SoundPlayerSound } from "./soundplayerserver"
 import {
@@ -137,7 +134,7 @@ import { WifiServer } from "./wifiserver"
 import { AccelerometerServer } from "./accelerometerserver"
 import { BrailleDisplayServer } from "./brailledisplayserver"
 import { Flags } from "../jdom/flags"
-import { LedDisplayServer } from "./leddisplayserver"
+import { LedServer } from "./ledserver"
 import { PowerSupplyServer } from "./powersupplyserver"
 import { HIDJoystickServer } from "./hidjoystickserver"
 import { isConstRegister } from "../jdom/spec"
@@ -709,8 +706,7 @@ function initProviders() {
                 name: "RGB LED (RGB through hole)",
                 serviceClasses: [SRV_LED],
                 services: () => [
-                    new LEDServer({
-                        variant: LedVariant.ThroughHole,
+                    new LedServer({
                         ledCount: 1,
                         color: [255, 0, 0],
                     }),
@@ -720,8 +716,7 @@ function initProviders() {
                 name: "LED (5x blue through hole)",
                 serviceClasses: [SRV_LED],
                 services: () => [
-                    new LEDServer({
-                        variant: LedVariant.ThroughHole,
+                    new LedServer({
                         waveLength: 450,
                         ledCount: 5,
                         color: [0, 0, 255],
@@ -769,61 +764,61 @@ function initProviders() {
             },
             {
                 name: "LED display ring 10",
-                serviceClasses: [SRV_LED_DISPLAY],
+                serviceClasses: [SRV_LED],
                 services: () => [
-                    new LedDisplayServer({
+                    new LedServer({
                         numPixels: 10,
-                        variant: LedDisplayVariant.Ring,
+                        variant: LedVariant.Ring,
                     }),
                 ],
             },
             {
                 name: "LED display ring 12",
-                serviceClasses: [SRV_LED_DISPLAY],
+                serviceClasses: [SRV_LED],
                 services: () => [
-                    new LedDisplayServer({
+                    new LedServer({
                         numPixels: 12,
-                        variant: LedDisplayVariant.Ring,
+                        variant: LedVariant.Ring,
                     }),
                 ],
             },
             {
                 name: "LED display ring 16",
-                serviceClasses: [SRV_LED_DISPLAY],
+                serviceClasses: [SRV_LED],
                 services: () => [
-                    new LedDisplayServer({
+                    new LedServer({
                         numPixels: 16,
-                        variant: LedDisplayVariant.Ring,
+                        variant: LedVariant.Ring,
                     }),
                 ],
             },
             {
                 name: "LED display ring 24",
-                serviceClasses: [SRV_LED_DISPLAY],
+                serviceClasses: [SRV_LED],
                 services: () => [
-                    new LedDisplayServer({
+                    new LedServer({
                         numPixels: 24,
-                        variant: LedDisplayVariant.Ring,
+                        variant: LedVariant.Ring,
                     }),
                 ],
             },
             {
                 name: "LED display jewel 7",
-                serviceClasses: [SRV_LED_DISPLAY],
+                serviceClasses: [SRV_LED],
                 services: () => [
-                    new LedDisplayServer({
+                    new LedServer({
                         numPixels: 7,
-                        variant: LedDisplayVariant.Jewel,
+                        variant: LedVariant.Jewel,
                     }),
                 ],
             },
             {
                 name: "LED display stick 8",
-                serviceClasses: [SRV_LED_DISPLAY],
+                serviceClasses: [SRV_LED],
                 services: () => [
-                    new LedDisplayServer({
+                    new LedServer({
                         numPixels: 8,
-                        variant: LedDisplayVariant.Stick,
+                        variant: LedVariant.Stick,
                     }),
                 ],
             },
@@ -873,32 +868,33 @@ function initProviders() {
             },
             {
                 name: "LED pixel matrix (4x4)",
-                serviceClasses: [SRV_LED_DISPLAY],
+                serviceClasses: [SRV_LED],
                 services: () => [
-                    new LedDisplayServer({
+                    new LedServer({
                         numPixels: 16,
-                        variant: LedDisplayVariant.Matrix,
+                        variant: LedVariant.Matrix,
                     }),
                 ],
             },
             {
                 name: "LED pixel matrix (8x8)",
-                serviceClasses: [SRV_LED_DISPLAY],
+                serviceClasses: [SRV_LED],
                 services: () => [
-                    new LedDisplayServer({
+                    new LedServer({
                         numPixels: 64,
-                        variant: LedDisplayVariant.Matrix,
+                        variant: LedVariant.Matrix,
+                        numColumns: 8
                     }),
                 ],
             },
             {
                 name: "LED pixel matrix (16x4)",
-                serviceClasses: [SRV_LED_DISPLAY],
+                serviceClasses: [SRV_LED],
                 services: () => [
-                    new LedDisplayServer({
+                    new LedServer({
                         numPixels: 64,
                         numColumns: 16,
-                        variant: LedDisplayVariant.Matrix,
+                        variant: LedVariant.Matrix,
                     }),
                 ],
             },
@@ -1479,14 +1475,14 @@ function initProviders() {
             },
             {
                 name: "chassis (motor x 2 + sonar + light)",
-                serviceClasses: [SRV_DISTANCE, SRV_LED_DISPLAY, SRV_MOTOR],
+                serviceClasses: [SRV_DISTANCE, SRV_LED, SRV_MOTOR],
                 services: () => [
                     new MotorServer("L"),
                     new MotorServer("R"),
                     new AnalogSensorServer(SRV_DISTANCE, sonarOptions),
-                    new LedDisplayServer({
+                    new LedServer({
                         numPixels: 5,
-                        variant: LedDisplayVariant.Stick,
+                        variant: LedVariant.Stick,
                     }),
                 ],
             },
