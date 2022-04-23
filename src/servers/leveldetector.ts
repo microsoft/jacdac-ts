@@ -3,7 +3,7 @@ import { CHANGE, SystemEvent, SystemReadingThreshold } from "../jdom/constants"
 import { AnalogSensorServer } from "./analogsensorserver"
 
 export class LevelDetector extends JDClient {
-    private _state: number
+    private _state: SystemReadingThreshold
 
     constructor(readonly service: AnalogSensorServer) {
         super()

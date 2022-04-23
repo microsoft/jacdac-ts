@@ -87,6 +87,8 @@ import {
     LightBulbReg,
     WifiAPFlags,
     SRV_POWER_SUPPLY,
+    MagneticFieldLevelVariant,
+    SRV_MAGNETIC_FIELD_LEVEL,
 } from "../jdom/constants"
 import { JDServerServiceProvider } from "../jdom/servers/serverserviceprovider"
 import { ProtocolTestServer } from "../jdom/servers/protocoltestserver"
@@ -139,6 +141,7 @@ import { PowerSupplyServer } from "./powersupplyserver"
 import { HIDJoystickServer } from "./hidjoystickserver"
 import { isConstRegister } from "../jdom/spec"
 import { PackedValues } from "../jdom/pack"
+import { MagneticFieldLevelServer } from "./magneticfieldlevelserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     readingValues: [21.5],
@@ -883,7 +886,7 @@ function initProviders() {
                     new LedServer({
                         numPixels: 64,
                         variant: LedVariant.Matrix,
-                        numColumns: 8
+                        numColumns: 8,
                     }),
                 ],
             },
@@ -963,6 +966,15 @@ function initProviders() {
                 services: () => [
                     new ReflectedLightServer({
                         variant: ReflectedLightVariant.InfraredAnalog,
+                    }),
+                ],
+            },
+            <ServiceProviderDefinition>{
+                name: "magnetic field level (digital NS)",
+                serviceClasses: [SRV_MAGNETIC_FIELD_LEVEL],
+                services: () => [
+                    new MagneticFieldLevelServer({
+                        variant: MagneticFieldLevelVariant.DigitalNS,
                     }),
                 ],
             },
