@@ -706,23 +706,87 @@ function initProviders() {
                 ],
             },
             {
-                name: "RGB LED (RGB through hole)",
+                name: "LED ring 10 pixels",
                 serviceClasses: [SRV_LED],
                 services: () => [
                     new LedServer({
-                        ledsPerPixel: 1,
-                        color: [255, 0, 0],
+                        numPixels: 10,
+                        variant: LedVariant.Ring,
                     }),
                 ],
             },
             {
-                name: "LED (5x blue through hole)",
+                name: "LED ring 12 pixels",
                 serviceClasses: [SRV_LED],
                 services: () => [
                     new LedServer({
+                        numPixels: 12,
+                        variant: LedVariant.Ring,
+                    }),
+                ],
+            },
+            {
+                name: "LED ring 16 pixels",
+                serviceClasses: [SRV_LED],
+                services: () => [
+                    new LedServer({
+                        numPixels: 16,
+                        variant: LedVariant.Ring,
+                    }),
+                ],
+            },
+            {
+                name: "LED ring 24 pixels",
+                serviceClasses: [SRV_LED],
+                services: () => [
+                    new LedServer({
+                        numPixels: 24,
+                        variant: LedVariant.Ring,
+                    }),
+                ],
+            },
+            {
+                name: "LED jewel 7 pixels",
+                serviceClasses: [SRV_LED],
+                services: () => [
+                    new LedServer({
+                        numPixels: 7,
+                        variant: LedVariant.Jewel,
+                    }),
+                ],
+            },
+            {
+                name: "LED stick 8",
+                serviceClasses: [SRV_LED],
+                services: () => [
+                    new LedServer({
+                        numPixels: 8,
+                        variant: LedVariant.Stick,
+                    }),
+                ],
+            },            
+            {
+                name: "LED single",
+                serviceClasses: [SRV_LED],
+                services: () => [
+                    new LedServer({
+                        numPixels: 1,
+                        ledsPerPixel: 1,
+                        color: [255, 0, 0],
+                        variant: LedVariant.Stick,
+                    }),
+                ],
+            },
+            {
+                name: "LED single with 5 leds",
+                serviceClasses: [SRV_LED],
+                services: () => [
+                    new LedServer({
+                        numPixels: 1,
                         waveLength: 450,
                         ledsPerPixel: 5,
                         color: [0, 0, 255],
+                        variant: LedVariant.Stick,
                     }),
                 ],
             },
@@ -762,66 +826,6 @@ function initProviders() {
                 services: () => [
                     new DotMatrixServer(8, 4, {
                         variant: DotMatrixVariant.Braille,
-                    }),
-                ],
-            },
-            {
-                name: "LED display ring 10",
-                serviceClasses: [SRV_LED],
-                services: () => [
-                    new LedServer({
-                        numPixels: 10,
-                        variant: LedVariant.Ring,
-                    }),
-                ],
-            },
-            {
-                name: "LED display ring 12",
-                serviceClasses: [SRV_LED],
-                services: () => [
-                    new LedServer({
-                        numPixels: 12,
-                        variant: LedVariant.Ring,
-                    }),
-                ],
-            },
-            {
-                name: "LED display ring 16",
-                serviceClasses: [SRV_LED],
-                services: () => [
-                    new LedServer({
-                        numPixels: 16,
-                        variant: LedVariant.Ring,
-                    }),
-                ],
-            },
-            {
-                name: "LED display ring 24",
-                serviceClasses: [SRV_LED],
-                services: () => [
-                    new LedServer({
-                        numPixels: 24,
-                        variant: LedVariant.Ring,
-                    }),
-                ],
-            },
-            {
-                name: "LED display jewel 7",
-                serviceClasses: [SRV_LED],
-                services: () => [
-                    new LedServer({
-                        numPixels: 7,
-                        variant: LedVariant.Jewel,
-                    }),
-                ],
-            },
-            {
-                name: "LED display stick 8",
-                serviceClasses: [SRV_LED],
-                services: () => [
-                    new LedServer({
-                        numPixels: 8,
-                        variant: LedVariant.Stick,
                     }),
                 ],
             },
