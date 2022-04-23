@@ -411,9 +411,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
             const work = async () => {
                 test.state = TestState.Running
                 const pixelsRegister = service.register(LedReg.Pixels)
-                const numPixelsRegister = service.register(
-                    LedReg.NumPixels
-                )
+                const numPixelsRegister = service.register(LedReg.NumPixels)
                 let n: number = undefined
                 while (n === undefined && mounted) {
                     await numPixelsRegister.refresh(true)
