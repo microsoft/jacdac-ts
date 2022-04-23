@@ -970,11 +970,11 @@ function initProviders() {
                 ],
             },
             <ServiceProviderDefinition>{
-                name: "magnetic field level (digital NS)",
+                name: "magnetic field level",
                 serviceClasses: [SRV_MAGNETIC_FIELD_LEVEL],
                 services: () => [
                     new MagneticFieldLevelServer({
-                        variant: MagneticFieldLevelVariant.DigitalNS,
+                        variant: MagneticFieldLevelVariant.AnalogNS,
                     }),
                 ],
             },

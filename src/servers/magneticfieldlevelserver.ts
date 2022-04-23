@@ -1,6 +1,7 @@
 import {
     CHANGE,
     MagneticFieldLevelEvent,
+    MagneticFieldLevelReg,
     MagneticFieldLevelVariant,
     SRV_MAGNETIC_FIELD_LEVEL,
     SystemReadingThreshold,
@@ -35,6 +36,12 @@ export class MagneticFieldLevelServer extends SensorServer<[number]> {
         this.reading.setValues([0])
     }
 
+    get variant() {
+        const reg = this.register(MagneticFieldLevelReg.Variant)
+        const [v] = reg.values() as [MagneticFieldLevelVariant]
+        return v
+    }
+
     private update() {
         const [strength] = this.reading.values()
         if (Math.abs(strength) >= MagneticFieldLevelServer.ACTIVE_THRESHOLD) {
@@ -49,6 +56,7 @@ export class MagneticFieldLevelServer extends SensorServer<[number]> {
     private setState(state: number) {
         if (state === this._state) return
 
+        const variant = this.variant
         this._state = state
         switch (state) {
             case SystemReadingThreshold.Active:
