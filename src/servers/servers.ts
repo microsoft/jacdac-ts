@@ -764,7 +764,7 @@ function initProviders() {
                         variant: LedVariant.Stick,
                     }),
                 ],
-            },            
+            },
             {
                 name: "LED single",
                 serviceClasses: [SRV_LED],
