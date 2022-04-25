@@ -230,12 +230,12 @@ const windSpeedOptions: AnalogSensorServerOptions = {
     registerValues: [{ code: WindSpeedReg.MaxWindSpeed, values: [80] }],
 }
 const eCO2Options: AnalogSensorServerOptions = {
-    readingValues: [4000],
+    readingValues: [400],
     streamingInterval: 1000,
     variant: ECO2Variant.VOC,
 }
 const CO2Options: AnalogSensorServerOptions = {
-    readingValues: [4000],
+    readingValues: [400],
     streamingInterval: 1000,
     variant: ECO2Variant.NDIR,
 }
