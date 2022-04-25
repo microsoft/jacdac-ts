@@ -140,7 +140,7 @@ import { LedServer } from "./ledserver"
 import { PowerSupplyServer } from "./powersupplyserver"
 import { HIDJoystickServer } from "./hidjoystickserver"
 import { isConstRegister } from "../jdom/spec"
-import { PackedValues } from "../jdom/pack"
+import { PackedSimpleValue } from "../jdom/pack"
 import { MagneticFieldLevelServer } from "./magneticfieldlevelserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
@@ -491,14 +491,13 @@ function initProviders() {
                 ],
                 serviceOptions: [
                     {
-                        serviceIndex: 1,
+                        serviceClass: SRV_CHARACTER_SCREEN,
                         constants: {
-                            columns: [32],
-                            rows: [9],
-                            variant: [CharacterScreenVariant.OLED],
-                            textDirection: [
+                            columns: 32,
+                            rows: 9,
+                            variant: CharacterScreenVariant.OLED,
+                            textDirection:
                                 CharacterScreenTextDirection.RightToLeft,
-                            ],
                         },
                     },
                 ],
@@ -1680,25 +1679,24 @@ function stableSimulatorDeviceId(bus: JDBus, template: string): string {
 }
 
 export interface ServiceProviderOptions {
-    serviceIndex: number
-    constants: Record<string, PackedValues>
+    serviceClass: number
+    serviceOffset?: number
+    constants: Record<string, PackedSimpleValue>
 }
 
-/**
- * Instantiates a new service provider instance and adds it to the bus
- * @category Servers
- */
-export function addServiceProvider(
-    bus: JDBus,
-    definition: ServiceProviderDefinition
+function applyServiceOptions(
+    services: JDServiceServer[],
+    serviceOptions: ServiceProviderOptions[]
 ) {
-    const services = definition.services()
-    const { serviceOptions } = definition
-    if (serviceOptions)
-        serviceOptions.forEach(({ serviceIndex, constants }) => {
-            const service = services[serviceIndex - 1]
+    serviceOptions?.forEach(({ serviceClass, serviceOffset, constants }) => {
+        const service = services.filter(
+            srv => srv.serviceClass === serviceClass
+        )[serviceOffset || 0]
+        if (!service) {
+            console.warn(`service provider: service not found at offset`)
+        } else {
             const { specification } = service
-            Object.entries(constants).forEach(([name, values]) => {
+            Object.entries(constants).forEach(([name, value]) => {
                 const spec = specification.packets.find(
                     pkt => isConstRegister(pkt) && pkt.name === name
                 )
@@ -1712,10 +1710,25 @@ export function addServiceProvider(
                         console.warn(
                             `service provider: register ${specification.name}.${spec.name} not supported`
                         )
-                    else reg.setValues(values)
+                    else reg.setValues([value])
                 }
             })
-        })
+        }
+    })
+}
+
+/**
+ * Instantiates a new service provider instance and adds it to the bus
+ * @category Servers
+ */
+export function addServiceProvider(
+    bus: JDBus,
+    definition: ServiceProviderDefinition,
+    serviceOptions?: ServiceProviderOptions[]
+) {
+    const services = definition.services()
+    applyServiceOptions(services, definition.serviceOptions)
+    applyServiceOptions(services, serviceOptions)
     services.forEach(srv => srv.lock())
     const deviceId = stableSimulatorDeviceId(bus, definition.name)
     const options = {

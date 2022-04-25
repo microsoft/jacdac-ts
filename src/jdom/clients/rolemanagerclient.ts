@@ -1,6 +1,7 @@
 import {
     addServiceProvider,
     serviceProviderDefinitionFromServiceClass,
+    ServiceProviderOptions,
 } from "../../servers/servers"
 import { JDBus } from "../bus"
 import {
@@ -10,21 +11,30 @@ import {
     EVENT,
     RoleManagerCmd,
     ROLE_MANAGER_POLL,
+    ROLE_QUERY_DEVICE,
+    ROLE_QUERY_SELF_DEVICE,
+    ROLE_QUERY_SERVICE_OFFSET,
     SELF_ANNOUNCE,
     SystemEvent,
 } from "../constants"
-import { jdpack, jdunpack } from "../pack"
+import { jdpack, jdunpack, PackedSimpleValue } from "../pack"
 import { Packet } from "../packet"
 import { InPipeReader } from "../pipes"
 import { JDService } from "../service"
 import { JDServiceClient } from "../serviceclient"
-import { isInfrastructure } from "../spec"
+import {
+    isConstRegister,
+    isInfrastructure,
+    serviceSpecificationFromClassIdentifier,
+} from "../spec"
 import {
     arrayConcatMany,
     debounceAsync,
     fromHex,
     groupBy,
+    JSONTryParse,
     toHex,
+    toMap,
 } from "../utils"
 
 /**
@@ -53,14 +63,63 @@ export interface Role {
      */
     query?: string
 }
+
 function parentName(bus: JDBus, role: Role) {
     if (role.query) {
         const args = role.query.split("&").map(a => a.split("=", 2))
-        const deviceId = args.find(a => a[0] === "device")?.[1]
-        if (deviceId === "self") return bus.selfDeviceId
+        const deviceId = args.find(a => a[0] === ROLE_QUERY_DEVICE)?.[1]
+        if (deviceId === ROLE_QUERY_SELF_DEVICE) return bus.selfDeviceId
         return deviceId
     }
     return role.name.split("/", 1)[0]
+}
+
+function parseRoleQuery(query: string): [string, PackedSimpleValue][] {
+    const args: [string, PackedSimpleValue][] = query
+        ?.split("&")
+        .map(a => a.split("=", 2))
+        .map(
+            ([name, value]) =>
+                [
+                    name.toLowerCase().trim(),
+                    name === ROLE_QUERY_DEVICE
+                        ? value
+                        : (JSONTryParse(value) as PackedSimpleValue),
+                ] as [string, PackedSimpleValue]
+        )
+        .filter(([name, value]) => name && value !== undefined)
+    return args
+}
+
+function parseRole(role: Role): ServiceProviderOptions {
+    const specification = serviceSpecificationFromClassIdentifier(
+        role.serviceClass
+    )
+    if (!specification) return undefined
+    const args = parseRoleQuery(role.query)
+    const pairs: [jdspec.PacketInfo, PackedSimpleValue][] = args
+        ?.map(([name, value]) => {
+            const pkt = specification.packets.find(
+                pkt => isConstRegister(pkt) && pkt.name === name
+            )
+            const r: [jdspec.PacketInfo, PackedSimpleValue] = pkt?.packFormat
+                ? [pkt, value]
+                : undefined
+            return r
+        })
+        .filter(r => !!r)
+    if (!args?.length) return undefined
+
+    const constants: Record<string, PackedSimpleValue> = toMap(
+        pairs,
+        arg => arg[0].name,
+        arg => arg[1]
+    )
+    return {
+        serviceClass: role.serviceClass,
+        serviceOffset: constants[ROLE_QUERY_SERVICE_OFFSET] as number,
+        constants,
+    }
 }
 
 /**
@@ -278,21 +337,31 @@ export class RoleManagerClient extends JDServiceClient {
         const parents = Object.keys(todos)
         parents.forEach(parent => {
             const todo = todos[parent]
+            console.log({ todo })
             // no parent, spawn individual services
             if (!parent) {
-                todo.forEach(t =>
-                    addServiceProvider(this.bus, t.hostDefinition)
-                )
+                todo.forEach(t => {
+                    const serviceOptions = parseRole(t.role)
+                    addServiceProvider(
+                        this.bus,
+                        t.hostDefinition,
+                        serviceOptions ? [serviceOptions] : undefined
+                    )
+                })
             } else {
                 // spawn all services into 1
-                addServiceProvider(this.bus, {
-                    name: "",
-                    serviceClasses: [],
-                    services: () =>
-                        arrayConcatMany(
-                            todo.map(t => t.hostDefinition.services())
-                        ),
-                })
+                addServiceProvider(
+                    this.bus,
+                    {
+                        name: "",
+                        serviceClasses: [],
+                        services: () =>
+                            arrayConcatMany(
+                                todo.map(t => t.hostDefinition.services())
+                            ),
+                    },
+                    todo.map(t => parseRole(t.role)).filter(q => !!q)
+                )
             }
         })
     }

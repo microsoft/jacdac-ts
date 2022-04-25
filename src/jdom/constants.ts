@@ -227,6 +227,11 @@ export const JACDAC_ERROR = "JacdacError"
 export const TIMEOUT_ERROR_CODE = "Timeout"
 export const TRANSPORT_CLOSED_ERROR_CODE = "TransportClosed"
 
+export const ROLE_QUERY_SERVICE_OFFSET = "srvo"
+export const ROLE_QUERY_SERVICE_INDEX = "srvo"
+export const ROLE_QUERY_DEVICE = "dev"
+export const ROLE_QUERY_SELF_DEVICE = "self"
+
 // eslint-disable-next-line prefer-const
 export let DOCS_ROOT = "https://microsoft.github.io/jacdac-docs/"
 
