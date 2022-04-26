@@ -328,7 +328,7 @@ function initProviders() {
                 services: () => [
                     new JDServiceServer(SRV_SEVEN_SEGMENT_DISPLAY, {
                         intensityValues: [0xffff],
-                        valueValues: [fromHex("ff112233")],
+                        valueValues: [fromHex("00000000")],
                         registerValues: [
                             {
                                 code: SevenSegmentDisplayReg.DigitCount,
@@ -348,7 +348,7 @@ function initProviders() {
                 services: () => [
                     new JDServiceServer(SRV_SEVEN_SEGMENT_DISPLAY, {
                         intensityValues: [0xffff],
-                        valueValues: [fromHex("0102040810204080")],
+                        valueValues: [fromHex("0000000000000000")],
                         registerValues: [
                             {
                                 code: SevenSegmentDisplayReg.DigitCount,
