@@ -611,13 +611,13 @@ export function toMap<T, V>(
     return m
 }
 
-export function ellipse(text: string, maxChars: number, suffix = "...") {
+export function ellipse(text: string, maxChars: number, suffix = "…") {
     if (
         !isNaN(maxChars) &&
         maxChars > 0 &&
-        text?.length > maxChars - suffix.length
+        text?.length > maxChars
     )
-        return text.slice(0, maxChars) + suffix
+        return text.slice(0, maxChars - suffix.length) + suffix
     return text
 }
 
