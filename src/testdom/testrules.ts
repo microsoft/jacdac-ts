@@ -61,14 +61,17 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         <ReadingTestRule>{
             type: "intensity",
             value: 0,
+            factory: true,
         },
         <ReadingTestRule>{
             type: "intensity",
             value: 1,
+            factory: true,
         },
         <SetIntensityAndValueTestRule>{
             type: "setIntensityAndValue",
             name: "activate and deactive every 5s",
+            factory: true,
             steps: [
                 {
                     duration: 5000,
@@ -137,6 +140,7 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
             type: "reading",
             value: 0,
             tolerance: 0.001,
+            factory: true,
             manualSteps: {
                 prepare: "release button",
             },
@@ -145,6 +149,7 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
             type: "reading",
             value: 1,
             tolerance: 0.001,
+            factory: true,
             manualSteps: {
                 prepare: "press button",
             },
@@ -152,16 +157,19 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         <EventTestRule>{
             type: "event",
             eventName: "down",
+            factory: true,
         },
         <EventTestRule>{
             type: "event",
             eventName: "up",
+            factory: true,
         },
     ],
     [SRV_MOTION]: <ServiceTestRule[]>[
         <ReadingTestRule>{
             type: "reading",
             value: 0,
+            factory: true,
             manualSteps: {
                 prepare: "do not move",
             },
@@ -169,6 +177,7 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         <ReadingTestRule>{
             type: "reading",
             value: 1,
+            factory: true,
             manualSteps: {
                 prepare: "move",
             },
@@ -176,6 +185,7 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         <EventTestRule>{
             type: "event",
             eventName: "movement",
+            factory: true,
         },
     ],
     [SRV_POTENTIOMETER]: <ServiceTestRule[]>[
@@ -183,6 +193,7 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
             type: "reading",
             value: 0,
             tolerance: 0.01,
+            factory: true,
             manualSteps: {
                 prepare: "slide to minimum",
             },
@@ -191,6 +202,7 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
             type: "reading",
             value: 1,
             tolerance: 0.01,
+            factory: true,
             manualSteps: {
                 prepare: "slide to maximum",
             },
@@ -201,6 +213,7 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
             type: "reading",
             value: 0,
             tolerance: 0.1,
+            factory: true,
             manualSteps: {
                 prepare: "cover sensor to block light",
             },
@@ -209,6 +222,7 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
             type: "reading",
             value: 1,
             tolerance: 0.1,
+            factory: true,
             manualSteps: {
                 prepare: "apply bright light to sensor",
             },
@@ -222,14 +236,17 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         <ReadingTestRule>{
             type: "reading",
             value: -1,
+            factory: true,
         },
         <ReadingTestRule>{
             type: "reading",
             value: 0,
+            factory: true,
         },
         <ReadingTestRule>{
             type: "reading",
             value: 1,
+            factory: true,
         },
         <ReadingTestRule>{
             type: "reading",
@@ -407,6 +424,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
         },
         start: test => {
             const service = test.service
+            const factory = test.factory
             let mounted = true
             const work = async () => {
                 test.state = TestState.Running
@@ -428,6 +446,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     }
                     await pixelsRegister.sendSetPackedAsync([pixels], true)
                     await delay(500)
+                    if (factory) test.state = TestState.Pass
                 }
             }
             work()
@@ -470,6 +489,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
             validate: "sounds can be heard",
         },
         start: test => {
+            const { factory } = test
             let mounted = true
             const pack = (frequency: number, ms: number, volume: number) => {
                 const period = (1000000 / frequency) | 0
@@ -496,7 +516,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     await delay(1000)
                     f = f << 1
                     if (f > 4096) f = 440
-                    test.state = TestState.Pass
+                    if (factory) test.state = TestState.Pass
                 }
             }
             // start work async

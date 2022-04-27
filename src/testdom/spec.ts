@@ -12,6 +12,10 @@ export interface TestResult {
 
 export interface PanelTestSpec {
     id?: string
+    /**
+     * Tests should be fast and automated
+     */
+    factory?: boolean
     devices: DeviceTestSpec[]
     oracles?: OracleTestSpec[]
 }
@@ -28,6 +32,7 @@ export interface DeviceTestSpec {
     count: number
     firmwareVersion?: string
     services: ServiceTestSpec[]
+    factory?: boolean
 }
 
 export interface ServiceTestSpec {
@@ -53,6 +58,7 @@ export interface ServiceTestRule {
         | "setIntensityAndValue"
     name?: string
     manualSteps?: ManualSteps
+    factory?: boolean
 }
 export interface ReadingTestRule extends ServiceTestRule {
     type: "reading" | "intensity" | "value"

@@ -15,7 +15,13 @@ import { randomDeviceId } from "../jdom/random"
 import { JDRegister } from "../jdom/register"
 import { JDService } from "../jdom/service"
 import { arrayConcatMany, delay } from "../jdom/utils"
-import { ManualSteps, PanelTestSpec, TestResult, TestState } from "./spec"
+import {
+    DeviceTestSpec,
+    ManualSteps,
+    PanelTestSpec,
+    TestResult,
+    TestState,
+} from "./spec"
 
 export const PANEL_TEST_KIND = "panelTest"
 export const DEVICE_TEST_KIND = "deviceTest"
@@ -71,6 +77,10 @@ export abstract class TestNode extends JDNode {
         return undefined
     }
 
+    get factory(): boolean {
+        return this.parent?.factory
+    }
+
     get id() {
         return this._id
     }
@@ -116,6 +126,7 @@ export abstract class TestNode extends JDNode {
         const { prepare } = this.manualSteps || {}
         if (
             prepare &&
+            !this.factory &&
             (this.state == TestState.Indeterminate ||
                 this.state == TestState.Fail)
         )
@@ -250,6 +261,9 @@ export class PanelTest extends TestNode {
     set bus(value: JDBus) {
         this.node = value
     }
+    get factory() {
+        return !!this.specification.factory
+    }
     get deviceTests() {
         return this.children as DeviceTest[]
     }
@@ -292,7 +306,8 @@ export class PanelTest extends TestNode {
 export class DeviceTest extends TestNode {
     constructor(
         readonly productIdentifier: number,
-        readonly specification: jdspec.DeviceSpec
+        readonly specification: jdspec.DeviceSpec,
+        readonly testSpecification: DeviceTestSpec
     ) {
         super(
             specification
@@ -309,7 +324,9 @@ export class DeviceTest extends TestNode {
     set device(value: JDDevice) {
         this.node = value
     }
-
+    get factory() {
+        return this.parent?.factory || !!this.testSpecification.factory
+    }
     get serviceTests() {
         return this.children.filter(
             child => child.nodeKind === SERVICE_TEST_KIND

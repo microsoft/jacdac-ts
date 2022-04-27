@@ -307,10 +307,10 @@ export function createDeviceTest(
     panel?: PanelTestSpec
 ): DeviceTest {
     const { deviceCatalog } = bus
-    const { productIdentifier, firmwareVersion } = device
+    const { productIdentifier, firmwareVersion, factory } = device
     const specification =
         deviceCatalog.specificationFromProductIdentifier(productIdentifier)
-    const deviceTest = new DeviceTest(productIdentifier, specification)
+    const deviceTest = new DeviceTest(productIdentifier, specification, device)
 
     // add status light
     deviceTest.appendChild(new StatusLightTest())
@@ -429,6 +429,7 @@ export function createDeviceTest(
                         []),
                     ...(service.rules || []),
                 ]
+                    .filter(rule => !factory && rule.factory)
                     .map(rule => compileTestRule(specification, rule))
                     .filter(r => !!r)
                 testNodes?.forEach(testRule =>
