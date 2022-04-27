@@ -383,6 +383,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
         },
         start: test => {
             const service = test.service
+            const { factory } = test
             let mounted = true
             const work = async () => {
                 test.state = TestState.Running
@@ -408,7 +409,8 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     if (state > 0) brightness = (brightness + 0.1) % 1.01
                     state = ~state
                     await delay(500)
-                    test.state = TestState.Pass
+                    if (factory && test.state == TestState.Running)
+                        test.state = TestState.Pass
                 }
             }
             work()
@@ -446,7 +448,8 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     }
                     await pixelsRegister.sendSetPackedAsync([pixels], true)
                     await delay(500)
-                    if (factory) test.state = TestState.Pass
+                    if (factory && test.state == TestState.Running)
+                        test.state = TestState.Pass
                 }
             }
             work()
@@ -461,6 +464,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
             validate: "verify colors on LED",
         },
         start: test => {
+            const { factory } = test
             let mounted = true
             const work = async () => {
                 test.state = TestState.Running
@@ -475,6 +479,8 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     )
                     await service?.sendCmdAsync(LedStripCmd.Run, encoded)
                     await delay(500)
+                    if (factory && test.state == TestState.Running)
+                        test.state = TestState.Pass
                 }
             }
             work()
@@ -516,7 +522,8 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     await delay(1000)
                     f = f << 1
                     if (f > 4096) f = 440
-                    if (factory) test.state = TestState.Pass
+                    if (factory && test.state == TestState.Running)
+                        test.state = TestState.Pass
                 }
             }
             // start work async
@@ -529,6 +536,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
     [SRV_ROTARY_ENCODER]: {
         name: "rotate clockwise slowly 1 full turn, without missing a click",
         start: test => {
+            const { factory } = test
             let mounted = true
             const work = async () => {
                 test.state = TestState.Running
@@ -573,6 +581,8 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                         count = 0
                     }
                     test.output = `${count}/${clicksPerTurn} at ${lastPosition}`
+                    if (factory && test.state == TestState.Running)
+                        test.state = TestState.Pass
                 }
                 // look for full sequence
             }
