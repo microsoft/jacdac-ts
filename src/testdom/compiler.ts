@@ -429,7 +429,7 @@ export function createDeviceTest(
                         []),
                     ...(service.rules || []),
                 ]
-                    .filter(rule => !factory && rule.factory)
+                    .filter(rule => !factory || rule.factory)
                     .map(rule => compileTestRule(specification, rule))
                     .filter(r => !!r)
                 testNodes?.forEach(testRule =>
