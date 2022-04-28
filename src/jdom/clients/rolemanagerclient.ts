@@ -96,12 +96,10 @@ function parseRole(role: Role): ServiceProviderOptions {
             let simpleValue: PackedSimpleValue
             const type = pkt.fields[0].type
             const enumType: jdspec.EnumInfo = specification.enums?.[type]
-            if (enumType) simpleValue = enumType.members[value]
+            if (enumType)
+                simpleValue = enumType.members[value] || parseInt(value)
             else if (type == "string") simpleValue = value
-            else
-                simpleValue = /^0x/.test(value)
-                    ? parseInt(value, 16)
-                    : parseInt(value)
+            else simpleValue = parseInt(value)
             return { name, value: simpleValue }
         })
     if (!args?.length) return undefined
