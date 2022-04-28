@@ -34,18 +34,14 @@ export class ServoServer extends JDServiceServer {
         } = options || {}
 
         this.angle = this.addRegister<[number]>(ServoReg.Angle, [0])
-        this.actualAngle = this.addRegister<[number]>(ServoReg.ActualAngle, [
-            0,
-        ])
+        this.actualAngle = this.addRegister<[number]>(ServoReg.ActualAngle, [0])
         this.enabled = this.addRegister<[boolean]>(ServoReg.Enabled, [false])
-        this.minAngle = this.addRegister<[number]>(
-            ServoReg.MinAngle,
-            [minAngle]
-        )
-        this.maxAngle = this.addRegister<[number]>(
-            ServoReg.MaxAngle,
-            [maxAngle]
-        )
+        this.minAngle = this.addRegister<[number]>(ServoReg.MinAngle, [
+            minAngle,
+        ])
+        this.maxAngle = this.addRegister<[number]>(ServoReg.MaxAngle, [
+            maxAngle,
+        ])
         this.offset = this.addRegister<[number]>(ServoReg.Offset, [0])
         this.responseSpeed = this.addRegister<[number]>(
             ServoReg.ResponseSpeed,
