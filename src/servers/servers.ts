@@ -203,20 +203,20 @@ export const SG90_RESPONSE_SPEED = 0.12 // deg/60deg
 const microServoOptions = {
     stallTorque: SG90_STALL_TORQUE, // kg/cm
     responseSpeed: SG90_RESPONSE_SPEED, // s/60deg
-    minAngle: -90,
-    maxAngle: 90,
+    minAngle: 0,
+    maxAngle: 180,
 }
 const microServo270Options = {
     stallTorque: SG90_STALL_TORQUE, // kg/cm
     responseSpeed: SG90_RESPONSE_SPEED, // s/60deg
-    minAngle: -135,
-    maxAngle: 135,
+    minAngle: 0,
+    maxAngle: 270,
 }
 const microServo360Options = {
     stallTorque: SG90_STALL_TORQUE, // kg/cm
     responseSpeed: SG90_RESPONSE_SPEED * 2, // s/60deg
-    minAngle: -180,
-    maxAngle: 180,
+    minAngle: 0,
+    maxAngle: 360,
 }
 const windDirectionOptions: AnalogSensorServerOptions = {
     readingValues: [0],

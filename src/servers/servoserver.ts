@@ -9,7 +9,7 @@ import { JDServiceServer, JDServerOptions } from "../jdom/servers/serviceserver"
 
 export class ServoServer extends JDServiceServer {
     readonly angle: JDRegisterServer<[number]>
-    readonly currentAngle: JDRegisterServer<[number]>
+    readonly actualAngle: JDRegisterServer<[number]>
     readonly offset: JDRegisterServer<[number]>
     readonly enabled: JDRegisterServer<[boolean]>
     readonly minAngle: JDRegisterServer<[number]>
@@ -27,24 +27,24 @@ export class ServoServer extends JDServiceServer {
     ) {
         super(SRV_SERVO, options)
         const {
-            minAngle = -90,
-            maxAngle = 90,
+            minAngle = 0,
+            maxAngle = 180,
             responseSpeed,
             stallTorque,
         } = options || {}
 
         this.angle = this.addRegister<[number]>(ServoReg.Angle, [0])
-        this.currentAngle = this.addRegister<[number]>(ServoReg.CurrentAngle, [
+        this.actualAngle = this.addRegister<[number]>(ServoReg.ActualAngle, [
             0,
         ])
         this.enabled = this.addRegister<[boolean]>(ServoReg.Enabled, [false])
         this.minAngle = this.addRegister<[number]>(
             ServoReg.MinAngle,
-            minAngle !== undefined ? [minAngle] : undefined
+            [minAngle]
         )
         this.maxAngle = this.addRegister<[number]>(
             ServoReg.MaxAngle,
-            maxAngle !== undefined ? [maxAngle] : undefined
+            [maxAngle]
         )
         this.offset = this.addRegister<[number]>(ServoReg.Offset, [0])
         this.responseSpeed = this.addRegister<[number]>(
@@ -65,7 +65,7 @@ export class ServoServer extends JDServiceServer {
             values[0] = angle
         })
         this.angle.on(CHANGE, () =>
-            this.currentAngle.setValues(this.angle.values())
+            this.actualAngle.setValues(this.angle.values())
         )
     }
 }
