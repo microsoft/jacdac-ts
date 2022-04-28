@@ -71,7 +71,7 @@ export class JacscriptManagerServer extends JDServiceServer {
     }
 
     private handleDeployBytecode(pkt: Packet) {
-        // TODO
+        console.debug(`jacscript server: deploy`, { pkt })
     }
 
     private async handleReadBytecode(pkt: Packet) {
