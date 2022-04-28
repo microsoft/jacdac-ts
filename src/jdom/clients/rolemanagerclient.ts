@@ -74,46 +74,42 @@ function parentName(bus: JDBus, role: Role) {
     return role.name.split("/", 1)[0]
 }
 
-function parseRoleQuery(query: string): [string, PackedSimpleValue][] {
-    const args: [string, PackedSimpleValue][] = query
-        ?.split("&")
-        .map(a => a.split("=", 2))
-        .map(
-            ([name, value]) =>
-                [
-                    name.toLowerCase().trim(),
-                    name === ROLE_QUERY_DEVICE
-                        ? value
-                        : (JSONTryParse(value) as PackedSimpleValue),
-                ] as [string, PackedSimpleValue]
-        )
-        .filter(([name, value]) => name && value !== undefined)
-    return args
-}
-
 function parseRole(role: Role): ServiceProviderOptions {
     const specification = serviceSpecificationFromClassIdentifier(
         role.serviceClass
     )
     if (!specification) return undefined
-    const args = parseRoleQuery(role.query)
-    const pairs: [jdspec.PacketInfo, PackedSimpleValue][] = args
-        ?.map(([name, value]) => {
-            const pkt = specification.packets.find(
+    const args = role.query
+        ?.split("&")
+        .map(a => a.split("=", 2))
+        .filter(([n, v]) => n && v !== undefined)
+        .map(([n, v]) => ({ name: n.toLowerCase().trim(), value: v }))
+        .map(({ name, value }) => ({
+            name,
+            value,
+            pkt: specification.packets.find(
                 pkt => isConstRegister(pkt) && pkt.name === name
-            )
-            const r: [jdspec.PacketInfo, PackedSimpleValue] = pkt?.packFormat
-                ? [pkt, value]
-                : undefined
-            return r
+            ),
+        }))
+        .filter(a => !!a.pkt?.packFormat)
+        .map(({ name, value, pkt }) => {
+            let simpleValue: PackedSimpleValue
+            const type = pkt.fields[0].type
+            const enumType: jdspec.EnumInfo = specification.enums?.[type]
+            if (enumType) simpleValue = enumType.members[value]
+            else if (type == "string") simpleValue = value
+            else
+                simpleValue = /^0x/.test(value)
+                    ? parseInt(value, 16)
+                    : parseInt(value)
+            return { name, value: simpleValue }
         })
-        .filter(r => !!r)
     if (!args?.length) return undefined
 
     const constants: Record<string, PackedSimpleValue> = toMap(
-        pairs,
-        arg => arg[0].name,
-        arg => arg[1]
+        args,
+        a => a.name,
+        a => a.value
     )
     return {
         serviceClass: role.serviceClass,
