@@ -1288,7 +1288,7 @@ ${dev
             device =>
                 device.announced && // needs services
                 !device.lost && // ignore lost devices
-                !device.hasService(SRV_PROXY) && // just ignore proxies
+                // !device.hasService(SRV_PROXY) && // proxies run servers!
                 !device.firmwareUpdater
         )
 
