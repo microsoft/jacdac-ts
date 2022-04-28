@@ -109,11 +109,13 @@ function parseRole(role: Role): ServiceProviderOptions {
         a => a.name,
         a => a.value
     )
-    return {
+    const r = {
         serviceClass: role.serviceClass,
         serviceOffset: constants[ROLE_QUERY_SERVICE_OFFSET] as number,
         constants,
     }
+    console.debug(`role: ${role.name}`, r)
+    return r
 }
 
 /**
@@ -331,7 +333,6 @@ export class RoleManagerClient extends JDServiceClient {
         const parents = Object.keys(todos)
         parents.forEach(parent => {
             const todo = todos[parent]
-            console.log({ todo })
             // no parent, spawn individual services
             if (!parent) {
                 todo.forEach(t => {
