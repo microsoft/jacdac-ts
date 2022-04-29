@@ -83,8 +83,12 @@ export function serviceSpecifications() {
  * @internal
  */
 export function identifierToUrlPath(id: string) {
-    // compiled web site does not like . in path
-    return id?.replace(/-/g, "/").replace(/\./g, "").toLowerCase()
+    if (!id) return id
+
+    const parts = id.split(/-/g)
+    return `${parts.slice(0, -1).join("-")}/${parts[parts.length - 1]}`
+        .replace(/[.:]/g, "")
+        .toLowerCase()
 }
 
 /**
