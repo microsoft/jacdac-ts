@@ -237,7 +237,7 @@ export class JDServiceServer extends JDEventSource {
         return reg
     }
 
-    protected addRegister<TValues extends PackedValues = PackedValues>(
+    addRegister<TValues extends PackedValues = PackedValues>(
         identifier: number,
         defaultValue?: TValues
     ): JDRegisterServer<TValues> {

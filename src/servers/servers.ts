@@ -1706,10 +1706,7 @@ function applyServiceOptions(
                     )
                 else {
                     const reg = service.register(spec.identifier)
-                    if (!reg)
-                        console.warn(
-                            `service provider: register ${specification.name}.${spec.name} not supported`
-                        )
+                    if (!reg) service.addRegister(spec.identifier, [value])
                     else reg.setValues([value])
                 }
             })
