@@ -13,6 +13,7 @@ import {
     ROLE_MANAGER_POLL,
     ROLE_QUERY_DEVICE,
     ROLE_QUERY_SELF_DEVICE,
+    ROLE_QUERY_SERVICE_INDEX,
     ROLE_QUERY_SERVICE_OFFSET,
     SELF_ANNOUNCE,
     SystemEvent,
@@ -84,7 +85,20 @@ function parseRole(role: Role): ServiceProviderOptions {
         .map(a => a.split("=", 2))
         .filter(([n, v]) => n && v !== undefined)
         .map(([n, v]) => ({ name: n.toLowerCase().trim(), value: v }))
-        .map(({ name, value }) => ({
+    const serviceOffset = args
+        ?.filter(arg => arg.name === ROLE_QUERY_SERVICE_OFFSET)
+        .map(arg => {
+            const i = parseInt(arg.value)
+            return isNaN(i) ? undefined : i
+        })[0]
+    const serviceIndex = args
+        ?.filter(arg => arg.name === ROLE_QUERY_SERVICE_INDEX)
+        .map(arg => {
+            const i = parseInt(arg.value)
+            return isNaN(i) ? undefined : i
+        })[0]
+    const pktArgs = args
+        ?.map(({ name, value }) => ({
             name,
             value,
             pkt: specification.packets.find(
@@ -102,7 +116,12 @@ function parseRole(role: Role): ServiceProviderOptions {
             else simpleValue = parseInt(value)
             return { name, value: simpleValue }
         })
-    if (!args?.length) return undefined
+    if (
+        serviceOffset === undefined &&
+        serviceIndex === undefined &&
+        !pktArgs?.length
+    )
+        return undefined
 
     const constants: Record<string, PackedSimpleValue> = toMap(
         args,
@@ -111,7 +130,8 @@ function parseRole(role: Role): ServiceProviderOptions {
     )
     const r = {
         serviceClass: role.serviceClass,
-        serviceOffset: constants[ROLE_QUERY_SERVICE_OFFSET] as number,
+        serviceOffset,
+        serviceIndex,
         constants,
     }
     console.debug(`role: ${role.name}`, r)

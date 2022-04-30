@@ -228,7 +228,7 @@ export const TIMEOUT_ERROR_CODE = "Timeout"
 export const TRANSPORT_CLOSED_ERROR_CODE = "TransportClosed"
 
 export const ROLE_QUERY_SERVICE_OFFSET = "srvo"
-export const ROLE_QUERY_SERVICE_INDEX = "srvo"
+export const ROLE_QUERY_SERVICE_INDEX = "srvi"
 export const ROLE_QUERY_DEVICE = "dev"
 export const ROLE_QUERY_SELF_DEVICE = "self"
 
