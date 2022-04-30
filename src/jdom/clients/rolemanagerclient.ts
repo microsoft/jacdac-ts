@@ -123,11 +123,13 @@ function parseRole(role: Role): ServiceProviderOptions {
     )
         return undefined
 
-    const constants: Record<string, PackedSimpleValue> = toMap(
-        args,
-        a => a.name,
-        a => a.value
-    )
+    const constants: Record<string, PackedSimpleValue> =
+        pktArgs &&
+        toMap(
+            pktArgs,
+            a => a.name,
+            a => a.value
+        )
     const r = {
         serviceClass: role.serviceClass,
         serviceOffset,
