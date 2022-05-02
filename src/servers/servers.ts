@@ -1687,11 +1687,15 @@ function applyServiceOptions(
     serviceOptions: ServiceProviderOptions[]
 ) {
     serviceOptions?.forEach(({ serviceClass, serviceOffset, constants }) => {
-        const service = services.filter(
-            srv => srv.serviceClass === serviceClass
-        )[serviceOffset || 0]
+        const srvs = services.filter(srv => srv.serviceClass === serviceClass)
+        const service = srvs[serviceOffset || 0]
         if (!service) {
-            console.warn(`service provider: service not found at offset`)
+            console.warn(
+                `service provider: service 0x${serviceClass.toString(
+                    16
+                )} not found at offset ${serviceOffset || 0}`,
+                { srvs }
+            )
         } else {
             const { specification } = service
             Object.entries(constants).forEach(([name, value]) => {
