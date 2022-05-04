@@ -89,6 +89,7 @@ import {
     SRV_POWER_SUPPLY,
     MagneticFieldLevelVariant,
     SRV_MAGNETIC_FIELD_LEVEL,
+    SRV_DUAL_MOTORS,
 } from "../jdom/constants"
 import { JDServerServiceProvider } from "../jdom/servers/serverserviceprovider"
 import { ProtocolTestServer } from "../jdom/servers/protocoltestserver"
@@ -142,6 +143,7 @@ import { HIDJoystickServer } from "./hidjoystickserver"
 import { isConstRegister } from "../jdom/spec"
 import { PackedSimpleValue } from "../jdom/pack"
 import { MagneticFieldLevelServer } from "./magneticfieldlevelserver"
+import { DualMotorsServer } from "./dualmotorsserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     readingValues: [21.5],
@@ -1044,6 +1046,12 @@ function initProviders() {
                 name: "motor",
                 serviceClasses: [SRV_MOTOR],
                 services: () => [new MotorServer()],
+                resetIn: true,
+            },
+            {
+                name: "motor (dual)",
+                serviceClasses: [SRV_DUAL_MOTORS],
+                services: () => [new DualMotorsServer()],
                 resetIn: true,
             },
             {
