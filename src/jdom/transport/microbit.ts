@@ -260,7 +260,7 @@ export class CMSISProto implements Proto {
 
     private async readSerial() {
         let buf = await this.talkAsync([0x83])
-        const len = buf[1]
+        const len = buf?.[1]
         if (len) {
             buf = buf.slice(2, 2 + len)
             if (this.pendingSerial) buf = bufferConcat(this.pendingSerial, buf)
