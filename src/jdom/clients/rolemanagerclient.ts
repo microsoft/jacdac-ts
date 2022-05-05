@@ -33,7 +33,6 @@ import {
     debounceAsync,
     fromHex,
     groupBy,
-    JSONTryParse,
     toHex,
     toMap,
 } from "../utils"
@@ -97,7 +96,14 @@ function parseRole(role: Role): ServiceProviderOptions {
             const i = parseInt(arg.value)
             return isNaN(i) ? undefined : i
         })[0]
+    const REG_NAME_MAP: Record<string, string> = {
+        name: "instance_name",
+    }
     const pktArgs = args
+        ?.map(({ name, value }) => ({
+            name: REG_NAME_MAP[name] || name,
+            value,
+        }))
         ?.map(({ name, value }) => ({
             name,
             value,
