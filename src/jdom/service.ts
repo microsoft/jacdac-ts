@@ -447,11 +447,13 @@ export class JDService extends JDNode {
                     )
                 )
             })
-            this.sendPacketAsync(pkt).then(() => {
-                this.on(REPORT_RECEIVE, handleRes)
-            })
-            // the handler remove either upon timeout,
+
+            // the handler removed either upon timeout,
             // or on first invocation of handleRes()
+            this.on(REPORT_RECEIVE, handleRes)
+
+            // need to add handler first, in case this doesn't return before packet is sent and response is received
+            this.sendPacketAsync(pkt)
         })
     }
 
