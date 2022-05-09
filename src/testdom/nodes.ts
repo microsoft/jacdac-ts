@@ -413,10 +413,10 @@ export class StatusLightTest extends TestNode {
             while (mounted && statusLight) {
                 switch (this.parent.state) {
                     case TestState.Pass:
-                        statusLight.blink(0x009900, 0x000000, 500, 1)
+                        statusLight.blink(0x006000, 0x000000, 500, 1)
                         break
                     case TestState.Fail:
-                        statusLight.blink(0x770000, 0x000000, 250, 4)
+                        statusLight.blink(0x500000, 0x000000, 250, 4)
                         break
                     default:
                         statusLight.blink(0x000010, 0x000000, 350, 3)
