@@ -419,7 +419,7 @@ export class StatusLightTest extends TestNode {
                         statusLight.blink(0x770000, 0x000000, 250, 4)
                         break
                     default:
-                        statusLight.blink(0x000099, 0x000000, 350, 3)
+                        statusLight.blink(0x000010, 0x000000, 350, 3)
                         break
                 }
                 await delay(1000)
