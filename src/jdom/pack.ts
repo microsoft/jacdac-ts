@@ -326,22 +326,20 @@ function jdpackCore(
         if (parser.isArray) arr = dataItem
         else arr = [dataItem]
 
-        for (const v of arr) {
+        for (let v of arr) {
             if (parser.nfmt !== null) {
                 if (typeof v != "number")
                     throw new Error(`expecting number, got ` + typeof v)
                 if (trg) {
+                    v *= parser.div
                     const st: jdspec.StorageType = numberFormatToStorageType(
                         parser.nfmt
                     )
-                    setNumber(
-                        trg,
-                        parser.nfmt,
-                        off,
-                        st == null
-                            ? v * parser.div
-                            : clampToStorage(Math.round(v * parser.div), st)
-                    )
+                    if (parser.div == 1 && (st == 4 || st == -4))
+                        // no clamping
+                        v = 0 | Math.round(v)
+                    else if (st != null) v = clampToStorage(Math.round(v), st)
+                    setNumber(trg, parser.nfmt, off, v)
                 }
                 off += parser.size
             } else {
@@ -410,9 +408,18 @@ export function jdpack<T extends PackedValues>(fmt: string, data: T) {
     const nf = numberFormatOfType(fmt)
     if (nf !== null) {
         const buf = new Uint8Array(sizeOfNumberFormat(nf))
-        setNumber(buf, nf, 0, data[0])
+        const st: jdspec.StorageType = numberFormatToStorageType(nf)
+        let v = data[0]
+        if (st != null) {
+            // no clamping for U32, I32
+            if (st == 4 || st == -4) v = Math.round(v) | 0
+            else v = clampToStorage(Math.round(v), st)
+        }
+        console.log("fast", nf, v, st)
+        setNumber(buf, nf, 0, v)
         return buf
     }
+
     // slow path
     const len = jdpackCore(null, fmt, data, 0)
     const res = new Uint8Array(len)

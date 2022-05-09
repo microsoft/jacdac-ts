@@ -41,9 +41,15 @@ describe("jdpack", () => {
         fromHex2(`ff7f ff7f ff7f ff7f`)
     )
 
+    testPayload("u16", [-10], fromHex2(`00 00`))
+    testPayload("u8", [-10], fromHex2(`00`))
+    testPayload("u32 i32", [1 << 31, 1 << 31], fromHex2(`00 00 00 80 00 00 00 80`))
+
     testPayload("u32", [1 << 31], fromHex2(`00 00 00 80`)) // no clamping
     testPayload("i32", [1 << 31], fromHex2(`00 00 00 80`))
     testPayload("u22.10", [-10], fromHex2(`00 00 00 00`)) // yes clamping
+
+    testPayload("u64", [0xf00dbeef * 0x100], fromHex2(`00efbe0df0000000`))
 
     function testOne(
         fmt: string,

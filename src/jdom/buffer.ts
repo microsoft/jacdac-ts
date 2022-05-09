@@ -190,6 +190,12 @@ export function setNumber(
         return
     }
 
+    if (fmt == NumberFormat.UInt64LE || fmt == NumberFormat.Int64LE) {
+        setNumber(buf, NumberFormat.UInt32LE, offset, r >>> 0)
+        setNumber(buf, NumberFormat.UInt32LE, offset + 4, r / 0x100000000)
+        return
+    }
+
     for (let i = 0; i < inf.size; ++i) {
         const off = !inf.swap ? offset + i : offset + inf.size - i - 1
         buf[off] = r & 0xff
