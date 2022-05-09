@@ -242,6 +242,57 @@ export function jdunpack<T extends PackedValues>(
     return jdunpackCore(buf, fmt, 0) as T
 }
 
+// only works for LE types
+function clampWithNumberFormat(v: number, format: NumberFormat) {
+    if (format == NumberFormat.Float32LE || format == NumberFormat.Float64LE)
+        return v
+
+    if (isNaN(v)) return 0
+
+    if (format == NumberFormat.UInt32LE) {
+        if (v < 0) return 0
+        if (v > 0xffffffff) return 0xffffffff
+        return v >>> 0
+    }
+
+    if (v < 0) {
+        switch (format) {
+            case NumberFormat.UInt8LE:
+            case NumberFormat.UInt16LE:
+                return 0
+            case NumberFormat.Int8LE:
+                if (v <= -0x80) return -0x80
+                break
+            case NumberFormat.Int16LE:
+                if (v <= -0x8000) return -0x8000
+                break
+            case NumberFormat.Int32LE:
+                if (v <= -0x80000000) return -0x80000000
+                break
+        }
+    } else {
+        switch (format) {
+            case NumberFormat.UInt8LE:
+                if (v >= 0xff) return 0xff
+                break
+            case NumberFormat.UInt16LE:
+                if (v >= 0xffff) return 0xffff
+                break
+            case NumberFormat.Int8LE:
+                if (v >= 0x7f) return 0x7f
+                break
+            case NumberFormat.Int16LE:
+                if (v >= 0x7fff) return 0x7fff
+                break
+            case NumberFormat.Int32LE:
+                if (v >= 0x7fffffff) return 0x7fffffff
+                break
+        }
+    }
+
+    return v | 0
+}
+
 function jdpackCore(
     trg: Uint8Array,
     fmt: string,
@@ -275,22 +326,20 @@ function jdpackCore(
         if (parser.isArray) arr = dataItem
         else arr = [dataItem]
 
-        for (const v of arr) {
+        for (let v of arr) {
             if (parser.nfmt !== null) {
                 if (typeof v != "number")
                     throw new Error(`expecting number, got ` + typeof v)
                 if (trg) {
+                    v *= parser.div
                     const st: jdspec.StorageType = numberFormatToStorageType(
                         parser.nfmt
                     )
-                    setNumber(
-                        trg,
-                        parser.nfmt,
-                        off,
-                        st == null
-                            ? v * parser.div
-                            : clampToStorage(Math.round(v * parser.div), st)
-                    )
+                    if (parser.div == 1 && (st == 4 || st == -4))
+                        // no clamping
+                        v = 0 | Math.round(v)
+                    else if (st != null) v = clampToStorage(Math.round(v), st)
+                    setNumber(trg, parser.nfmt, off, v)
                 }
                 off += parser.size
             } else {
@@ -359,9 +408,18 @@ export function jdpack<T extends PackedValues>(fmt: string, data: T) {
     const nf = numberFormatOfType(fmt)
     if (nf !== null) {
         const buf = new Uint8Array(sizeOfNumberFormat(nf))
-        setNumber(buf, nf, 0, data[0])
+        const st: jdspec.StorageType = numberFormatToStorageType(nf)
+        let v = data[0]
+        if (st != null) {
+            // no clamping for U32, I32
+            if (st == 4 || st == -4) v = Math.round(v) | 0
+            else v = clampToStorage(Math.round(v), st)
+        }
+        console.log("fast", nf, v, st)
+        setNumber(buf, nf, 0, v)
         return buf
     }
+
     // slow path
     const len = jdpackCore(null, fmt, data, 0)
     const res = new Uint8Array(len)
