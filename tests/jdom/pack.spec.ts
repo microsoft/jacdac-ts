@@ -4,6 +4,44 @@ import { jdpack, jdunpack } from "../../src/jdom/pack"
 import { bufferEq, fromHex, stringToBuffer, toHex } from "../../src/jdom/utils"
 
 describe("jdpack", () => {
+    function testPayload(fmt: string, data: any[], buf: Uint8Array) {
+        it("payload " + fmt, () => {
+            const a = jdpack(fmt, data)
+            const b = buf
+            console.log({ a, b })
+            if (!bufferEq(a, b)) {
+                fail(`not the same ${toHex(a)} != ${toHex(b)}`)
+            }
+        })
+    }
+
+    testPayload(
+        "u0.8 u0.8 u0.8 u0.8",
+        [0.999999, 1, 1.01, 10000],
+        fromHex(`ff ff ff ff`)
+    )
+    testPayload("u0.8 u0.8 u0.8", [0, -1, -100000], fromHex(`00 00 00`))
+    testPayload(
+        "i1.7 i1.7 i1.7 i1.7",
+        [0.999999, 1, 1.01, 10000],
+        fromHex(`7f 7f 7f 7f`)
+    )
+
+    testPayload(
+        "u0.16 u0.16 u0.16 u0.16",
+        [0.999999, 1, 1.01, 10000],
+        fromHex(`ffff ffff ffff ffff`)
+    )
+    testPayload(
+        "i1.15 i1.15 i1.15 i1.15",
+        [0.999999, 1, 1.01, 10000],
+        fromHex(`ff7f ff7f ff7f ff7f`)
+    )
+
+    testPayload("u32", [1 << 31], fromHex(`00 00 00 80`)) // no clamping
+    testPayload("i32", [1 << 31], fromHex(`00 00 00 80`))
+    testPayload("u22.10", [-10], fromHex(`00 00 00 00`)) // yes clamping
+
     function testOne(
         fmt: string,
         data0: any[],

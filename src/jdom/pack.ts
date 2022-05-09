@@ -242,6 +242,57 @@ export function jdunpack<T extends PackedValues>(
     return jdunpackCore(buf, fmt, 0) as T
 }
 
+// only works for LE types
+function clampWithNumberFormat(v: number, format: NumberFormat) {
+    if (format == NumberFormat.Float32LE || format == NumberFormat.Float64LE)
+        return v
+
+    if (isNaN(v)) return 0
+
+    if (format == NumberFormat.UInt32LE) {
+        if (v < 0) return 0
+        if (v > 0xffffffff) return 0xffffffff
+        return v >>> 0
+    }
+
+    if (v < 0) {
+        switch (format) {
+            case NumberFormat.UInt8LE:
+            case NumberFormat.UInt16LE:
+                return 0
+            case NumberFormat.Int8LE:
+                if (v <= -0x80) return -0x80
+                break
+            case NumberFormat.Int16LE:
+                if (v <= -0x8000) return -0x8000
+                break
+            case NumberFormat.Int32LE:
+                if (v <= -0x80000000) return -0x80000000
+                break
+        }
+    } else {
+        switch (format) {
+            case NumberFormat.UInt8LE:
+                if (v >= 0xff) return 0xff
+                break
+            case NumberFormat.UInt16LE:
+                if (v >= 0xffff) return 0xffff
+                break
+            case NumberFormat.Int8LE:
+                if (v >= 0x7f) return 0x7f
+                break
+            case NumberFormat.Int16LE:
+                if (v >= 0x7fff) return 0x7fff
+                break
+            case NumberFormat.Int32LE:
+                if (v >= 0x7fffffff) return 0x7fffffff
+                break
+        }
+    }
+
+    return v | 0
+}
+
 function jdpackCore(
     trg: Uint8Array,
     fmt: string,
