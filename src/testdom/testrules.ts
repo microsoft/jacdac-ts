@@ -465,7 +465,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                         pixels.fill(0)
                         if (!mounted) break
                         await pixelsRegister.sendSetPackedAsync([pixels], true)
-                        await delay(1000)
+                        await delay(500)
                     }
                 }
             }
