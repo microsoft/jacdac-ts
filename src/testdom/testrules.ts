@@ -420,7 +420,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
         },
     },
     [SRV_LED]: {
-        name: "cycle red, green, blue colors on all LEDs",
+        name: "cycle red, green, blue colors on all LEDs starting from the connector, clockwize.",
         manualSteps: {
             validate: "verify colors on LED",
         },
@@ -437,19 +437,36 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     await numPixelsRegister.refresh(true)
                     n = numPixelsRegister.uintValue
                 }
+                if (n == 0) {
+                    test.state = TestState.Fail
+                    test.output = "number of pixels is 0"
+                    return
+                }
+                // cycle through color and turn on pixels one by one
                 const pixels = new Uint8Array(n * 3)
-                let k = 0
                 while (mounted) {
-                    const color = testColors[k++ % testColors.length]
-                    for (let i = 0; i < n; ++i) {
-                        pixels[i * 3] = (color >> 16) & 0xff
-                        pixels[i * 3 + 1] = (color >> 8) & 0xff
-                        pixels[i * 3 + 2] = (color >> 0) & 0xff
+                    for (let ci = 0; ci < testColors.length && mounted; ++ci) {
+                        const color = testColors[ci]
+                        pixels.fill(0)
+                        for (let i = 0; i < n && mounted; ++i) {
+                            pixels[i * 3] = (color >> 16) & 0xff
+                            pixels[i * 3 + 1] = (color >> 8) & 0xff
+                            pixels[i * 3 + 2] = (color >> 0) & 0xff
+                            await pixelsRegister.sendSetPackedAsync(
+                                [pixels],
+                                true
+                            )
+                            await delay(Math.max(100, 500 - i * 20))
+                        }
+                        if (factory && test.state == TestState.Running)
+                            test.state = TestState.Pass
+                        // pause for a second
+                        await delay(1000)
+                        pixels.fill(0)
+                        if (!mounted) break
+                        await pixelsRegister.sendSetPackedAsync([pixels], true)
+                        await delay(1000)
                     }
-                    await pixelsRegister.sendSetPackedAsync([pixels], true)
-                    await delay(500)
-                    if (factory && test.state == TestState.Running)
-                        test.state = TestState.Pass
                 }
             }
             work()
