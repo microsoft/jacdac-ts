@@ -415,7 +415,6 @@ export function jdpack<T extends PackedValues>(fmt: string, data: T) {
             if (st == 4 || st == -4) v = Math.round(v) | 0
             else v = clampToStorage(Math.round(v), st)
         }
-        console.log("fast", nf, v, st)
         setNumber(buf, nf, 0, v)
         return buf
     }
