@@ -19,6 +19,11 @@ export class LEDController extends JDEventSource {
         super()
     }
 
+    async setColor(color: number) {
+        const data = jdpack("u8 u8 u8 u8", trgbToValues(color))
+        await this.service.sendCmdAsync(this.command, data)
+    }
+
     async blink(from: number, to: number, interval: number, repeat: number) {
         const on = jdpack("u8 u8 u8 u8", trgbToValues(from))
         const off = jdpack("u8 u8 u8 u8", trgbToValues(to))

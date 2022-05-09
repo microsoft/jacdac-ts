@@ -418,9 +418,6 @@ export class StatusLightTest extends TestNode {
                     case TestState.Fail:
                         statusLight.blink(0x500000, 0x000000, 250, 4)
                         break
-                    default:
-                        statusLight.blink(0x00000a, 0x000000, 350, 1)
-                        break
                 }
                 await delay(1000)
             }
@@ -612,6 +609,9 @@ export class RegisterTest extends RegisterTestNode {
         let state = TestState.Indeterminate
         if (register) {
             try {
+                // always turn off color before querying service
+                const statusLight = register.service?.device?.statusLight
+                statusLight?.setColor(0)
                 state = this.computeState(this, logger)
             } catch (e) {
                 state = TestState.Fail
