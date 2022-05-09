@@ -14,33 +14,36 @@ describe("jdpack", () => {
             }
         })
     }
+    function fromHex2(s: string) {
+        return fromHex(s.replace(/\s+/g, ""))
+    }
 
     testPayload(
         "u0.8 u0.8 u0.8 u0.8",
         [0.999999, 1, 1.01, 10000],
-        fromHex(`ff ff ff ff`)
+        fromHex2(`ff ff ff ff`)
     )
-    testPayload("u0.8 u0.8 u0.8", [0, -1, -100000], fromHex(`00 00 00`))
+    testPayload("u0.8 u0.8 u0.8", [0, -1, -100000], fromHex2(`00 00 00`))
     testPayload(
         "i1.7 i1.7 i1.7 i1.7",
         [0.999999, 1, 1.01, 10000],
-        fromHex(`7f 7f 7f 7f`)
+        fromHex2(`7f 7f 7f 7f`)
     )
 
     testPayload(
         "u0.16 u0.16 u0.16 u0.16",
         [0.999999, 1, 1.01, 10000],
-        fromHex(`ffff ffff ffff ffff`)
+        fromHex2(`ffff ffff ffff ffff`)
     )
     testPayload(
         "i1.15 i1.15 i1.15 i1.15",
         [0.999999, 1, 1.01, 10000],
-        fromHex(`ff7f ff7f ff7f ff7f`)
+        fromHex2(`ff7f ff7f ff7f ff7f`)
     )
 
-    testPayload("u32", [1 << 31], fromHex(`00 00 00 80`)) // no clamping
-    testPayload("i32", [1 << 31], fromHex(`00 00 00 80`))
-    testPayload("u22.10", [-10], fromHex(`00 00 00 00`)) // yes clamping
+    testPayload("u32", [1 << 31], fromHex2(`00 00 00 80`)) // no clamping
+    testPayload("i32", [1 << 31], fromHex2(`00 00 00 80`))
+    testPayload("u22.10", [-10], fromHex2(`00 00 00 00`)) // yes clamping
 
     function testOne(
         fmt: string,
@@ -140,7 +143,7 @@ describe("jdpack", () => {
     testOne("i1.15", [-1], { maxError: err })
     testOne(
         "b[8] u32 u8 s",
-        [fromHex(`a1b2c3d4e5f6a7b8`), 0x12345678, 0x42, "barbaz"],
+        [fromHex2(`a1b2c3d4e5f6a7b8`), 0x12345678, 0x42, "barbaz"],
         { expectedPayload: "a1b2c3d4e5f6a7b8785634124262617262617a" }
     )
 
