@@ -42,6 +42,11 @@ export const GAMEPAD_DPAD_AB_BUTTONS = GAMEPAD_DPAD_A_BUTTONS | GamepadButtons.B
 /**
  * @internal
  */
+ export const GAMEPAD_DPAD_XY_BUTTONS = GAMEPAD_DPAD_BUTTONS | GamepadButtons.X | GamepadButtons.Y
+
+/**
+ * @internal
+ */
 export const GAMEPAD_GAMEPAD_EXTRA_BUTTONS =
     GamepadButtons.B |
     GamepadButtons.Select |
@@ -56,6 +61,8 @@ const standardGamepadMapping = [
     [GamepadButtons.Down, 13],
     [GamepadButtons.A, 0],
     [GamepadButtons.B, 1],
+    [GamepadButtons.X, 2],
+    [GamepadButtons.Y, 3],
     [GamepadButtons.Select, 8],
     [GamepadButtons.Menu, 9],
 ]

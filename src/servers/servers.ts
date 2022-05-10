@@ -685,7 +685,7 @@ function initProviders() {
                 ],
             },
             {
-                name: "gamepad (Dpad + all buttons)",
+                name: "gamepad (Dpad + arcade buttons)",
                 serviceClasses: [SRV_GAMEPAD],
                 services: () => [
                     new GamepadServer({
@@ -701,6 +701,16 @@ function initProviders() {
                     new GamepadServer({
                         variant: GamepadVariant.Gamepad,
                         buttonsAvailable: GAMEPAD_DPAD_AB_BUTTONS,
+                    }),
+                ],
+            },
+            {
+                name: "gamepad (Dpad + all buttons)",
+                serviceClasses: [SRV_GAMEPAD],
+                services: () => [
+                    new GamepadServer({
+                        variant: GamepadVariant.Gamepad,
+                        buttonsAvailable: GAMEPAD_ARCADE_BUTTONS | GamepadButtons.X | GamepadButtons.Y,
                     }),
                 ],
             },
