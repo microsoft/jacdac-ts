@@ -710,7 +710,10 @@ function initProviders() {
                 services: () => [
                     new GamepadServer({
                         variant: GamepadVariant.Gamepad,
-                        buttonsAvailable: GAMEPAD_ARCADE_BUTTONS | GamepadButtons.X | GamepadButtons.Y,
+                        buttonsAvailable:
+                            GAMEPAD_ARCADE_BUTTONS |
+                            GamepadButtons.X |
+                            GamepadButtons.Y,
                     }),
                 ],
             },

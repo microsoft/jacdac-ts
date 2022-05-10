@@ -42,7 +42,8 @@ export const GAMEPAD_DPAD_AB_BUTTONS = GAMEPAD_DPAD_A_BUTTONS | GamepadButtons.B
 /**
  * @internal
  */
- export const GAMEPAD_DPAD_XY_BUTTONS = GAMEPAD_DPAD_BUTTONS | GamepadButtons.X | GamepadButtons.Y
+export const GAMEPAD_DPAD_XY_BUTTONS =
+    GAMEPAD_DPAD_BUTTONS | GamepadButtons.X | GamepadButtons.Y
 
 /**
  * @internal
