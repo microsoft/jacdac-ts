@@ -61,6 +61,8 @@ export abstract class JDServiceProvider extends JDEventSource {
 
     abstract service(serviceIndex: number): JDServiceServer
 
-    protected handleSelfAnnounce(): void {}
+    protected handleSelfAnnounce(): void {
+        this.emit(SELF_ANNOUNCE)
+    }
     protected abstract handlePacket(pkt: Packet): void
 }

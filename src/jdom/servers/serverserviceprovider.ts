@@ -7,6 +7,8 @@ import {
     CMD_EVENT_COUNTER_MASK,
     CMD_EVENT_COUNTER_POS,
     CMD_EVENT_MASK,
+    CONNECT,
+    DISCONNECT,
     ERROR,
     JD_SERVICE_INDEX_CRC_ACK,
     MAX_SERVICES_LENGTH,
@@ -79,9 +81,11 @@ export class JDServerServiceProvider extends JDServiceProvider {
     protected start() {
         super.start()
         this._packetCount = 0
+        this.emit(CONNECT)
     }
 
     protected stop() {
+        this.emit(DISCONNECT)
         this._delayedPackets = undefined
         super.stop()
     }
@@ -199,7 +203,10 @@ export class JDServerServiceProvider extends JDServiceProvider {
             for (const h of this._services) {
                 if (h.serviceClass == multiCommandClass) {
                     // pretend it's directly addressed to us
-                    const npkt = pkt.cloneForDevice(this.deviceId, h.serviceIndex)
+                    const npkt = pkt.cloneForDevice(
+                        this.deviceId,
+                        h.serviceIndex
+                    )
                     h.handlePacket(npkt)
                 }
             }
@@ -227,4 +234,3 @@ export class JDServerServiceProvider extends JDServiceProvider {
         this.emit(RESET)
     }
 }
-
