@@ -1,4 +1,5 @@
 import {
+    TIMEOUT,
     DEVICE_CHANGE,
     DISCONNECT,
     JacscriptCloudCmd,
@@ -15,7 +16,6 @@ import { JDServerOptions, JDServiceServer } from "../jdom/servers/serviceserver"
 
 export const UPLOAD = "upload"
 export const CLOUD_COMMAND = "cloudCommand"
-export const TIMEOUT = "timeout"
 
 export interface JacscriptCloudUploadRequest {
     label: string
