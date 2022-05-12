@@ -90,6 +90,7 @@ import {
     MagneticFieldLevelVariant,
     SRV_MAGNETIC_FIELD_LEVEL,
     SRV_DUAL_MOTORS,
+    SRV_JACSCRIPT_CLOUD,
 } from "../jdom/constants"
 import { JDServerServiceProvider } from "../jdom/servers/serverserviceprovider"
 import { ProtocolTestServer } from "../jdom/servers/protocoltestserver"
@@ -144,6 +145,7 @@ import { isConstRegister } from "../jdom/spec"
 import { PackedSimpleValue } from "../jdom/pack"
 import { MagneticFieldLevelServer } from "./magneticfieldlevelserver"
 import { DualMotorsServer } from "./dualmotorsserver"
+import { JacscriptCloudServer } from "./jacscriptcloudserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     readingValues: [21.5],
@@ -1611,6 +1613,11 @@ function initProviders() {
                     })
                     return dev
                 },
+            },
+            {
+                name: "Jacscript Cloud (virtual)",
+                serviceClasses: [SRV_JACSCRIPT_CLOUD],
+                services: () => [new JacscriptCloudServer()],
             },
             Flags.diagnostics
                 ? {
