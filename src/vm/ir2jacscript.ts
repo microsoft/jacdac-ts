@@ -187,6 +187,10 @@ export function toJacscript(p: VMProgram): JacscriptProgram {
                 const [reg, vars1] = processExpression(args[0], false)
                 return [`${reg}.onConnected(() => {`, [...vars1]]
             }
+            case "cloudMethod": {
+                const [label, vars1] = processExpression(args[0], false)
+                return [`cloud.onMethod(${label}, () => {`, [...vars1]]
+            }
             case "start": {
                 return ["", []]
             }
