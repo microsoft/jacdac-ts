@@ -93,10 +93,10 @@ export class JacscriptCloudServer extends JDServiceServer {
             return
         }
         const seqNo = this.seqNo++
-        const payload = jdpack<[number, string, number[]]>("u32 z f64[]", [
+        const payload = jdpack<[number, string, [number][]]>("u32 z f64[]", [
             seqNo,
             method,
-            args,
+            args.map(n => [n]),
         ])
         return new Promise<JacscriptCloudCommandResponse>((resolve, reject) => {
             console.log(

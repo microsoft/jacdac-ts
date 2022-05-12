@@ -1,12 +1,7 @@
 import { JDNode } from "./node"
 import { JDService } from "./service"
 import { Packet } from "./packet"
-import {
-    CHANGE,
-    CMD_EVENT_COUNTER_MASK,
-    EVENT,
-    EVENT_NODE_NAME,
-} from "./constants"
+import { CHANGE, EVENT, EVENT_NODE_NAME } from "./constants"
 import { isEvent } from "./spec"
 import { JDServiceMemberNode } from "./servicemembernode"
 import { DecodedPacket } from "./pretty"
