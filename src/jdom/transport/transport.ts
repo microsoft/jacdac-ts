@@ -58,10 +58,14 @@ export abstract class Transport extends JDEventSource {
         this._cleanups = [
             options?.connectObservable?.subscribe({
                 next: async () => {
-                    console.debug(`${this.type}: device detected`)
-                    if (this.bus?.disconnected) {
+                    console.debug(
+                        `${this.type}: device detected, connect ${
+                            this.bus?.autoConnect ? "auto" : "manual"
+                        }`
+                    )
+                    if (this.bus?.disconnected && this.bus?.autoConnect) {
                         await delay(TRANSPORT_CONNECT_RETRY_DELAY)
-                        if (this.bus?.disconnected) {
+                        if (this.bus?.disconnected && this.bus?.autoConnect) {
                             if (
                                 typeof document === "undefined" || // Node.js
                                 document.visibilityState === "visible" // or tab visible

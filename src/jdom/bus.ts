@@ -170,8 +170,12 @@ export class JDBus extends JDNode {
     private _unsubscribeBroadcastChannel: () => void
     private _streaming = false
     private _passive = false
+    private _autoConnect = false
+    // self device is a client
     private _client = false
+    // self device is a dashboard
     private _dashboard = false
+    // acts as a proxy
     private _proxy = false
 
     /**
@@ -280,7 +284,7 @@ export class JDBus extends JDNode {
                     //   `broadcast ${id}: ${event} ${visibilityState}`
                     //)
                     if (visibilityState === "visible") await this.disconnect()
-                    else {
+                    else if (this.autoConnect) {
                         // let other window disconnect
                         await this.delay(2000)
                         await this.connect(true)
@@ -358,6 +362,32 @@ export class JDBus extends JDNode {
         this._transports.push(transport)
         transport.bus = this
         transport.bus.on(CONNECTING, () => this.preConnect(transport))
+    }
+
+    /**
+     * Automatically try to connect to detected devices
+     */
+    get autoConnect() {
+        return this._autoConnect
+    }
+
+    /**
+     * Sets the auto-connected mode
+     */
+    set autoConnect(value: boolean) {
+        if (value !== this._autoConnect) {
+            this._autoConnect = value
+            this.emit(CHANGE)
+
+            // auto start
+            if (
+                this.disconnected &&
+                this._autoConnect &&
+                typeof document !== "undefined" &&
+                document.visibilityState === "visible"
+            )
+                this.connect(true)
+        }
     }
 
     /**
