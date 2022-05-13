@@ -1615,9 +1615,13 @@ function initProviders() {
                 },
             },
             {
-                name: "Jacscript Cloud (virtual)",
+                name: "Jacscript Cloud (simulator)",
                 serviceClasses: [SRV_JACSCRIPT_CLOUD],
-                services: () => [new JacscriptCloudServer()],
+                services: () => [
+                    new JacscriptCloudServer({
+                        connectionName: "simulated cloud",
+                    }),
+                ],
             },
             Flags.diagnostics
                 ? {

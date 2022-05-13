@@ -29,6 +29,7 @@ export interface JacscriptCloudCommandResponse {
 
 export class JacscriptCloudServer extends JDServiceServer {
     readonly connectedRegister: JDRegisterServer<[boolean]>
+    readonly connectionNameRegister: JDRegisterServer<[string]>
     private seqNo = 0
     private pending: Record<
         string,
@@ -39,12 +40,16 @@ export class JacscriptCloudServer extends JDServiceServer {
         }
     > = {}
 
-    constructor(options?: JDServerOptions) {
+    constructor(options?: { connectionName?: string } & JDServerOptions) {
         super(SRV_JACSCRIPT_CLOUD, options)
 
         this.connectedRegister = this.addRegister(JacscriptCloudReg.Connected, [
             false,
         ])
+        this.connectionNameRegister = this.addRegister(
+            JacscriptCloudReg.ConnectionName,
+            [options?.connectionName || ""]
+        )
         this.addCommand(JacscriptCloudCmd.Upload, this.handleUpload.bind(this))
         this.addCommand(
             JacscriptCloudCmd.AckCloudCommand,
@@ -65,7 +70,10 @@ export class JacscriptCloudServer extends JDServiceServer {
     }
 
     set connected(value: boolean) {
-        this.connectedRegister.setValues([!!value])
+        if (value !== this.connected) {
+            this.connectedRegister.setValues([!!value])
+            this.sendEvent(JacscriptCloudEvent.Change)
+        }
     }
 
     private async handleUpload(pkt: Packet) {
