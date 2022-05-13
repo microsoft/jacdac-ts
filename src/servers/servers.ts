@@ -1700,6 +1700,15 @@ export function serviceProviderDefinitions() {
     return initProviders().slice(0)
 }
 
+/**
+ * Adds a new service provider definition
+ * @param def
+ */
+export function addServiceProviderDefinition(def: ServiceProviderDefinition) {
+    const providers = initProviders()
+    if (!providers.find(p => p.name === def.name)) providers.push(def)
+}
+
 function stableSimulatorDeviceId(bus: JDBus, template: string): string {
     const others = bus.serviceProviders().filter(sp => sp.template === template)
     const word0 = hash(stringToUint8Array(template + others.length), 32)
