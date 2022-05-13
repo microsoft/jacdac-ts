@@ -304,6 +304,7 @@ export class JDServiceServer extends JDEventSource {
         if (this.twin) return
 
         const { device } = this
+        if (!device) return
         const { bus } = device
         if (!bus) return
 
@@ -330,4 +331,3 @@ export class JDServiceServer extends JDEventSource {
         this.statusCode.setValues([SystemStatusCodes.Ready, 0])
     }
 }
-

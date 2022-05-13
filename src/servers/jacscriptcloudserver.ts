@@ -39,10 +39,17 @@ export class JacscriptCloudServer extends JDServiceServer {
             reject: (reason?: unknown) => void
         }
     > = {}
+    readonly controlled: boolean
 
-    constructor(options?: { connectionName?: string } & JDServerOptions) {
+    constructor(
+        options?: {
+            connectionName?: string
+            controlled?: boolean
+        } & JDServerOptions
+    ) {
         super(SRV_JACSCRIPT_CLOUD, options)
 
+        this.controlled = !!options?.controlled
         this.connectedRegister = this.addRegister(JacscriptCloudReg.Connected, [
             false,
         ])

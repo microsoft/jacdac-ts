@@ -56,7 +56,7 @@ export class AzureIoTHubHealthServer extends JDServiceServer {
         ])
         this.connectionStatus = this.addRegister(
             AzureIotHubHealthReg.ConnectionStatus,
-            [AzureIotHubHealthConnectionStatus.Connected]
+            [AzureIotHubHealthConnectionStatus.Disconnected]
         )
         this.connectionStatus.on(CHANGE, () =>
             this.sendEvent(AzureIotHubHealthEvent.ConnectionStatusChange)
