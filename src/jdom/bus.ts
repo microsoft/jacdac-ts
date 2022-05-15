@@ -55,6 +55,7 @@ import {
     SRV_INFRASTRUCTURE,
     CONNECTION_STATE,
     PACKET_RECEIVE_NO_DEVICE,
+    DISCONNECT,
 } from "./constants"
 import { serviceClass } from "./pretty"
 import { JDNode } from "./node"
@@ -90,6 +91,29 @@ import { DeviceFilter } from "./filters/devicefilter"
 import { Flags } from "./flags"
 import { stack } from "./trace/trace"
 import { DeviceCatalog } from "./catalog"
+
+export type BusBroadcastMessageType =
+    | "visibilitychange"
+    | "disconnect"
+    | "connectionstate"
+
+export interface BusBroadcastMessage {
+    id: string
+    event: BusBroadcastMessageType
+}
+
+export interface BusBroadcastVisibilityChangeMessage
+    extends BusBroadcastMessage {
+    event: "visibilitychange"
+    visibilityState?: "hidden" | "visible"
+    transports: { type: string; connectionState: string }[]
+}
+
+export interface BusBroadcastConnectionStateMessage
+    extends BusBroadcastMessage {
+    event: "connectionstate"
+    transports: { type: string; connectionState: string }[]
+}
 
 /**
  * Creation options for a bus
@@ -168,6 +192,10 @@ export class JDBus extends JDNode {
     private _gcDevicesFrozen = 0
     private _serviceProviders: JDServiceProvider[] = []
     private _unsubscribeBroadcastChannel: () => void
+    private _postBroadcastMessage: (
+        event: BusBroadcastMessageType,
+        msg: Partial<BusBroadcastMessage>
+    ) => void
     private _streaming = false
     private _passive = false
     private _autoConnect = false
@@ -259,30 +287,38 @@ export class JDBus extends JDNode {
             CONNECTION_STATE,
             postConnectionState
         )
-        const handleVisibilityChange = () => {
-            // tell other windows, we are visible or not
-            channel.postMessage({
+        this._postBroadcastMessage = (
+            event: BusBroadcastMessageType,
+            msg: Partial<BusBroadcastMessage>
+        ) => {
+            const bmsg = {
                 id: this.selfDevice.shortId,
-                event: "visibilitychange",
+                event,
+                ...(msg || {}),
+            }
+            console.debug(`jacdac broadcast: ${bmsg.event}`, bmsg)
+            channel.postMessage(bmsg)
+        }
+        const handleVisibilityChange = () =>
+            this._postBroadcastMessage("visibilitychange", <
+                BusBroadcastVisibilityChangeMessage
+            >{
                 visibilityState: document.visibilityState,
             })
-        }
         const handleBroadcastMessage = async (
-            msg: MessageEvent<{
-                id: string
-                event: string
-                visibilityState?: "hidden" | "visible"
-                transports: { type: string; connectionState: string }[]
-            }>
+            msg: MessageEvent<BusBroadcastMessage>
         ) => {
             const { data } = msg
-            const { event, transports, visibilityState } = data
+            const { event } = data
+            console.debug(`jacdac broadcast: received ${event}`)
             switch (event) {
                 case "visibilitychange": {
                     // automatically disconnect if another pane becomes live
                     //console.debug(
                     //   `broadcast ${id}: ${event} ${visibilityState}`
                     //)
+                    const { visibilityState } =
+                        data as BusBroadcastVisibilityChangeMessage
                     if (visibilityState === "visible") await this.disconnect()
                     else if (this.autoConnect) {
                         // let other window disconnect
@@ -291,9 +327,15 @@ export class JDBus extends JDNode {
                     }
                     break
                 }
-                case CONNECTION_STATE: {
+                case "disconnect": {
+                    await this.disconnect()
+                    break
+                }
+                case "connectionstate": {
                     //console.debug(`broadcast ${id}: ${event}`, transports)
                     // if any other window is trying to connect, disconnect
+                    const { transports = [] } =
+                        data as BusBroadcastConnectionStateMessage
                     transports
                         .filter(
                             tr =>
@@ -323,6 +365,13 @@ export class JDBus extends JDNode {
 
         // notify other pages
         handleVisibilityChange()
+    }
+
+    /**
+     * Broadcast a request to disconnect to all other javadac buses.
+     */
+    broadcastDisconnectRequest() {
+        this._postBroadcastMessage?.("disconnect", {})
     }
 
     /**
@@ -511,6 +560,7 @@ export class JDBus extends JDNode {
     async stop() {
         await this.disconnect()
         if (this._unsubscribeBroadcastChannel) {
+            this._postBroadcastMessage = undefined
             this._unsubscribeBroadcastChannel()
             this._unsubscribeBroadcastChannel = undefined
         }
