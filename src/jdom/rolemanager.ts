@@ -24,7 +24,7 @@ export interface RoleBinding {
     preferredServiceIndex?: number
 }
 
-interface LiveRoleBinding extends RoleBinding {
+export interface LiveRoleBinding extends RoleBinding {
     service?: JDService
 }
 
@@ -66,7 +66,7 @@ export class RoleManager extends JDClient {
     /**
      * Gets the list of roles tracked by the manager
      */
-    roles(bound: boolean = undefined) {
+    roles(bound: boolean = undefined): LiveRoleBinding[] {
         if (bound !== undefined)
             return this._roles.filter(({ service }) => !!service === bound)
         else return this._roles.slice(0)
