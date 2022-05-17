@@ -8,6 +8,7 @@ import {
     JacscriptCloudReg,
     SELF_ANNOUNCE,
     SRV_JACSCRIPT_CLOUD,
+    CHANGE,
 } from "../jdom/constants"
 import { jdpack } from "../jdom/pack"
 import { Packet } from "../jdom/packet"
@@ -63,6 +64,13 @@ export class JacscriptCloudServer extends JDServiceServer {
             this.handleAckCloudCommand.bind(this)
         )
         this.on(DEVICE_CHANGE, this.handleDeviceChange.bind(this))
+
+        this.connectedRegister.on(CHANGE, () =>
+            this.sendEvent(JacscriptCloudEvent.Change)
+        )
+        this.connectionNameRegister.on(CHANGE, () =>
+            this.sendEvent(JacscriptCloudEvent.Change)
+        )
     }
 
     private handleDeviceChange() {
