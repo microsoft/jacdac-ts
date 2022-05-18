@@ -720,6 +720,16 @@ function initProviders() {
                 ],
             },
             {
+                name: "LED ring 8 pixels",
+                serviceClasses: [SRV_LED],
+                services: () => [
+                    new LedServer({
+                        numPixels: 8,
+                        variant: LedVariant.Ring,
+                    }),
+                ],
+            },
+            {
                 name: "LED ring 10 pixels",
                 serviceClasses: [SRV_LED],
                 services: () => [
