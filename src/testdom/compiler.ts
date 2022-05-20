@@ -109,6 +109,7 @@ function createReadingRule(
             seen = count >= samples
         }
         if (!seen) logger(`missing or incorrect ${type} value`)
+        else logger(`${type} value seen`)
         return seen ? TestState.Pass : TestState.Running
     }
 }
