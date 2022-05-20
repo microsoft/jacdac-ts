@@ -22,6 +22,7 @@ import {
     PanelTestSpec,
     TestResult,
     TestState,
+    TestUploadState,
 } from "./spec"
 
 export const PANEL_TEST_KIND = "panelTest"
@@ -39,6 +40,7 @@ export abstract class TestNode extends JDNode {
     private readonly _id: string = randomDeviceId()
     private _parent: TestNode
     private _state: TestState = TestState.Indeterminate
+    private _uploadState: TestUploadState = TestUploadState.Local
     private _output: string
     private _node: JDNode = undefined
     private _children: TestNode[] = []
@@ -80,6 +82,16 @@ export abstract class TestNode extends JDNode {
 
     get factory(): boolean {
         return this.parent?.factory
+    }
+    get uploadState() {
+        return this._uploadState
+    }
+
+    set uploadState(value: TestUploadState) {
+        if (this._uploadState !== value) {
+            this._uploadState = value
+            this.emit(CHANGE)
+        }
     }
 
     get id() {

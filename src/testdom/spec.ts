@@ -5,6 +5,13 @@ export enum TestState {
     Fail,
 }
 
+export enum TestUploadState {
+    Local,
+    Uploading,
+    Uploaded,
+    UploadError
+}
+
 export interface TestResult {
     state: TestState
     output?: string
