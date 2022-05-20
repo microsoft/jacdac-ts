@@ -193,7 +193,7 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         <ReadingTestRule>{
             type: "reading",
             value: 0,
-            tolerance: 0.05,
+            tolerance: 0.2,
             factory: true,
             manualSteps: {
                 prepare: "remove magnet",
@@ -202,7 +202,7 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         <ReadingTestRule>{
             type: "reading",
             value: 1,
-            tolerance: 0.02,
+            tolerance: 0.3,
             factory: true,
             manualSteps: {
                 prepare: "place north pole on top of sensor",
@@ -211,7 +211,7 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         <ReadingTestRule>{
             type: "reading",
             value: -1,
-            tolerance: 0.02,
+            tolerance: 0.3,
             factory: true,
             manualSteps: {
                 prepare: "place south pole on top of sensor",
