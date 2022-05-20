@@ -620,7 +620,7 @@ export class RegisterTest extends RegisterTestNode {
         }
         return {
             state,
-            output: log.length ? log.join("\n") : undefined,
+            output: log?.length ? log.join("\n") : undefined,
         }
     }
 
