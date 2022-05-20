@@ -481,6 +481,7 @@ export class ServiceTest extends TestNode {
         const s = this.service
         if (!s) return {}
         return {
+            serviceClass: s.serviceClass.toString(16),
             serviceIndex: s.serviceIndex,
         }
     }
