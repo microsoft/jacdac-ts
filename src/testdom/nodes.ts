@@ -247,6 +247,7 @@ export abstract class TestNode extends JDNode {
         const children = this.children.map(child => child.export())
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const res: any = {
+            id: this.id,
             name: this.name,
             state: TestState[this.state]?.toLowerCase(),
             kind: this.nodeKind,
