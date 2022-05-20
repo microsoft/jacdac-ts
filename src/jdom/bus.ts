@@ -296,7 +296,7 @@ export class JDBus extends JDNode {
                 event,
                 ...(msg || {}),
             }
-            console.debug(`jacdac broadcast: ${bmsg.event}`, bmsg)
+            //console.debug(`jacdac broadcast: ${bmsg.event}`, bmsg)
             channel.postMessage(bmsg)
         }
         const handleVisibilityChange = () =>
@@ -310,7 +310,7 @@ export class JDBus extends JDNode {
         ) => {
             const { data } = msg
             const { event } = data
-            console.debug(`jacdac broadcast: received ${event}`)
+            //console.debug(`jacdac broadcast: received ${event}`)
             switch (event) {
                 case "visibilitychange": {
                     // automatically disconnect if another pane becomes live
