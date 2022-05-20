@@ -6,6 +6,7 @@ import {
     EVENT,
     REPORT_UPDATE,
     SystemReg,
+    STATE_CHANGE,
 } from "../jdom/constants"
 import { JDDevice } from "../jdom/device"
 import { JDEvent } from "../jdom/event"
@@ -203,6 +204,7 @@ export abstract class TestNode extends JDNode {
         if (value != this._state) {
             this._state = value
             this.emit(CHANGE)
+            this.emit(STATE_CHANGE)
             this.parent?.updateState()
         }
     }

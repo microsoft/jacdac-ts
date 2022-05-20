@@ -136,6 +136,8 @@ export const TIMEOUT = "timeout"
 export const TIMEOUT_DISCONNECT = "timeoutDisconnect"
 export const GLOBALS_UPDATED = "globalsUpdated"
 
+export const STATE_CHANGE = "stateChange"
+
 export const PROGRESS = "progress"
 
 export const PACKET_KIND_RW = "rw"
