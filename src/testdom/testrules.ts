@@ -21,6 +21,7 @@ import {
     REPORT_UPDATE,
     RotaryEncoderReg,
     SRV_LIGHT_LEVEL,
+    SRV_MAGNETIC_FIELD_LEVEL,
 } from "../jdom/constants"
 import { lightEncode } from "../jdom/light"
 import { jdpack } from "../jdom/pack"
@@ -188,6 +189,35 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
             factory: true,
         },
     ],
+    [SRV_MAGNETIC_FIELD_LEVEL]: <ServiceTestRule[]>[
+        <ReadingTestRule>{
+            type: "reading",
+            value: 0,
+            tolerance: 0.05,
+            factory: true,
+            manualSteps: {
+                prepare: "remove magnet",
+            },
+        },
+        <ReadingTestRule>{
+            type: "reading",
+            value: 1,
+            tolerance: 0.02,
+            factory: true,
+            manualSteps: {
+                prepare: "place north pole on top of sensor",
+            },
+        },        
+        <ReadingTestRule>{
+            type: "reading",
+            value: -1,
+            tolerance: 0.02,
+            factory: true,
+            manualSteps: {
+                prepare: "place south pole on top of sensor",
+            },
+        },
+    ],
     [SRV_POTENTIOMETER]: <ServiceTestRule[]>[
         <ReadingTestRule>{
             type: "reading",
@@ -196,6 +226,14 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
             factory: true,
             manualSteps: {
                 prepare: "slide to minimum",
+            },
+        },
+        <ReadingTestRule>{
+            type: "reading",
+            value: 0.5,
+            tolerance: 0.01,
+            manualSteps: {
+                prepare: "slide to middle",
             },
         },
         <ReadingTestRule>{
@@ -444,28 +482,51 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                 }
                 // cycle through color and turn on pixels one by one
                 const pixels = new Uint8Array(n * 3)
+                let k = 0
                 while (mounted) {
-                    for (let ci = 0; ci < testColors.length && mounted; ++ci) {
-                        const color = testColors[ci]
-                        pixels.fill(0)
-                        for (let i = 0; i < n && mounted; ++i) {
+                    if (factory) {
+                        // factory test: render all leds
+                        const color = testColors[k++ % testColors.length]
+                        for (let i = 0; i < n; ++i) {
                             pixels[i * 3] = (color >> 16) & 0xff
                             pixels[i * 3 + 1] = (color >> 8) & 0xff
                             pixels[i * 3 + 2] = (color >> 0) & 0xff
+                        }
+                        await pixelsRegister.sendSetPackedAsync([pixels], true)
+                        await delay(500)
+                        if (test.state == TestState.Running)
+                            test.state = TestState.Pass
+                    } else {
+                        // non factory test: render led one by one
+                        for (
+                            let ci = 0;
+                            ci < testColors.length && mounted;
+                            ++ci
+                        ) {
+                            const color = testColors[ci]
+                            pixels.fill(0)
+                            for (let i = 0; i < n && mounted; ++i) {
+                                pixels[i * 3] = (color >> 16) & 0xff
+                                pixels[i * 3 + 1] = (color >> 8) & 0xff
+                                pixels[i * 3 + 2] = (color >> 0) & 0xff
+                                await pixelsRegister.sendSetPackedAsync(
+                                    [pixels],
+                                    true
+                                )
+                                await delay(Math.max(100, 500 - i * 20))
+                            }
+                            if (factory && test.state == TestState.Running)
+                                test.state = TestState.Pass
+                            // pause for a second
+                            await delay(1000)
+                            pixels.fill(0)
+                            if (!mounted) break
                             await pixelsRegister.sendSetPackedAsync(
                                 [pixels],
                                 true
                             )
-                            await delay(Math.max(100, 500 - i * 20))
+                            await delay(500)
                         }
-                        if (factory && test.state == TestState.Running)
-                            test.state = TestState.Pass
-                        // pause for a second
-                        await delay(1000)
-                        pixels.fill(0)
-                        if (!mounted) break
-                        await pixelsRegister.sendSetPackedAsync([pixels], true)
-                        await delay(500)
                     }
                 }
             }
