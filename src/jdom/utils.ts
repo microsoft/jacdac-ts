@@ -56,6 +56,10 @@ export function bufferEq(a: Uint8Array, b: ArrayLike<number>, offset = 0) {
     return true
 }
 
+export function arrayEq(a: unknown[], b: unknown[]) {
+    return a?.length === b?.length && (!a || a.every((_, i) => Object.is(_, b[i])))
+}
+
 export function hash(buf: Uint8Array, bits: number) {
     bits |= 0
     if (bits < 1) return 0

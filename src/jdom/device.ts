@@ -136,7 +136,7 @@ export class DeviceStatsMonitor extends JDEventSource {
     /**
      * Gets the current stats
      */
-    get current(): DeviceStats {
+    private get current(): DeviceStats {
         const { dropped, restarts, announce } = this
         return { dropped, restarts, announce }
     }
