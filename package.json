@@ -6,7 +6,8 @@
     "jacdac",
     "typescript",
     "i2c",
-    "sensors"
+    "sensors",
+    "iot"
   ],
   "main": "dist/jacdac.cjs",
   "module": "dist/jacdac.mjs",
