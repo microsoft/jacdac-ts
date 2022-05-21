@@ -9,7 +9,7 @@ export enum TestUploadState {
     Local,
     Uploading,
     Uploaded,
-    UploadError
+    UploadError,
 }
 
 export interface TestResult {

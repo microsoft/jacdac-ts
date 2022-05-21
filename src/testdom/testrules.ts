@@ -207,7 +207,7 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
             manualSteps: {
                 prepare: "place north pole on top of sensor",
             },
-        },        
+        },
         <ReadingTestRule>{
             type: "reading",
             value: -1,
