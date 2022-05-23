@@ -446,3 +446,23 @@ export function jdpackEqual<T extends PackedValues>(
     const rightBuffer = jdpack<T>(fmt, right)
     return bufferEq(leftBuffer, rightBuffer)
 }
+
+/**
+ * Check if two packed values are the same
+ * @param a 
+ * @param b 
+ * @returns 
+ */
+export function packedValuesIsEqual(a: PackedValues, b: PackedValues): boolean {
+    if (a instanceof Uint8Array) {
+        return b instanceof Uint8Array && bufferEq(a, b)
+    } else if (Array.isArray(a)) {
+        const e =
+            Array.isArray(b) &&
+            a.length === b.length &&
+            a.every((v, i) => packedValuesIsEqual(v, b[i]))
+        return e
+    } else {
+        return Object.is(a, b)
+    }
+}
