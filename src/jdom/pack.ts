@@ -449,9 +449,9 @@ export function jdpackEqual<T extends PackedValues>(
 
 /**
  * Check if two packed values are the same
- * @param a 
- * @param b 
- * @returns 
+ * @param a
+ * @param b
+ * @returns
  */
 export function packedValuesIsEqual(a: PackedValues, b: PackedValues): boolean {
     if (a instanceof Uint8Array) {
