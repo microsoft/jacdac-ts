@@ -30,7 +30,7 @@ git pull
 -   install yarn
 
 ```
-npm install -g yarn
+[sudo] npm install -g yarn
 ```
 
 -   install dependencies
