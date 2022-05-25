@@ -13,8 +13,7 @@ suite("rolemanager", () => {
             const { button } = await tester.createServices({
                 button: new ButtonServer("button", false),
             })
-            const roleManager = new RoleManager(bus)
-            roleManager.updateRoles([
+            const roleManager = new RoleManager(bus, [
                 {
                     role: "button",
                     serviceClass: SRV_BUTTON,
@@ -23,7 +22,7 @@ suite("rolemanager", () => {
             assert(roleManager.isBound, "role manager not found")
             assert(
                 roleManager.roles(true).find(r => r.role === "button")
-                    .service === button.service
+                    .serviceId === button.service?.id
             )
         })
     ),
@@ -35,8 +34,7 @@ suite("rolemanager", () => {
                     button: new ButtonServer("button", false),
                     button2: new ButtonServer("button2", false),
                 })
-                const roleManager = new RoleManager(bus)
-                roleManager.updateRoles([
+                const roleManager = new RoleManager(bus, [
                     {
                         role: "button",
                         serviceClass: SRV_BUTTON,
@@ -49,7 +47,7 @@ suite("rolemanager", () => {
                 assert(roleManager.isBound, "role manager not found")
                 const roles = roleManager.roles(true)
                 assert(
-                    !!roles.find(r => r.role === "button").service,
+                    !!roles.find(r => r.role === "button").serviceId,
                     "button not bound"
                 )
                 assert(
@@ -66,8 +64,7 @@ suite("rolemanager", () => {
                     button2: new ButtonServer("button2", false),
                     button: new ButtonServer("button", false),
                 })
-                const roleManager = new RoleManager(bus)
-                roleManager.updateRoles([
+                const roleManager = new RoleManager(bus, [
                     {
                         role: "button",
                         serviceClass: SRV_BUTTON,
@@ -81,13 +78,13 @@ suite("rolemanager", () => {
                 assert(roleManager.isBound, "role manager not found")
                 const roles = roleManager.roles(true)
                 assert(
-                    roles.find(r => r.role === "button").service ===
-                        button.service,
+                    roles.find(r => r.role === "button").serviceId ===
+                        button.service?.id,
                     "button not bound"
                 )
                 assert(
-                    roles.find(r => r.role === "button2").service ===
-                        button2.service,
+                    roles.find(r => r.role === "button2").serviceId ===
+                        button2.service?.id,
                     "button2 not bound"
                 )
             })
@@ -100,8 +97,7 @@ suite("rolemanager", () => {
                     button2: new ButtonServer("button2", false),
                     button: new ButtonServer("button", false),
                 })
-                const roleManager = new RoleManager(bus)
-                roleManager.updateRoles([
+                const roleManager = new RoleManager(bus, [
                     {
                         role: "button2",
                         serviceClass: SRV_BUTTON,
@@ -115,13 +111,13 @@ suite("rolemanager", () => {
                 assert(roleManager.isBound, "role manager not found")
                 const roles = roleManager.roles(true)
                 assert(
-                    roles.find(r => r.role === "button").service ===
-                        button.service,
+                    roles.find(r => r.role === "button").serviceId ===
+                        button.service?.id,
                     "button not bound"
                 )
                 assert(
-                    roles.find(r => r.role === "button2").service ===
-                        button2.service,
+                    roles.find(r => r.role === "button2").serviceId ===
+                        button2.service?.id,
                     "button2 not bound"
                 )
             })
@@ -144,8 +140,8 @@ suite("rolemanager", () => {
                 assert(roleManager.isBound, "role manager not found")
                 const roles = roleManager.roles(true)
                 assert(
-                    roles.find(r => r.role === "button").service ===
-                        button.service,
+                    roles.find(r => r.role === "button").serviceId ===
+                        button.service?.id,
                     "button not bound"
                 )
                 assert(
@@ -173,7 +169,8 @@ suite("rolemanager", () => {
             assert(roleManager.isBound, "role manager not found")
             const roles = roleManager.roles(true)
             assert(
-                roles.find(r => r.role === "button").service === button.service,
+                roles.find(r => r.role === "button").serviceId ===
+                    button.service?.id,
                 "button not bound"
             )
             assert(
@@ -201,7 +198,8 @@ suite("rolemanager", () => {
             assert(roleManager.isBound, "role manager not found")
             const roles = roleManager.roles(true)
             assert(
-                roles.find(r => r.role === "button").service === button.service,
+                roles.find(r => r.role === "button").serviceId ===
+                    button.service?.id,
                 "button not bound"
             )
             assert(

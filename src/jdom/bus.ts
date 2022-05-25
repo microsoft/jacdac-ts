@@ -797,6 +797,8 @@ ${dev
      * @category JDOM
      */
     node(id: string): JDNode {
+        if (!id) return undefined
+        
         const resolve = (): JDNode => {
             const m =
                 /^(?<type>bus|device|service|register|event|field)(:(?<dev>\w+)(:(?<srv>\w+)(:(?<reg>\w+(:(?<idx>\w+))?))?)?)?$/.exec(
@@ -824,7 +826,7 @@ ${dev
                     return this.device(dev, true)?.service(srv)?.register(reg)
                         ?.fields[idx]
             }
-            console.info(`node ${id} not found`)
+            console.debug(`node ${id} not found`)
             return undefined
         }
         const node = resolve()

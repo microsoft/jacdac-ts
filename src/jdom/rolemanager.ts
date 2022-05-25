@@ -25,7 +25,7 @@ export interface RoleBinding {
 }
 
 export interface LiveRoleBinding extends RoleBinding {
-    service?: JDService
+    serviceId?: string
 }
 
 /**
@@ -59,7 +59,7 @@ export class RoleManager extends JDClient {
      * Indicates if all roles are bound.
      */
     get isBound() {
-        return this._roles.every(({ service }) => !!service)
+        return this._roles.every(({ serviceId }) => !!this.bus.node(serviceId))
     }
 
     /**
@@ -67,23 +67,11 @@ export class RoleManager extends JDClient {
      */
     roles(bound: boolean = undefined): LiveRoleBinding[] {
         if (bound !== undefined)
-            return this._roles.filter(({ service }) => !!service === bound)
+            return this._roles.filter(({ serviceId }) => !!serviceId === bound)
         else return this._roles.slice(0)
     }
-
-    /**
-     * Saves roles status
-     * @returns
-     */
-    saveRoles(): RoleBinding[] {
-        return this._roles.map(({ service, ...rest }) => ({
-            ...rest,
-            serviceId: service?.id,
-        }))
-    }
-
     private get hash() {
-        return JSON.stringify(this.saveRoles())
+        return JSON.stringify(this._roles)
     }
 
     /**
@@ -143,8 +131,8 @@ export class RoleManager extends JDClient {
                 existingRole.preferredServiceIndex =
                     newRole.preferredServiceIndex
                 // unbinding existing service
-                if (existingRole.service && bindingChanged) {
-                    existingRole.service = undefined
+                if (existingRole.serviceId && bindingChanged) {
+                    existingRole.serviceId = undefined
                     this.emit(ROLE_UNBOUND, existingRole.role)
                 }
             }
@@ -153,15 +141,16 @@ export class RoleManager extends JDClient {
                 // make sure that the preferred device id is free
                 const otherBinding = this._roles.find(
                     r =>
-                        r.service &&
-                        r.service.device.deviceId ===
-                            newRole.preferredDeviceId &&
+                        r.serviceId &&
+                        (this.bus.node(r.serviceId) as JDService)?.device
+                            .deviceId === newRole.preferredDeviceId &&
                         (isNaN(newRole.preferredServiceIndex) ||
-                            r.service.serviceIndex ===
+                            (this.bus.node(r.serviceId) as JDService)
+                                ?.serviceIndex ===
                                 newRole.preferredServiceIndex)
                 )
                 if (otherBinding) {
-                    otherBinding.service = undefined
+                    otherBinding.serviceId = undefined
                     this.emit(ROLE_UNBOUND, otherBinding.role)
                 }
             }
@@ -179,7 +168,8 @@ export class RoleManager extends JDClient {
      * @returns
      */
     public service(role: string): JDService {
-        return this._roles.find(r => r.role === role)?.service
+        const id = this._roles.find(r => r.role === role)?.serviceId
+        return this.bus.node(id) as JDService
     }
 
     /**
@@ -198,7 +188,7 @@ export class RoleManager extends JDClient {
         const newRoles = this._roles.slice(0).map(r => ({ ...r }))
         let binding = newRoles.find(r => r.role === role)
         if (binding) {
-            binding.service = undefined
+            binding.serviceId = undefined
             binding.preferredDeviceId = preferredDeviceId
             binding.preferredServiceIndex = preferredServiceIndex
         } else {
@@ -240,8 +230,11 @@ export class RoleManager extends JDClient {
                 ignoreInfrastructure: true,
                 serviceClass: role.serviceClass,
             })
-            .filter(s => !bound.find(r => r.service === s))
-        const boundServices = bound.map(r => r.service).filter(srv => !!srv)
+            .filter(s => !bound.find(r => r.serviceId === s.id))
+        const boundServices = bound
+            .map(r => r.serviceId)
+            .map(serviceId => this.bus.node(serviceId) as JDService)
+            .filter(srv => !!srv)
 
         // pick the first unbound service
         let theOne = unboundServices[0]
@@ -260,7 +253,7 @@ export class RoleManager extends JDClient {
         }
 
         if (theOne) {
-            role.service = theOne
+            role.serviceId = theOne?.id
             this.emit(ROLE_BOUND, role.role)
             return true
         } else return false
@@ -297,9 +290,11 @@ export class RoleManager extends JDClient {
     private removeServices(dev: JDDevice) {
         let changed = false
         this._roles
-            .filter(r => r.service?.device === dev)
+            .filter(
+                r => (this.bus.node(r.serviceId) as JDService)?.device === dev
+            )
             .forEach(r => {
-                r.service = undefined
+                r.serviceId = undefined
                 this.emit(ROLE_UNBOUND, r.role)
                 changed = true
             })
@@ -308,81 +303,7 @@ export class RoleManager extends JDClient {
 
     toString() {
         return this._roles
-            .map(({ role, service }) => `${role}->${service || "?"}`)
+            .map(({ role, serviceId }) => `${role}->${serviceId || "?"}`)
             .join(",")
     }
 }
-
-/**
- * Tracks a set of roles
- * @param bus bus hosting the devices
- * @param bindings map of role names to device service pairs
- * @param onUpdate callback to run whenver role assignments change
- * @param options Additional options
- * @returns A unsubscribe callback to cleanup handlers
- * @category Roles
- */
-export function startRoles<
-    TRoles extends Record<
-        string,
-        {
-            serviceClass: number
-            preferredDeviceId?: string
-            preferredServiceIndex?: number
-        }
-    >
->(
-    bus: JDBus,
-    bindings: TRoles,
-    onUpdate: (roles: Record<keyof TRoles, JDService>) => void,
-    options?: {
-        /**
-         * Calls update even if not all role around bound
-         */
-        incomplete?: boolean
-    }
-) {
-    const { incomplete } = options || {}
-    const roleManager = new RoleManager(bus)
-    roleManager.updateRoles(
-        Object.keys(bindings).map(role => ({
-            role,
-            serviceClass: bindings[role].serviceClass,
-            preferredDeviceId: bindings[role].preferredDeviceId,
-            preferredServiceIndex: bindings[role].preferredServiceIndex,
-        }))
-    )
-    const roles = () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const r: Record<keyof TRoles, JDService> = {} as any
-        for (const key in bindings) {
-            const srv = roleManager.service(key)
-            if (srv) r[key] = srv
-        }
-        return r
-    }
-    const update = () => {
-        if (!incomplete && !roleManager.isBound) return
-        onUpdate(roles())
-    }
-    const unsubscribe = roleManager.subscribe(CHANGE, update)
-    update()
-    return unsubscribe
-}
-
-/*
-function test(bus: JDBus) {
-    const bindings = {
-        thermo1: { serviceClass: SRV_BUTTON },
-        thermo2: { serviceClass: SRV_BUTTON },
-    }
-    trackRoles(
-        bus,
-        bindings,
-        ({ thermo1, thermo2 }) => {
-            console.log({ thermo1, thermo2 })
-        },
-        { incomplete: true }
-    )
-}
-*/
