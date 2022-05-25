@@ -51,7 +51,7 @@ suite("rolemanager", () => {
                     "button not bound"
                 )
                 assert(
-                    !!roles.find(r => r.role === "button2").service,
+                    !!roles.find(r => r.role === "button2").serviceId,
                     "button2 not bound"
                 )
             })
@@ -145,8 +145,8 @@ suite("rolemanager", () => {
                     "button not bound"
                 )
                 assert(
-                    roles.find(r => r.role === "button2").service ===
-                        button2.service,
+                    roles.find(r => r.role === "button2").serviceId ===
+                        button2.service?.id,
                     "button2 not bound"
                 )
             })
@@ -174,8 +174,8 @@ suite("rolemanager", () => {
                 "button not bound"
             )
             assert(
-                roles.find(r => r.role === "button2").service ===
-                    button2.service,
+                roles.find(r => r.role === "button2").serviceId ===
+                    button2.service?.id,
                 "button2 not bound"
             )
         })
@@ -203,8 +203,8 @@ suite("rolemanager", () => {
                 "button not bound"
             )
             assert(
-                roles.find(r => r.role === "button2").service ===
-                    button2.service,
+                roles.find(r => r.role === "button2").serviceId ===
+                    button2.service?.id,
                 "button2 not bound"
             )
             roleManager.updateRole(
@@ -213,13 +213,13 @@ suite("rolemanager", () => {
                 button2.service.device.deviceId
             )
             assert(
-                roles.find(r => r.role === "button2").service ===
-                    button.service,
+                roles.find(r => r.role === "button2").serviceId ===
+                    button.service?.id,
                 "double button not bound"
             )
             assert(
-                roles.find(r => r.role === "button").service ===
-                    button2.service,
+                roles.find(r => r.role === "button").serviceId ===
+                    button2.service?.id,
                 "double button2 not bound"
             )
         })
