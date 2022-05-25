@@ -22,9 +22,6 @@ export interface RoleBinding {
     serviceClass: number
     preferredDeviceId?: string
     preferredServiceIndex?: number
-}
-
-export interface LiveRoleBinding extends RoleBinding {
     serviceId?: string
 }
 
@@ -33,7 +30,7 @@ export interface LiveRoleBinding extends RoleBinding {
  * @category Roles
  */
 export class RoleManager extends JDClient {
-    private readonly _roles: LiveRoleBinding[] = []
+    private readonly _roles: RoleBinding[] = []
 
     /**
      * Gets the bus for this role
@@ -65,13 +62,37 @@ export class RoleManager extends JDClient {
     /**
      * Gets the list of roles tracked by the manager
      */
-    roles(bound: boolean = undefined): LiveRoleBinding[] {
+    roles(bound: boolean = undefined): RoleBinding[] {
         if (bound !== undefined)
             return this._roles.filter(({ serviceId }) => !!serviceId === bound)
         else return this._roles.slice(0)
     }
     private get hash() {
         return JSON.stringify(this._roles)
+    }
+
+    /**
+     * Used to restore computed bindings
+     * @param newRoles
+     */
+    updateBindings(newRoles: RoleBinding[]) {
+        const oldBound = this.isBound
+        let changed = false
+        this._roles
+            .map(role => ({
+                role,
+                newRole: newRoles.find(r => r.role === role.role),
+            }))
+            .filter(
+                ({ role, newRole }) =>
+                    newRole && role.serviceId !== newRole.serviceId
+            )
+            .forEach(({ role, newRole }) => {
+                role.serviceId = newRole.serviceId
+                changed = true
+            })
+
+        if (changed) this.emitBoundEvents(oldBound)
     }
 
     /**
@@ -222,7 +243,7 @@ export class RoleManager extends JDClient {
     }
 
     // TODO: need to respect other (unbound) role's preferredDeviceId
-    private bindRole(role: LiveRoleBinding) {
+    private bindRole(role: RoleBinding) {
         // find a service that is not yet allocated
         const bound = this.roles(true)
         const unboundServices = this.bus
