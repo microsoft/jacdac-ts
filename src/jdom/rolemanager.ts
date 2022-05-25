@@ -22,6 +22,10 @@ export interface RoleBinding {
     serviceClass: number
     preferredDeviceId?: string
     preferredServiceIndex?: number
+
+    /**
+     * Used internally for serialization 
+     */
     serviceId?: string
 }
 
