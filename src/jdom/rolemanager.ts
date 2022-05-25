@@ -40,7 +40,7 @@ export class RoleManager extends JDClient {
      */
     public readonly bus: JDBus
 
-    constructor(bus: JDBus) {
+    constructor(bus: JDBus, configuration?: RoleBinding[]) {
         super()
         this.bus = bus
         this.mount(
@@ -52,8 +52,7 @@ export class RoleManager extends JDClient {
                 this.removeServices.bind(this)
             )
         )
-
-        this.bindServices()
+        this.updateRoles(configuration || [])
     }
 
     /**
