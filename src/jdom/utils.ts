@@ -2,6 +2,12 @@ import { TIMEOUT_ERROR_CODE } from "./constants"
 import { JDError } from "./error"
 import { Flags } from "./flags"
 
+export function arrayify<T>(value: T | T[]): T[] {
+    if (value === undefined || value === null) return undefined
+    if (Array.isArray(value)) return value
+    else return [value]
+}
+
 export function throwError(msg: string, cancel?: boolean) {
     const e = new Error(msg)
     if (cancel)
