@@ -16,11 +16,16 @@ import { JDRegisterServer } from "../jdom/servers/registerserver"
 import { JDServerOptions, JDServiceServer } from "../jdom/servers/serviceserver"
 
 export const UPLOAD = "upload"
+export const UPLOAD_BIN = "upload"
 export const CLOUD_COMMAND = "cloudCommand"
 
 export interface JacscriptCloudUploadRequest {
     label: string
     args: number[]
+}
+
+export interface JacscriptCloudUploadBinRequest {
+    data: Uint8Array
 }
 
 export interface JacscriptCloudCommandResponse {
@@ -59,6 +64,10 @@ export class JacscriptCloudServer extends JDServiceServer {
             [options?.connectionName || ""]
         )
         this.addCommand(JacscriptCloudCmd.Upload, this.handleUpload.bind(this))
+        this.addCommand(
+            JacscriptCloudCmd.UploadBin,
+            this.handleUploadBin.bind(this)
+        )
         this.addCommand(
             JacscriptCloudCmd.AckCloudCommand,
             this.handleAckCloudCommand.bind(this)
@@ -101,9 +110,24 @@ export class JacscriptCloudServer extends JDServiceServer {
         this.upload(label, args)
     }
 
+    private async handleUploadBin(pkt: Packet) {
+        if (!this.connected) {
+            console.debug(`cloud: cancel upload, not connected`)
+            return
+        }
+
+        const data = pkt.data
+        this.uploadBin(data)
+    }
+
     upload(label: string, args: number[]) {
         console.log("cloud: upload", { label, args })
         this.emit(UPLOAD, <JacscriptCloudUploadRequest>{ label, args })
+    }
+
+    uploadBin(data: Uint8Array) {
+        console.log("cloud: upload bin", { data })
+        this.emit(UPLOAD_BIN, <JacscriptCloudUploadBinRequest>{ data })
     }
 
     sendCloudCommand(
