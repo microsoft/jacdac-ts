@@ -155,6 +155,10 @@ export function shortDeviceId(devid: string) {
     )
 }
 
+export function isDeviceId(devid: string) {
+    return devid && /^[a-f0-9]{16,16}$/i.test(devid)
+}
+
 export function decodeMember(
     service: jdspec.ServiceSpec,
     pktInfo: jdspec.PacketInfo,
