@@ -85,10 +85,13 @@ export function serviceSpecifications() {
 export function identifierToUrlPath(id: string) {
     if (!id) return id
 
+    const escape = (s: string) => s.replace(/[.:]/g, "").toLowerCase()
+
     const parts = id.split(/-/g)
-    return `${parts.slice(0, -1).join("-")}/${parts[parts.length - 1]}`
-        .replace(/[.:]/g, "")
-        .toLowerCase()
+    if (parts.length === 1) return id.replace(/[.:]/g, "").toLowerCase()
+    return `${parts.slice(0, -1).map(escape).join("-")}/${escape(
+        parts[parts.length - 1]
+    )}`
 }
 
 /**
