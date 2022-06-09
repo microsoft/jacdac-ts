@@ -301,15 +301,6 @@ export class PanelTest extends TestNode {
         return `${this.name}, found ${found}/${children.length} devices`
     }
 
-    override mount(): void {
-        super.mount()
-        this.subscriptions.mount(
-            this.bus.subscribe(DEVICE_ANNOUNCE, (dev: JDDevice) => {
-                dev.refreshFirmwareInfo()
-            })
-        )
-    }
-
     override customProperties(): object {
         return {
             time: new Date().toUTCString(),
