@@ -461,7 +461,7 @@ export class JDDevice extends JDNode {
         if (!ctrl) return
 
         // force refresh
-        this.emitPropagated(DEVICE_FIRMWARE_INFO)        
+        this.emitPropagated(DEVICE_FIRMWARE_INFO)
         const firmwareRegs = [
             ControlReg.ProductIdentifier,
             ControlReg.FirmwareVersion,
