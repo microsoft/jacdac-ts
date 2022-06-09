@@ -6,7 +6,7 @@ export interface IFileStorage {
     saveText(name: string, data: string): Promise<void>
 }
 
-export async function downloadUrl(name: string, url: string): Promise<void> {
+export async function downloadUrl(url: string, name: string): Promise<void> {
     const a = document.createElement("a") as HTMLAnchorElement
     document.body.appendChild(a)
     a.style.display = "none"
@@ -26,7 +26,7 @@ export class BrowserFileStorage implements IFileStorage {
         const url = `data:${
             mimeType || "text/plain"
         };charset=utf-8,${encodeURIComponent(data)}`
-        return downloadUrl(name, url)
+        return downloadUrl(url, name)
     }
 }
 
