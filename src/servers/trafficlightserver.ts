@@ -10,7 +10,7 @@ export class TrafficLightServer extends JDServiceServer {
     constructor(options?: JDServerOptions) {
         super(SRV_TRAFFIC_LIGHT, options)
 
-        this.red = this.addRegister(TrafficLightReg.Red, [true])
+        this.red = this.addRegister(TrafficLightReg.Red, [false])
         this.yellow = this.addRegister(TrafficLightReg.Yellow, [false])
         this.green = this.addRegister(TrafficLightReg.Green, [false])
     }
