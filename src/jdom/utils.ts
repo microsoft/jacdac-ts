@@ -664,11 +664,12 @@ export function arrayShuffle<T>(a: T[]): T[] {
 export function uniqueName(
     names: string[],
     name: string,
-    separator = ""
+    separator = "",
+    startCount = 2
 ): string {
     if (names.indexOf(name) < 0) return name
     // allocate names
-    let count = 2
+    let count = startCount
     while (names.indexOf(`${name}${separator}${count}`) > -1) count++
     return `${name}${separator}${count}`
 }
