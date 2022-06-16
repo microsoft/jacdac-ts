@@ -35,13 +35,3 @@ class IFrameBridge extends JDBridge {
 export function createIFrameBridge(parentOrigin = "*"): JDBridge {
     return inIFrame() && new IFrameBridge(parentOrigin)
 }
-
-export function startDevTools() {
-    if (
-        typeof window !== "undefined" &&
-        !/^https:\/\/microsoft.github.io\/jacdac-docs\//.test(
-            window.location.href
-        )
-    )
-        window.location.href = `https://microsoft.github.io/jacdac-docs/clients/javascript/devtools.html#${window.location.href}`
-}

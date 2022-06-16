@@ -1,5 +1,5 @@
-import { startDevTools } from "../jdom/bridges/iframebridge"
 import { CONNECTION_STATE, EVENT } from "../jdom/constants"
+import { startDevTools } from "../jdom/devtools"
 import { JDEvent } from "../jdom/event"
 import { sensorSpecifications, snapshotSensors } from "../jdom/sensors"
 import { isEvent } from "../jdom/spec"

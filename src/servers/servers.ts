@@ -1719,10 +1719,17 @@ export function addServiceProviderDefinition(def: ServiceProviderDefinition) {
     if (!providers.find(p => p.name === def.name)) providers.push(def)
 }
 
-function stableSimulatorDeviceId(bus: JDBus, template: string): string {
+function stableSimulatorDeviceId(
+    bus: JDBus,
+    template: string,
+    salt: string
+): string {
     const others = bus.serviceProviders().filter(sp => sp.template === template)
-    const word0 = hash(stringToUint8Array(template + others.length), 32)
-    const word1 = hash(stringToUint8Array(template + others.length + 1), 32)
+    const word0 = hash(stringToUint8Array(salt + template + others.length), 32)
+    const word1 = hash(
+        stringToUint8Array(salt + template + others.length + 1),
+        32
+    )
     const id = toFullHex([word0, word1])
     return id.slice(2)
 }
@@ -1780,7 +1787,8 @@ export function addServiceProvider(
     applyServiceOptions(services, definition.serviceOptions)
     applyServiceOptions(services, serviceOptions)
     services.forEach(srv => srv.lock())
-    const deviceId = stableSimulatorDeviceId(bus, definition.name)
+    const salt = bus.serviceProviderIdSalt
+    const deviceId = stableSimulatorDeviceId(bus, definition.name, salt)
     const options = {
         resetIn: definition.resetIn,
         deviceId,
