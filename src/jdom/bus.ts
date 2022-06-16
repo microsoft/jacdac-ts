@@ -174,7 +174,7 @@ export class JDBus extends JDNode {
     /**
      * @internal
      */
-     readonly serviceProviderIdSalt: string
+    readonly serviceProviderIdSalt: string
     private readonly _transports: Transport[] = []
     private _bridges: JDBridge[] = []
     private _devices: JDDevice[] = []
@@ -403,7 +403,7 @@ export class JDBus extends JDNode {
      * Indicates if the bus is a dashboard
      * @category Lifecycle
      */
-     get dashboard() {
+    get dashboard() {
         return this._dashboard
     }
 
