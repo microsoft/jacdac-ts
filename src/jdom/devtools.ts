@@ -31,52 +31,52 @@ export function injectDevTools(
         return undefined
 
     // inject style
+    if (!document.getElementById("jacdac-dev-tools-style")) {
+        const style = document.createElement("style")
+        style.id = "jacdac-dev-tools-style"
+        style.innerText = `
+        #jacdac-dev-tools {
+            position: fixed;
+            overflow: hide;
+            box-shadow: 4px 4px 4px 4px #ccc;
+            width: 40rem;
+            height: min(48rem, 60%);
+            background: #fff;
+            z-index: 1000000;
+            
+            transition: left 0.5s, right 0.5s, bottom 0.5s, top 0.5s, width 0.5s, height 0.5s, opacity 1s;
+            left:2rem;
+            bottom: 2rem;        
+          }
+          #jacdac-dev-tools button {
+            float: right;
+            margin-right: 0.5rem;
+          }
+          #jacdac-dev-tools.right {
+            left: calc(100% - 42rem);
+          }
+          #jacdac-dev-tools.shallow {
+            height: 22rem;
+          }
+          #jacdac-dev-tools > .header {
+            font-size: 0.8rem;
+            font-family: monospace;
+            margin: 0.2rem;
+            height: 1.5rem;
+          }
+          #jacdac-dev-tools > iframe {
+            height: calc(100% - 1.5rem);
+            width: 100%;
+            border: none;
+          }    
+        `
+        document.head.appendChild(style)
+    }
+
     const {
         dashboardUrl = "https://microsoft.github.io/jacdac-docs/dashboard/",
     } = options || {}
     const frameid = randomDeviceId()
-    const style = document.createElement("style")
-    style.innerText = `
-    #jacdac-dev-tools {
-        position: fixed;
-        overflow: hide;
-        box-shadow: 4px 4px 4px 4px #ccc;
-        width: 40rem;
-        height: 60%;
-        background: #fff;
-        z-index: 1000000;
-        
-        transition: left 0.5s, right 0.5s, bottom 0.5s, top 0.5s, width 0.5s, height 0.5s, opacity 1s;
-      }
-      #jacdac-dev-tools button {
-        float: right;
-        margin-right: 0.5rem;
-      }
-      #jacdac-dev-tools.left {
-        left:2rem;
-        right: unset;
-        bottom: 2rem;        
-        top: unset;
-      }
-      #jacdac-dev-tools.right {
-        left: unset;
-        right:2rem;
-        bottom: 2rem;        
-        top: unset;
-      }
-      #jacdac-dev-tools > .header {
-        font-size: 0.8rem;
-        font-family: monospace;
-        margin: 0.2rem;
-        height: 1.5rem;
-      }
-      #jacdac-dev-tools > iframe {
-        height: calc(100% - 1.5rem);
-        width: 100%;
-        border: none;
-      }    
-    `
-    document.head.appendChild(style)
 
     const container = document.createElement("div")
     container.id = "jacdac-dev-tools"
@@ -84,24 +84,19 @@ export function injectDevTools(
     const header = document.createElement("div")
     header.className = "header"
     container.append(header)
-    const close = document.createElement("button")
-    close.innerText = "close"
-    const left = document.createElement("button")
-    left.innerText = "<<<"
-    left.onclick = () => {
-        container.classList.remove("right")
-        container.classList.add("left")
-    }
-    const right = document.createElement("button")
-    right.innerText = ">>>"
-    right.onclick = () => {
-        container.classList.remove("left")
-        container.classList.add("right")
-    }
-    header.append(close)
-    header.append(right)
-    header.append(left)
+
     const iframe = document.createElement("iframe")
+    iframe.allow =
+        "gamepad; microphone; camera; accelerometer; gyroscope; ambient-light-sensor; magnetometer"
+    iframe.sandbox.add(
+        "allow-forms",
+        "allow-downloads-without-user-activation",
+        "allow-downloads",
+        "allow-popups",
+        "allow-popups-to-escape-sandbox",
+        "allow-same-origin",
+        "allow-scripts"
+    )
     iframe.src = `${dashboardUrl}?embed=1&connect=0&transient=1#${frameid}`
     container.append(iframe)
     document.body.insertBefore(container, document.body.firstElementChild)
@@ -121,7 +116,18 @@ export function injectDevTools(
         unsub?.()
         container.remove()
     }
-    close.onclick = cleanup
 
+    const addButton = (text: string, onclick: () => void) => {
+        const btn = document.createElement("button")
+        btn.innerText = text
+        btn.onclick = onclick
+
+        header.append(btn)
+    }
+
+    addButton("close", cleanup)
+    addButton(">>>", () => container.classList.add("right"))
+    addButton("^^^", () => container.classList.toggle("shallow"))
+    addButton("<<<", () => container.classList.remove("right"))
     return cleanup
 }
