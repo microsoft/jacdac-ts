@@ -40,7 +40,7 @@ export function injectDevTools(
             overflow: hide;
             box-shadow: 4px 4px 4px 4px #ccc;
             width: 40rem;
-            height: min(48rem, 60%);
+            height: min(48rem, 64%);
             background: #fff;
             z-index: 1000000;
             
@@ -55,8 +55,11 @@ export function injectDevTools(
           #jacdac-dev-tools.right {
             left: calc(100% - 42rem);
           }
+          #jacdac-dev-tools.tall {
+            height: calc(100% - 4rem);
+          }
           #jacdac-dev-tools.shallow {
-            height: 22rem;
+            height: max(22rem, 30%);
           }
           #jacdac-dev-tools > .header {
             font-size: 0.8rem;
@@ -117,17 +120,37 @@ export function injectDevTools(
         container.remove()
     }
 
-    const addButton = (text: string, onclick: () => void) => {
+    const addButton = (
+        text: string,
+        onclick: (btn: HTMLButtonElement) => void
+    ) => {
         const btn = document.createElement("button")
         btn.innerText = text
-        btn.onclick = onclick
+        btn.onclick = () => onclick(btn)
 
         header.append(btn)
     }
 
     addButton("close", cleanup)
     addButton(">>>", () => container.classList.add("right"))
-    addButton("^^^", () => container.classList.toggle("shallow"))
+    const up = "^"
+    const mid = "-"
+    const low = "."
+    addButton(up, btn => {
+        if (btn.innerText === up) {
+            btn.innerText = low
+            container.classList.remove("shallow")
+            container.classList.add("tall")
+        } else if (btn.innerText === low) {
+            btn.innerText = mid
+            container.classList.add("shallow")
+            container.classList.remove("tall")
+        } else {
+            btn.innerText = up
+            container.classList.remove("shallow")
+            container.classList.remove("tall")
+        }
+    })
     addButton("<<<", () => container.classList.remove("right"))
     return cleanup
 }
