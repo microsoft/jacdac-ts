@@ -172,7 +172,7 @@ function createReadingTest(
     specification: jdspec.ServiceSpec,
     readingRule: ReadingTestRule
 ) {
-    const { type, name, value, tolerance, manualSteps } = readingRule
+    const { type, name, value, tolerance, manualSteps, op = "==" } = readingRule
     const registerId =
         type === "reading"
             ? SystemReg.Reading
@@ -184,7 +184,7 @@ function createReadingTest(
     )
     return new RegisterTest(
         name ||
-            `observe ${registerSpec.name} == ${value}${
+            `observe ${registerSpec.name} ${op} ${value}${
                 tolerance ? ` +/-${tolerance}` : ""
             }`,
         manualSteps,
