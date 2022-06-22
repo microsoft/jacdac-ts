@@ -91,18 +91,20 @@ function createSetIntensityAndValueRule(
 function createReadingRule(
     rule: ReadingTestRule
 ): (node: RegisterTest, logger: TestLogger) => TestState {
-    const { value, tolerance, samples = 1, type } = rule
+    const { value, tolerance, samples = 1, type, op } = rule
+    const tol = isNaN(tolerance) || tolerance <= 0 ? 0 : tolerance
+    const opf = {
+        "==": (a: number, b: number, tol: number) => Math.abs(a - b) <= tol,
+        "<": (a: number, b: number, tol: number) => a < b + tol,
+        ">": (a: number, b: number, tol: number) => a > b - tol,
+    }[op || "=="]
     let count = 0
     let seen = count >= samples
     return (node, logger) => {
         if (!seen) {
             const { register } = node
             const [current] = register.unpackedValue
-            const active =
-                current !== undefined &&
-                (isNaN(tolerance) || tolerance <= 0
-                    ? current === value
-                    : Math.abs(current - value) <= tolerance)
+            const active = current !== undefined && opf(current, value, tol)
             if (active) count++
             else count = 0
             // recompute

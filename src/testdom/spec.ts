@@ -35,7 +35,7 @@ export interface OracleTestSpec {
 }
 
 export interface DeviceTestSpec {
-    productIdentifier: number
+    productIdentifier?: number
     count: number
     firmwareVersion?: string
     services: ServiceTestSpec[]
@@ -72,6 +72,7 @@ export interface ReadingTestRule extends ServiceTestRule {
     value: number
     tolerance?: number
     samples?: number
+    op?: ">" | "<" | "=="
 }
 export interface SetIntensityAndValueTestRule extends ServiceTestRule {
     type: "setIntensityAndValue"
