@@ -19,6 +19,7 @@ function looksRandom(n: number) {
 export interface DeviceSpecificationOptions {
     includeDeprecated?: boolean
     includeExperimental?: boolean
+    transport?: jdspec.TransportType | string
 }
 
 /**
@@ -51,10 +52,12 @@ export class DeviceCatalog extends JDEventSource {
      * @returns
      */
     specifications(options?: DeviceSpecificationOptions): jdspec.DeviceSpec[] {
-        const { includeDeprecated, includeExperimental } = options || {}
+        const { includeDeprecated, includeExperimental, transport } =
+            options || {}
         let r = this._specifications.slice(0)
         if (!includeDeprecated) r = r.filter(d => d.status !== "deprecated")
         if (!includeExperimental) r = r.filter(d => d.status !== "experimental")
+        if (transport) r = r.filter(d => d.transport?.type === transport)
         return r
     }
 
