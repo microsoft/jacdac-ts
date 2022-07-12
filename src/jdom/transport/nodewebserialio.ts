@@ -8,13 +8,14 @@ import {
     throwError,
 } from "../utils"
 import { Flags } from "../flags"
-import { JDError,  errorCode } from "../error"
+import { JDError, errorCode } from "../error"
 import { WebSerialTransport } from "./webserial"
 import { Transport } from "./transport"
 import { Observable } from "../observable"
 import { CONNECT, DISCONNECT } from "../constants"
 import { JDEventSource } from "../eventsource"
 import { JDBus } from "../bus"
+import { JdUsbProto } from "./jdusb"
 
 const SCAN_INTERVAL = 2500
 
@@ -60,6 +61,7 @@ class NodeWebSerialIO implements HF2_IO {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private dev: any
     private port: Port
+    isFreeFlowing: boolean = true
 
     /**
      *
@@ -80,10 +82,6 @@ class NodeWebSerialIO implements HF2_IO {
             if (v != undefined) console.debug("serial: " + msg, v)
             else console.debug("serial: " + msg)
         }
-    }
-
-    private mkProto(): Proto {
-        return new HF2Proto(this)
     }
 
     private clearDev() {
@@ -143,12 +141,17 @@ class NodeWebSerialIO implements HF2_IO {
                 await toPromise(cb => {
                     this.dev = new this.SerialPort(
                         this.port.path,
-                        { baudRate: 115200 },
+                        { baudRate: 2000000 },
                         cb
                     )
                 })
                 let tmpdata: Uint8Array
                 this.dev.on("data", (buf: Uint8Array) => {
+                    if (this.isFreeFlowing) {
+                        this.onData(buf)
+                        return
+                    }
+
                     if (tmpdata) buf = bufferConcat(tmpdata, buf)
                     tmpdata = null
 
@@ -182,14 +185,19 @@ class NodeWebSerialIO implements HF2_IO {
             throwError("can't find suitable device", true)
         if (!this.dev) throwError("device not found", true)
         console.debug(`serial: found ${this.devInfo()}`)
-        const proto = this.mkProto()
+
+        const jdusb = new JdUsbProto(this)
+        let proto: Proto = jdusb
         try {
+            const isHF2 = await jdusb.detectHF2()
+            if (isHF2) proto = new HF2Proto(this)
             await proto.postConnectAsync()
         } catch (e) {
             if (!isCancelError(e)) console.debug(e)
             await proto.disconnectAsync()
             throw e
         }
+
         return proto
     }
 }

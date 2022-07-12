@@ -8,8 +8,9 @@ import {
     throwError,
 } from "../utils"
 import { Flags } from "../flags"
-import { JDError,  errorCode } from "../error"
+import { JDError, errorCode } from "../error"
 import { JDBus } from "../bus"
+import { JdUsbProto } from "./jdusb"
 
 export class WebSerialIO implements HF2_IO {
     private dev: SerialPort
@@ -17,6 +18,7 @@ export class WebSerialIO implements HF2_IO {
     ready = false
     private writer: WritableStreamDefaultWriter<Uint8Array>
     private reader: ReadableStreamDefaultReader<Uint8Array>
+    isFreeFlowing: boolean = true
 
     constructor(readonly bus: JDBus) {}
 
@@ -32,10 +34,6 @@ export class WebSerialIO implements HF2_IO {
             if (v != undefined) console.debug("usb: " + msg, v)
             else console.debug("usb: " + msg)
         }
-    }
-
-    private mkProto(): Proto {
-        return new HF2Proto(this)
     }
 
     private clearDev() {
@@ -99,6 +97,7 @@ export class WebSerialIO implements HF2_IO {
             for (;;) {
                 const tmp = await reader.read()
                 if (tmp.done || !this.dev) return null // reader cancelled
+                if (this.isFreeFlowing) return tmp.value
                 if (!value) value = tmp.value
                 else value = bufferConcat(value, tmp.value)
                 // Despite the fact that the device always sends full 64 bytes USB packets
@@ -122,7 +121,7 @@ export class WebSerialIO implements HF2_IO {
                     const value = await readpkt(reader)
                     if (!value) break
                     // console.log("Recv", toHex(value))
-                    if (value.length > 64)
+                    if (!this.isFreeFlowing && value.length > 64)
                         for (let i = 0; i < value.length; i += 64) {
                             this.onData(value.slice(i, i + 64))
                         }
@@ -195,9 +194,11 @@ export class WebSerialIO implements HF2_IO {
 
         // let's connect
         await this.openDeviceAsync()
-
-        const proto = this.mkProto()
+        const jdusb = new JdUsbProto(this)
+        let proto: Proto = jdusb
         try {
+            const isHF2 = await jdusb.detectHF2()
+            if (isHF2) proto = new HF2Proto(this)
             await proto.postConnectAsync()
         } catch (e) {
             if (!isCancelError(e)) console.debug(e)
@@ -211,7 +212,7 @@ export class WebSerialIO implements HF2_IO {
         if (!this.dev) throwError("device not found", true)
 
         await this.dev.open({
-            baudRate: 115200, // not really
+            baudRate: 2000000, // not really
             bufferSize: 32 * 1024,
         })
 
