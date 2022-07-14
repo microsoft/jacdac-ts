@@ -11,21 +11,20 @@ import {
     bufferToString,
     uint8ArrayToString,
     fromUTF8,
+    read32,
 } from "../utils"
 import { HF2_IO } from "./hf2"
-
-// see https://github.com/microsoft/jacdac-c/blob/main/source/jd_usb.c#L5
-
-const JD_USB_CMD_DISABLE_PKTS = 0x80
-const JD_USB_CMD_ENABLE_PKTS = 0x81
-const JD_USB_CMD_NOT_UNDERSTOOD = 0xff
-const JD_QBYTE_MAGIC = 0xfe
-const JD_QBYTE_LITERAL_MAGIC = 0xf9
-const JD_QBYTE_BEGIN = 0xfa
-const JD_QBYTE_STOP = 0xfb
-const JD_QBYTE_CONT = 0xfc
-const JD_QBYTE_END = 0xfd
-const JD_QBYTE_MAX_SIZE = 64
+import {
+    JD_DEVICE_IDENTIFIER_BROADCAST_HIGH_MARK,
+    JD_FRAME_FLAG_COMMAND,
+    JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS,
+    JD_FRAME_FLAG_LOOPBACK,
+    JD_SERVICE_INDEX_BROADCAST,
+    SRV_USB_BRIDGE,
+    UsbBridgeCmd,
+    UsbBridgeQByte,
+} from "../constants"
+import { jdpack } from "../pack"
 
 export class JdUsbProto implements Proto {
     private lock = new PromiseQueue()
@@ -88,10 +87,10 @@ export class JdUsbProto implements Proto {
             return
         }
 
-        const ff = new Uint8Array(8)
-        ff.fill(0xff)
-
-        if (fr[3] == 0xff && bufferEq(fr.slice(4, 12), ff)) {
+        if (
+            (fr[3] & JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS) != 0 &&
+            read32(fr, 4) == SRV_USB_BRIDGE
+        ) {
             this.handleProcessingFrame(fr)
         } else {
             this.frameHandler(fr)
@@ -99,68 +98,81 @@ export class JdUsbProto implements Proto {
     }
 
     private decodeFrame(buf: Uint8Array) {
-        const serialBuf: number[] = []
+        let serialBuf: number[] = []
         const jd_usb_serial_cb = (c: number) => {
             serialBuf.push(c)
+        }
+
+        const frame_error = () => {
+            // break out of frame state
+            this.usb_rx_state = 0
+            // pass on accumulated data as serial
+            for (let j = 0; j < this.usb_rx_ptr; ++j) {
+                jd_usb_serial_cb(this.rxbuf[j])
+            }
+            this.usb_rx_ptr = 0
         }
 
         for (let i = 0; i < buf.length; ++i) {
             let c = buf[i]
             if (this.usb_rx_was_magic) {
-                if (c == JD_QBYTE_MAGIC) {
+                if (c == UsbBridgeQByte.Magic) {
                     if (this.usb_rx_state) {
                         this.logError("dual magic")
-                        // break out of frame state
-                        this.usb_rx_state = 0
-                        // pass on accumulated data as serial
-                        jd_usb_serial_cb(JD_QBYTE_MAGIC)
-                        jd_usb_serial_cb(JD_QBYTE_BEGIN)
-                        for (let j = 0; j < this.usb_rx_ptr; ++j) {
-                            jd_usb_serial_cb(this.rxbuf[j])
-                        }
+                        frame_error()
+                        continue
                     }
                     // 'c' will be passed to jd_usb_serial_cb() below
                 } else {
                     this.usb_rx_was_magic = 0
                     switch (c) {
-                        case JD_QBYTE_LITERAL_MAGIC:
-                            c = JD_QBYTE_MAGIC
+                        case UsbBridgeQByte.LiteralMagic:
+                            c = UsbBridgeQByte.Magic
                             break
-                        case JD_QBYTE_BEGIN:
-                            if (this.usb_rx_ptr) this.logError("second begin")
-                            this.usb_rx_ptr = 0
-                        // fallthrough
-                        case JD_QBYTE_CONT:
-                            if (this.usb_rx_state)
-                                this.logError("unfinished beg/cont")
+                        case UsbBridgeQByte.FrameStart:
+                            if (this.usb_rx_ptr) {
+                                this.logError("second begin")
+                                frame_error()
+                            }
                             this.usb_rx_state = c
                             continue
-                        case JD_QBYTE_STOP:
-                        case JD_QBYTE_END:
+                        case UsbBridgeQByte.FrameEnd:
                             if (this.usb_rx_state) {
                                 this.usb_rx_state = 0
-                                if (c == JD_QBYTE_END) {
-                                    this.handleFrame(
-                                        this.rxbuf.slice(0, this.usb_rx_ptr)
-                                    )
-                                    this.usb_rx_ptr = 0
-                                }
+                                const fr = this.rxbuf.slice(0, this.usb_rx_ptr)
+                                this.handleFrame(fr)
+                                this.usb_rx_ptr = 0
                             } else {
                                 this.logError("mismatched stop")
                             }
                             continue
+
+                        case UsbBridgeQByte.SerialGap:
+                            if (serialBuf.length > 0)
+                                this.onSerial(new Uint8Array(serialBuf), false)
+                            serialBuf = []
+                            this.onSerialGap()
+                            continue
+
+                        case UsbBridgeQByte.FrameGap:
+                            this.onFrameGap()
+                            continue
+
+                        case UsbBridgeQByte.Reserved:
+                            continue // ignore
+
                         default:
                             if (this.usb_rx_state) {
                                 this.logError("invalid quote")
-                                this.usb_rx_state = 0
+                                frame_error()
                             }
                             // either way, pass on directly
-                            jd_usb_serial_cb(JD_QBYTE_MAGIC)
+                            jd_usb_serial_cb(UsbBridgeQByte.Magic)
                             // c = c;
                             break
                     }
                 }
-            } else if (c == JD_QBYTE_MAGIC) {
+            } else if (c == UsbBridgeQByte.Magic) {
                 this.usb_rx_was_magic = 1
                 continue
             }
@@ -168,7 +180,7 @@ export class JdUsbProto implements Proto {
             if (this.usb_rx_state) {
                 if (this.usb_rx_ptr >= this.rxbuf.length) {
                     this.logError("frame ovf")
-                    this.usb_rx_state = 0
+                    frame_error()
                 } else {
                     this.rxbuf[this.usb_rx_ptr++] = c
                 }
@@ -186,11 +198,18 @@ export class JdUsbProto implements Proto {
     }
 
     private processingPkt(serviceCommand: number) {
-        const f = new Uint8Array(16)
-        f.fill(0xff)
-        f[12] = 0 // service_size
-        f[2] = 4 // _size
-        write16(f, 14, serviceCommand)
+        const f = jdpack("u16 u8 u8 u32 u32 u8 u8 u16", [
+            0, // crc
+            4, // _size
+            JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS |
+                JD_FRAME_FLAG_COMMAND |
+                JD_FRAME_FLAG_LOOPBACK,
+            SRV_USB_BRIDGE,
+            JD_DEVICE_IDENTIFIER_BROADCAST_HIGH_MARK,
+            0, // service size
+            JD_SERVICE_INDEX_BROADCAST,
+            serviceCommand,
+        ])
         const c = crc(f.slice(2))
         f[0] = c & 0xff
         f[1] = c >> 8
@@ -200,34 +219,35 @@ export class JdUsbProto implements Proto {
     private encodeFrame(buf: Uint8Array) {
         const c = crc(buf.slice(2))
         if (buf[0] + (buf[1] << 8) != c) throw new Error("bad crc")
-        let curr = new Uint8Array(JD_QBYTE_MAX_SIZE)
-        let dp = 0
-        let res: Uint8Array[] = []
-        curr[dp++] = JD_QBYTE_MAGIC
-        curr[dp++] = JD_QBYTE_BEGIN
-        for (let ptr = 0; ptr <= buf.length; ptr++) {
+
+        const outp: number[] = []
+
+        outp.push(UsbBridgeQByte.Magic)
+        outp.push(UsbBridgeQByte.FrameStart)
+
+        for (let ptr = 0; ptr < buf.length; ptr++) {
             const b = buf[ptr]
-            const enclen = b == JD_QBYTE_MAGIC ? 2 : 1
-            if (b == undefined || dp + enclen + 2 > curr.length) {
-                curr[dp++] = JD_QBYTE_MAGIC
-                curr[dp++] = b == undefined ? JD_QBYTE_END : JD_QBYTE_STOP
-                res.push(curr.slice(0, dp))
-                if (b == undefined) break
-                dp = 0
-                curr = new Uint8Array(JD_QBYTE_MAX_SIZE)
-                curr[dp++] = JD_QBYTE_MAGIC
-                curr[dp++] = JD_QBYTE_CONT
-            }
-            curr[dp++] = b
-            if (b == JD_QBYTE_MAGIC) curr[dp++] = JD_QBYTE_LITERAL_MAGIC
+            outp.push(b)
+            if (b == UsbBridgeQByte.Magic)
+                outp.push(UsbBridgeQByte.LiteralMagic)
         }
+
+        outp.push(UsbBridgeQByte.Magic)
+        outp.push(UsbBridgeQByte.FrameEnd)
+
+        const res: Uint8Array[] = []
+        for (let i = 0; i < outp.length; i += 64) {
+            res.push(new Uint8Array(outp.slice(i, i + 64)))
+        }
+
         return res
     }
 
     async detectHF2() {
         const pkt_en = this.encodeFrame(
-            this.processingPkt(JD_USB_CMD_ENABLE_PKTS)
+            this.processingPkt(UsbBridgeCmd.EnablePackets)
         )[0]
+        // tag0,1 are arbitrary, but should be somewhat unusual
         const tag0 = 0x81
         const tag1 = 0x42
         const hf2_bininfo = new Uint8Array([
@@ -289,6 +309,22 @@ export class JdUsbProto implements Proto {
         return str
     }
 
+    private flushSerial() {
+        if (this.serialData) {
+            console.debug("DEV-N: " + this.fromUTF(this.serialData))
+            this.serialData = null
+        }
+    }
+
+    private onSerialGap() {
+        this.flushSerial()
+        console.debug("DEV-S: [...some serial output skipped...]")
+    }
+
+    private onFrameGap() {
+        console.debug("DEV-S: [...some Jacdac packets skipped...]")
+    }
+
     private onSerial(data: Uint8Array, iserr: boolean) {
         if (this.serialTimeout !== undefined) {
             clearTimeout(this.serialTimeout)
@@ -313,7 +349,7 @@ export class JdUsbProto implements Proto {
                     })
                     const withcolors = prevColor + sline
                     this.serialLineCallback(nocolors, withcolors)
-                    console.debug("DEV: " + prevColor + sline)
+                    console.debug("DEV: " + withcolors)
                 }
                 start = i + 1
             }
@@ -323,15 +359,15 @@ export class JdUsbProto implements Proto {
             this.serialData = data.slice(start)
             this.serialTimeout = setTimeout(() => {
                 this.serialTimeout = undefined
-                if (this.serialData) {
-                    console.debug("DEV-N: " + this.fromUTF(this.serialData))
-                    this.serialData = null
-                }
+                this.flushSerial()
             }, 300)
         }
     }
 
     async postConnectAsync() {
+        await this.sendJDMessageAsync(
+            this.processingPkt(UsbBridgeCmd.EnableLog)
+        )
         this.io.log("connected")
     }
 
