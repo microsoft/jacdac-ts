@@ -278,6 +278,8 @@ export class JdUsbProto implements Proto {
 
     private serialData: Uint8Array
     private serialTimeout: any
+    private colorState = ""
+    serialLineCallback = (line: string, lineWithColor: string) => {}
 
     private fromUTF(line: Uint8Array) {
         let str = uint8ArrayToString(line)
@@ -302,7 +304,16 @@ export class JdUsbProto implements Proto {
                     this.serialData = null
                 }
                 if (line.length > 0) {
-                    console.debug("DEV: " + this.fromUTF(line))
+                    const sline = this.fromUTF(line)
+                    // prepend this to line, to keep color from the previous line if any
+                    const prevColor = this.colorState
+                    const nocolors = sline.replace(/\x1B\[[0-9;]+m/, f => {
+                        this.colorState = f // keep last color state
+                        return ""
+                    })
+                    const withcolors = prevColor + sline
+                    this.serialLineCallback(nocolors, withcolors)
+                    console.debug("DEV: " + prevColor + sline)
                 }
                 start = i + 1
             }
