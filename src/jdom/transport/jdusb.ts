@@ -266,22 +266,24 @@ export class JdUsbProto implements Proto {
         while (frameToSend.length + pkt_en.length < 64) {
             frameToSend = bufferConcat(frameToSend, pkt_en)
         }
-        for (let i = 0; i < 10; ++i) {
-            this.io.log(`detect hf2 ${i}...`)
-            await this.io.sendPacketAsync(bufferConcat(hf2_bininfo, pkt_en))
-            await delay(50)
-            if (this.hf2Resp == null) {
-                if (this.isHF2) {
-                    this.io.log("switching to HF2")
-                    this.io.isFreeFlowing = false
-                    return true
-                } else {
-                    this.io.log("detected JDUSB")
-                    return false
+        return this.lock.enqueue("talk", async () => {
+            for (let i = 0; i < 10; ++i) {
+                this.io.log(`detect hf2 ${i}...`)
+                await this.io.sendPacketAsync(frameToSend)
+                await delay(50)
+                if (this.hf2Resp == null) {
+                    if (this.isHF2) {
+                        this.io.log("switching to HF2")
+                        this.io.isFreeFlowing = false
+                        return true
+                    } else {
+                        this.io.log("detected JDUSB")
+                        return false
+                    }
                 }
             }
-        }
-        throwError("JDUSB: can't connect, no HF2")
+            throwError("JDUSB: can't connect, no HF2")
+        })
     }
 
     onJDMessage(f: (buf: Uint8Array) => void) {
