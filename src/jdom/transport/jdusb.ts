@@ -71,7 +71,7 @@ export class JdUsbProto implements Proto {
 
     private handleProcessingFrame(fr: Uint8Array) {
         const cmd = read16(fr, 14)
-        this.io.log("processing: 0x" + cmd.toString(16))
+        this.io.log("processing frame: 0x" + cmd.toString(16))
     }
 
     private handleFrame(fr: Uint8Array) {
