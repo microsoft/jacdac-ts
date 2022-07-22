@@ -129,13 +129,12 @@ class BluetoothTransport extends Transport {
         await this._rxCharacteristic.startNotifications()
     }
 
-    protected async transportSendPacketAsync(p: Packet) {
+    protected async transportSendPacketAsync(data: Uint8Array) {
         if (!this._txCharacteristic) {
             console.debug(`trying to send Bluetooth packet while disconnected`)
             return
         }
 
-        const data = p.toBuffer()
         const length = data.length
 
         const totalChunks = Math.ceil(data.length / 18)

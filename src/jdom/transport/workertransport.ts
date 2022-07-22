@@ -79,9 +79,8 @@ class WorkerTransport extends Transport {
         }
     }
 
-    protected async transportSendPacketAsync(p: Packet): Promise<void> {
+    protected async transportSendPacketAsync(buf: Uint8Array): Promise<void> {
         // don't wait
-        const buf = p.toBuffer()
         this.worker.postMessage(<TransportPacketMessage>{
             jacdac: true,
             type: "packet",
