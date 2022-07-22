@@ -42,7 +42,7 @@ async function listPorts(bus: JDBus, serialPort: any) {
     const ports: Port[] = await serialPort.list()
     return ports.filter(
         p =>
-            /^PX/.test(p.serialNumber) ||
+            /^(PX|JD)/.test(p.serialNumber) ||
             bus.deviceCatalog.matchVendorId("serial", parseInt(p.vendorId, 16))
     )
 }
