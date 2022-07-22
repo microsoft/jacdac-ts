@@ -40,7 +40,6 @@ export const JD_SERVICE_INDEX_MAX_NORMAL = 0x30
 export const JD_SERVICE_INDEX_CTRL = 0x00
 export const JD_SERVICE_INDEX_BROADCAST = 0x3d
 
-
 // the COMMAND flag signifies that the device_identifier is the recipent
 // (i.e., it's a command for the peripheral); the bit clear means device_identifier is the source
 // (i.e., it's a report from peripheral or a broadcast message)
@@ -52,7 +51,7 @@ export const JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS = 0x04
 export const JD_FRAME_FLAG_LOOPBACK = 0x40
 export const JD_FRAME_FLAG_VNEXT = 0x80
 
-export const JD_DEVICE_IDENTIFIER_BROADCAST_HIGH_MARK = 0xAAAAAAAA
+export const JD_DEVICE_IDENTIFIER_BROADCAST_HIGH_MARK = 0xaaaaaaaa
 
 export const JD_ADVERTISEMENT_0_COUNTER_MASK = 0x0000000f
 export const JD_ADVERTISEMENT_0_ACK_SUPPORTED = 0x00000100
