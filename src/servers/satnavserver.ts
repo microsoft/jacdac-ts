@@ -1,4 +1,4 @@
-import { JDRegisterServer, SatNavFixQuality, SRV_SAT_NAV } from "../jacdac"
+import { JDRegisterServer, SRV_SAT_NAV } from "../jacdac"
 import { SensorServer } from "./sensorserver"
 
 export type SatNavReadingType = [
@@ -10,19 +10,8 @@ export type SatNavReadingType = [
     number // altitude accuracy
 ]
 
-export type SatNavFixType = [
-    number,
-    number,
-    number,
-    number,
-    number,
-    SatNavFixQuality,
-    number
-]
-
 export class SatNavServer extends SensorServer<SatNavReadingType> {
     readonly enabled: JDRegisterServer<[boolean]>
-    readonly fix: JDRegisterServer<[boolean]>
 
     constructor() {
         super(SRV_SAT_NAV, {
