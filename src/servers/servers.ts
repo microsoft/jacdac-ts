@@ -91,6 +91,7 @@ import {
     SRV_MAGNETIC_FIELD_LEVEL,
     SRV_DUAL_MOTORS,
     SRV_JACSCRIPT_CLOUD,
+    SRV_SAT_NAV,
 } from "../jdom/constants"
 import { JDServerServiceProvider } from "../jdom/servers/serverserviceprovider"
 import { ProtocolTestServer } from "../jdom/servers/protocoltestserver"
@@ -146,6 +147,7 @@ import { PackedSimpleValue } from "../jdom/pack"
 import { MagneticFieldLevelServer } from "./magneticfieldlevelserver"
 import { DualMotorsServer } from "./dualmotorsserver"
 import { JacscriptCloudServer } from "./jacscriptcloudserver"
+import { SatNavServer } from "./satnavserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     readingValues: [21.5],
@@ -718,6 +720,11 @@ function initProviders() {
                             GamepadButtons.Y,
                     }),
                 ],
+            },
+            {
+                name: "geolocation (satelitte navigation)",
+                serviceClasses: [SRV_SAT_NAV],
+                services: () => [new SatNavServer()],
             },
             {
                 name: "LED ring 8 pixels",
