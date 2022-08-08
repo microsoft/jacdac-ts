@@ -1,5 +1,5 @@
 import { JDRegisterServer, SRV_SAT_NAV } from "../jacdac"
-import { SensorServer } from "./sensorserver"
+import { SensorServer, SensorServiceOptions } from "./sensorserver"
 
 export type SatNavReadingType = [
     number, // time
@@ -13,10 +13,13 @@ export type SatNavReadingType = [
 export class SatNavServer extends SensorServer<SatNavReadingType> {
     readonly enabled: JDRegisterServer<[boolean]>
 
-    constructor() {
-        super(SRV_SAT_NAV, {
-            streamingInterval: 1000,
-        })
+    constructor(options?: SensorServiceOptions<SatNavReadingType>) {
+        super(
+            SRV_SAT_NAV,
+            options || {
+                streamingInterval: 1000,
+            }
+        )
     }
 
     setGeolocationPosition(
