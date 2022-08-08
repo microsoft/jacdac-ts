@@ -1,4 +1,5 @@
-import { JDRegisterServer, SRV_SAT_NAV } from "../jacdac"
+import { SatNavReg, SRV_SAT_NAV } from "../jdom/constants"
+import { JDRegisterServer } from "../jdom/servers/registerserver"
 import { SensorServer, SensorServiceOptions } from "./sensorserver"
 
 export type SatNavReadingType = [
@@ -20,6 +21,7 @@ export class SatNavServer extends SensorServer<SatNavReadingType> {
                 streamingInterval: 1000,
             }
         )
+        this.enabled = this.addRegister(SatNavReg.Enabled, [false])
     }
 
     setGeolocationPosition(
@@ -48,16 +50,20 @@ export function watchLocation(
     options?: PositionOptions
 ): () => void {
     let id: number = undefined
-    const success: PositionCallback = pos => server.setGeolocationPosition(pos)
+    const success: PositionCallback = pos => {
+        console.log("geo: pos", { id, pos })
+        if (id !== undefined) server.setGeolocationPosition(pos)
+    }
     const unmount = () => {
         if (id !== undefined) navigator.geolocation.clearWatch(id)
+        console.log("geo: unmount", { id })
         id = undefined
     }
     const error: PositionErrorCallback = err => {
         console.log(err)
         unmount()
     }
-    if (typeof navigator !== "undefined" && navigator.geolocation)
+    if (typeof navigator !== "undefined" && navigator.geolocation) {
         id = navigator.geolocation.watchPosition(
             success,
             error,
@@ -67,5 +73,8 @@ export function watchLocation(
                 maximumAge: 0,
             }
         )
+        console.log("geo: mount", { id })
+        navigator.geolocation.getCurrentPosition(success, error)
+    }
     return unmount
 }
