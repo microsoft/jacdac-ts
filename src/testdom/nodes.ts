@@ -1,7 +1,6 @@
 import { JDBus } from "../jdom/bus"
 import {
     CHANGE,
-    DEVICE_ANNOUNCE,
     DISCONNECT,
     EVENT,
     REPORT_UPDATE,
@@ -70,6 +69,10 @@ export abstract class TestNode extends JDNode {
             this._name = value
             this.emit(CHANGE)
         }
+    }
+
+    get bus(): JDBus {
+        return this.parent?.bus
     }
 
     get label(): string {
@@ -161,7 +164,17 @@ export abstract class TestNode extends JDNode {
     }
 
     resolveOracle(reg: JDRegister): RegisterOracle {
-        return this.parent?.resolveOracle(reg)
+        return (
+            this.children
+                ?.filter(c => c.nodeKind === REGISTER_ORACLE_KIND)
+                .map<RegisterOracle>(c => <RegisterOracle>c)
+                .filter(c => !!c.register)
+                .find(
+                    (o: RegisterOracle) =>
+                        o.serviceClass === reg.service.serviceClass &&
+                        o.code === reg.code
+                ) || this.parent?.resolveOracle(reg)
+        )
     }
 
     protected nodeState(): TestResult {
@@ -282,17 +295,7 @@ export class PanelTest extends TestNode {
     get deviceTests() {
         return this.children as DeviceTest[]
     }
-    override resolveOracle(reg: JDRegister): RegisterOracle {
-        return this.children
-            .filter(c => c.nodeKind === REGISTER_ORACLE_KIND)
-            .map<RegisterOracle>(c => <RegisterOracle>c)
-            .filter(c => !!c.register)
-            .find(
-                (o: RegisterOracle) =>
-                    o.serviceClass === reg.service.serviceClass &&
-                    o.code === reg.code
-            )
-    }
+
     override get label() {
         const children = this.children.filter(
             c => c.nodeKind === DEVICE_TEST_KIND
@@ -329,6 +332,9 @@ export class DeviceTest extends TestNode {
     }
     set device(value: JDDevice) {
         this.node = value
+    }
+    get bus() {
+        return this.device?.bus || super.bus
     }
     get factory() {
         return this.parent?.factory || !!this.testSpecification.factory
@@ -580,8 +586,7 @@ export class RegisterOracle extends RegisterTestNode {
     override bind(): void {
         if (this.register || !this.parent) return
 
-        const { bus } = this.parent as PanelTest
-        const device = bus.device(this.deviceId, true)
+        const device = this.bus.device(this.deviceId, true)
         const service = device?.services({
             serviceIndex: this.serviceIndex,
             serviceClass: this.serviceClass,

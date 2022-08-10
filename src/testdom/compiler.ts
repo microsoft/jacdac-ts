@@ -133,7 +133,7 @@ function createOracleRule(
 ): (node: RegisterTest, logger: TestLogger) => TestState {
     let samples = 0
     const threshold = 5
-    const { tolerance } = oracle
+    const { tolerance = 0 } = oracle
     return (node, logger) => {
         const { register } = node
         // find oracle register
@@ -158,13 +158,24 @@ function createOracleRule(
         }
 
         if (samples == 0) {
-            logger(`register value does not match oracle`)
+            logger(
+                tolerance <= 0
+                    ? `${value} != ${oracleValue}`
+                    : `error ${Math.abs(value - oracleValue)} > ${tolerance}`
+            )
             return TestState.Fail
         }
         if (samples < threshold) {
             logger(`sampling register values...`)
             return TestState.Running
-        } else return TestState.Pass
+        } else {
+            logger(
+                tolerance <= 0
+                    ? `${value} == ${oracleValue}`
+                    : `error ${Math.abs(value - oracleValue)} <= ${tolerance}`
+            )
+            return TestState.Pass
+        }
     }
 }
 
@@ -307,7 +318,7 @@ function createStatusCodeTest() {
 export function createDeviceTest(
     bus: JDBus,
     device: DeviceTestSpec,
-    panel?: PanelTestSpec
+    oracles?: OracleTestSpec[]
 ): DeviceTest {
     const { deviceCatalog } = bus
     const { productIdentifier, firmwareVersion, factory } = device
@@ -352,7 +363,7 @@ export function createDeviceTest(
 
     for (const service of services) {
         const { serviceClass, count = 1, disableBuiltinRules } = service
-        const serviceOracle = panel?.oracles?.find(
+        const serviceOracle = oracles?.find(
             oracle => oracle.serviceClass === serviceClass
         )
         const specification =
@@ -386,15 +397,23 @@ export function createDeviceTest(
                         )
                     )
                 // add oracle
-                if (readingSpec && serviceOracle)
-                    serviceTest.appendChild(
-                        new RegisterTest(
-                            `${readingSpec.name} near oracle`,
-                            undefined,
-                            SystemReg.Reading,
-                            createOracleRule(serviceOracle)
-                        )
+                if (readingSpec && serviceOracle) {
+                    const rt = new RegisterTest(
+                        `${readingSpec.name} near oracle`,
+                        undefined,
+                        SystemReg.Reading,
+                        createOracleRule(serviceOracle)
                     )
+                    const oracleNode = new RegisterOracle(
+                        `oracle reading`,
+                        serviceOracle.deviceId,
+                        serviceOracle.serviceIndex,
+                        serviceClass,
+                        serviceOracle.tolerance
+                    )
+                    rt.appendChild(oracleNode)
+                    serviceTest.appendChild(rt)
+                }
 
                 // read values of all mandatory registers
                 packets
@@ -471,7 +490,7 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
     for (const device of devices) {
         const { count = 1 } = device
         for (let i = 0; i < count; ++i) {
-            const deviceTest = createDeviceTest(bus, device, panel)
+            const deviceTest = createDeviceTest(bus, device, panel?.oracles)
             panelTest.appendChild(deviceTest)
         }
     }

@@ -699,6 +699,8 @@ export function splitFilter<T>(
     values: ArrayLike<T>,
     condition: (t: T) => boolean
 ): [T[], T[]] {
+    if (!values) return [undefined, undefined]
+
     const yays: T[] = []
     const nays: T[] = []
     const n = values.length

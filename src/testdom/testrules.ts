@@ -23,6 +23,8 @@ import {
     SRV_LIGHT_LEVEL,
     SRV_MAGNETIC_FIELD_LEVEL,
     SRV_DISTANCE,
+    SRV_TEMPERATURE,
+    SRV_HUMIDITY,
 } from "../jdom/constants"
 import { lightEncode } from "../jdom/light"
 import { jdpack } from "../jdom/pack"
@@ -312,9 +314,17 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         },
     ],
 }
+const builtinReadingTolerances: Record<number, number> = {
+    [SRV_TEMPERATURE]: 2,
+    [SRV_HUMIDITY]: 0.05,
+}
 
 export function resolveTestRules(serviceClass: number) {
     return builtinTestRules[serviceClass]
+}
+
+export function resolveReadingTolerage(serviceClass: number) {
+    return builtinReadingTolerances[serviceClass]
 }
 
 function createGamepadButtonTests(
