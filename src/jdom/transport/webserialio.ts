@@ -212,7 +212,7 @@ export class WebSerialIO implements HF2_IO {
         if (!this.dev) throwError("device not found", true)
 
         await this.dev.open({
-            baudRate: 2000000, // not really
+            baudRate: 1000000,
             bufferSize: 32 * 1024,
         })
 
