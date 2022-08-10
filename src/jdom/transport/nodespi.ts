@@ -158,8 +158,8 @@ class SpiTransport extends Transport {
         this.transfer()
     }
 
-    protected async transportSendPacketAsync(p: Packet): Promise<void> {
-        this.sendQueue.push(p.toBuffer())
+    protected async transportSendPacketAsync(p: Uint8Array): Promise<void> {
+        this.sendQueue.push(p)
         this.transfer()
     }
 

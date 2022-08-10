@@ -424,47 +424,44 @@ export class JDDevice extends JDNode {
         return this.bus
     }
 
-    private _firmwareInfo: FirmwareInfo
     /**
      * Gets the firmware information if any.
      * @category Firmware
      */
     get firmwareInfo(): FirmwareInfo {
-        if (!this._firmwareInfo) {
-            const ctrl = this.service(JD_SERVICE_INDEX_CTRL)
+        const ctrl = this.service(JD_SERVICE_INDEX_CTRL)
 
-            const deviceId = this.deviceId
-            const name = ctrl?.register(
-                ControlReg.DeviceDescription
-            )?.stringValue
-            const version = this.firmwareVersion
-            const productIdentifier = ctrl?.register(
-                ControlReg.ProductIdentifier
-            )?.uintValue
-            const bootloaderProductIdentifier = ctrl?.register(
-                ControlReg.BootloaderProductIdentifier
-            )?.uintValue
-            const ready =
-                productIdentifier !== undefined ||
-                bootloaderProductIdentifier !== undefined
-            if (ready)
-                this._firmwareInfo = {
-                    deviceId,
-                    name,
-                    version,
-                    productIdentifier,
-                    bootloaderProductIdentifier,
-                }
+        const productIdentifier = ctrl?.register(
+            ControlReg.ProductIdentifier
+        )?.uintValue
+        const bootloaderProductIdentifier = ctrl?.register(
+            ControlReg.BootloaderProductIdentifier
+        )?.uintValue
+        const ready =
+            productIdentifier !== undefined ||
+            bootloaderProductIdentifier !== undefined
+        if (!ready) return undefined
+
+        const deviceId = this.deviceId
+        const name = ctrl?.register(ControlReg.DeviceDescription)?.stringValue
+        const version = this.firmwareVersion
+        return {
+            deviceId,
+            name,
+            version,
+            productIdentifier,
+            bootloaderProductIdentifier,
         }
-        return this._firmwareInfo
     }
 
-    refreshFirmwareInfo() {
+    private refreshFirmwareInfo() {
         if (this.bus.passive) return
 
-        const ctrl = this._services?.[0]
+        const ctrl = this.service(JD_SERVICE_INDEX_CTRL)
         if (!ctrl) return
 
+        // force refresh
+        this.emitPropagated(DEVICE_FIRMWARE_INFO)
         const firmwareRegs = [
             ControlReg.ProductIdentifier,
             ControlReg.FirmwareVersion,
@@ -731,6 +728,7 @@ export class JDDevice extends JDNode {
         // check for restart
         if (restarted) {
             this.stats.processRestart()
+
             this.bus.emit(DEVICE_RESTART, this)
             this.emit(RESTART)
 
@@ -738,7 +736,6 @@ export class JDDevice extends JDNode {
             servicesChanged = true
 
             this._eventCounter = undefined
-            this._firmwareInfo = undefined
 
             // In fact the spec says that the service can *only* change on device restart,
             // but we are more lenient here.

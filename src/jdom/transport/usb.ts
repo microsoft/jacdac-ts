@@ -62,10 +62,8 @@ class WebUSBTransport extends Transport {
         this.hf2.onJDMessage(this.handleFrame.bind(this))
     }
 
-    protected async transportSendPacketAsync(p: Packet) {
+    protected async transportSendPacketAsync(buf: Uint8Array) {
         if (!this.hf2) throw new Error("hf2 transport disconnected")
-
-        const buf = p.toBuffer()
         await this.hf2.sendJDMessageAsync(buf)
     }
 

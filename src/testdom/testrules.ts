@@ -22,6 +22,7 @@ import {
     RotaryEncoderReg,
     SRV_LIGHT_LEVEL,
     SRV_MAGNETIC_FIELD_LEVEL,
+    SRV_DISTANCE,
 } from "../jdom/constants"
 import { lightEncode } from "../jdom/light"
 import { jdpack } from "../jdom/pack"
@@ -216,6 +217,25 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
             manualSteps: {
                 prepare: "place south pole on top of sensor",
             },
+        },
+    ],
+    [SRV_DISTANCE]: <ServiceTestRule[]>[
+        <ReadingTestRule>{
+            type: "reading",
+            value: 0.01,
+            tolerance: 0.02,
+            factory: true,
+            manualSteps: {
+                prepare: "cover distance sensor",
+            },
+        },
+        <ReadingTestRule>{
+            type: "reading",
+            value: 0.5,
+            manualSteps: {
+                prepare: "uncover distance sensor with at least 0.5m free",
+            },
+            op: ">",
         },
     ],
     [SRV_POTENTIOMETER]: <ServiceTestRule[]>[

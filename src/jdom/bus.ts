@@ -55,7 +55,6 @@ import {
     SRV_INFRASTRUCTURE,
     CONNECTION_STATE,
     PACKET_RECEIVE_NO_DEVICE,
-    DISCONNECT,
 } from "./constants"
 import { serviceClass } from "./pretty"
 import { JDNode } from "./node"
@@ -136,21 +135,22 @@ export interface BusOptions {
      * enable bus acting as a client
      */
     client?: boolean
-
     /**
      * Ignore role managers detected on the bus
      */
     disableRoleManager?: boolean
-
     /**
      * This bus is a dashboard
      */
     dashboard?: boolean
-
     /**
      * This bus is a proxy
      */
     proxy?: boolean
+    /**
+     * Stable identifier used to generate unique simulator identifier accross multiple hosted bus environment
+     */
+    serviceProviderIdSalt?: string
 }
 
 /**
@@ -163,7 +163,7 @@ export class JDBus extends JDNode {
      */
     readonly selfDeviceId: string
     /**
-     * A timer and interval schedular to orchastrate bus timestamps
+     * A timer and interval schedular to orchestrate bus timestamps
      * @category Scheduling
      */
     readonly scheduler: Scheduler
@@ -171,6 +171,10 @@ export class JDBus extends JDNode {
      * @internal
      */
     readonly parentOrigin: string
+    /**
+     * @internal
+     */
+    readonly serviceProviderIdSalt: string
     private readonly _transports: Transport[] = []
     private _bridges: JDBridge[] = []
     private _devices: JDDevice[] = []
@@ -234,12 +238,14 @@ export class JDBus extends JDNode {
             disableRoleManager,
             dashboard,
             proxy,
+            serviceProviderIdSalt,
         } = options || {}
 
         this._roleManagerClient = disableRoleManager ? null : undefined
         this.selfDeviceId = deviceId || randomDeviceId()
         this.scheduler = scheduler || new WallClockScheduler()
         this.parentOrigin = parentOrigin || "*"
+        this.serviceProviderIdSalt = serviceProviderIdSalt || ""
         this._client = !!client
         this._dashboard = !!dashboard
         this._proxy = !!proxy
@@ -391,6 +397,14 @@ export class JDBus extends JDNode {
             this._client = !!value
             this.emit(CHANGE)
         }
+    }
+
+    /**
+     * Indicates if the bus is a dashboard
+     * @category Lifecycle
+     */
+    get dashboard() {
+        return this._dashboard
     }
 
     /**

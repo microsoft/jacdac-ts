@@ -35,6 +35,8 @@ import {
     CMD_EVENT_MASK,
     CMD_EVENT_COUNTER_POS,
     JD_SERVICE_INDEX_MAX_NORMAL,
+    JD_DEVICE_IDENTIFIER_BROADCAST_HIGH_MARK,
+    JD_SERVICE_INDEX_BROADCAST,
 } from "./constants"
 import { JDDevice } from "./device"
 import { NumberFormat, getNumber } from "./buffer"
@@ -417,7 +419,8 @@ export class Packet {
         this._header[3] |=
             JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS | JD_FRAME_FLAG_COMMAND
         write32(this._header, 4, service_class)
-        write32(this._header, 8, 0)
+        write32(this._header, 8, JD_DEVICE_IDENTIFIER_BROADCAST_HIGH_MARK)
+        this.serviceIndex = JD_SERVICE_INDEX_BROADCAST
         return this.sendCoreAsync(bus)
     }
 

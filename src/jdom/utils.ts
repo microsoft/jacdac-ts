@@ -588,8 +588,8 @@ export function randomRange(min: number, max: number) {
     return Math.round(Math.random() * (max - min) + min)
 }
 
-export function unique(values: string[]): string[] {
-    return Array.from(new Set(values).keys())
+export function unique<T>(values: T[]): T[] {
+    return Array.from(new Set<T>(values).values())
 }
 
 export function uniqueMap<T, U>(
@@ -633,7 +633,7 @@ export function ellipse(text: string, maxChars: number, suffix = "…") {
 }
 
 export function ellipseFirstSentence(text: string) {
-    const i = text.indexOf(".")
+    const i = text?.indexOf(".")
     if (i < 0) return text
     else return text.slice(0, i + 1)
 }
@@ -664,11 +664,12 @@ export function arrayShuffle<T>(a: T[]): T[] {
 export function uniqueName(
     names: string[],
     name: string,
-    separator = ""
+    separator = "",
+    startCount = 2
 ): string {
     if (names.indexOf(name) < 0) return name
     // allocate names
-    let count = 2
+    let count = startCount
     while (names.indexOf(`${name}${separator}${count}`) > -1) count++
     return `${name}${separator}${count}`
 }

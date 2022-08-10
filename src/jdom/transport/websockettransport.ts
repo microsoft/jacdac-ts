@@ -54,9 +54,8 @@ class WebSocketTransport extends Transport {
         })
     }
 
-    protected transportSendPacketAsync(p: Packet): Promise<void> {
+    protected transportSendPacketAsync(data: Uint8Array): Promise<void> {
         if (this.ws?.readyState === this.ws.OPEN) {
-            const data = p.toBuffer()
             this.ws.send(data)
         }
         return Promise.resolve()

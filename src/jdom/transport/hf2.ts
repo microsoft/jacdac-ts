@@ -105,6 +105,9 @@ export const HF2_CMD_JDS_SEND = 0x0021
 export const HF2_EV_JDS_PACKET = 0x800020
 
 export interface HF2_IO {
+    // This is set to true when the IO object is used for Jacdac-USB protocol (not HF2), which
+    // is not 64-byte-packet-based.
+    isFreeFlowing?: boolean
     onData: (v: Uint8Array) => void
     onError: (e: Error) => void
     connectAsync(background: boolean): Promise<Proto>

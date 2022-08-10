@@ -54,8 +54,7 @@ class NodeSocketTransport extends Transport {
         })
     }
 
-    protected transportSendPacketAsync(p: Packet): Promise<void> {
-        const data = p.toBuffer()
+    protected transportSendPacketAsync(data: Uint8Array): Promise<void> {
         const buf = new Uint8Array(1 + data.length)
         buf[0] = data.length
         buf.set(data, 1)

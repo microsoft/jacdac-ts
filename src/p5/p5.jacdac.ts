@@ -1,5 +1,5 @@
-import { startDevTools } from "../jdom/bridges/iframebridge"
 import { CONNECTION_STATE, EVENT } from "../jdom/constants"
+import { injectDevTools, startDevTools } from "../jdom/devtools"
 import { JDEvent } from "../jdom/event"
 import { sensorSpecifications, snapshotSensors } from "../jdom/sensors"
 import { isEvent } from "../jdom/spec"
@@ -39,8 +39,10 @@ export async function disconnect() {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let connectBtn: any
+let devtoolsBtn: any
+
 /**
- * Creates a Jacdac "connect" button that dissapears when connected.
+ * Creates a Jacdac "connect" button that disappears when connected.
  * @returns a button element
  */
 export function createConnectButton() {
@@ -56,6 +58,24 @@ export function createConnectButton() {
         if (bus.connected) connectBtn.hide()
     }
     return connectBtn
+}
+
+/**
+ * Creates a Jacdac "dev tools" button that disappears when clicked.
+ * @returns a button element
+ */
+export function createDevToolsButton() {
+    if (!devtoolsBtn && isWebTransportSupported()) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const createButton = (window as any).createButton
+        devtoolsBtn = createButton("Jacdac dev tools")
+        devtoolsBtn.position(4, 4)
+        devtoolsBtn.mousePressed(() => {
+            devtoolsBtn.hide()
+            injectDevTools(bus)
+        })
+    }
+    return devtoolsBtn
 }
 
 /**
@@ -106,6 +126,8 @@ export const events: Record<
 
 // always show connect button if needed
 p5.prototype.registerMethod("pre", createConnectButton)
+// always show dev tools button for hardware-less debugging
+p5.prototype.registerMethod("pre", createDevToolsButton)
 // update sensors state before every render
 p5.prototype.registerMethod("pre", updateSensors)
 // try connecting to known device when loading

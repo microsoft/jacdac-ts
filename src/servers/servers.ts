@@ -91,6 +91,7 @@ import {
     SRV_MAGNETIC_FIELD_LEVEL,
     SRV_DUAL_MOTORS,
     SRV_JACSCRIPT_CLOUD,
+    SRV_SAT_NAV,
 } from "../jdom/constants"
 import { JDServerServiceProvider } from "../jdom/servers/serverserviceprovider"
 import { ProtocolTestServer } from "../jdom/servers/protocoltestserver"
@@ -146,6 +147,7 @@ import { PackedSimpleValue } from "../jdom/pack"
 import { MagneticFieldLevelServer } from "./magneticfieldlevelserver"
 import { DualMotorsServer } from "./dualmotorsserver"
 import { JacscriptCloudServer } from "./jacscriptcloudserver"
+import { SatNavServer } from "./satnavserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     readingValues: [21.5],
@@ -718,6 +720,11 @@ function initProviders() {
                             GamepadButtons.Y,
                     }),
                 ],
+            },
+            {
+                name: "geolocation (satelitte navigation)",
+                serviceClasses: [SRV_SAT_NAV],
+                services: () => [new SatNavServer()],
             },
             {
                 name: "LED ring 8 pixels",
@@ -1719,10 +1726,17 @@ export function addServiceProviderDefinition(def: ServiceProviderDefinition) {
     if (!providers.find(p => p.name === def.name)) providers.push(def)
 }
 
-function stableSimulatorDeviceId(bus: JDBus, template: string): string {
+function stableSimulatorDeviceId(
+    bus: JDBus,
+    template: string,
+    salt: string
+): string {
     const others = bus.serviceProviders().filter(sp => sp.template === template)
-    const word0 = hash(stringToUint8Array(template + others.length), 32)
-    const word1 = hash(stringToUint8Array(template + others.length + 1), 32)
+    const word0 = hash(stringToUint8Array(salt + template + others.length), 32)
+    const word1 = hash(
+        stringToUint8Array(salt + template + others.length + 1),
+        32
+    )
     const id = toFullHex([word0, word1])
     return id.slice(2)
 }
@@ -1780,7 +1794,8 @@ export function addServiceProvider(
     applyServiceOptions(services, definition.serviceOptions)
     applyServiceOptions(services, serviceOptions)
     services.forEach(srv => srv.lock())
-    const deviceId = stableSimulatorDeviceId(bus, definition.name)
+    const salt = bus.serviceProviderIdSalt
+    const deviceId = stableSimulatorDeviceId(bus, definition.name, salt)
     const options = {
         resetIn: definition.resetIn,
         deviceId,

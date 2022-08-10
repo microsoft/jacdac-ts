@@ -153,7 +153,7 @@ export abstract class Transport extends JDEventSource {
         return this._connectionState == ConnectionState.Disconnected
     }
 
-    protected abstract transportSendPacketAsync(p: Packet): Promise<void>
+    protected abstract transportSendPacketAsync(pkt: Uint8Array): Promise<void>
     protected abstract transportConnectAsync(
         background?: boolean
     ): Promise<void>
@@ -182,11 +182,15 @@ export abstract class Transport extends JDEventSource {
         }
     }
 
+    async sendPacketWhenConnectedAsync(p: Uint8Array) {
+        if (this.connected) await this.transportSendPacketAsync(p)
+    }
+
     async sendPacketAsync(p: Packet) {
         if (!this.connected) {
             this.emit(PACKET_SEND_DISCONNECT, p)
         } else {
-            await this.transportSendPacketAsync(p)
+            await this.transportSendPacketAsync(p.toBuffer())
         }
     }
 
