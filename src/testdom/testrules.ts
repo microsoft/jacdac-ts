@@ -27,6 +27,8 @@ import {
     SRV_HUMIDITY,
     SRV_SERVO,
     ServoReg,
+    SRV_VIBRATION_MOTOR,
+    VibrationMotorCmd,
 } from "../jdom/constants"
 import { lightEncode } from "../jdom/light"
 import { jdpack } from "../jdom/pack"
@@ -571,7 +573,8 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
     [SRV_SERVO]: {
         name: "changle angle",
         manualSteps: {
-            validate: "verify arm is moving between 0 (min), 1/3, 1/2, and 1 (max)",
+            validate:
+                "verify arm is moving between 0 (min), 1/3, 1/2, and 1 (max)",
         },
         start: test => {
             const { factory } = test
@@ -703,6 +706,47 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     await delay(1000)
                     f = f << 1
                     if (f > 4096) f = 440
+                    if (factory && test.state == TestState.Running)
+                        test.state = TestState.Pass
+                }
+            }
+            // start work async
+            work()
+            return () => {
+                mounted = false
+            }
+        },
+    },
+    [SRV_VIBRATION_MOTOR]: {
+        name: "vibration every 1s with increasing duration, strength",
+        manualSteps: {
+            validate: "vibration can be detected",
+        },
+        start: test => {
+            const { factory } = test
+            const MAX_DURATION = 512
+            let mounted = true
+            const pack = (ms: number, volume: number) => {
+                return jdpack<[[number, number][]]>("r: u8 u0.8", [
+                    [[ms >> 3, volume]],
+                ])
+            }
+            const work = async () => {
+                test.state = TestState.Running
+                let ms = 64
+                while (mounted) {
+                    const service = test.service
+                    if (!service) {
+                        await delay(500)
+                        return
+                    }
+                    await service.sendCmdAsync(
+                        VibrationMotorCmd.Vibrate,
+                        pack(ms, ms / MAX_DURATION)
+                    )
+                    await delay(1000)
+                    ms = ms << 1
+                    if (ms > MAX_DURATION) ms = 64
                     if (factory && test.state == TestState.Running)
                         test.state = TestState.Pass
                 }
