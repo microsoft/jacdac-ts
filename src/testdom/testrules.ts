@@ -25,6 +25,8 @@ import {
     SRV_DISTANCE,
     SRV_TEMPERATURE,
     SRV_HUMIDITY,
+    SRV_SERVO,
+    ServoReg,
 } from "../jdom/constants"
 import { lightEncode } from "../jdom/light"
 import { jdpack } from "../jdom/pack"
@@ -559,6 +561,77 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                         }
                     }
                 }
+            }
+            work()
+            return () => {
+                mounted = false
+            }
+        },
+    },
+    [SRV_SERVO]: {
+        name: "changle angle",
+        manualSteps: {
+            validate: "verify arm is moving between 0 (min), 1/3, 1/2, and 1 (max)",
+        },
+        start: test => {
+            const { factory } = test
+            let mounted = true
+            const work = async () => {
+                test.state = TestState.Running
+                const service = test.service
+                const enabled = service.intensityRegister
+                const angleRegister = service.valueRegister
+                const actualAngleRegister = service.readingRegister
+                const minAngleRegister = service.register(ServoReg.MinAngle)
+                const maxAngleRegister = service.register(ServoReg.MaxAngle)
+                await minAngleRegister.refresh()
+                await maxAngleRegister.refresh()
+
+                const minAngle: number =
+                    minAngleRegister.unpackedValue?.[0] || 0
+                const maxAngle: number =
+                    maxAngleRegister?.unpackedValue?.[0] || 0
+
+                const angles = [
+                    minAngle,
+                    minAngle + (maxAngle - minAngle) / 3,
+                    minAngle + (maxAngle - minAngle) / 2,
+                    maxAngle,
+                    minAngle + (maxAngle - minAngle) / 2,
+                    minAngle + (maxAngle - minAngle) / 3,
+                ]
+                const tolerance = (maxAngle - minAngle) / 10
+
+                while (mounted) {
+                    // min angle
+                    for (const angle of angles) {
+                        if (!mounted) break
+
+                        await enabled.sendSetBoolAsync(true)
+                        await angleRegister.sendSetPackedAsync([angle])
+
+                        await delay(1000)
+                        await angleRegister.sendGetAsync()
+                        await actualAngleRegister.sendGetAsync()
+
+                        if (!actualAngleRegister.notImplemented) {
+                            const angle: number =
+                                angleRegister.unpackedValue?.[0]
+                            const actualAngle: number =
+                                actualAngleRegister.unpackedValue?.[0]
+                            if (Math.abs(actualAngle - angle) > tolerance) {
+                                test.state = TestState.Fail
+                                test.output = `expected angle ${angle}, got actual angle ${actualAngle}`
+                            }
+                        }
+                    }
+
+                    if (factory && test.state == TestState.Running)
+                        test.state = TestState.Pass
+                }
+
+                // turn off servo
+                await enabled.sendSetBoolAsync(true)
             }
             work()
             return () => {
