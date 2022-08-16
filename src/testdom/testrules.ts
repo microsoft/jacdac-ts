@@ -739,18 +739,20 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     }
                     let ok = true
                     const allowed = service.register(PowerReg.Allowed)
-                    const powerStatus = service.register(PowerReg.PowerStatus) 
+                    const powerStatus = service.register(PowerReg.PowerStatus)
                     const currentDraw = service.register(PowerReg.CurrentDraw)
                     await allowed.sendSetBoolAsync(true, true)
                     await delay(INTERVAL)
                     await powerStatus.refresh()
 
                     // check state
-                    if (powerStatus.unpackedValue?.[0] != PowerPowerStatus.Powering) {
+                    if (
+                        powerStatus.unpackedValue?.[0] !=
+                        PowerPowerStatus.Powering
+                    ) {
                         test.output = "power status is not powering"
                         ok = false
-                    }
-                    else if (!currentDraw.notImplemented) {
+                    } else if (!currentDraw.notImplemented) {
                         await currentDraw.refresh()
                         if (currentDraw.uintValue == 0) {
                             test.output = "current draw is 0"
@@ -764,17 +766,19 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
 
                     // check state
                     await powerStatus.refresh()
-                    if (powerStatus.unpackedValue?.[0] != PowerPowerStatus.Disallowed) {
+                    if (
+                        powerStatus.unpackedValue?.[0] !=
+                        PowerPowerStatus.Disallowed
+                    ) {
                         test.output = "power status is not dissallowed"
                         ok = false
-                    }
-                    else if (!currentDraw.notImplemented) {
+                    } else if (!currentDraw.notImplemented) {
                         await currentDraw.refresh()
                         if (currentDraw.uintValue != 0) {
                             test.output = "current draw is 0"
                             ok = false
                         }
-                    }                    
+                    }
 
                     if (ok && factory && test.state == TestState.Running)
                         test.state = TestState.Pass
