@@ -1619,10 +1619,10 @@ function initProviders() {
                         services[0],
                     ])
                     const pwr = dev.service(1) as PowerServer
-                    pwr.enabled.on(CHANGE, () => {
-                        const enabled = !!pwr.enabled.values()[0]
-                        console.debug(`power: ${enabled ? "on" : "off"}`)
-                        if (enabled)
+                    pwr.allowed.on(CHANGE, () => {
+                        const allowed = !!pwr.allowed.values()[0]
+                        console.debug(`power: ${allowed ? "on" : "off"}`)
+                        if (allowed)
                             // power + rest
                             dev.updateServices(services)
                         // power only

@@ -29,6 +29,9 @@ import {
     ServoReg,
     SRV_VIBRATION_MOTOR,
     VibrationMotorCmd,
+    SRV_POWER,
+    PowerReg,
+    PowerPowerStatus,
 } from "../jdom/constants"
 import { lightEncode } from "../jdom/light"
 import { jdpack } from "../jdom/pack"
@@ -571,7 +574,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
         },
     },
     [SRV_SERVO]: {
-        name: "changle angle",
+        name: "change angle",
         manualSteps: {
             validate:
                 "verify arm is moving between 0 (min), 1/3, 1/2, and 1 (max)",
@@ -707,6 +710,73 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     f = f << 1
                     if (f > 4096) f = 440
                     if (factory && test.state == TestState.Running)
+                        test.state = TestState.Pass
+                }
+            }
+            // start work async
+            work()
+            return () => {
+                mounted = false
+            }
+        },
+    },
+    [SRV_POWER]: {
+        name: "power on/off at a 2s interval",
+        manualSteps: {
+            validate: "power can be observed",
+        },
+        start: test => {
+            const { factory } = test
+            const INTERVAL = 2000
+            let mounted = true
+            const work = async () => {
+                test.state = TestState.Running
+                while (mounted) {
+                    const service = test.service
+                    if (!service) {
+                        await delay(500)
+                        return
+                    }
+                    let ok = true
+                    const allowed = service.register(PowerReg.Allowed)
+                    const powerStatus = service.register(PowerReg.PowerStatus) 
+                    const currentDraw = service.register(PowerReg.CurrentDraw)
+                    await allowed.sendSetBoolAsync(true, true)
+                    await delay(INTERVAL)
+                    await powerStatus.refresh()
+
+                    // check state
+                    if (powerStatus.unpackedValue?.[0] != PowerPowerStatus.Powering) {
+                        test.output = "power status is not powering"
+                        ok = false
+                    }
+                    else if (!currentDraw.notImplemented) {
+                        await currentDraw.refresh()
+                        if (currentDraw.uintValue == 0) {
+                            test.output = "current draw is 0"
+                            ok = false
+                        }
+                    }
+
+                    // turn off power
+                    await allowed.sendSetBoolAsync(false, true)
+                    await delay(INTERVAL)
+
+                    // check state
+                    await powerStatus.refresh()
+                    if (powerStatus.unpackedValue?.[0] != PowerPowerStatus.Disallowed) {
+                        test.output = "power status is not dissallowed"
+                        ok = false
+                    }
+                    else if (!currentDraw.notImplemented) {
+                        await currentDraw.refresh()
+                        if (currentDraw.uintValue != 0) {
+                            test.output = "current draw is 0"
+                            ok = false
+                        }
+                    }                    
+
+                    if (ok && factory && test.state == TestState.Running)
                         test.state = TestState.Pass
                 }
             }
