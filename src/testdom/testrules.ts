@@ -326,7 +326,7 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
 }
 const builtinReadingTolerances: Record<number, number> = {
     [SRV_TEMPERATURE]: 2,
-    [SRV_HUMIDITY]: 0.05,
+    [SRV_HUMIDITY]: 4,
 }
 
 export function resolveTestRules(serviceClass: number) {
