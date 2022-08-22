@@ -81,15 +81,15 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         },
         <SetIntensityAndValueTestRule>{
             type: "setIntensityAndValue",
-            name: "activate and deactive every 5s",
+            name: "activate and deactive every 3s",
             factory: true,
             steps: [
                 {
-                    duration: 5000,
+                    duration: 3000,
                     intensity: 0,
                 },
                 {
-                    duration: 5000,
+                    duration: 3000,
                     intensity: 1,
                 },
             ],
@@ -236,7 +236,8 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
             factory: true,
             op: "<",
             manualSteps: {
-                prepare: "cover distance sensor to get a reading less than 10cm",
+                prepare:
+                    "cover distance sensor to get a reading less than 10cm",
             },
         },
         <ReadingTestRule>{
@@ -795,7 +796,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
         },
     },
     [SRV_VIBRATION_MOTOR]: {
-        name: "vibration every 1s with increasing duration, strength",
+        name: "vibration with increasing duration, strength",
         manualSteps: {
             validate: "vibration can be detected",
         },
@@ -821,11 +822,13 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                         VibrationMotorCmd.Vibrate,
                         pack(ms, ms / MAX_DURATION)
                     )
-                    await delay(1000)
+                    await delay(ms + 1000)
                     ms = ms << 1
-                    if (ms > MAX_DURATION) ms = 64
-                    if (factory && test.state == TestState.Running)
-                        test.state = TestState.Pass
+                    if (ms > MAX_DURATION) {
+                        ms = 64
+                        if (factory && test.state == TestState.Running)
+                            test.state = TestState.Pass
+                    }
                 }
             }
             // start work async
