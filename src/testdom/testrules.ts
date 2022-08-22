@@ -594,25 +594,27 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                 const actualAngleRegister = service.readingRegister
                 const minAngleRegister = service.register(ServoReg.MinAngle)
                 const maxAngleRegister = service.register(ServoReg.MaxAngle)
-                await minAngleRegister.refresh()
-                await maxAngleRegister.refresh()
-
-                const minAngle: number =
-                    minAngleRegister.unpackedValue?.[0] || 0
-                const maxAngle: number =
-                    maxAngleRegister?.unpackedValue?.[0] || 0
-
-                const angles = [
-                    minAngle,
-                    minAngle + (maxAngle - minAngle) / 3,
-                    minAngle + (maxAngle - minAngle) / 2,
-                    maxAngle,
-                    minAngle + (maxAngle - minAngle) / 2,
-                    minAngle + (maxAngle - minAngle) / 3,
-                ]
-                const tolerance = (maxAngle - minAngle) / 10
 
                 while (mounted) {
+                    await minAngleRegister.refresh()
+                    await maxAngleRegister.refresh()
+                    const minAngle: number =
+                        minAngleRegister.unpackedValue?.[0] || 0
+                    const maxAngle: number =
+                        maxAngleRegister?.unpackedValue?.[0] || 0
+
+                    const na = 9
+                    const da = (maxAngle - minAngle) / (na - 1)
+                    const angles = [
+                        ...Array(na)
+                            .fill(0)
+                            .map((_, i) => minAngle + i * da),
+                        ...Array(na)
+                            .fill(0)
+                            .map((_, i) => maxAngle - i * da),
+                    ]
+                    const tolerance = (maxAngle - minAngle) / 10
+
                     // min angle
                     for (const angle of angles) {
                         if (!mounted) break
@@ -620,7 +622,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                         await enabled.sendSetBoolAsync(true)
                         await angleRegister.sendSetPackedAsync([angle])
 
-                        await delay(1000)
+                        await delay(700)
                         await angleRegister.sendGetAsync()
                         await actualAngleRegister.sendGetAsync()
 
@@ -641,7 +643,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                 }
 
                 // turn off servo
-                await enabled.sendSetBoolAsync(true)
+                await enabled.sendSetBoolAsync(false)
             }
             work()
             return () => {
