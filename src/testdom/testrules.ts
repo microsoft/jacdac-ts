@@ -725,13 +725,13 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
         },
     },
     [SRV_POWER]: {
-        name: "power on/off at a 2s interval",
+        name: "power on/off at a 3s interval",
         manualSteps: {
             validate: "power can be observed",
         },
         start: test => {
             const { factory } = test
-            const INTERVAL = 2000
+            const INTERVAL = 3000
             let mounted = true
             const work = async () => {
                 test.state = TestState.Running

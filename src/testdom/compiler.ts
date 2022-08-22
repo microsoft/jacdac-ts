@@ -381,7 +381,8 @@ export function createDeviceTest(
                 const packets = specification?.packets
                 // reading value rule if any
                 const readingSpec = packets?.find(isReading)
-                if (readingSpec)
+                if (readingSpec) {
+                    const readingOptional = readingSpec.optional
                     serviceTest.appendChild(
                         new RegisterTest(
                             `${readingSpec.name} data should stream`,
@@ -389,13 +390,22 @@ export function createDeviceTest(
                             readingSpec.identifier,
                             node => {
                                 const { register } = node
-                                const { unpackedValue = [] } = register
+                                const { unpackedValue = [], notImplemented } =
+                                    register
+
+                                if (readingOptional && notImplemented) {
+                                    node.output =
+                                        "optional register not implemented"
+                                    return TestState.Pass
+                                }
+
                                 return unpackedValue?.length > 0
                                     ? TestState.Pass
                                     : TestState.Running
                             }
                         )
                     )
+                }
                 // add oracle
                 if (readingSpec && serviceOracle) {
                     const rt = new RegisterTest(
