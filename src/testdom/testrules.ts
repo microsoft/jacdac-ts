@@ -113,6 +113,7 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         <EventTestRule>{
             type: "event",
             eventName: "tilt_up",
+            factory: true,
             manualSteps: {
                 prepare: "tilt up",
             },
@@ -120,6 +121,7 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         <EventTestRule>{
             type: "event",
             eventName: "tilt_down",
+            factory: true,
             manualSteps: {
                 prepare: "tilt down",
             },
@@ -127,6 +129,7 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         <EventTestRule>{
             type: "event",
             eventName: "tilt_left",
+            factory: true,
             manualSteps: {
                 prepare: "tilt left",
             },
@@ -134,6 +137,7 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
         <EventTestRule>{
             type: "event",
             eventName: "tilt_right",
+            factory: true,
             manualSteps: {
                 prepare: "tilt right",
             },
