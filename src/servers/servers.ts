@@ -92,6 +92,11 @@ import {
     SRV_DUAL_MOTORS,
     SRV_JACSCRIPT_CLOUD,
     SRV_SAT_NAV,
+    SRV_DC_VOLTAGE_MEASUREMENT,
+    SRV_DC_CURRENT_MEASUREMENT,
+    DcCurrentMeasurementReg,
+    DcVoltageMeasurementReg,
+    DcVoltageMeasurementVoltageMeasurementType,
 } from "../jdom/constants"
 import { JDServerServiceProvider } from "../jdom/servers/serverserviceprovider"
 import { ProtocolTestServer } from "../jdom/servers/protocoltestserver"
@@ -520,6 +525,45 @@ function initProviders() {
                 name: "compass",
                 serviceClasses: [SRV_COMPASS],
                 services: () => [new CompassServer()],
+            },
+            {
+                name: "DC current/voltage measurement",
+                serviceClasses: [
+                    SRV_DC_CURRENT_MEASUREMENT,
+                    SRV_DC_VOLTAGE_MEASUREMENT,
+                ],
+                services: () => [
+                    new AnalogSensorServer(SRV_DC_CURRENT_MEASUREMENT, {
+                        readingValues: [0.01],
+                        preferredStreamingInterval: 100,
+                        minReading: 0,
+                        maxReading: 10,
+                        registerValues: [
+                            {
+                                code: DcCurrentMeasurementReg.MeasurementName,
+                                values: ["amp"],
+                            },
+                        ],
+                    }),
+                    new AnalogSensorServer(SRV_DC_VOLTAGE_MEASUREMENT, {
+                        readingValues: [5],
+                        preferredStreamingInterval: 100,
+                        minReading: 0,
+                        maxReading: 24,
+                        registerValues: [
+                            {
+                                code: DcVoltageMeasurementReg.MeasurementName,
+                                values: ["volt"],
+                            },
+                            {
+                                code: DcVoltageMeasurementReg.MeasurementType,
+                                values: [
+                                    DcVoltageMeasurementVoltageMeasurementType.Absolute,
+                                ],
+                            },
+                        ],
+                    }),
+                ],
             },
             {
                 name: "distance (sonar)",
