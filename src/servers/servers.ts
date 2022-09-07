@@ -97,6 +97,7 @@ import {
     DcCurrentMeasurementReg,
     DcVoltageMeasurementReg,
     DcVoltageMeasurementVoltageMeasurementType,
+    SRV_PLANAR_POSITION,
 } from "../jdom/constants"
 import { JDServerServiceProvider } from "../jdom/servers/serverserviceprovider"
 import { ProtocolTestServer } from "../jdom/servers/protocoltestserver"
@@ -153,6 +154,7 @@ import { MagneticFieldLevelServer } from "./magneticfieldlevelserver"
 import { DualMotorsServer } from "./dualmotorsserver"
 import { JacscriptCloudServer } from "./jacscriptcloudserver"
 import { SatNavServer } from "./satnavserver"
+import { PlanarPositionServer } from "./planarpositionserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     readingValues: [21.5],
@@ -1131,6 +1133,11 @@ function initProviders() {
                 resetIn: true,
             },
             {
+                name: "planar position",
+                serviceClasses: [SRV_PLANAR_POSITION],
+                services: () => [new PlanarPositionServer()],
+            },
+            Flags.diagnostics && {
                 name: "protocol test",
                 serviceClasses: [SRV_PROTO_TEST],
                 services: () => [new ProtocolTestServer()],
