@@ -2,12 +2,12 @@ import {
     TIMEOUT,
     DEVICE_CHANGE,
     DISCONNECT,
-    JacscriptCloudCmd,
-    JacscriptCloudCommandStatus,
-    JacscriptCloudEvent,
-    JacscriptCloudReg,
+    CloudAdapterCmd,
+    CloudAdapterCommandStatus,
+    CloudAdapterEvent,
+    CloudAdapterReg,
     SELF_ANNOUNCE,
-    SRV_JACSCRIPT_CLOUD,
+    SRV_CLOUD_ADAPTER,
     CHANGE,
 } from "../jdom/constants"
 import { jdpack } from "../jdom/pack"
@@ -19,21 +19,21 @@ export const UPLOAD = "upload"
 export const UPLOAD_BIN = "upload"
 export const CLOUD_COMMAND = "cloudCommand"
 
-export interface JacscriptCloudUploadRequest {
+export interface CloudAdapterUploadRequest {
     label: string
     args: number[]
 }
 
-export interface JacscriptCloudUploadBinRequest {
+export interface CloudAdapterUploadBinRequest {
     data: Uint8Array
 }
 
-export interface JacscriptCloudCommandResponse {
-    status: JacscriptCloudCommandStatus
+export interface CloudAdapterCommandResponse {
+    status: CloudAdapterCommandStatus
     args: number[]
 }
 
-export class JacscriptCloudServer extends JDServiceServer {
+export class CloudAdapterServer extends JDServiceServer {
     readonly connectedRegister: JDRegisterServer<[boolean]>
     readonly connectionNameRegister: JDRegisterServer<[string]>
     private seqNo = 0
@@ -41,7 +41,7 @@ export class JacscriptCloudServer extends JDServiceServer {
         string,
         {
             timeout: number
-            resolve: (resp: JacscriptCloudCommandResponse) => void
+            resolve: (resp: CloudAdapterCommandResponse) => void
             reject: (reason?: unknown) => void
         }
     > = {}
@@ -53,32 +53,32 @@ export class JacscriptCloudServer extends JDServiceServer {
             controlled?: boolean
         } & JDServerOptions
     ) {
-        super(SRV_JACSCRIPT_CLOUD, options)
+        super(SRV_CLOUD_ADAPTER, options)
 
         this.controlled = !!options?.controlled
-        this.connectedRegister = this.addRegister(JacscriptCloudReg.Connected, [
+        this.connectedRegister = this.addRegister(CloudAdapterReg.Connected, [
             false,
         ])
         this.connectionNameRegister = this.addRegister(
-            JacscriptCloudReg.ConnectionName,
+            CloudAdapterReg.ConnectionName,
             [options?.connectionName || ""]
         )
-        this.addCommand(JacscriptCloudCmd.Upload, this.handleUpload.bind(this))
+        this.addCommand(CloudAdapterCmd.Upload, this.handleUpload.bind(this))
         this.addCommand(
-            JacscriptCloudCmd.UploadBin,
+            CloudAdapterCmd.UploadBin,
             this.handleUploadBin.bind(this)
         )
         this.addCommand(
-            JacscriptCloudCmd.AckCloudCommand,
+            CloudAdapterCmd.AckCloudCommand,
             this.handleAckCloudCommand.bind(this)
         )
         this.on(DEVICE_CHANGE, this.handleDeviceChange.bind(this))
 
         this.connectedRegister.on(CHANGE, () =>
-            this.sendEvent(JacscriptCloudEvent.Change)
+            this.sendEvent(CloudAdapterEvent.Change)
         )
         this.connectionNameRegister.on(CHANGE, () =>
-            this.sendEvent(JacscriptCloudEvent.Change)
+            this.sendEvent(CloudAdapterEvent.Change)
         )
     }
 
@@ -96,7 +96,7 @@ export class JacscriptCloudServer extends JDServiceServer {
     set connected(value: boolean) {
         if (value !== this.connected) {
             this.connectedRegister.setValues([!!value])
-            this.sendEvent(JacscriptCloudEvent.Change)
+            this.sendEvent(CloudAdapterEvent.Change)
         }
     }
 
@@ -122,19 +122,19 @@ export class JacscriptCloudServer extends JDServiceServer {
 
     upload(label: string, args: number[]) {
         console.log("cloud: upload", { label, args })
-        this.emit(UPLOAD, <JacscriptCloudUploadRequest>{ label, args })
+        this.emit(UPLOAD, <CloudAdapterUploadRequest>{ label, args })
     }
 
     uploadBin(data: Uint8Array) {
         console.log("cloud: upload bin", { data })
-        this.emit(UPLOAD_BIN, <JacscriptCloudUploadBinRequest>{ data })
+        this.emit(UPLOAD_BIN, <CloudAdapterUploadBinRequest>{ data })
     }
 
     sendCloudCommand(
         method: string,
         args: number[],
         timeout = 1000
-    ): Promise<JacscriptCloudCommandResponse> {
+    ): Promise<CloudAdapterCommandResponse> {
         if (!this.connected) {
             console.debug(`cloud: cancel send, not connected`)
             return
@@ -145,7 +145,7 @@ export class JacscriptCloudServer extends JDServiceServer {
             method,
             args.map(n => [n]),
         ])
-        return new Promise<JacscriptCloudCommandResponse>((resolve, reject) => {
+        return new Promise<CloudAdapterCommandResponse>((resolve, reject) => {
             console.log(
                 `cloud: send ${seqNo} (${Object.keys(seqNo).length} pending)`
             )
@@ -154,13 +154,13 @@ export class JacscriptCloudServer extends JDServiceServer {
                 resolve,
                 reject,
             }
-            this.sendEvent(JacscriptCloudEvent.CloudCommand, payload)
+            this.sendEvent(CloudAdapterEvent.CloudCommand, payload)
         })
     }
 
     private async handleAckCloudCommand(pkt: Packet) {
         const [seqNo, status, args] =
-            pkt.jdunpack<[number, JacscriptCloudCommandStatus, number[]]>(
+            pkt.jdunpack<[number, CloudAdapterCommandStatus, number[]]>(
                 "u32 u32 f64[]"
             )
         console.log("cloud: ack-invoke", seqNo, status, args)

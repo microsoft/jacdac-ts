@@ -19,7 +19,6 @@ import {
     SRV_UNIQUE_BRAIN,
     SRV_DASHBOARD,
     SRV_BRIDGE,
-    SRV_JACSCRIPT_CLOUD,
     SRV_JACSCRIPT_CONDITION,
     SRV_JACSCRIPT_MANAGER,
 } from "./constants"
@@ -140,7 +139,6 @@ export function isInfrastructure(spec: jdspec.ServiceSpec) {
             SRV_UNIQUE_BRAIN,
             SRV_DASHBOARD,
             SRV_BRIDGE,
-            SRV_JACSCRIPT_CLOUD,
             SRV_JACSCRIPT_CONDITION,
             SRV_JACSCRIPT_MANAGER,
         ].indexOf(spec.classIdentifier) > -1 ||

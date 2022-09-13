@@ -90,7 +90,7 @@ import {
     MagneticFieldLevelVariant,
     SRV_MAGNETIC_FIELD_LEVEL,
     SRV_DUAL_MOTORS,
-    SRV_JACSCRIPT_CLOUD,
+    SRV_CLOUD_ADAPTER,
     SRV_SAT_NAV,
     SRV_DC_VOLTAGE_MEASUREMENT,
     SRV_DC_CURRENT_MEASUREMENT,
@@ -152,7 +152,7 @@ import { isConstRegister } from "../jdom/spec"
 import { PackedSimpleValue } from "../jdom/pack"
 import { MagneticFieldLevelServer } from "./magneticfieldlevelserver"
 import { DualMotorsServer } from "./dualmotorsserver"
-import { JacscriptCloudServer } from "./jacscriptcloudserver"
+import { CloudAdapterServer } from "./cloudadapterserver"
 import { SatNavServer } from "./satnavserver"
 import { PlanarPositionServer } from "./planarpositionserver"
 
@@ -1683,11 +1683,11 @@ function initProviders() {
                 },
             },
             {
-                name: "Jacscript Cloud (simulator)",
-                serviceClasses: [SRV_JACSCRIPT_CLOUD],
+                name: "Cloud adapter (simulator)",
+                serviceClasses: [SRV_CLOUD_ADAPTER],
                 services: () => [
-                    new JacscriptCloudServer({
-                        connectionName: "simulated cloud",
+                    new CloudAdapterServer({
+                        connectionName: "simulated",
                     }),
                 ],
             },
