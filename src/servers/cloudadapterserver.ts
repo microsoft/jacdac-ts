@@ -121,12 +121,12 @@ export class CloudAdapterServer extends JDServiceServer {
     }
 
     upload(label: string, args: number[]) {
-        console.log("cloud: upload", { label, args })
+        //console.log("cloud: upload", { label, args })
         this.emit(UPLOAD, <CloudAdapterUploadRequest>{ label, args })
     }
 
     uploadBin(data: Uint8Array) {
-        console.log("cloud: upload bin", { data })
+        //console.log("cloud: upload bin", { data })
         this.emit(UPLOAD_BIN, <CloudAdapterUploadBinRequest>{ data })
     }
 
@@ -140,10 +140,10 @@ export class CloudAdapterServer extends JDServiceServer {
             return
         }
         const seqNo = this.seqNo++
-        const payload = jdpack<[number, string, [number][]]>("u32 z f64[]", [
+        const payload = jdpack<[number, string, [number][]]>("u32 z r: f64", [
             seqNo,
             method,
-            args.map(n => [n]),
+            args.map(v => [v]),
         ])
         return new Promise<CloudAdapterCommandResponse>((resolve, reject) => {
             console.log(
