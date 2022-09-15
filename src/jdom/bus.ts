@@ -1210,6 +1210,8 @@ ${dev
      * @internal
      */
     processPacket(pkt: Packet) {
+        const frame = pkt.toBuffer()
+        if (!frame._jacdac_timestamp) frame._jacdac_timestamp = this.timestamp
         this.emit(FRAME_PROCESS, pkt.toBuffer())
         this.processPacketCore(pkt)
     }

@@ -13,6 +13,7 @@ export abstract class JDBridge extends JDClient {
     readonly bridgeId: string
     packetSent = 0
     packetProcessed = 0
+    currFrame: JDFrameBuffer
 
     constructor(name: string, public readonly infrastructure: boolean = false) {
         super()
@@ -42,29 +43,28 @@ export abstract class JDBridge extends JDClient {
     }
 
     /**
-     * Receives frame (or packet) data payload and injects it into the bus
-     * @param data
-     * @returns
-     */
-    protected receiveFrame(data: JDFrameBuffer) {
-        if (!this._bus) return // disconnected
-        this.receiveFrameOrPacket(data)
-    }
-
-    /**
      * Decodes and distributes a payload
      * @param data
      */
     receiveFrameOrPacket(data: JDFrameBuffer, sender?: string) {
         this.packetProcessed++
+        if (sender) data._jacdac_sender = sender
+        this.currFrame = data // block self-loops
         // send to native bus
         this.bus.sendFrameAsync(data)
         // tracing the source of packets to avoid self-resending; send to JS bus
         this.bus.processFrame(data, sender || this.bridgeId)
+        this.emit(FRAME_PROCESS, data)
+        this.currFrame = null
     }
 
     private handleSendFrame(frame: JDFrameBuffer) {
-        if (!this._bus || frame._jacdac_sender === this.bridgeId) return
+        if (
+            !this._bus ||
+            this.currFrame == frame ||
+            frame._jacdac_sender === this.bridgeId
+        )
+            return
         this.packetSent++
         this.sendPacket(frame, frame._jacdac_sender)
     }

@@ -35,11 +35,11 @@ export function serializeToTrace(
 ) {
     const data = toHex(frame).padEnd(84, " ")
     let t = roundWithPrecision(
-        frame._jacdac_timestamp - (start || 0),
+        (frame._jacdac_timestamp || 0) - (start || 0),
         3
     ).toString()
     while (t.length < 7) t += " "
-    let descr = frame._jacdac_meta[META_TRACE_DESCRIPTION]
+    let descr = frame._jacdac_meta?.[META_TRACE_DESCRIPTION]
     if (!descr) {
         descr = Packet.fromFrame(frame, undefined, true)
             .map(pkt => {
@@ -49,7 +49,7 @@ export function serializeToTrace(
             .join(" ;; ")
     }
     let msg = `${t}\t${data}\t${descr}`
-    const trace = frame._jacdac_meta[META_TRACE] as string
+    const trace = frame._jacdac_meta?.[META_TRACE] as string
     if (trace) msg += "\n" + cleanStack(trace)
     return msg
 }
