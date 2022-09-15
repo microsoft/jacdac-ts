@@ -1622,7 +1622,7 @@ function initProviders() {
                 ],
             },
             {
-                name: "micro:bit v2",
+                name: "micro:bit V2",
                 serviceClasses: [
                     SRV_DOT_MATRIX,
                     SRV_BUTTON,
