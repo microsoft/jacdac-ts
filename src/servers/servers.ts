@@ -1391,7 +1391,7 @@ function initProviders() {
                 ],
             },
             {
-                name: "sound player (micro:bit v2 sounds)",
+                name: "sound player (micro:bit V2 sounds)",
                 serviceClasses: [SRV_SOUND_PLAYER],
                 services: () => [new SoundPlayerServer(microbitSounds)],
             },
