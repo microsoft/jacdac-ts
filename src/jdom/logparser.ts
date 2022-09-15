@@ -1,6 +1,6 @@
 import { arrayConcatMany, fromHex } from "./utils"
 import { JDBus } from "./bus"
-import { Packet } from "./packet"
+import { JDFrameBuffer, Packet } from "./packet"
 import { TracePlayer } from "./trace/traceplayer"
 import { Frame } from "./frame"
 import { Trace } from "./trace/trace"
@@ -14,7 +14,7 @@ import { META_TRACE, META_TRACE_DESCRIPTION } from "./constants"
  */
 export function parseTrace(contents: string): Trace {
     const description: string[] = []
-    const packets: Packet[] = []
+    const packets: JDFrameBuffer[] = []
     contents?.split(/\r?\n/).forEach(ln => {
         // parse data
         const m = /^(\d+.?\d*)\s+([a-f0-9]{12,})/i.exec(ln)
@@ -23,9 +23,10 @@ export function parseTrace(contents: string): Trace {
             if (/^\s+at\s/.test(ln)) {
                 const lastPacket = packets[packets.length - 1]
                 if (lastPacket) {
-                    let trace = (lastPacket.meta[META_TRACE] as string) || ""
+                    let trace =
+                        (lastPacket._jacdac_meta[META_TRACE] as string) || ""
                     trace += ln + "\n"
-                    lastPacket.meta[META_TRACE] = trace
+                    lastPacket._jacdac_meta[META_TRACE] = trace
                 }
             } else {
                 // probably junk data
@@ -35,11 +36,12 @@ export function parseTrace(contents: string): Trace {
         }
 
         const timestamp = parseInt(m[1])
-        const data = fromHex(m[2])
-        // add to array
-        const pkt = Packet.fromBinary(data, timestamp)
-        pkt.meta[META_TRACE_DESCRIPTION] = ln.substring(m[0].length).trim()
-        packets.push(pkt)
+        const data = fromHex(m[2]) as JDFrameBuffer
+        data._jacdac_meta = {
+            [META_TRACE_DESCRIPTION]: ln.substring(m[0].length).trim(),
+        }
+        data._jacdac_timestamp = timestamp
+        packets.push(data)
     })
     if (packets.length)
         return new Trace(packets, {
@@ -132,11 +134,13 @@ export function replayLogicLog(
     frames: Frame[],
     speed?: number
 ): void {
-    const packets = arrayConcatMany(
-        frames.map(frame => Packet.fromFrame(frame.data, frame.timestamp))
-    )
+    const packets = frames.map(f => {
+        const r = f.data.slice() as JDFrameBuffer
+        r._jacdac_timestamp = f.timestamp
+        return r
+    })
     const player = new TracePlayer(bus, speed)
     player.trace = new Trace(packets)
-    bus.clear(packets[0].timestamp)
+    bus.clear(packets[0]?._jacdac_timestamp)
     player.start()
 }

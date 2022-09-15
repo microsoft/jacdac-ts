@@ -926,6 +926,8 @@ ${dev
     }
 
     async sendFrameAsync(frame: JDFrameBuffer) {
+        if (frame._jacdac_timestamp === undefined)
+            frame._jacdac_timestamp = this.timestamp
         this.emit(FRAME_SEND, frame)
         await Promise.all(
             this._transports.map(transport =>
@@ -1214,8 +1216,15 @@ ${dev
 
     processFrame(frame: JDFrameBuffer, sender: string, skipCrc = false) {
         if (sender) frame._jacdac_sender = sender
+        if (frame._jacdac_timestamp === undefined)
+            frame._jacdac_timestamp = this.timestamp
         this.emit(FRAME_PROCESS, frame)
-        for (const pkt of Packet.fromFrame(frame, this.timestamp, skipCrc)) {
+        for (const pkt of Packet.fromFrame(
+            frame,
+            frame._jacdac_timestamp,
+            skipCrc
+        )) {
+            if (frame._jacdac_replay) pkt.replay = true
             this.processPacketCore(pkt)
         }
     }

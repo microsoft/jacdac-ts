@@ -1,7 +1,7 @@
 import { JDBus } from "../bus"
 import { JDClient } from "../client"
-import { CHANGE, PACKET_PROCESS, PACKET_SEND, START, STOP } from "../constants"
-import { Packet } from "../packet"
+import { CHANGE, FRAME_PROCESS, FRAME_SEND, START, STOP } from "../constants"
+import { JDFrameBuffer } from "../packet"
 import { Trace } from "./trace"
 
 const RECORDING_TRACE_MAX_ITEMS = 100000
@@ -17,7 +17,7 @@ export class TraceRecorder extends JDClient {
 
     constructor(public readonly bus: JDBus) {
         super()
-        this.handlePacket = this.handlePacket.bind(this)
+        this.handleFrame = this.handleFrame.bind(this)
 
         this.mount(() => this._subscription?.())
     }
@@ -26,8 +26,8 @@ export class TraceRecorder extends JDClient {
         if (this.recording) return
 
         this._subscription = this.bus.subscribe(
-            [PACKET_PROCESS, PACKET_SEND],
-            this.handlePacket
+            [FRAME_PROCESS, FRAME_SEND],
+            this.handleFrame
         )
         this._trace = new Trace([], { maxLength: this.maxRecordingLength })
         this.emit(START)
@@ -55,11 +55,11 @@ export class TraceRecorder extends JDClient {
         return this._trace
     }
 
-    private handlePacket(pkt: Packet) {
+    private handleFrame(pkt: JDFrameBuffer) {
         // record packets in traces
-        this._trace.addPacket(pkt)
+        this._trace.addFrame(pkt)
         // notify that this packet has been processed
-        this.emit(PACKET_PROCESS, pkt)
+        this.emit(FRAME_PROCESS, pkt)
     }
 }
 

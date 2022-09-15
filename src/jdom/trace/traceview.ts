@@ -3,6 +3,8 @@ import { JDClient } from "../client"
 import {
     CHANGE,
     DEVICE_ANNOUNCE,
+    FRAME_PROCESS,
+    FRAME_SEND,
     META_ACK,
     META_GET,
     META_NOT_IMPLEMENTED,
@@ -12,7 +14,7 @@ import {
     SystemCmd,
     TRACE_FILTER_HORIZON,
 } from "../constants"
-import { Packet } from "../packet"
+import { JDFrameBuffer, Packet } from "../packet"
 import { PacketFilter, parsePacketFilter } from "../packetfilter"
 import { Trace } from "./trace"
 import { throttle, toHex } from "../utils"
@@ -55,6 +57,7 @@ export class TraceView extends JDClient {
     private _filter: string
     private _packetFilter: PacketFilter = undefined
     private _filteredPackets: TracePacketProps[] = []
+    private _allPackets: Packet[] = []
 
     public silent = false
     private notifyPacketsChanged: () => void
@@ -66,6 +69,7 @@ export class TraceView extends JDClient {
     ) {
         super()
         this._trace = new Trace([], { maxLength: TRACE_MAX_ITEMS })
+        this.handleFrame = this.handleFrame.bind(this)
         this.handlePacket = this.handlePacket.bind(this)
         this.handleFilterUpdate = this.handleFilterUpdate.bind(this)
 
@@ -73,6 +77,9 @@ export class TraceView extends JDClient {
             if (!this.silent) this.setFilteredPackets()
         }, throttleDelay)
 
+        this.mount(
+            this.bus.subscribe([FRAME_PROCESS, FRAME_SEND], this.handleFrame)
+        )
         this.mount(
             this.bus.subscribe([PACKET_PROCESS, PACKET_SEND], this.handlePacket)
         )
@@ -105,6 +112,11 @@ export class TraceView extends JDClient {
     set trace(t: Trace) {
         if (t !== this._trace) {
             this._trace = t
+            if (t.frames.length == 0) {
+                this._allPackets = []
+            } else {
+                throw new Error("only empty traces allowed")
+            }
             this.refreshFilter()
             this.emit(CHANGE)
         }
@@ -164,7 +176,7 @@ export class TraceView extends JDClient {
         this.id = "view" + Math.random()
         this._packetFilter = parsePacketFilter(this.bus, this._filter)
         this._filteredPackets = []
-        const packets = this.trace.packets
+        const packets = this._allPackets
         // reapply filter to existing trace
         for (
             let i = packets.length - 1;
@@ -182,16 +194,21 @@ export class TraceView extends JDClient {
 
     private handlePacket(pkt: Packet) {
         if (this._paused) return
-
-        // remember packet
-        this._trace.addPacket(pkt)
-
+        this._allPackets.push(pkt)
+        if (this._allPackets.length > TRACE_MAX_ITEMS * 1.5)
+            this._allPackets = this._allPackets.slice(-TRACE_MAX_ITEMS)
         // add packet to live list
         if (this._packetFilter?.filter(pkt)) {
             this.addFilteredPacket(pkt)
             // debounced notification of changes
             this.notifyPacketsChanged?.()
         }
+    }
+
+    private handleFrame(frame: JDFrameBuffer) {
+        if (this._paused) return
+        // remember packet
+        this._trace.addFrame(frame)
     }
 
     private addFilteredPacket(packet: Packet) {
@@ -218,7 +235,7 @@ export class TraceView extends JDClient {
 
         // collapse acks
         if (packet.isCRCAck) {
-            const pkts = this.trace.packets
+            const pkts = this._allPackets
             const crc = packet.serviceCommand
             const did = packet.deviceIdentifier
             const m = Math.max(0, pkts.length - TRACE_FILTER_HORIZON) // max scan 100 packets back
@@ -238,7 +255,7 @@ export class TraceView extends JDClient {
 
         // track command not supported
         if (packet.serviceCommand === SystemCmd.CommandNotImplemented) {
-            const pkts = this.trace.packets
+            const pkts = this._allPackets
             const [sc, crc] = packet.jdunpack<[number, number]>("u16 u16")
             const m = Math.max(0, pkts.length - TRACE_FILTER_HORIZON) // max scan 100 packets back
             for (let i = pkts.length - 1; i >= m; i--) {
@@ -254,7 +271,7 @@ export class TraceView extends JDClient {
 
         // report coming back
         if (packet.isRegisterGet && packet.isReport && !packet.meta[META_GET]) {
-            const pkts = this.trace.packets
+            const pkts = this._allPackets
             const did = packet.deviceIdentifier
             const si = packet.serviceIndex
             const rid = packet.registerIdentifier
@@ -312,4 +329,3 @@ export class TraceView extends JDClient {
         }
     }
 }
-

@@ -1,6 +1,6 @@
 import { JDBus } from "../bus"
 import { META_TRACE, META_TRACE_DESCRIPTION } from "../constants"
-import { Packet } from "../packet"
+import { JDFrameBuffer, Packet } from "../packet"
 import { printPacket } from "../pretty"
 import { randomDeviceId } from "../random"
 import { roundWithPrecision, toHex } from "../utils"
@@ -28,15 +28,28 @@ export function cleanStack(text: string) {
         .replace(/https:\/\/microsoft\.github\.io\/jacdac-docs/g, "")
 }
 
-export function serializeToTrace(pkt: Packet, start?: number) {
-    const data = toHex(pkt.toBuffer()).padEnd(84, " ")
-    let t = roundWithPrecision(pkt.timestamp - (start || 0), 3).toString()
+export function serializeToTrace(
+    frame: JDFrameBuffer,
+    start?: number,
+    bus?: JDBus
+) {
+    const data = toHex(frame).padEnd(84, " ")
+    let t = roundWithPrecision(
+        frame._jacdac_timestamp - (start || 0),
+        3
+    ).toString()
     while (t.length < 7) t += " "
-    const descr =
-        pkt.meta[META_TRACE_DESCRIPTION] ||
-        printPacket(pkt, {}).replace(/\r?\n/g, " ")
+    let descr = frame._jacdac_meta[META_TRACE_DESCRIPTION]
+    if (!descr) {
+        descr = Packet.fromFrame(frame, undefined, true)
+            .map(pkt => {
+                if (bus) pkt.assignDevice(bus)
+                return printPacket(pkt, {}).replace(/\r?\n/g, " ")
+            })
+            .join(" ;; ")
+    }
     let msg = `${t}\t${data}\t${descr}`
-    const trace = pkt.meta[META_TRACE] as string
+    const trace = frame._jacdac_meta[META_TRACE] as string
     if (trace) msg += "\n" + cleanStack(trace)
     return msg
 }
@@ -49,13 +62,15 @@ export class Trace {
     readonly id = randomDeviceId()
     readonly maxLength: number
     readonly description: string
+    private resolutionBus: JDBus
+
     /**
      * Constructs a new empty trace or from an existing list of packets
-     * @param packets list of packets
+     * @param frames list of frames/packets
      * @param description description of the trace
      */
     constructor(
-        public packets: Packet[] = [], // TODO this should use frames
+        public frames: JDFrameBuffer[] = [],
         options?: {
             description?: string
             maxLength?: number
@@ -69,62 +84,63 @@ export class Trace {
      * Number of packets in trace
      */
     get length() {
-        return this.packets.length
+        return this.frames.length
     }
 
     /**
      * Duration in milliseconds between the first and last packet.
      */
     get duration() {
-        if (!this.packets.length) return 0
+        if (!this.frames.length) return 0
         return (
-            this.packets[this.packets.length - 1].timestamp -
-            this.packets[0].timestamp
+            this.frames[this.frames.length - 1]._jacdac_timestamp -
+            this.frames[0]._jacdac_timestamp
         )
     }
 
     /**
-     * Timestamp of the first packet, defaults to 0 if trace is empty.
+     * _jacdac_timestamp of the first packet, defaults to 0 if trace is empty.
      */
     get startTimestamp() {
-        return this.packets[0]?.timestamp || 0
+        return this.frames[0]?._jacdac_timestamp || 0
     }
 
     /**
-     * Timestamp of the last packet, defaults to 0 if trace is empty.
+     * _jacdac_timestamp of the last packet, defaults to 0 if trace is empty.
      */
     get endTimestamp() {
-        return this.packets[this.packets.length - 1]?.timestamp || 0
+        return this.frames[this.frames.length - 1]?._jacdac_timestamp || 0
     }
 
     /**
-     * Appends a packet to the trace
-     * @param packet packet to add
-     * @param maxLength If positive, prunes older packets when the length reaches maxLength
+     * Appends a frame to the trace
+     * @param frame frame/packet to add
      */
-    addPacket(packet: Packet) {
+    addFrame(frame: JDFrameBuffer) {
+        if (!frame._jacdac_meta) frame._jacdac_meta = {}
+
         // our event tracing may end up registering the same
         // packet twice when it is received and transmitted
-        if (packet.meta[this.id]) {
+        if (frame._jacdac_meta[this.id]) {
             // console.trace("packet added twice", { packet })
             return
         }
         // keep track of trace added
-        packet.meta[this.id] = true
-        // packets are mutable (eg., timestamp is updated on each send), so we take a copy
-        const copy = packet.clone()
-        copy.sender = packet.sender
-        copy.device = packet.device
+        frame._jacdac_meta[this.id] = true
+        // packets are mutable (eg., _jacdac_timestamp is updated on each send), so we take a copy
+        const copy = frame.slice() as JDFrameBuffer
+        copy._jacdac_sender = frame._jacdac_sender
+        copy._jacdac_timestamp = frame._jacdac_timestamp
         // TODO need to copy 'meta' as well?
-        this.packets.push(copy)
+        this.frames.push(copy)
 
         // limit trace size
         if (
             this.maxLength > 0 &&
-            this.packets.length > this.maxLength * TRACE_OVERSHOOT
+            this.frames.length > this.maxLength * TRACE_OVERSHOOT
         ) {
             // 10% overshoot of max
-            this.packets = this.packets.slice(-this.maxLength)
+            this.frames = this.frames.slice(-this.maxLength)
         }
     }
 
@@ -135,9 +151,11 @@ export class Trace {
      */
     serializeToText(length?: number) {
         const start = this.startTimestamp
-        let pkts = this.packets
+        let pkts = this.frames
         if (length > 0) pkts = pkts.slice(-length)
-        const text = pkts.map(pkt => serializeToTrace(pkt, start))
+        const text = pkts.map(pkt =>
+            serializeToTrace(pkt, start, this.resolutionBus)
+        )
         if (this.description) {
             text.unshift(this.description)
             text.unshift("")
@@ -146,8 +164,6 @@ export class Trace {
     }
 
     resolveDevices(bus: JDBus) {
-        this.packets
-            .filter(pkt => !pkt.device)
-            .forEach(pkt => pkt.assignDevice(bus))
+        this.resolutionBus = bus
     }
 }

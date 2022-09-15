@@ -57,7 +57,12 @@ const { warn, debug } = console
 /**
  * Represent serialized Packet, or several packets.
  */
-export type JDFrameBuffer = Uint8Array & { _jacdac_sender?: string }
+export type JDFrameBuffer = Uint8Array & {
+    _jacdac_sender?: string
+    _jacdac_timestamp?: number
+    _jacdac_replay?: boolean
+    _jacdac_meta?: any
+}
 
 /**
  * A Jacdac packet
@@ -92,7 +97,7 @@ export class Packet {
             JD_SERIAL_HEADER_SIZE + p.size
         )
         p.sender = data._jacdac_sender
-        if (timestamp !== undefined) p.timestamp = timestamp
+        p.timestamp = timestamp ?? data._jacdac_timestamp
         return p
     }
 
@@ -110,9 +115,11 @@ export class Packet {
 
     toBuffer() {
         // compute correct framing and CRC
-        const res = bufferConcat(this._header, this._data)
+        const res = bufferConcat(this._header, this._data) as JDFrameBuffer
         res[2] = this._data.length + 4
         write16(res, 0, crc(res.slice(2)))
+        res._jacdac_sender = this.sender
+        res._jacdac_timestamp = this.timestamp
         return res
     }
 
@@ -334,6 +341,7 @@ export class Packet {
         pkt.frameFlags &= ~JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS
         pkt._header.set(idb, 4)
         pkt._decoded = undefined
+        pkt.sender = undefined
         pkt.serviceIndex = serviceIndex
         return pkt
     }
@@ -492,7 +500,12 @@ export class Packet {
     }
 }
 
-function frameToPackets(frame: JDFrameBuffer, timestamp: number, skipCrc = false) {
+function frameToPackets(
+    frame: JDFrameBuffer,
+    timestamp: number,
+    skipCrc = false
+) {
+    if (timestamp === undefined) timestamp = frame._jacdac_timestamp
     const size = frame.length < 12 ? 0 : frame[2]
     if (frame.length < size + 12) {
         warn(

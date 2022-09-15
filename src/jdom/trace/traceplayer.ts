@@ -1,6 +1,7 @@
 import { JDBus } from "../bus"
 import { JDClient } from "../client"
 import { CHANGE, PROGRESS } from "../constants"
+import { JDFrameBuffer } from "../packet"
 import { Trace } from "./trace"
 
 /**
@@ -78,18 +79,18 @@ export class TracePlayer extends JDClient {
         if (!this._trace) return
 
         const busElapsed = this.elapsed
-        const packets = this.trace.packets
-        const packetStart = packets[0]?.timestamp || 0
+        const packets = this.trace.frames
+        const packetStart = packets[0]?._jacdac_timestamp || 0
 
         while (this._index < packets.length) {
             const packet = packets[this._index]
-            const packetElapsed = packet.timestamp - packetStart
+            const packetElapsed = packet._jacdac_timestamp - packetStart
             if (packetElapsed > busElapsed) break // wait to catch up
             // clone packet and send
-            const pkt = packet.clone()
-            pkt.replay = true
-            pkt.timestamp = this._busStartTimestamp + packetElapsed
-            this.bus.processPacket(pkt) // TODO this should use frames
+            const pkt = packet.slice() as JDFrameBuffer
+            pkt._jacdac_timestamp = this._busStartTimestamp + packetElapsed
+            pkt._jacdac_replay = true
+            this.bus.processFrame(pkt, undefined)
             this._index++
         }
 
