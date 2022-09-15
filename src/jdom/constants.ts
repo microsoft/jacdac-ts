@@ -116,7 +116,7 @@ export const DEVICE_CLEAN = "deviceClean"
 export const SELF_ANNOUNCE = "selfAnnounce"
 
 export const PACKET_SEND = "packetSend"
-export const PACKET_SEND_DISCONNECT = "packetSendDisconnect"
+export const FRAME_SEND_DISCONNECT = "frameSendDisconnect"
 
 export const PACKET_PRE_PROCESS = "packetPreProcess"
 export const PACKET_PROCESS = "packetProcess"

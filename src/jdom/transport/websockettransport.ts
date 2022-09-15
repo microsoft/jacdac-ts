@@ -1,5 +1,4 @@
-import { PACKET_SEND_DISCONNECT, WEBSOCKET_TRANSPORT } from "../constants"
-import { Packet } from "../packet"
+import { FRAME_SEND_DISCONNECT, WEBSOCKET_TRANSPORT } from "../constants"
 import { Transport,  TransportOptions } from "./transport"
 
 const RECONNECT_TIMEOUT = 5000
@@ -28,7 +27,7 @@ class WebSocketTransport extends Transport {
     constructor(readonly url: string, options?: WebSocketTransportOptions) {
         super(WEBSOCKET_TRANSPORT, options)
         this.protocols = options?.protocols
-        this.on(PACKET_SEND_DISCONNECT, this.handleSendDisconnect)
+        this.on(FRAME_SEND_DISCONNECT, this.handleSendDisconnect)
     }
 
     private handleSendDisconnect() {

@@ -8,7 +8,7 @@ import {
     DISCONNECTING,
     ERROR,
     LOST,
-    PACKET_SEND_DISCONNECT,
+    FRAME_SEND_DISCONNECT,
     SELF_ANNOUNCE,
     TRANSPORT_CONNECT_RETRY_DELAY,
     TRANSPORT_PULSE_TIMEOUT,
@@ -186,7 +186,7 @@ export abstract class Transport extends JDEventSource {
 
     async sendPacketWhenConnectedAsync(frame: Uint8Array) {
         if (this.connected) await this.transportSendPacketAsync(frame)
-        else this.emit(PACKET_SEND_DISCONNECT, frame)
+        else this.emit(FRAME_SEND_DISCONNECT, frame)
     }
 
     connect(background?: boolean): Promise<void> {
