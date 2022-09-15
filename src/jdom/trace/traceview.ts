@@ -112,11 +112,7 @@ export class TraceView extends JDClient {
     set trace(t: Trace) {
         if (t !== this._trace) {
             this._trace = t
-            if (t.frames.length == 0) {
-                this._allPackets = []
-            } else {
-                throw new Error("only empty traces allowed")
-            }
+            this._allPackets = t.toPackets(this.bus)
             this.refreshFilter()
             this.emit(CHANGE)
         }

@@ -166,4 +166,14 @@ export class Trace {
     resolveDevices(bus: JDBus) {
         this.resolutionBus = bus
     }
+
+    toPackets(bus?: JDBus) {
+        const res: Packet[] = []
+        for (const frame of this.frames)
+            for (const pkt of Packet.fromFrame(frame, undefined, true)) {
+                if (bus) pkt.assignDevice(bus)
+                res.push(pkt)
+            }
+        return res
+    }
 }

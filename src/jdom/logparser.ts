@@ -2,7 +2,6 @@ import { arrayConcatMany, fromHex } from "./utils"
 import { JDBus } from "./bus"
 import { JDFrameBuffer, Packet } from "./packet"
 import { TracePlayer } from "./trace/traceplayer"
-import { Frame } from "./frame"
 import { Trace } from "./trace/trace"
 import { META_TRACE, META_TRACE_DESCRIPTION } from "./constants"
 
@@ -56,29 +55,26 @@ export function parseTrace(contents: string): Trace {
  * @returns
  * @category Trace
  */
-export function parseLogicLog(logcontents: string): Frame[] {
+export function parseLogicLog(logcontents: string): JDFrameBuffer[] {
     if (!logcontents) return undefined
 
-    const res: Frame[] = []
+    const res: JDFrameBuffer[] = []
     let frameBytes = []
     let lastTime = 0
     for (const ln of logcontents.split(/\r?\n/)) {
         let m = /^JD (\d+) ([0-9a-f]+)/i.exec(ln)
         if (m) {
-            res.push({
-                timestamp: parseInt(m[1]),
-                data: fromHex(m[2]),
-            })
+            const f = fromHex(m[2]) as JDFrameBuffer
+            f._jacdac_timestamp = parseInt(m[1])
+            res.push(f)
             continue
         }
 
         // this is format of trace.jd.txt file saved from website
         m = /^([\d\.]+)\s+([0-9a-f]{32,512})\s+/i.exec(ln)
         if (m) {
-            res.push({
-                timestamp: parseFloat(m[1]) | 0,
-                data: fromHex(m[2]),
-            })
+            const f = fromHex(m[2]) as JDFrameBuffer
+            ;(f._jacdac_timestamp = parseFloat(m[1]) | 0), res.push(f)
             continue
         }
 
@@ -96,22 +92,21 @@ Time [s],Value,Parity Error,Framing Error
         if (!m) continue
         const tm = parseFloat(m[1])
         if (lastTime && tm - lastTime > 0.1) {
-            res.push({
-                timestamp: lastTime * 1000,
-                data: new Uint8Array(frameBytes),
-                info: "timeout",
-            })
+            const f = new Uint8Array(frameBytes) as JDFrameBuffer
+            f._jacdac_timestamp = lastTime * 1000
+            f._jacdac_meta = { info: "timeout" }
+            res.push(f)
             frameBytes = []
             lastTime = 0
         }
 
         lastTime = tm
         if (/(framing error|Error)/.test(ln)) {
-            if (frameBytes.length > 0)
-                res.push({
-                    timestamp: lastTime * 1000,
-                    data: new Uint8Array(frameBytes),
-                })
+            if (frameBytes.length > 0) {
+                const f = new Uint8Array(frameBytes) as JDFrameBuffer
+                f._jacdac_timestamp = lastTime * 1000
+                res.push(f)
+            }
             frameBytes = []
             lastTime = 0
         } else {
@@ -131,16 +126,11 @@ Time [s],Value,Parity Error,Framing Error
  */
 export function replayLogicLog(
     bus: JDBus,
-    frames: Frame[],
+    frames: JDFrameBuffer[],
     speed?: number
 ): void {
-    const packets = frames.map(f => {
-        const r = f.data.slice() as JDFrameBuffer
-        r._jacdac_timestamp = f.timestamp
-        return r
-    })
     const player = new TracePlayer(bus, speed)
-    player.trace = new Trace(packets)
-    bus.clear(packets[0]?._jacdac_timestamp)
+    player.trace = new Trace(frames)
+    bus.clear(frames[0]?._jacdac_timestamp)
     player.start()
 }
