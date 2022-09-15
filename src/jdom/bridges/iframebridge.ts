@@ -16,7 +16,7 @@ class IFrameBridge extends JDBridge {
         const { data } = msg
         if (data.channel === "jacdac" && data.type === "messagepacket") {
             const payload: Uint8Array = data.data
-            this.receivePacket(payload)
+            this.receiveFrame(payload)
         }
     }
 

@@ -55,6 +55,11 @@ import { serviceSpecificationFromClassIdentifier } from "./spec"
 const { warn, debug } = console
 
 /**
+ * Represent serialized Packet, or several packets.
+ */
+export type JDFrameBuffer = Uint8Array & { _jacdac_sender?: string }
+
+/**
  * A Jacdac packet
  * @category JDOM
  */
@@ -78,7 +83,7 @@ export class Packet {
         this.key = Packet._nextKey++
     }
 
-    static fromBinary(data: Uint8Array, timestamp?: number) {
+    static fromBinary(data: JDFrameBuffer, timestamp?: number) {
         if (!data || data.length > 252) return undefined
         const p = new Packet()
         p._header = data.slice(0, JD_SERIAL_HEADER_SIZE)
@@ -86,6 +91,7 @@ export class Packet {
             JD_SERIAL_HEADER_SIZE,
             JD_SERIAL_HEADER_SIZE + p.size
         )
+        p.sender = data._jacdac_sender
         if (timestamp !== undefined) p.timestamp = timestamp
         return p
     }
@@ -424,7 +430,7 @@ export class Packet {
         return this.sendCoreAsync(bus)
     }
 
-    static fromFrame(frame: Uint8Array, timestamp: number, skipCrc = false) {
+    static fromFrame(frame: JDFrameBuffer, timestamp: number, skipCrc = false) {
         return frameToPackets(frame, timestamp, skipCrc)
     }
 
@@ -486,7 +492,7 @@ export class Packet {
     }
 }
 
-function frameToPackets(frame: Uint8Array, timestamp: number, skipCrc = false) {
+function frameToPackets(frame: JDFrameBuffer, timestamp: number, skipCrc = false) {
     const size = frame.length < 12 ? 0 : frame[2]
     if (frame.length < size + 12) {
         warn(
@@ -536,6 +542,7 @@ function frameToPackets(frame: Uint8Array, timestamp: number, skipCrc = false) {
             )
             const p = Packet.fromBinary(pkt)
             p.timestamp = timestamp
+            p.sender = frame._jacdac_sender
             res.push(p)
             // only set req_ack flag on first packet - otherwise we would sent multiple acks
             if (res.length > 1) p.requiresAck = false

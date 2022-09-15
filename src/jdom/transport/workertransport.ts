@@ -51,7 +51,7 @@ class WorkerTransport extends Transport {
             case "packet": {
                 const { payload } = data as TransportPacketMessage
                 //debug(`wt: packet`, payload)
-                this.handlePacket(payload)
+                this.handleFrame(payload)
                 break
             }
             case "frame": {

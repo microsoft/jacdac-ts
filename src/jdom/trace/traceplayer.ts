@@ -89,7 +89,7 @@ export class TracePlayer extends JDClient {
             const pkt = packet.clone()
             pkt.replay = true
             pkt.timestamp = this._busStartTimestamp + packetElapsed
-            this.bus.processPacket(pkt)
+            this.bus.processPacket(pkt) // TODO this should use frames
             this._index++
         }
 

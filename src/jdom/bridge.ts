@@ -1,7 +1,7 @@
 import { JDBus } from "./bus"
 import { JDClient } from "./client"
-import { CHANGE, PACKET_PROCESS, PACKET_SEND } from "./constants"
-import { Packet } from "./packet"
+import { CHANGE, FRAME_PROCESS, FRAME_SEND } from "./constants"
+import { JDFrameBuffer } from "./packet"
 import { randomDeviceId } from "./random"
 
 /**
@@ -17,7 +17,7 @@ export abstract class JDBridge extends JDClient {
     constructor(name: string, public readonly infrastructure: boolean = false) {
         super()
         this.bridgeId = `bridge-${name}-` + randomDeviceId()
-        this.handleSendPacket = this.handleSendPacket.bind(this)
+        this.handleSendFrame = this.handleSendFrame.bind(this)
     }
 
     get bus() {
@@ -30,10 +30,10 @@ export abstract class JDBridge extends JDClient {
             this._bus = newBus
             if (this._bus) {
                 this.mount(
-                    this._bus.subscribe(PACKET_PROCESS, this.handleSendPacket)
+                    this._bus.subscribe(FRAME_PROCESS, this.handleSendFrame)
                 )
                 this.mount(
-                    this._bus.subscribe(PACKET_SEND, this.handleSendPacket)
+                    this._bus.subscribe(FRAME_SEND, this.handleSendFrame)
                 )
                 this.mount(this._bus.addBridge(this))
             }
@@ -42,66 +42,31 @@ export abstract class JDBridge extends JDClient {
     }
 
     /**
-     * Receives frame data payload and injects it into the bus
+     * Receives frame (or packet) data payload and injects it into the bus
      * @param data
      * @returns
      */
-    protected receiveFrame(data: Uint8Array) {
+    protected receiveFrame(data: JDFrameBuffer) {
         if (!this._bus) return // disconnected
-
-        // try frame format (sent by hardware, hosts)
-        const pkts = Packet.fromFrame(data, this.bus.timestamp)
-        this.dispatchPackets(pkts)
-    }
-
-    /**
-     * Receives packet data payload and injects it into the bus
-     * @param data
-     * @returns
-     */
-    protected receivePacket(data: Uint8Array) {
-        if (!this._bus) return // disconnected
-
-        // try as a single packet (send by the MakeCode simulator)
-        const pkt = Packet.fromBinary(data, this.bus.timestamp)
-        if (pkt) this.dispatchPackets([pkt])
+        this.receiveFrameOrPacket(data)
     }
 
     /**
      * Decodes and distributes a payload
      * @param data
      */
-    receiveFrameOrPacket(data: Uint8Array, sender?: string) {
-        const timestamp = this.bus.timestamp
-        let pkts = Packet.fromFrame(data, timestamp)
-        if (!pkts.length) {
-            // try as a single packet
-            const pkt = Packet.fromBinary(data, timestamp)
-            pkts = pkt && [pkt]
-        }
-        this.dispatchPackets(pkts, sender)
+    receiveFrameOrPacket(data: JDFrameBuffer, sender?: string) {
+        this.packetProcessed++
+        // send to native bus
+        this.bus.sendFrameAsync(data)
+        // tracing the source of packets to avoid self-resending; send to JS bus
+        this.bus.processFrame(data, sender || this.bridgeId)
     }
 
-    private dispatchPackets(pkts: Packet[], sender?: string) {
-        // bail out if no packets
-        if (!pkts?.length) return
-
-        this.packetProcessed += pkts.length
-
-        for (const pkt of pkts) {
-            // tracing the source of packets to avoid self-resending
-            pkt.sender = sender || this.bridgeId
-            // send to native bus
-            this.bus.sendPacketAsync(pkt)
-            // send to javascript bus
-            this.bus.processPacket(pkt)
-        }
-    }
-
-    private handleSendPacket(pkt: Packet) {
-        if (!this._bus || pkt.sender === this.bridgeId) return
+    private handleSendFrame(frame: JDFrameBuffer) {
+        if (!this._bus || frame._jacdac_sender === this.bridgeId) return
         this.packetSent++
-        this.sendPacket(pkt.toBuffer(), pkt.sender)
+        this.sendPacket(frame, frame._jacdac_sender)
     }
 
     /**

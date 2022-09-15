@@ -55,7 +55,7 @@ export class Trace {
      * @param description description of the trace
      */
     constructor(
-        public packets: Packet[] = [],
+        public packets: Packet[] = [], // TODO this should use frames
         options?: {
             description?: string
             maxLength?: number

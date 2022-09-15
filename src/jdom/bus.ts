@@ -1,4 +1,4 @@
-import { Packet } from "./packet"
+import { JDFrameBuffer, Packet } from "./packet"
 import { JDDevice } from "./device"
 import { strcmp, arrayConcatMany, toHex } from "./utils"
 import {
@@ -55,6 +55,8 @@ import {
     SRV_INFRASTRUCTURE,
     CONNECTION_STATE,
     PACKET_RECEIVE_NO_DEVICE,
+    FRAME_PROCESS,
+    FRAME_SEND,
 } from "./constants"
 import { serviceClass } from "./pretty"
 import { JDNode } from "./node"
@@ -923,6 +925,15 @@ ${dev
         this.setRoleManagerService(service)
     }
 
+    async sendFrameAsync(frame: JDFrameBuffer) {
+        this.emit(FRAME_SEND, frame)
+        await Promise.all(
+            this._transports.map(transport =>
+                transport.sendPacketWhenConnectedAsync(frame)
+            )
+        )
+    }
+
     /**
      * Sends a packet to the bus
      * @param packet packet to send
@@ -938,9 +949,7 @@ ${dev
 
         this.emit(PACKET_SEND, packet)
 
-        await Promise.all(
-            this._transports.map(transport => transport.sendPacketAsync(packet))
-        )
+        await this.sendFrameAsync(packet.toBuffer())
     }
 
     /**
@@ -1199,6 +1208,19 @@ ${dev
      * @internal
      */
     processPacket(pkt: Packet) {
+        this.emit(FRAME_PROCESS, pkt.toBuffer())
+        this.processPacketCore(pkt)
+    }
+
+    processFrame(frame: JDFrameBuffer, sender: string, skipCrc = false) {
+        if (sender) frame._jacdac_sender = sender
+        this.emit(FRAME_PROCESS, frame)
+        for (const pkt of Packet.fromFrame(frame, this.timestamp, skipCrc)) {
+            this.processPacketCore(pkt)
+        }
+    }
+
+    processPacketCore(pkt: Packet) {
         pkt.assignDevice(this)
         if (!pkt.isMultiCommand && !pkt.device) {
             // the device id is unknown dropping

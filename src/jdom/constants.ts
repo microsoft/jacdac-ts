@@ -130,6 +130,9 @@ export const PACKET_INVALID_CRC = "packetInvalidCrc"
 export const PACKET_INVALID_DATA = "packetInvalidData"
 export const PACKET_DATA_NORMALIZE = "packetDataNormalize"
 
+export const FRAME_PROCESS = "frameProcess"
+export const FRAME_SEND = "frameSend"
+
 export const REPORT_RECEIVE = "reportReceive"
 export const REPORT_UPDATE = "reportUpdate"
 export const COMMAND_RECEIVE = "commandReceive"

@@ -16,7 +16,6 @@ import {
 import { JDEventSource } from "../eventsource"
 import { Flags } from "../flags"
 import { Observable } from "../observable"
-import { Packet } from "../packet"
 import { assert, delay, isCancelError } from "../utils"
 
 /**
@@ -185,16 +184,9 @@ export abstract class Transport extends JDEventSource {
         }
     }
 
-    async sendPacketWhenConnectedAsync(p: Uint8Array) {
-        if (this.connected) await this.transportSendPacketAsync(p)
-    }
-
-    async sendPacketAsync(p: Packet) {
-        if (!this.connected) {
-            this.emit(PACKET_SEND_DISCONNECT, p)
-        } else {
-            await this.transportSendPacketAsync(p.toBuffer())
-        }
+    async sendPacketWhenConnectedAsync(frame: Uint8Array) {
+        if (this.connected) await this.transportSendPacketAsync(frame)
+        else this.emit(PACKET_SEND_DISCONNECT, frame)
     }
 
     connect(background?: boolean): Promise<void> {
@@ -315,22 +307,10 @@ export abstract class Transport extends JDEventSource {
         await this.connect(true)
     }
 
-    protected handlePacket(payload: Uint8Array) {
-        const { timestamp } = this.bus
-        this._lastReceivedTime = timestamp
-        const pkt = Packet.fromBinary(payload, timestamp)
-        pkt.sender = this.type
-        this.bus.processPacket(pkt)
-    }
-
     protected handleFrame(payload: Uint8Array, skipCrc = false) {
         const { timestamp } = this.bus
         this._lastReceivedTime = timestamp
-        const pkts = Packet.fromFrame(payload, timestamp, skipCrc)
-        for (const pkt of pkts) {
-            pkt.sender = this.type
-            this.bus.processPacket(pkt)
-        }
+        this.bus.processFrame(payload, this.type, skipCrc)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

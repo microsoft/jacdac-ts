@@ -49,7 +49,7 @@ class WebSocketTransport extends Transport {
             this.ws.onmessage = (ev: MessageEvent<ArrayBuffer>) => {
                 const { data } = ev
                 const buffer = new Uint8Array(data)
-                this.handlePacket(buffer)
+                this.handleFrame(buffer)
             }
         })
     }

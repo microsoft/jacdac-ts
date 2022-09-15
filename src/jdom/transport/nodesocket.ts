@@ -44,7 +44,7 @@ class NodeSocketTransport extends Transport {
                         const pkt = buf.slice(1, endp)
                         if (buf.length > endp) buf = buf.slice(endp)
                         else buf = null
-                        this.handlePacket(pkt)
+                        this.handleFrame(pkt)
                     } else {
                         acc = buf
                         buf = null

@@ -217,10 +217,7 @@ class BluetoothTransport extends Transport {
         else this._rxBuffer = bufferConcat(this._rxBuffer, packetData)
 
         if (this._rxChunkCounter == 0) {
-            const pkt = Packet.fromBinary(this._rxBuffer, this.bus.timestamp)
-            console.debug(`processed packet ${pkt}`)
-            pkt.sender = BLUETOOTH_TRANSPORT
-            this.bus.processPacket(pkt)
+            this.bus.processFrame(this._rxBuffer, BLUETOOTH_TRANSPORT)
             this._rxBuffer = undefined
             this._rxChunkCounter = 0
         }
