@@ -38,7 +38,7 @@ async function handleMessage(event: MessageEvent) {
         case "connect": {
             if (proxy) await proxy.disconnect()
             const { deviceId } = data
-            debug(`jdsw: connecting`)
+            //debug(`jdsw: connecting`)
             proxy = new USBTransportProxy()
             await handleCommand(data, () => proxy.connect(deviceId))
             break
@@ -53,7 +53,7 @@ async function handleMessage(event: MessageEvent) {
             break
         case "disconnect":
             if (proxy) {
-                debug(`jdsw: disconnecting`)
+                //debug(`jdsw: disconnecting`)
                 await handleCommand(data, () => proxy?.disconnect())
             }
             break

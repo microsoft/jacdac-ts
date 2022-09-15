@@ -14,6 +14,7 @@ import {
     TRANSPORT_PULSE_TIMEOUT,
 } from "../constants"
 import { JDEventSource } from "../eventsource"
+import { Flags } from "../flags"
 import { Observable } from "../observable"
 import { Packet } from "../packet"
 import { assert, delay, isCancelError } from "../utils"
@@ -58,11 +59,12 @@ export abstract class Transport extends JDEventSource {
         this._cleanups = [
             options?.connectObservable?.subscribe({
                 next: async () => {
-                    console.debug(
-                        `${this.type}: device detected, connect ${
-                            this.bus?.autoConnect ? "auto" : "manual"
-                        }`
-                    )
+                    if (Flags.diagnostics)
+                        console.debug(
+                            `${this.type}: device detected, connect ${
+                                this.bus?.autoConnect ? "auto" : "manual"
+                            }`
+                        )
                     if (this.bus?.disconnected && this.bus?.autoConnect) {
                         await delay(TRANSPORT_CONNECT_RETRY_DELAY)
                         if (this.bus?.disconnected && this.bus?.autoConnect) {
@@ -176,7 +178,8 @@ export abstract class Transport extends JDEventSource {
             (this._lastReceivedTime || this._connectionTime)
         if (t > TRANSPORT_PULSE_TIMEOUT) {
             this.emit(LOST)
-            console.debug(`${this.type}: lost connection with device`)
+            if (Flags.diagnostics)
+                console.debug(`${this.type}: lost connection with device`)
             if (this._lastReceivedTime !== undefined) await this.reconnect()
             else await this.disconnect(true)
         }
@@ -195,14 +198,16 @@ export abstract class Transport extends JDEventSource {
     }
 
     connect(background?: boolean): Promise<void> {
-        console.debug(
-            `${this.type}: connect ${background ? `(background)` : ""}`
-        )
+        if (Flags.diagnostics)
+            console.debug(
+                `${this.type}: connect ${background ? `(background)` : ""}`
+            )
         if (this.disposed)
             throw new Error("attempted to connect to a disposed transport")
         // already connected
         if (this.connectionState == ConnectionState.Connected) {
-            console.debug(`${this.type}: already connected`)
+            if (Flags.diagnostics)
+                console.debug(`${this.type}: already connected`)
             return Promise.resolve()
         }
 
@@ -210,9 +215,10 @@ export abstract class Transport extends JDEventSource {
         if (!this._connectPromise) {
             // already disconnecting, retry when disconnected
             if (this._disconnectPromise) {
-                console.debug(
-                    `${this.type}: queuing connect after disconnecting`
-                )
+                if (Flags.diagnostics)
+                    console.debug(
+                        `${this.type}: queuing connect after disconnecting`
+                    )
                 const p = this._disconnectPromise
                 this._disconnectPromise = undefined
                 this._connectPromise = p.then(() => this.connect())
@@ -248,19 +254,21 @@ export abstract class Transport extends JDEventSource {
                                 ConnectionState.Disconnected
                             )
                             if (!background) this.errorHandler(CONNECT, e)
-                            else
+                            else if (Flags.diagnostics)
                                 console.debug(
                                     `${this.type}: background connect failed`
                                 )
                         } else {
-                            console.debug(
-                                `${this.type}: connection error aborted in flight`
-                            )
+                            if (Flags.diagnostics)
+                                console.debug(
+                                    `${this.type}: connection error aborted in flight`
+                                )
                         }
                     }))
             }
         } else {
-            console.debug(`${this.type}: connect with existing promise`)
+            if (Flags.diagnostics)
+                console.debug(`${this.type}: connect with existing promise`)
         }
         return this._connectPromise
     }
@@ -273,9 +281,10 @@ export abstract class Transport extends JDEventSource {
         if (!this._disconnectPromise) {
             // connection in progress, wait and disconnect when done
             if (this._connectPromise) {
-                console.debug(
-                    `${this.type}: cancelling connection and disconnect`
-                )
+                if (Flags.diagnostics)
+                    console.debug(
+                        `${this.type}: cancelling connection and disconnect`
+                    )
                 this._connectPromise = undefined
             }
             console.debug(`${this.type}: disconnecting`)
@@ -294,13 +303,14 @@ export abstract class Transport extends JDEventSource {
                     this.setConnectionState(ConnectionState.Disconnected)
                 })
         } else {
-            console.debug(`${this.type}: disconnect with existing promise`)
+            if (Flags.diagnostics)
+                console.debug(`${this.type}: disconnect with existing promise`)
         }
         return this._disconnectPromise
     }
 
     async reconnect() {
-        console.debug(`${this.type}: reconnect`)
+        if (Flags.diagnostics) console.debug(`${this.type}: reconnect`)
         await this.disconnect(true)
         await this.connect(true)
     }

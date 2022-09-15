@@ -1,4 +1,5 @@
 import { errorCode } from "../jdom/error"
+import { Flags } from "../jdom/flags"
 import { Proto } from "../jdom/transport/proto"
 import { USBIO } from "../jdom/transport/usbio"
 import { TransportProxy } from "./transportproxy"
@@ -9,9 +10,9 @@ export class USBTransportProxy implements TransportProxy {
     private hf2: Proto
     constructor() {}
     async connect(deviceId: string) {
-        debug(`jdsw: connect`, { deviceId })
+        if (Flags.diagnostics) debug(`jdsw: connect`, { deviceId })
         if (this.hf2) {
-            debug(`jdsw: cleanup hf2`)
+            if (Flags.diagnostics) debug(`jdsw: cleanup hf2`)
             await this.hf2.disconnectAsync()
             this.hf2 = undefined
         }
@@ -45,7 +46,7 @@ export class USBTransportProxy implements TransportProxy {
         await this.hf2?.sendJDMessageAsync(payload)
     }
     async disconnect() {
-        debug(`jdsw: disconnect`)
+        if (Flags.diagnostics) debug(`jdsw: disconnect`)
         const h = this.hf2
         this.hf2 = undefined
         if (h) await h.disconnectAsync()
