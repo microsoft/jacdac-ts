@@ -82,7 +82,6 @@ export class OutPipe {
         } catch {
             this.free()
         }
-        if (this.hosted && this.device) this.device.bus.processPacket(pkt)
         this._count++
     }
 

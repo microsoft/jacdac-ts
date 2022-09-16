@@ -148,11 +148,7 @@ export class JDServerServiceProvider extends JDServiceProvider {
 
         pkt.deviceIdentifier = this.deviceId
         // compute crc and send
-        const p = pkt.sendCoreAsync(this.bus)
-        // send to current bus
-        this.bus.processPacket(pkt)
-        // return priomise
-        return p
+        return pkt.sendCoreAsync(this.bus)
     }
 
     delayedSend(pkt: Packet, timestamp: number) {

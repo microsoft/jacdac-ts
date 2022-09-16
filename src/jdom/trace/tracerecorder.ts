@@ -1,6 +1,6 @@
 import { JDBus } from "../bus"
 import { JDClient } from "../client"
-import { CHANGE, FRAME_PROCESS, FRAME_SEND, START, STOP } from "../constants"
+import { CHANGE, FRAME_PROCESS, START, STOP } from "../constants"
 import { JDFrameBuffer } from "../packet"
 import { Trace } from "./trace"
 
@@ -25,10 +25,7 @@ export class TraceRecorder extends JDClient {
     start() {
         if (this.recording) return
 
-        this._subscription = this.bus.subscribe(
-            [FRAME_PROCESS, FRAME_SEND],
-            this.handleFrame
-        )
+        this._subscription = this.bus.subscribe(FRAME_PROCESS, this.handleFrame)
         this._trace = new Trace([], { maxLength: this.maxRecordingLength })
         this.emit(START)
         this.emit(CHANGE)
@@ -62,4 +59,3 @@ export class TraceRecorder extends JDClient {
         this.emit(FRAME_PROCESS, pkt)
     }
 }
-

@@ -929,6 +929,8 @@ ${dev
         if (frame._jacdac_timestamp === undefined)
             frame._jacdac_timestamp = this.timestamp
         this.emit(FRAME_SEND, frame)
+        // loopback processing:
+        this.processFrame(frame, frame._jacdac_sender)
         await Promise.all(
             this._transports.map(transport =>
                 transport.sendPacketWhenConnectedAsync(frame)
@@ -1209,13 +1211,16 @@ ${dev
      * @param pkt a jacdac packet
      * @internal
      */
-    processPacket(pkt: Packet) {
+    private processPacket(pkt: Packet) {
+        // this is currently unused - outside code typically calls sendFrameAsync() (possibly via sendPacketAsync())
+        // which in turn calls processFrame()
         const frame = pkt.toBuffer()
         if (!frame._jacdac_timestamp) frame._jacdac_timestamp = this.timestamp
         this.emit(FRAME_PROCESS, pkt.toBuffer())
         this.processPacketCore(pkt)
     }
 
+    // this is called by sendFrameAsync() internally and by transports
     processFrame(frame: JDFrameBuffer, sender: string, skipCrc = false) {
         if (sender) frame._jacdac_sender = sender
         if (frame._jacdac_timestamp === undefined)
@@ -1231,7 +1236,7 @@ ${dev
         }
     }
 
-    processPacketCore(pkt: Packet) {
+    private processPacketCore(pkt: Packet) {
         pkt.assignDevice(this)
         if (!pkt.isMultiCommand && !pkt.device) {
             // the device id is unknown dropping

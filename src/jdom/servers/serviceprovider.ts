@@ -2,7 +2,6 @@ import { JDBus } from "../bus"
 import {
     CHANGE,
     PACKET_PROCESS,
-    PACKET_SEND,
     SELF_ANNOUNCE,
 } from "../constants"
 import { JDEventSource } from "../eventsource"
@@ -47,14 +46,14 @@ export abstract class JDServiceProvider extends JDEventSource {
     protected start() {
         if (this._bus) {
             this._bus.on(SELF_ANNOUNCE, this.handleSelfAnnounce)
-            this._bus.on([PACKET_PROCESS, PACKET_SEND], this.handlePacket)
+            this._bus.on(PACKET_PROCESS, this.handlePacket)
         }
     }
 
     protected stop() {
         if (this._bus) {
             this._bus.off(SELF_ANNOUNCE, this.handleSelfAnnounce)
-            this._bus.off([PACKET_PROCESS, PACKET_SEND], this.handlePacket)
+            this._bus.off(PACKET_PROCESS, this.handlePacket)
             this._bus = undefined
         }
     }

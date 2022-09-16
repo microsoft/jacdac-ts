@@ -4,13 +4,11 @@ import {
     CHANGE,
     DEVICE_ANNOUNCE,
     FRAME_PROCESS,
-    FRAME_SEND,
     META_ACK,
     META_GET,
     META_NOT_IMPLEMENTED,
     META_PIPE,
     PACKET_PROCESS,
-    PACKET_SEND,
     SystemCmd,
     TRACE_FILTER_HORIZON,
 } from "../constants"
@@ -77,12 +75,8 @@ export class TraceView extends JDClient {
             if (!this.silent) this.setFilteredPackets()
         }, throttleDelay)
 
-        this.mount(
-            this.bus.subscribe([FRAME_PROCESS, FRAME_SEND], this.handleFrame)
-        )
-        this.mount(
-            this.bus.subscribe([PACKET_PROCESS, PACKET_SEND], this.handlePacket)
-        )
+        this.mount(this.bus.subscribe(FRAME_PROCESS, this.handleFrame))
+        this.mount(this.bus.subscribe(PACKET_PROCESS, this.handlePacket))
         this.mount(this.bus.subscribe(DEVICE_ANNOUNCE, this.handleFilterUpdate))
 
         this.filter = filter

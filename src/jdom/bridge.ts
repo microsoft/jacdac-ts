@@ -1,6 +1,6 @@
 import { JDBus } from "./bus"
 import { JDClient } from "./client"
-import { CHANGE, FRAME_PROCESS, FRAME_SEND } from "./constants"
+import { CHANGE, FRAME_PROCESS } from "./constants"
 import { JDFrameBuffer } from "./packet"
 import { randomDeviceId } from "./random"
 
@@ -33,9 +33,6 @@ export abstract class JDBridge extends JDClient {
                 this.mount(
                     this._bus.subscribe(FRAME_PROCESS, this.handleSendFrame)
                 )
-                this.mount(
-                    this._bus.subscribe(FRAME_SEND, this.handleSendFrame)
-                )
                 this.mount(this._bus.addBridge(this))
             }
             this.emit(CHANGE)
@@ -49,11 +46,10 @@ export abstract class JDBridge extends JDClient {
     receiveFrameOrPacket(data: JDFrameBuffer, sender?: string) {
         this.packetProcessed++
         if (sender) data._jacdac_sender = sender
+        if (!data._jacdac_sender) data._jacdac_sender = this.bridgeId
         this.currFrame = data // block self-loops
-        // send to native bus
+        // send to native bus and process on JS bus
         this.bus.sendFrameAsync(data)
-        // tracing the source of packets to avoid self-resending; send to JS bus
-        this.bus.processFrame(data, sender || this.bridgeId)
         this.emit(FRAME_PROCESS, data)
         this.currFrame = null
     }
