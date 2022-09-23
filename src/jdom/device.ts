@@ -883,7 +883,7 @@ export class JDDevice extends JDNode {
 
     /**
      * Tries to retrive the product identifier from the device
-     * @param retry number of devices
+     * @param retry number of attempts
      * @returns promise that returns product identifier if received
      * @category Control
      */
@@ -921,6 +921,20 @@ export class JDDevice extends JDNode {
             uptime = v / 1000 + this.bus.timestamp - reg.lastDataTimestamp
         }
         return uptime
+    }
+
+    /**
+     * Tries to retrive the firmware version from the device
+     * @param retry number of attempts
+     * @returns promise that returns firmware if received
+     * @category Control
+     */
+    async resolveFirmwareVersion(retry = 0): Promise<string> {
+        const register = this.service(0)?.register(ControlReg.FirmwareVersion)
+        if (!register) return undefined
+        while (retry-- >= 0 && register.data === undefined)
+            await register.refresh(true)
+        return register.stringValue
     }
 
     /**
