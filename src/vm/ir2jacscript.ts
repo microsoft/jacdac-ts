@@ -1,7 +1,7 @@
 import jsep from "jsep"
 import { camelize } from "../../jacdac-spec/spectool/jdspec"
+import { throwError } from "../jdom/error"
 import { serviceSpecificationFromClassIdentifier } from "../jdom/spec"
-import { throwError } from "../jdom/utils"
 import { VMBase, VMCommand, VMHandler, VMIfThenElse, VMProgram } from "./ir"
 
 // TODO:

@@ -13,10 +13,11 @@ import {
     TRANSPORT_CONNECT_RETRY_DELAY,
     TRANSPORT_PULSE_TIMEOUT,
 } from "../constants"
+import { isCancelError } from "../error"
 import { JDEventSource } from "../eventsource"
 import { Flags } from "../flags"
 import { Observable } from "../observable"
-import { assert, delay, isCancelError } from "../utils"
+import { assert, delay } from "../utils"
 
 /**
  * Connection states for transports

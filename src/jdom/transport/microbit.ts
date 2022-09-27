@@ -10,7 +10,6 @@ import {
     fromHex,
     bufferConcat,
     fromUTF8,
-    isCancelError,
 } from "../utils"
 import { Flags } from "../flags"
 import {
@@ -19,6 +18,7 @@ import {
     ERROR_MICROBIT_UNKNOWN,
     ERROR_MICROBIT_V1,
 } from "../constants"
+import { errorCode, isCancelError } from "../error"
 
 export const MICROBIT_V2_VENDOR_ID = 3368
 export const MICROBIT_V2_PRODUCT_ID = 516
@@ -536,7 +536,7 @@ export class CMSISProto implements Proto {
 
         /* async */ this.xchgLoop().catch(e => {
             if (!isCancelError(e)) console.debug(e)
-            this.error(e?.message || "an error occured")
+            this.error(e?.message || "an error occured", errorCode(e))
         })
     }
 }

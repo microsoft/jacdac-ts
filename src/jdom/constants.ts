@@ -220,11 +220,6 @@ export const BLUETOOTH_JACDAC_DIAG_CHARACTERISTIC =
 export const TRANSPORT_CONNECT_RETRY_DELAY = 500
 export const TRANSPORT_PULSE_TIMEOUT = 60000 // don't interfere with manual flashing of devices
 
-export const ERROR_MICROBIT_V1 = "microbit/v1-not-supported"
-export const ERROR_MICROBIT_UNKNOWN = "microbit/unknown-hardware-revision"
-export const ERROR_MICROBIT_JACDAC_MISSING = "microbit/jacdac-missing"
-export const ERROR_MICROBIT_INVALID_MEMORY = "microbit/invalid-memory"
-
 export const ERROR_TRANSPORT_DEVICE_LOCKED = "transport/device-locked"
 
 export const ROLE_BOUND = "roleBound"
@@ -234,8 +229,14 @@ export const BOUND = "bound"
 export const UNBOUND = "unbound"
 
 export const JACDAC_ERROR = "JacdacError"
-export const TIMEOUT_ERROR_CODE = "Timeout"
-export const TRANSPORT_CLOSED_ERROR_CODE = "TransportClosed"
+export const ERROR_TIMEOUT = "timeout"
+export const ERROR_TRANSPORT_CLOSED = "transport/closed"
+export const ERROR_MICROBIT_V1 = "microbit/v1-not-supported"
+export const ERROR_MICROBIT_UNKNOWN = "microbit/unknown-hardware-revision"
+export const ERROR_MICROBIT_JACDAC_MISSING = "microbit/jacdac-missing"
+export const ERROR_MICROBIT_INVALID_MEMORY = "microbit/invalid-memory"
+export const ERROR_TRANSPORT_HF2_NOT_SUPPORTED = "transport/hf2-not-supported"
+export const ERROR_NO_ACK = "no-ack"
 
 export const ROLE_QUERY_SERVICE_OFFSET = "srvo"
 export const ROLE_QUERY_SERVICE_INDEX = "srvi"

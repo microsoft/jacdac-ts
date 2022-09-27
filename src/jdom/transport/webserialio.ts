@@ -1,14 +1,8 @@
 import { HF2Proto, HF2_IO } from "./hf2"
 import { Proto } from "./proto"
-import {
-    assert,
-    bufferConcat,
-    delay,
-    isCancelError,
-    throwError,
-} from "../utils"
+import { assert, bufferConcat, delay } from "../utils"
 import { Flags } from "../flags"
-import { JDError, errorCode } from "../error"
+import { JDError, errorCode, isCancelError, throwError } from "../error"
 import { JDBus } from "../bus"
 import { JdUsbProto } from "./jdusb"
 
@@ -18,7 +12,7 @@ export class WebSerialIO implements HF2_IO {
     ready = false
     private writer: WritableStreamDefaultWriter<Uint8Array>
     private reader: ReadableStreamDefaultReader<Uint8Array>
-    isFreeFlowing: boolean = true
+    isFreeFlowing = true
 
     constructor(readonly bus: JDBus) {}
 
@@ -66,7 +60,9 @@ export class WebSerialIO implements HF2_IO {
     }
 
     error(msg: string, code?: string) {
-        const e = new JDError(`serial device ${this.devInfo()} (${msg})`, code)
+        const e = new JDError(`serial device ${this.devInfo()} (${msg})`, {
+            code,
+        })
         this.onError(e)
     }
 
@@ -190,7 +186,8 @@ export class WebSerialIO implements HF2_IO {
         await this.tryReconnectAsync()
         if (!this.dev && !background) await this.requestDeviceAsync(deviceId)
         // background call and no device, just give up for now
-        if (!this.dev && background) throwError("device not paired", true)
+        if (!this.dev && background)
+            throwError("device not paired", { cancel: true })
 
         // let's connect
         await this.openDeviceAsync()
@@ -209,7 +206,7 @@ export class WebSerialIO implements HF2_IO {
     }
 
     private async openDeviceAsync() {
-        if (!this.dev) throwError("device not found", true)
+        if (!this.dev) throwError("device not found", { cancel: true })
 
         await this.dev.open({
             baudRate: 1000000,

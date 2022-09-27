@@ -1,20 +1,18 @@
 import { Proto } from "./proto"
 import {
-    throwError,
     PromiseQueue,
-    write16,
     read16,
     crc,
     bufferConcat,
     delay,
     bufferEq,
-    bufferToString,
     uint8ArrayToString,
     fromUTF8,
     read32,
 } from "../utils"
 import { HF2_IO } from "./hf2"
 import {
+    ERROR_TRANSPORT_HF2_NOT_SUPPORTED,
     JD_DEVICE_IDENTIFIER_BROADCAST_HIGH_MARK,
     JD_FRAME_FLAG_COMMAND,
     JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS,
@@ -25,6 +23,7 @@ import {
     UsbBridgeQByte,
 } from "../constants"
 import { jdpack } from "../pack"
+import { throwError } from "../error"
 
 export class JdUsbProto implements Proto {
     private lock = new PromiseQueue()
@@ -282,7 +281,9 @@ export class JdUsbProto implements Proto {
                     }
                 }
             }
-            throwError("JDUSB: can't connect, no HF2")
+            throwError("JDUSB: can't connect, no HF2", {
+                code: ERROR_TRANSPORT_HF2_NOT_SUPPORTED,
+            })
         })
     }
 

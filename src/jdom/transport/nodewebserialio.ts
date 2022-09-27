@@ -1,14 +1,8 @@
 import { HF2Proto, HF2_IO } from "./hf2"
 import { Proto } from "./proto"
-import {
-    assert,
-    bufferConcat,
-    delay,
-    isCancelError,
-    throwError,
-} from "../utils"
+import { assert, bufferConcat, delay } from "../utils"
 import { Flags } from "../flags"
-import { JDError, errorCode } from "../error"
+import { JDError, errorCode, isCancelError, throwError } from "../error"
 import { WebSerialTransport } from "./webserial"
 import { Transport } from "./transport"
 import { Observable } from "../observable"
@@ -61,7 +55,7 @@ class NodeWebSerialIO implements HF2_IO {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private dev: any
     private port: Port
-    isFreeFlowing: boolean = true
+    isFreeFlowing = true
 
     /**
      *
@@ -110,7 +104,9 @@ class NodeWebSerialIO implements HF2_IO {
     }
 
     error(msg: string, code?: string) {
-        const e = new JDError(`serial device ${this.devInfo()} (${msg})`, code)
+        const e = new JDError(`serial device ${this.devInfo()} (${msg})`, {
+            code,
+        })
         this.onError(e)
     }
 
@@ -182,8 +178,8 @@ class NodeWebSerialIO implements HF2_IO {
     async connectAsync(background: boolean, deviceId?: string) {
         await this.tryReconnectAsync(deviceId)
         if (!this.dev && background)
-            throwError("can't find suitable device", true)
-        if (!this.dev) throwError("device not found", true)
+            throwError("can't find suitable device", { cancel: true })
+        if (!this.dev) throwError("device not found", { cancel: true })
         console.debug(`serial: found ${this.devInfo()}`)
 
         const jdusb = new JdUsbProto(this)

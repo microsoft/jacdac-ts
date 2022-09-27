@@ -40,8 +40,9 @@ import {
     SRV_UNIQUE_BRAIN,
     CMD_EVENT_COUNTER_MASK,
     SRV_BOOTLOADER,
+    ERROR_NO_ACK,
 } from "./constants"
-import { read32, bufferEq, setAckError, read16 } from "./utils"
+import { read32, bufferEq, read16 } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
 import { JDBus } from "./bus"
 import { JDService } from "./service"
@@ -54,6 +55,7 @@ import { JDEventSource } from "./eventsource"
 import { ServiceFilter } from "./filters/servicefilter"
 import { randomDeviceId } from "./random"
 import { Flags } from "./flags"
+import { JDError } from "./error"
 
 /**
  * Pipe information
@@ -1043,8 +1045,9 @@ export class JDDevice extends JDNode {
                 retriesLeft: 4,
                 okCb: resolve,
                 errCb: () => {
-                    const e = new Error("No ACK for " + pkt.toString())
-                    setAckError(e)
+                    const e = new JDError("no ACK for " + pkt.toString(), {
+                        code: ERROR_NO_ACK,
+                    })
                     reject(e)
                 },
             }
