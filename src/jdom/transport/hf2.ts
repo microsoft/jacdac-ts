@@ -1,6 +1,5 @@
 import { Proto } from "./proto"
 import {
-    throwError,
     assert,
     PromiseBuffer,
     PromiseQueue,
@@ -12,8 +11,8 @@ import {
     read32,
     bufferToString,
 } from "../utils"
-import { HF2_TIMEOUT, TIMEOUT_ERROR_CODE } from "../constants"
-import { errorCode } from "../error"
+import { HF2_TIMEOUT, ERROR_TIMEOUT } from "../constants"
+import { errorCode, throwError } from "../error"
 
 // see https://github.com/microsoft/uf2/blob/main/hf2.md for full spec
 export const HF2_DEVICE_MAJOR = 42
@@ -215,7 +214,7 @@ export class HF2Proto implements Proto {
                     console.debug(`hf2 error: ${e.message}; cmd=${cmd}`)
                     if (this.io) {
                         const code = errorCode(e)
-                        if (code !== TIMEOUT_ERROR_CODE) this.error(e)
+                        if (code !== ERROR_TIMEOUT) this.error(e)
                     }
                     return null
                 })

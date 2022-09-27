@@ -1,4 +1,4 @@
-import { TIMEOUT_ERROR_CODE } from "./constants"
+import { ERROR_TIMEOUT } from "./constants"
 import { JDError } from "./error"
 import { Flags } from "./flags"
 
@@ -6,29 +6,6 @@ export function arrayify<T>(value: T | T[]): T[] {
     if (value === undefined || value === null) return undefined
     if (Array.isArray(value)) return value
     else return [value]
-}
-
-export function throwError(msg: string, cancel?: boolean) {
-    const e = new Error(msg)
-    if (cancel)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (e as any).__cancel = true
-    throw e
-}
-
-export function isCancelError(e: Error) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return !!(e as any)?.__cancel
-}
-
-export function setAckError(e: Error) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (e) (e as any).__ack = true
-}
-
-export function isAckError(e: Error) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return !!(e as any)?.__ack
 }
 
 export function delay<T>(millis: number, value?: T): Promise<T | undefined> {
@@ -215,7 +192,11 @@ export class PromiseBuffer<T> {
                         const idx = this.waiting.indexOf(f)
                         if (idx >= 0) {
                             this.waiting.splice(idx, 1)
-                            reject(new JDError("Timeout", TIMEOUT_ERROR_CODE))
+                            reject(
+                                new JDError("Timeout", {
+                                    code: ERROR_TIMEOUT,
+                                })
+                            )
                         }
                     })
                 }

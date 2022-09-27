@@ -5,7 +5,6 @@ import {
     bufferConcat,
     toHex,
     fromHex,
-    throwError,
     read32,
     read16,
     write32,
@@ -51,6 +50,7 @@ import {
 import { SRV_CONTROL, SystemCmd } from "../../jacdac-spec/dist/specconstants"
 import { jdpack, jdunpack, PackedValues } from "./pack"
 import { serviceSpecificationFromClassIdentifier } from "./spec"
+import { throwError } from "./error"
 
 const { warn, debug } = console
 

@@ -6,9 +6,10 @@ import {
 } from "./microbit"
 import { Observable } from "../observable"
 import { Proto } from "./proto"
-import { assert, delay, isCancelError, throwError } from "../utils"
+import { assert, delay } from "../utils"
 import { Flags } from "../flags"
-import { JDError, errorCode } from "../error"
+import { JDError, errorCode, isCancelError, throwError } from "../error"
+import { ERROR_TRANSPORT_HF2_NOT_SUPPORTED } from "../constants"
 
 export const USB_FILTERS = {
     filters: [
@@ -128,7 +129,7 @@ export class USBIO implements HF2_IO {
     error(msg: string, code?: string) {
         const e = new JDError(
             `device ${this.dev ? this.dev.productName : "n/a"} (${msg})`,
-            code
+            { code }
         )
         this.onError(e)
     }
@@ -248,7 +249,8 @@ export class USBIO implements HF2_IO {
         await this.tryReconnectAsync(deviceId)
         if (!this.dev && !background) await this.requestDeviceAsync()
         // background call and no device, just give up for now
-        if (!this.dev && background) throwError("usb: device not paired", true)
+        if (!this.dev && background)
+            throwError("usb: device not paired", { cancel: true })
 
         // let's connect
         await this.openDeviceAsync()
@@ -265,8 +267,11 @@ export class USBIO implements HF2_IO {
     }
 
     private async openDeviceAsync() {
-        if (!this.dev) throwError("usb: device not found", true)
-        if (!this.checkDevice()) throwError("usb: device does not support HF2")
+        if (!this.dev) throwError("usb: device not found", { cancel: true })
+        if (!this.checkDevice())
+            throwError("usb: device does not support HF2", {
+                code: ERROR_TRANSPORT_HF2_NOT_SUPPORTED,
+            })
 
         await this.dev.open()
         await this.dev.selectConfiguration(1)

@@ -11,11 +11,12 @@ import {
 } from "./constants"
 import { Packet } from "./packet"
 import { JDBus } from "./bus"
-import { signal, fromHex, throwError, toHex, assert } from "./utils"
+import { signal, fromHex, toHex, assert } from "./utils"
 import { JDClient } from "./client"
 import { jdpack, jdunpack } from "./pack"
 import { randomUInt } from "./random"
 import { JDService } from "./service"
+import { throwError } from "./error"
 
 const { warn } = console
 
