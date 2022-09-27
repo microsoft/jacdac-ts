@@ -1,4 +1,8 @@
-import { ERROR_NO_ACK, ERROR_TRANSPORT_DEVICE_LOCKED, JACDAC_ERROR } from "./constants"
+import {
+    ERROR_NO_ACK,
+    ERROR_TRANSPORT_DEVICE_LOCKED,
+    JACDAC_ERROR,
+} from "./constants"
 
 export interface JDErrorOptions {
     /**
