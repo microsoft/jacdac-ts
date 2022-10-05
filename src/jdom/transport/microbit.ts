@@ -171,13 +171,6 @@ export class CMSISProto implements Proto {
         return uint8ArrayToString(ss)
     }
 
-    private dapDelay(micros: number) {
-        const cmd = [0x09, 0, 0]
-        if (micros > 0xffff) this.error("too large delay")
-        write16(cmd, 1, micros)
-        return this.talkAsync(cmd)
-    }
-
     private async setBaudRate() {
         const setBaud = [0x82, 0, 0, 0, 0]
         write32(setBaud, 1, 115200)
@@ -254,7 +247,12 @@ export class CMSISProto implements Proto {
 
             if (await this.readSerial()) numev++
 
-            if (numev == 0) await this.dapDelay(1000)
+            if (numev == 0) {
+                // no data on either side, wait as little as possible
+                // the browser will eventually throttle this call
+                // https://developer.mozilla.org/en-US/docs/Web/API/setTimeout#reasons_for_delays_longer_than_specified
+                await delay(0)
+            }
         }
     }
 
