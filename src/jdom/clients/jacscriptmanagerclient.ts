@@ -34,7 +34,7 @@ export class JacscriptManagerClient extends JDServiceClient {
     static PROGRAM_CHANGE = "programChange"
     static PROGRAM_PANIC = "programPanic"
 
-    async deployBytecode(
+    deployBytecode(
         bytecode: Uint8Array,
         onProgress?: (p: number) => void
     ) {

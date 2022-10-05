@@ -18,8 +18,6 @@ import { randomUInt } from "./random"
 import { JDService } from "./service"
 import { throwError } from "./error"
 
-const { warn } = console
-
 export class OutPipe {
     private _count = 0
 
@@ -45,11 +43,11 @@ export class OutPipe {
     }
 
     send(buf: Uint8Array) {
-        return this.sendData(buf, 0)
+        return this.sendData(buf, 0, false)
     }
 
     sendMeta(buf: Uint8Array) {
-        return this.sendData(buf, PIPE_METADATA_MASK)
+        return this.sendData(buf, PIPE_METADATA_MASK, false)
     }
 
     async respondForEach<T>(
@@ -65,10 +63,10 @@ export class OutPipe {
         await this.close()
     }
 
-    private async sendData(buf: Uint8Array, flags: number) {
+    private async sendData(buf: Uint8Array, flags: number, closing: boolean) {
         if (!this.device) {
-            warn("sending data over closed pipe")
-            return
+            if (closing) return // ignore as device may be already gone
+            else throwError("sending data over closed pipe")
         }
         const cmd =
             (this.port << PIPE_PORT_SHIFT) |
@@ -80,8 +78,10 @@ export class OutPipe {
             // this needs await - we don't want to send further pipe packets before the current
             // one is ACKed
             await this.device.sendPktWithAck(pkt)
-        } catch {
+        } catch (e) {
             this.free()
+            if (closing) console.debug(e)
+            else throw e
         }
         this._count++
     }
@@ -92,8 +92,11 @@ export class OutPipe {
     }
 
     async close() {
-        await this.sendData(new Uint8Array(0), PIPE_CLOSE_MASK)
-        this.free()
+        try {
+            await this.sendData(new Uint8Array(0), PIPE_CLOSE_MASK, true)
+        } finally {
+            this.free()
+        }
     }
 
     async sendBytes(data: Uint8Array) {
@@ -126,12 +129,7 @@ export class OutPipe {
             await pipe.send(data.slice(i, i + chunkSize))
             onProgress?.(0.05 + (i / data.length) * 0.9)
         }
-        try {
-            await pipe.close()
-        } catch (e) {
-            // the device may restart before we manage to close
-            console.debug(e)
-        }
+        await pipe.close()
         onProgress?.(1)
     }
 }

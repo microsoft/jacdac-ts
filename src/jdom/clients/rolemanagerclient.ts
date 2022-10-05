@@ -211,7 +211,7 @@ export class RoleManagerClient extends JDServiceClient {
     }
 
     private async collectRoles() {
-        this.log(`collecting roles`)
+        //this.log(`collecting roles`)
         this._lastRefreshAttempt = this.bus.timestamp
         const previousRolesHash = JSON.stringify(this._roles)
         try {
