@@ -386,7 +386,8 @@ export class CMSISProto implements Proto {
         } else {
             const addrend = ((addr >> pageShift) + 1) << pageShift
             const len = (addrend - addr) >> 2
-            const b0 = await this.readWords(addr, len)
+            const b0 = await this.readWords(addr, len, jdmode)
+            if (jdmode && b0.length < len) return b0
             const b1 = await this.readWords(addrend, count - len)
             const res = new Uint32Array(count)
             res.set(b0)
