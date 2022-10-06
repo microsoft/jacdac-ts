@@ -4,7 +4,6 @@ import {
     delay,
     PromiseQueue,
     write32,
-    write16,
     read32,
     uint8ArrayToString,
     fromHex,
