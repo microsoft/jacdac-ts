@@ -23,6 +23,10 @@ import { errorCode, isCancelError } from "../error"
 export const MICROBIT_V2_VENDOR_ID = 3368
 export const MICROBIT_V2_PRODUCT_ID = 516
 
+// it seems writing via debugger interface at page boundry doesn't work
+// the page is at most 4096; use 1024 (1 << 10) just in case
+const pageShift = 10
+
 interface SendItem {
     buf: Uint8Array
     cb: () => void
@@ -245,7 +249,8 @@ export class CMSISProto implements Proto {
                 }
             }
 
-            if (await this.readSerial()) numev++
+            // Disable serial - it interferes with other consoles
+            // if (await this.readSerial()) numev++
 
             if (numev == 0) {
                 // no data on either side, wait as little as possible
@@ -307,6 +312,19 @@ export class CMSISProto implements Proto {
     }
 
     private async writeWords(addr: number, data: Uint32Array) {
+        const pstart = addr >> pageShift
+        const pend = (addr + data.length * 4 - 1) >> pageShift
+        if (pstart == pend) {
+            return this.writeWordsCore(addr, data)
+        } else {
+            const addrend = ((addr >> pageShift) + 1) << pageShift
+            const len = (addrend - addr) >> 2
+            await this.writeWords(addr, data.slice(0, len))
+            await this.writeWords(addrend, data.slice(len))
+        }
+    }
+
+    private async writeWordsCore(addr: number, data: Uint32Array) {
         await this.setupTAR(addr)
 
         const MAX = 0xe
@@ -357,7 +375,28 @@ export class CMSISProto implements Proto {
         return new Uint8Array(b.buffer)
     }
 
-    private async readWords(addr: number, count: number, jdmode = false) {
+    private async readWords(
+        addr: number,
+        count: number,
+        jdmode = false
+    ): Promise<Uint32Array> {
+        const pstart = addr >> pageShift
+        const pend = (addr + count * 4 - 1) >> pageShift
+        if (pstart == pend) {
+            return this.readWordsCore(addr, count, jdmode)
+        } else {
+            const addrend = ((addr >> pageShift) + 1) << pageShift
+            const len = (addrend - addr) >> 2
+            const b0 = await this.readWords(addr, len)
+            const b1 = await this.readWords(addrend, count - len)
+            const res = new Uint32Array(count)
+            res.set(b0)
+            res.set(b1, len)
+            return res
+        }
+    }
+
+    private async readWordsCore(addr: number, count: number, jdmode: boolean) {
         await this.setupTAR(addr)
         const MAX = 0xe
         const res = new Uint32Array(count)
