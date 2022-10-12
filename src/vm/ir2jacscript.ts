@@ -15,8 +15,7 @@ export interface JacscriptProgram {
 
 export function toJacscript(p: VMProgram): JacscriptProgram {
     if (!p) return null
-    const { roles, serverRoles, handlers } = p
-    if (serverRoles?.length) throwError("server roles not supported")
+    const { roles, handlers } = p
 
     const program: string[] = []
     const debug: string[] = []

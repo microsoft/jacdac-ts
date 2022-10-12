@@ -20,7 +20,6 @@ export function exprVisitor(
 
 interface Resolve {
     role: string
-    client: boolean
     spec: jdspec.ServiceSpec
     rest: jsep.Expression
 }
@@ -34,7 +33,6 @@ export class SpecSymbolResolver {
         private readonly spec: jdspec.ServiceSpec,
         private readonly role2spec: (role: string) => {
             spec: jdspec.ServiceSpec
-            client: boolean
         },
         private readonly error: (m: string) => void
     ) {
@@ -64,7 +62,6 @@ export class SpecSymbolResolver {
             ret = {
                 role: this.spec.shortName,
                 spec: this.spec,
-                client: true,
                 rest: e,
             }
         } else if (e.type === "Identifier") {
@@ -79,11 +76,10 @@ export class SpecSymbolResolver {
             if (!this.role2spec(obj.name)) {
                 this.error(`no specification found for ${obj.name}`)
             }
-            const { spec, client } = this.role2spec(obj.name)
+            const { spec } = this.role2spec(obj.name)
             ret = {
                 role: obj.name,
                 spec,
-                client,
                 rest: (e as jsep.MemberExpression).property,
             }
         }
@@ -262,7 +258,7 @@ export class VMChecker {
         let theCommand: jdspec.PacketInfo = undefined
         if (cmdIndex < 0) {
             if (root.callee.type === "MemberExpression") {
-                const { role, spec, rest, client } = this.resolver.specResolve(
+                const { role, spec, rest } = this.resolver.specResolve(
                     root.callee as jsep.MemberExpression
                 )
                 const [command, _] = this.resolver.destructAccessPath(rest)
@@ -274,9 +270,7 @@ export class VMChecker {
                 } else {
                     // we have a spec, now look for command
                     const commands = spec.packets?.filter(
-                        pkt =>
-                            (client && pkt.kind === "command") ||
-                            (!client && pkt.kind === "event")
+                        pkt => pkt.kind === "command"
                     )
                     theCommand = commands.find(c => c?.name === command)
                     if (!theCommand) {
@@ -396,9 +390,8 @@ export class VMChecker {
                         `events function expects a list of service events`
                     )
                 else {
-                    ;(arg as jsep.ArrayExpression).elements.forEach(e =>
-                        this.resolver.lookupEvent(e)
-                    )
+                    const aes = arg as jsep.ArrayExpression
+                    aes.elements.forEach(e => this.resolver.lookupEvent(e))
                 }
             } else if (argType === "number" || argType === "boolean") {
                 this.visitReplace(root, arg, eventSymTable)

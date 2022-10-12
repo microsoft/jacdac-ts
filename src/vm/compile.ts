@@ -59,8 +59,8 @@ function handlerVisitor(
     }
 }
 
-export function compileProgram({ roles, serverRoles, handlers }: VMProgram) {
-    const newProgram: VMProgram = { roles, serverRoles, handlers: [] }
+export function compileProgram({ roles, handlers }: VMProgram) {
+    const newProgram: VMProgram = { roles, handlers: [] }
     // process start blocks
     handlers.forEach(startBlock)
     // remove if-then-else
@@ -174,22 +174,17 @@ export interface RoleEvent {
 
 export const getServiceFromRole = (info: VMProgram) => (role: string) => {
     // lookup in roles first
-    let roleFound = info.roles.find(pair => pair.role === role)
-    let client = true
-    if (!roleFound) {
-        roleFound = info.serverRoles.find(pair => pair.role === role)
-        client = false
-    }
+    const roleFound = info.roles.find(pair => pair.role === role)
     if (roleFound) {
         // must succeed
         const spec = serviceSpecificationFromClassIdentifier(
             roleFound.serviceClass
         )
         assert(!!spec, `service class ${roleFound.serviceClass} not resolved`)
-        return { spec, client }
+        return { spec }
     } else {
         const spec = serviceSpecificationFromName(role)
-        return { spec, client: true }
+        return { spec }
     }
 }
 
