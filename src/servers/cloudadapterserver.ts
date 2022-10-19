@@ -16,7 +16,7 @@ import { JDRegisterServer } from "../jdom/servers/registerserver"
 import { JDServerOptions, JDServiceServer } from "../jdom/servers/serviceserver"
 
 export const UPLOAD = "upload"
-export const UPLOAD_BIN = "upload"
+export const UPLOAD_BIN = "uploadBin"
 export const CLOUD_COMMAND = "cloudCommand"
 
 export interface CloudAdapterUploadRequest {
