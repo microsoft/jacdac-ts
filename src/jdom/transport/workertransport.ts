@@ -65,6 +65,7 @@ class WorkerTransport extends Transport {
                 const { id, error } = data
                 const { resolve, reject } = this.pending[id] || {}
                 if (resolve) {
+                    delete this.pending[id]
                     if (error) reject(error)
                     else resolve(undefined)
                 }
