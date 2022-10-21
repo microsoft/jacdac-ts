@@ -155,6 +155,7 @@ import { DualMotorsServer } from "./dualmotorsserver"
 import { CloudAdapterServer } from "./cloudadapterserver"
 import { SatNavServer } from "./satnavserver"
 import { PlanarPositionServer } from "./planarpositionserver"
+import { randomDeviceId } from "../jacdac"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     readingValues: [21.5],
@@ -1777,15 +1778,30 @@ export function addServiceProviderDefinition(def: ServiceProviderDefinition) {
     if (!providers.find(p => p.name === def.name)) providers.push(def)
 }
 
+function fingerPrint() {
+    try {
+        if (typeof self !== "undefined" && self.localStorage) {
+            const key = "jacdac_device_fingerprint"
+            const f =
+                self.localStorage[key] ||
+                (self.localStorage[key] = randomDeviceId())
+            return f
+        }
+    } catch (e) {
+        return ""
+    }
+}
+
 function stableSimulatorDeviceId(
     bus: JDBus,
     template: string,
     salt: string
 ): string {
+    const fg = fingerPrint()
     const others = bus.serviceProviders().filter(sp => sp.template === template)
     const word0 = hash(stringToUint8Array(salt + template + others.length), 32)
     const word1 = hash(
-        stringToUint8Array(salt + template + others.length + 1),
+        stringToUint8Array(salt + fg + template + others.length + 1),
         32
     )
     const id = toFullHex([word0, word1])
