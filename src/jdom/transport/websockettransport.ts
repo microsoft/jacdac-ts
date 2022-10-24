@@ -1,5 +1,5 @@
 import { FRAME_SEND_DISCONNECT, WEBSOCKET_TRANSPORT } from "../constants"
-import { Transport,  TransportOptions } from "./transport"
+import { Transport, TransportOptions } from "./transport"
 
 const RECONNECT_TIMEOUT = 5000
 
@@ -19,7 +19,7 @@ export function isWebSocketTransportSupported() {
     return typeof WebSocket !== "undefined"
 }
 
-class WebSocketTransport extends Transport {
+export class WebSocketTransport extends Transport {
     private readonly protocols: string | string[]
     private ws: WebSocket
     private lastConnectTimestamp = 0
@@ -82,6 +82,6 @@ class WebSocketTransport extends Transport {
 export function createWebSocketTransport(
     url: string,
     options?: WebSocketTransportOptions
-) {
+): WebSocketTransport {
     return new WebSocketTransport(url, options)
 }
