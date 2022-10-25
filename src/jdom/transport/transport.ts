@@ -55,6 +55,7 @@ export abstract class Transport extends JDEventSource {
 
     constructor(readonly type: string, options?: TransportOptions) {
         super()
+        this.checkPulse = this.checkPulse.bind(this)
         this._checkPulse = !!options?.checkPulse
         this._cleanups = [
             options?.connectObservable?.subscribe({
@@ -93,9 +94,9 @@ export abstract class Transport extends JDEventSource {
     set bus(bus: JDBus) {
         assert(!this._bus && !!bus)
         this._bus = bus
-        if (this._checkPulse) {
-            this._bus.on(SELF_ANNOUNCE, this.checkPulse.bind(this))
-        }
+        if (this._bus && this._checkPulse)
+            this._bus.on(SELF_ANNOUNCE, this.checkPulse)
+        else this._bus.off(SELF_ANNOUNCE, this.checkPulse)
     }
 
     private _connectionState = ConnectionState.Disconnected

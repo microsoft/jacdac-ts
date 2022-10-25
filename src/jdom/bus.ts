@@ -418,7 +418,7 @@ export class JDBus extends JDNode {
     }
 
     /**
-     * Adds a transport to the bus
+     * Adds a transport to the bus. Returns unregistration handler
      * @category Transports and Bridges
      */
     addTransport(transport: Transport | undefined) {
@@ -426,7 +426,17 @@ export class JDBus extends JDNode {
 
         this._transports.push(transport)
         transport.bus = this
-        transport.bus.on(CONNECTING, () => this.preConnect(transport))
+        const pre = () => this.preConnect(transport)
+        this.on(CONNECTING, pre)
+
+        return () => {
+            const i = this._transports.indexOf(transport)
+            if (i > -1) {
+                transport.bus = undefined
+                this._transports.splice(i, 1)
+                this.off(CONNECTING, pre)
+            }
+        }
     }
 
     /**
