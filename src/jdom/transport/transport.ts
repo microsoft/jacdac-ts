@@ -94,6 +94,7 @@ export abstract class Transport extends JDEventSource {
     set bus(bus: JDBus) {
         assert(!this._bus && !!bus)
         this._bus = bus
+        if (this._bus) this.disconnect() // async
         if (this._bus && this._checkPulse)
             this._bus.on(SELF_ANNOUNCE, this.checkPulse)
         else this._bus.off(SELF_ANNOUNCE, this.checkPulse)
