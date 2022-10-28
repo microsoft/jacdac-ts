@@ -44,12 +44,15 @@ export abstract class JDBridge extends JDClient {
      * @param data
      */
     receiveFrameOrPacket(data: JDFrameBuffer, sender?: string) {
+        const bus = this._bus
+        if (!bus) return
+
         this.packetProcessed++
         if (sender) data._jacdac_sender = sender
         if (!data._jacdac_sender) data._jacdac_sender = this.bridgeId
         this.currFrame = data // block self-loops
         // send to native bus and process on JS bus
-        this.bus.sendFrameAsync(data)
+        bus.sendFrameAsync(data)
         this.emit(FRAME_PROCESS, data)
         this.currFrame = null
     }
