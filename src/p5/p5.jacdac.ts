@@ -38,8 +38,8 @@ export async function disconnect() {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-let connectBtn: any
-let devtoolsBtn: any
+export let connectBtn: any
+export let devtoolsBtn: any
 
 /**
  * Creates a Jacdac "connect" button that disappears when connected.
@@ -53,9 +53,9 @@ export function createConnectButton() {
         connectBtn.position(4, 4)
         connectBtn.mousePressed(connect)
         bus.on(CONNECTION_STATE, () =>
-            bus.connected ? connectBtn.hide() : connectBtn.show()
+            bus.connected ? connectBtn?.hide() : connectBtn?.show()
         )
-        if (bus.connected) connectBtn.hide()
+        if (bus.connected) connectBtn?.hide()
     }
     return connectBtn
 }
@@ -71,7 +71,7 @@ export function createDevToolsButton() {
         devtoolsBtn = createButton("Jacdac dev tools")
         devtoolsBtn.position(4, 4)
         devtoolsBtn.mousePressed(() => {
-            devtoolsBtn.hide()
+            devtoolsBtn?.hide()
             injectDevTools(bus)
         })
     }
