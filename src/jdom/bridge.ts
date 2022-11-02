@@ -51,7 +51,6 @@ export abstract class JDBridge extends JDClient {
         if (sender) data._jacdac_sender = sender
         if (!data._jacdac_sender) data._jacdac_sender = this.bridgeId
 
-        console.debug(`web frame`, { data, sender })
         this.currFrame = data // block self-loops
         // send to native bus and process on JS bus
         bus.sendFrameAsync(data)
