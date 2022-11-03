@@ -153,6 +153,10 @@ export interface BusOptions {
      * Stable identifier used to generate unique simulator identifier accross multiple hosted bus environment
      */
     serviceProviderIdSalt?: string
+    /**
+     * Broadcast reset packet
+     */
+    resetIn?: boolean
 }
 
 /**
@@ -205,6 +209,7 @@ export class JDBus extends JDNode {
     private _streaming = false
     private _passive = false
     private _autoConnect = false
+    private _resetIn = false
     // self device is a client
     private _client = false
     // self device is a dashboard
@@ -241,6 +246,7 @@ export class JDBus extends JDNode {
             dashboard,
             proxy,
             serviceProviderIdSalt,
+            resetIn,
         } = options || {}
 
         this._roleManagerClient = disableRoleManager ? null : undefined
@@ -251,6 +257,7 @@ export class JDBus extends JDNode {
         this._client = !!client
         this._dashboard = !!dashboard
         this._proxy = !!proxy
+        this._resetIn = !!resetIn
         this.stats = new BusStatsMonitor(this)
         this.deviceCatalog = new DeviceCatalog()
 
@@ -515,6 +522,20 @@ export class JDBus extends JDNode {
             this._passive = value
             this.emit(CHANGE)
         }
+    }
+
+    /**
+     * Indicates if reset in broadcast packets should be sent
+     */
+    get resetIn() {
+        return this._resetIn
+    }
+
+    /**
+     * Turns on or off reset in broadcast packets
+     */
+    set resetIn(value: boolean) {
+        this._resetIn = !!value
     }
 
     private preConnect(transport: Transport) {
@@ -1345,6 +1366,8 @@ ${dev
     }
 
     private async sendResetIn() {
+        if (!this.resetIn) return
+
         // don't send reset if already received
         // or no devices
         if (!this.devices({ ignoreInfrastructure: true }).length) return
