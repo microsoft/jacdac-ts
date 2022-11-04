@@ -1,11 +1,13 @@
+import { JDRegisterServer } from "../jacdac"
 import {
     CHANGE,
     REFRESH,
     SRV_VIBRATION_MOTOR,
     VibrationMotorCmd,
+    VibrationMotorReg,
 } from "../jdom/constants"
 import { Packet } from "../jdom/packet"
-import { JDServiceServer } from "../jdom/servers/serviceserver"
+import { JDServerOptions, JDServiceServer } from "../jdom/servers/serviceserver"
 
 export class VibrationMotorServer extends JDServiceServer {
     static VIBRATE_PATTERN = "vibratePattern"
@@ -15,9 +17,16 @@ export class VibrationMotorServer extends JDServiceServer {
         pattern: [number, number][]
     }
     private _animationStep = -1
+    readonly maxVibrations: JDRegisterServer<[number]>
 
-    constructor() {
-        super(SRV_VIBRATION_MOTOR)
+    constructor(options?: { maxVibrations?: number } & JDServerOptions) {
+        super(SRV_VIBRATION_MOTOR, options)
+        const { maxVibrations = 10 } = options || {}
+
+        this.maxVibrations = this.addRegister<[number]>(
+            VibrationMotorReg.MaxVibrations,
+            [maxVibrations]
+        )
         this.addCommand(
             VibrationMotorCmd.Vibrate,
             this.handleVibrate.bind(this)
