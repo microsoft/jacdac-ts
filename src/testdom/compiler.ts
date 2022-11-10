@@ -16,6 +16,7 @@ import {
 } from "../jdom/spec"
 import { delay, JSONTryParse, parseIdentifier } from "../jdom/utils"
 import {
+    DeviceStatsTest,
     DeviceTest,
     EventTest,
     PanelTest,
@@ -327,6 +328,7 @@ export function createDeviceTest(
     const deviceTest = new DeviceTest(productIdentifier, specification, device)
 
     // add status light
+    deviceTest.appendChild(new DeviceStatsTest())
     deviceTest.appendChild(new StatusLightTest())
 
     // add test for control

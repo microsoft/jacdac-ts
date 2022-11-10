@@ -26,12 +26,17 @@ import {
 
 export const PANEL_TEST_KIND = "panelTest"
 export const DEVICE_TEST_KIND = "deviceTest"
+export const DEVICE_STATS_TEST_KIND = "deviceStatsTestKind"
 export const STATUS_LIGHT_TEST_KIND = "statusLightTestKind"
 export const SERVICE_TEST_KIND = "serviceTest"
 export const SERVICE_COMMAND_TEST_KIND = "serviceCommandTest"
 export const REGISTER_TEST_KIND = "registerTest"
 export const EVENT_TEST_KIND = "eventTest"
 export const REGISTER_ORACLE_KIND = "registerOracle"
+
+const DEVICE_STATS_MAX_RESTARTS = 2
+const DEVICE_STATS_MAX_DROPPED_PACKETS = 4
+const DEVICE_STATS_MIN_ANNOUNCE_PACKETS = 2
 
 export type TestLogger = (msg: string) => void
 
@@ -321,7 +326,9 @@ export class DeviceTest extends TestNode {
         super(
             specification
                 ? `${specification.name} (0x${productIdentifier.toString(16)})`
-                : `0x${productIdentifier.toString(16)}`
+                : productIdentifier
+                ? `0x${productIdentifier.toString(16)}`
+                : "???"
         )
     }
     get nodeKind(): string {
@@ -393,6 +400,61 @@ export class DeviceTest extends TestNode {
             deviceId: d.deviceId,
             shortId: d.shortId,
             firmwareVersion: d.firmwareVersion,
+        }
+    }
+}
+
+export class DeviceStatsTest extends TestNode {
+    constructor() {
+        super("statistics")
+    }
+    get description(): string {
+        return "monitor device statistics (# restarts, # packets, etc.)"
+    }
+    get nodeKind(): string {
+        return DEVICE_STATS_TEST_KIND
+    }
+    get device(): JDDevice {
+        return this.node as JDDevice
+    }
+    bind() {
+        const { device } = (this.parent || {}) as DeviceTest
+        this.node = device
+    }
+    override mount(): void {
+        super.mount()
+        const device = this.device
+        let mounted = true
+        const work = async () => {
+            while (mounted) {
+                const stats = device.stats
+                if (stats.restarts >= DEVICE_STATS_MAX_RESTARTS) {
+                    this.state = TestState.Fail
+                    this.output = `device restarted (> ${stats.restarts} times)`
+                    break
+                } else if (stats.dropped >= DEVICE_STATS_MAX_DROPPED_PACKETS) {
+                    this.state = TestState.Fail
+                    this.output = `device dropped packets (> ${stats.dropped})`
+                    break
+                } else if (
+                    stats.announce >= DEVICE_STATS_MIN_ANNOUNCE_PACKETS
+                ) {
+                    this.state = TestState.Pass
+                    this.output = `device is transferring packets correctly`
+                }
+                await delay(505)
+            }
+        }
+        work()
+        this.subscriptions.mount(() => {
+            mounted = false
+        })
+    }
+    updateState() {
+        // don't reset state
+        if (this.state !== TestState.Fail) {
+            this.state = TestState.Running
+            this.output = ""
         }
     }
 }
