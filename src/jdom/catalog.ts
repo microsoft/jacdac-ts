@@ -3,7 +3,7 @@ import { CHANGE } from "./constants"
 import { JDEventSource } from "./eventsource"
 import { cryptoRandomUint32 } from "./random"
 import { serviceSpecificationFromClassIdentifier } from "./spec"
-import { toFullHex } from "./utils"
+import { toFullHex, unique } from "./utils"
 
 function looksRandom(n: number) {
     const s = n.toString(16)
@@ -121,7 +121,7 @@ export class DeviceCatalog extends JDEventSource {
             const { serialVendorIds } = this.options
             if (serialVendorIds) serialVendorIds.forEach(id => ids.push(id))
         }
-        return ids.filter(v => !isNaN(v))
+        return unique(ids.filter(v => !isNaN(v)))
     }
 
     /**
