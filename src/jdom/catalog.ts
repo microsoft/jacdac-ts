@@ -22,14 +22,23 @@ export interface DeviceSpecificationOptions {
     transport?: jdspec.TransportType | string
 }
 
+export interface DeviceCatalogOptions {
+    /**
+     * Additional vendor ids to use when connecting to serial
+     */
+    serialVendorIds?: number[]
+}
+
 /**
  * The device catalog. May emit a CHANGE event if updated
  */
 export class DeviceCatalog extends JDEventSource {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private _specifications: jdspec.DeviceSpec[] = deviceRegistryData as any
-    constructor() {
+    readonly options: DeviceCatalogOptions
+    constructor(options?: DeviceCatalogOptions) {
         super()
+        this.options = options || {}
     }
 
     /**
@@ -104,11 +113,15 @@ export class DeviceCatalog extends JDEventSource {
      * @param type
      * @returns
      */
-    vendorIds(type: string) {
-        return this._specifications
+    vendorIds(type: "serial" | "usb" | string) {
+        const ids = this._specifications
             .filter(spec => spec.transport?.type === type)
             .map(spec => spec.transport.vendorId)
-            .filter(v => !!v)
+        if (type === "serial") {
+            const { serialVendorIds } = this.options
+            if (serialVendorIds) ids.concat(serialVendorIds)
+        }
+        return ids.filter(v => !isNaN(v))
     }
 
     /**

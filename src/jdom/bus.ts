@@ -157,6 +157,11 @@ export interface BusOptions {
      * Broadcast reset packet
      */
     resetIn?: boolean
+
+    /**
+     * Additional serial connection vendor ids
+     */
+    serialVendorIds?: number[]
 }
 
 /**
@@ -247,6 +252,7 @@ export class JDBus extends JDNode {
             proxy,
             serviceProviderIdSalt,
             resetIn,
+            serialVendorIds,
         } = options || {}
 
         this._roleManagerClient = disableRoleManager ? null : undefined
@@ -259,7 +265,7 @@ export class JDBus extends JDNode {
         this._proxy = !!proxy
         this._resetIn = !!resetIn
         this.stats = new BusStatsMonitor(this)
-        this.deviceCatalog = new DeviceCatalog()
+        this.deviceCatalog = new DeviceCatalog({ serialVendorIds })
 
         // some transport may be undefined
         transports?.filter(tr => !!tr).map(tr => this.addTransport(tr))
