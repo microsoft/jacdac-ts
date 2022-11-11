@@ -113,13 +113,13 @@ export class DeviceCatalog extends JDEventSource {
      * @param type
      * @returns
      */
-    vendorIds(type: "serial" | "usb" | string) {
+    vendorIds(type: "serial" | string) {
         const ids = this._specifications
             .filter(spec => spec.transport?.type === type)
             .map(spec => spec.transport.vendorId)
         if (type === "serial") {
             const { serialVendorIds } = this.options
-            if (serialVendorIds) ids.concat(serialVendorIds)
+            if (serialVendorIds) serialVendorIds.forEach(id => ids.push(id))
         }
         return ids.filter(v => !isNaN(v))
     }
