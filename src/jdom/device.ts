@@ -93,11 +93,11 @@ export class DeviceStatsMonitor extends JDEventSource {
     // horizon
     private readonly _data: {
         received: number
-        total: number
+        restartCounter: number
         restarts: number
     }[] = Array(0xf << 2)
         .fill(0)
-        .map(() => ({ received: 0, total: 0, restarts: 0 }))
+        .map(() => ({ received: 0, restartCounter: 0, restarts: 0 }))
     private _dataIndex = 0
 
     /**
@@ -121,9 +121,11 @@ export class DeviceStatsMonitor extends JDEventSource {
     get dropped(): number {
         const r =
             this._data
-                .filter(e => !!e.total) // ignore total 0
-                .reduce((s, e) => s + (e.total - e.received), 0) /
-                this._data.length || 0
+                .filter(e => !!e.restartCounter) // ignore total 0
+                .reduce(
+                    (s, e) => s + Math.max(e.restartCounter - e.received, 0),
+                    0
+                ) / this._data.length || 0
         return r
     }
 
@@ -152,10 +154,10 @@ export class DeviceStatsMonitor extends JDEventSource {
         const { current: oldCurrent } = this
         // collect metrics
         const received = this._receivedPackets
-        const total = pkt.data[2]
+        const restartCounter = pkt.data[2]
         const restarts = this._restarts
 
-        this._data[this._dataIndex] = { received, total, restarts }
+        this._data[this._dataIndex] = { received, restartCounter, restarts }
         this._dataIndex = (this._dataIndex + 1) % this._data.length
 
         // reset counter
@@ -184,6 +186,14 @@ export class DeviceStatsMonitor extends JDEventSource {
     processRestart() {
         this._restarts++
         this._announce = 0
+    }
+
+    toString() {
+        const { current } = this
+        const { announce, dropped, restarts } = current
+        return `announce ${announce}, drop ${Math.floor(
+            dropped
+        )}, restart ${restarts}`
     }
 }
 
