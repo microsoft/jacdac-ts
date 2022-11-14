@@ -868,7 +868,7 @@ ${dev
                         } (${toHex(reg.data)}) ${
                             reg.notImplemented ? "- not implemented" : ""
                         }
-            last data" ${reg.lastDataTimestamp || ""}, last get: ${
+            last data: ${reg.lastDataTimestamp || ""}, last get: ${
                             reg.lastGetTimestamp || ""
                         }, last set: ${
                             reg.lastSetTimestamp || ""
