@@ -116,6 +116,22 @@ export interface BusBroadcastConnectionStateMessage
     transports: { type: string; connectionState: string }[]
 }
 
+export const enum BusInteractionMode {
+    /**
+     * The bus mounts a self device and actively interacts with devices, including polling registers
+     * automatically
+     */
+    Active,
+    /**
+     * The bus mounts a self device and does not poll registers automatically
+     */
+    Observer,
+    /**
+     * The bus does not emit any package
+     */
+    Passive,
+}
+
 /**
  * Creation options for a bus
  * @category JDOM
@@ -212,7 +228,7 @@ export class JDBus extends JDNode {
         msg: Partial<BusBroadcastMessage>
     ) => void
     private _streaming = false
-    private _passive = false
+    private _interactionMode = BusInteractionMode.Active
     private _autoConnect = false
     private _resetIn = false
     // self device is a client
@@ -516,16 +532,33 @@ export class JDBus extends JDNode {
      * @category Lifecycle
      */
     get passive(): boolean {
-        return this._passive
+        return this._interactionMode === BusInteractionMode.Passive
     }
 
     /**
      * Sets the passive state. A passive bus does not send any packets.
      * @category Lifecycle
+     * @deprecated
      */
     set passive(value: boolean) {
-        if (value !== this._passive) {
-            this._passive = value
+        this.interactionMode = value
+            ? BusInteractionMode.Passive
+            : BusInteractionMode.Active
+    }
+
+    /**
+     * Determines how the bus interacts with services, including automatic polling of registers
+     */
+    get interactionMode(): BusInteractionMode {
+        return this._interactionMode
+    }
+
+    /**
+     * Sets how the bus interacts with services, including automatic polling of registers
+     */
+    set interactionMode(mode: BusInteractionMode) {
+        if (this._interactionMode !== mode) {
+            this._interactionMode = mode
             this.emit(CHANGE)
         }
     }
@@ -830,9 +863,16 @@ ${dev
                     reg =>
                         `        ${reg.specification?.kind || "reg"} ${
                             reg.name
-                        }: ${reg.humanValue} (${toHex(reg.data)}) ${
+                        }${reg.needsRefresh ? "*" : ""}: ${
+                            reg.humanValue
+                        } (${toHex(reg.data)}) ${
                             reg.notImplemented ? "- not implemented" : ""
-                        }`
+                        }
+            last data" ${reg.lastDataTimestamp || ""}, last get: ${
+                            reg.lastGetTimestamp || ""
+                        }, last set: ${
+                            reg.lastSetTimestamp || ""
+                        }, last gets attempts: ${reg.lastGetAttempts},`
                 ),
             ...srv.events.map(ev => `        event ${ev.name}: ${ev.count}`),
         ].join("\n")
@@ -1455,6 +1495,9 @@ ${dev
      * Cycles through all known registers and refreshes the once that have REPORT_UPDATE registered
      */
     private handleRefreshRegisters() {
+        // never poll registers in passive/observer mode
+        if (this.interactionMode !== BusInteractionMode.Active) return
+
         const devices = this._devices.filter(
             device =>
                 device.announced && // needs services

@@ -44,7 +44,7 @@ import {
 } from "./constants"
 import { read32, bufferEq, read16 } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
-import { JDBus } from "./bus"
+import { BusInteractionMode, JDBus } from "./bus"
 import { JDService } from "./service"
 import { serviceClass, shortDeviceId } from "./pretty"
 import { JDNode } from "./node"
@@ -457,7 +457,7 @@ export class JDDevice extends JDNode {
     }
 
     private refreshFirmwareInfo() {
-        if (this.bus.passive) return
+        if (this.bus.interactionMode !== BusInteractionMode.Active) return
 
         const ctrl = this.service(JD_SERVICE_INDEX_CTRL)
         if (!ctrl) return
