@@ -537,7 +537,7 @@ function initProviders() {
                 ],
                 services: () => [
                     new AnalogSensorServer(SRV_DC_CURRENT_MEASUREMENT, {
-                        readingValues: [0.01],
+                        readingValues: [0.001],
                         readingResolution: 0.001,
                         streamingInterval: 100,
                         minReading: 0,
@@ -552,8 +552,9 @@ function initProviders() {
                     new AnalogSensorServer(SRV_DC_VOLTAGE_MEASUREMENT, {
                         readingValues: [5],
                         streamingInterval: 100,
+                        readingResolution: 0.001,
                         minReading: 0,
-                        maxReading: 24,
+                        maxReading: 7,
                         registerValues: [
                             {
                                 code: DcVoltageMeasurementReg.MeasurementName,
