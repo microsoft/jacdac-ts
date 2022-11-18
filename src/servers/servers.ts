@@ -538,9 +538,10 @@ function initProviders() {
                 services: () => [
                     new AnalogSensorServer(SRV_DC_CURRENT_MEASUREMENT, {
                         readingValues: [0.01],
+                        readingResolution: 0.001,
                         streamingInterval: 100,
                         minReading: 0,
-                        maxReading: 10,
+                        maxReading: 1,
                         registerValues: [
                             {
                                 code: DcCurrentMeasurementReg.MeasurementName,
