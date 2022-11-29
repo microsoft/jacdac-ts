@@ -64,6 +64,24 @@ export interface Role {
     query?: string
 }
 
+/**
+ * Resolves the JDom service instance for this role.
+ * @param bus
+ * @param role
+ * @returns
+ */
+export function resolveRoleService(bus: JDBus, role: Role) {
+    const { deviceId, serviceIndex, serviceClass } = role
+    if (!deviceId || isNaN(serviceIndex)) return undefined
+    const device = bus.device(deviceId)
+    const service = device?.service(serviceIndex)
+    if (service && service.serviceClass !== serviceClass) {
+        console.warn("unexpected service class for role", { role })
+        return undefined
+    }
+    return service
+}
+
 function parentName(bus: JDBus, role: Role) {
     if (role.query) {
         const args = role.query.split("&").map(a => a.split("=", 2))
