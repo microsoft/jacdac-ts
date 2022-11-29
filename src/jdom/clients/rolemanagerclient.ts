@@ -73,7 +73,7 @@ export interface Role {
 export function resolveRoleService(bus: JDBus, role: Role) {
     const { deviceId, serviceIndex, serviceClass } = role
     if (!deviceId || isNaN(serviceIndex)) return undefined
-    const device = bus.device(deviceId)
+    const device = bus.device(deviceId, true)
     const service = device?.service(serviceIndex)
     if (service && service.serviceClass !== serviceClass) {
         console.warn("unexpected service class for role", { role })

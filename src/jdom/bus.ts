@@ -792,7 +792,10 @@ export class JDBus extends JDNode {
         return this._roleManagerClient
     }
 
-    private setRoleManagerService(service: JDService) {
+    /**
+     * Specifies the current role manager
+     */
+    setRoleManagerService(service: JDService) {
         // feature disabled
         if (this._roleManagerClient === null) return
 
@@ -1010,8 +1013,10 @@ ${dev
     }
 
     private handleRoleManager() {
-        const service = this.services({ serviceClass: SRV_ROLE_MANAGER })[0]
-        this.setRoleManagerService(service)
+        if (!this.roleManager) {
+            const service = this.services({ serviceClass: SRV_ROLE_MANAGER })[0]
+            this.setRoleManagerService(service)
+        }
     }
 
     async sendFrameAsync(frame: JDFrameBuffer) {
