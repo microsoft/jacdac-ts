@@ -359,7 +359,12 @@ export class JdUsbProto implements Proto {
         }
 
         if (start < data.length) {
-            this.serialData = data.slice(start)
+            if (this.serialData)
+                this.serialData = bufferConcat(
+                    this.serialData,
+                    data.slice(start)
+                )
+            else this.serialData = data.slice(start)
             this.serialTimeout = setTimeout(() => {
                 this.serialTimeout = undefined
                 this.flushSerial()
