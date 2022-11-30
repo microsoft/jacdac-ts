@@ -28,7 +28,7 @@ jobs:
       - run: yarn prettier
       - run: yarn dist
       - run: yarn test
-      - run: npx semantic-release
+      - run: npx -p=@semantic-release/git -p=@semantic-release/github -p=@semantic-release/exec -p=@semantic-release/git -p=semantic-release-dotnet semantic-release
         if: ${{ github.ref == 'refs/heads/main' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
