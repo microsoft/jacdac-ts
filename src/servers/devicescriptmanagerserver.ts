@@ -75,7 +75,7 @@ export class DeviceScriptManagerServer extends JDServiceServer {
     }
 
     private handleDeployBytecode(pkt: Packet) {
-        console.debug(`jacscript server: deploy`, { pkt })
+        console.debug(`devicescript server: deploy`, { pkt })
     }
 
     private async handleReadBytecode(pkt: Packet) {

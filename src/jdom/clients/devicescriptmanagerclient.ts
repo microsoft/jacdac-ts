@@ -15,7 +15,9 @@ export class DeviceScriptManagerClient extends JDServiceClient {
         super(service)
 
         // report events
-        const changeEvent = service.event(DeviceScriptManagerEvent.ProgramChange)
+        const changeEvent = service.event(
+            DeviceScriptManagerEvent.ProgramChange
+        )
         this.mount(changeEvent.subscribe(EVENT, () => this.emit(CHANGE)))
         this.mount(
             changeEvent.subscribe(EVENT, () =>
@@ -26,7 +28,10 @@ export class DeviceScriptManagerClient extends JDServiceClient {
         const panicEvent = service.event(DeviceScriptManagerEvent.ProgramPanic)
         this.mount(
             panicEvent.subscribe(EVENT, (args: unknown[]) =>
-                this.emit(DeviceScriptManagerClient.PROGRAM_PANIC, ...(args || []))
+                this.emit(
+                    DeviceScriptManagerClient.PROGRAM_PANIC,
+                    ...(args || [])
+                )
             )
         )
     }
@@ -34,10 +39,7 @@ export class DeviceScriptManagerClient extends JDServiceClient {
     static PROGRAM_CHANGE = "programChange"
     static PROGRAM_PANIC = "programPanic"
 
-    deployBytecode(
-        bytecode: Uint8Array,
-        onProgress?: (p: number) => void
-    ) {
+    deployBytecode(bytecode: Uint8Array, onProgress?: (p: number) => void) {
         return OutPipe.sendBytes(
             this.service,
             DeviceScriptManagerCmd.DeployBytecode,
