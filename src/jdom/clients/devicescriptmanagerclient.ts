@@ -1,32 +1,37 @@
 import {
     CHANGE,
     EVENT,
-    JacscriptManagerCmd,
-    JacscriptManagerEvent,
-    JacscriptManagerReg,
+    DeviceScriptManagerCmd,
+    DeviceScriptManagerEvent,
+    DeviceScriptManagerReg,
 } from "../constants"
 import { jdpack } from "../pack"
 import { OutPipe } from "../pipes"
 import { JDService } from "../service"
 import { JDServiceClient } from "../serviceclient"
 
-export class JacscriptManagerClient extends JDServiceClient {
+export class DeviceScriptManagerClient extends JDServiceClient {
     constructor(service: JDService) {
         super(service)
 
         // report events
-        const changeEvent = service.event(JacscriptManagerEvent.ProgramChange)
+        const changeEvent = service.event(
+            DeviceScriptManagerEvent.ProgramChange
+        )
         this.mount(changeEvent.subscribe(EVENT, () => this.emit(CHANGE)))
         this.mount(
             changeEvent.subscribe(EVENT, () =>
-                this.emit(JacscriptManagerClient.PROGRAM_CHANGE)
+                this.emit(DeviceScriptManagerClient.PROGRAM_CHANGE)
             )
         )
 
-        const panicEvent = service.event(JacscriptManagerEvent.ProgramPanic)
+        const panicEvent = service.event(DeviceScriptManagerEvent.ProgramPanic)
         this.mount(
             panicEvent.subscribe(EVENT, (args: unknown[]) =>
-                this.emit(JacscriptManagerClient.PROGRAM_PANIC, ...(args || []))
+                this.emit(
+                    DeviceScriptManagerClient.PROGRAM_PANIC,
+                    ...(args || [])
+                )
             )
         )
     }
@@ -34,30 +39,27 @@ export class JacscriptManagerClient extends JDServiceClient {
     static PROGRAM_CHANGE = "programChange"
     static PROGRAM_PANIC = "programPanic"
 
-    deployBytecode(
-        bytecode: Uint8Array,
-        onProgress?: (p: number) => void
-    ) {
+    deployBytecode(bytecode: Uint8Array, onProgress?: (p: number) => void) {
         return OutPipe.sendBytes(
             this.service,
-            JacscriptManagerCmd.DeployBytecode,
+            DeviceScriptManagerCmd.DeployBytecode,
             bytecode,
             onProgress
         )
     }
 
     async setRunning(value: boolean) {
-        const reg = this.service.register(JacscriptManagerReg.Running)
+        const reg = this.service.register(DeviceScriptManagerReg.Running)
         await reg.sendSetAsync(jdpack("u8", [value ? 1 : 0]))
     }
 
     async setAutoStart(value: boolean) {
-        const reg = this.service.register(JacscriptManagerReg.Autostart)
+        const reg = this.service.register(DeviceScriptManagerReg.Autostart)
         await reg.sendSetAsync(jdpack("u8", [value ? 1 : 0]))
     }
 
     async setLogging(value: boolean) {
-        const reg = this.service.register(JacscriptManagerReg.Logging)
+        const reg = this.service.register(DeviceScriptManagerReg.Logging)
         await reg.sendSetAsync(jdpack("u8", [value ? 1 : 0]))
     }
 }
