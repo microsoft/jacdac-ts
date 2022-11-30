@@ -19,8 +19,8 @@ import {
     SRV_UNIQUE_BRAIN,
     SRV_DASHBOARD,
     SRV_BRIDGE,
-    SRV_JACSCRIPT_CONDITION,
-    SRV_JACSCRIPT_MANAGER,
+    SRV_DEVICE_SCRIPT_CONDITION,
+    SRV_DEVICE_SCRIPT_MANAGER,
 } from "./constants"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -139,8 +139,8 @@ export function isInfrastructure(spec: jdspec.ServiceSpec) {
             SRV_UNIQUE_BRAIN,
             SRV_DASHBOARD,
             SRV_BRIDGE,
-            SRV_JACSCRIPT_CONDITION,
-            SRV_JACSCRIPT_MANAGER,
+            SRV_DEVICE_SCRIPT_CONDITION,
+            SRV_DEVICE_SCRIPT_MANAGER,
         ].indexOf(spec.classIdentifier) > -1 ||
             spec.shortId[0] === "_")
     )
