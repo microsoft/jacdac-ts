@@ -1,17 +1,17 @@
 import { fnv1 } from "../jdom/utils"
 import {
     CHANGE,
-    JacscriptManagerCmd,
-    JacscriptManagerEvent,
-    JacscriptManagerReg,
-    SRV_JACSCRIPT_MANAGER,
+    DeviceScriptManagerCmd,
+    DeviceScriptManagerEvent,
+    DeviceScriptManagerReg,
+    SRV_DEVICE_SCRIPT_MANAGER,
 } from "../jdom/constants"
 import { JDRegisterServer } from "../jdom/servers/registerserver"
 import { JDServiceServer } from "../jdom/servers/serviceserver"
 import { OutPipe } from "../jdom/pipes"
 import { Packet } from "../jdom/packet"
 
-export class JacscriptManagerServer extends JDServiceServer {
+export class DeviceScriptManagerServer extends JDServiceServer {
     readonly running: JDRegisterServer<[boolean]>
     readonly autoStart: JDRegisterServer<[boolean]>
     readonly logging: JDRegisterServer<[boolean]>
@@ -24,24 +24,24 @@ export class JacscriptManagerServer extends JDServiceServer {
     static PROGRAM_CHANGE = "programChange"
 
     constructor() {
-        super(SRV_JACSCRIPT_MANAGER)
+        super(SRV_DEVICE_SCRIPT_MANAGER)
 
-        this.running = this.addRegister(JacscriptManagerReg.Running, [false])
-        this.autoStart = this.addRegister(JacscriptManagerReg.Autostart, [true])
-        this.logging = this.addRegister(JacscriptManagerReg.Logging, [true])
-        this.programSize = this.addRegister(JacscriptManagerReg.ProgramSize, [
+        this.running = this.addRegister(DeviceScriptManagerReg.Running, [false])
+        this.autoStart = this.addRegister(DeviceScriptManagerReg.Autostart, [true])
+        this.logging = this.addRegister(DeviceScriptManagerReg.Logging, [true])
+        this.programSize = this.addRegister(DeviceScriptManagerReg.ProgramSize, [
             this._binary.length,
         ])
-        this.programHash = this.addRegister(JacscriptManagerReg.ProgramHash, [
+        this.programHash = this.addRegister(DeviceScriptManagerReg.ProgramHash, [
             fnv1(this._binary),
         ])
 
         this.addCommand(
-            JacscriptManagerCmd.DeployBytecode,
+            DeviceScriptManagerCmd.DeployBytecode,
             this.handleDeployBytecode.bind(this)
         )
         this.addCommand(
-            JacscriptManagerCmd.ReadBytecode,
+            DeviceScriptManagerCmd.ReadBytecode,
             this.handleReadBytecode.bind(this)
         )
     }
@@ -64,9 +64,9 @@ export class JacscriptManagerServer extends JDServiceServer {
             this._debugInfo = debugInfo
             this.programSize.setValues([binary.length])
             this.programHash.setValues([valueHash])
-            this.emit(JacscriptManagerServer.PROGRAM_CHANGE)
+            this.emit(DeviceScriptManagerServer.PROGRAM_CHANGE)
             this.emit(CHANGE)
-            this.sendEvent(JacscriptManagerEvent.ProgramChange)
+            this.sendEvent(DeviceScriptManagerEvent.ProgramChange)
         }
     }
 
