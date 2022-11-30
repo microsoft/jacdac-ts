@@ -27,14 +27,18 @@ export class DeviceScriptManagerServer extends JDServiceServer {
         super(SRV_DEVICE_SCRIPT_MANAGER)
 
         this.running = this.addRegister(DeviceScriptManagerReg.Running, [false])
-        this.autoStart = this.addRegister(DeviceScriptManagerReg.Autostart, [true])
+        this.autoStart = this.addRegister(DeviceScriptManagerReg.Autostart, [
+            true,
+        ])
         this.logging = this.addRegister(DeviceScriptManagerReg.Logging, [true])
-        this.programSize = this.addRegister(DeviceScriptManagerReg.ProgramSize, [
-            this._binary.length,
-        ])
-        this.programHash = this.addRegister(DeviceScriptManagerReg.ProgramHash, [
-            fnv1(this._binary),
-        ])
+        this.programSize = this.addRegister(
+            DeviceScriptManagerReg.ProgramSize,
+            [this._binary.length]
+        )
+        this.programHash = this.addRegister(
+            DeviceScriptManagerReg.ProgramHash,
+            [fnv1(this._binary)]
+        )
 
         this.addCommand(
             DeviceScriptManagerCmd.DeployBytecode,
