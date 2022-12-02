@@ -55,7 +55,10 @@ export function createConnectButton() {
         bus.on(CONNECTION_STATE, () =>
             bus.connected ? connectBtn?.hide() : connectBtn?.show()
         )
-        if (bus.connected) connectBtn?.hide()
+        if (bus.connected) {
+            connectBtn?.hide()
+            devtoolsBtn?.hide()
+        }
     }
     return connectBtn
 }
@@ -69,7 +72,7 @@ export function createDevToolsButton() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const createButton = (window as any).createButton
         devtoolsBtn = createButton("Jacdac dev tools")
-        devtoolsBtn.position(4, 4)
+        devtoolsBtn.position(4, 28)
         devtoolsBtn.mousePressed(() => {
             devtoolsBtn?.hide()
             injectDevTools(bus)
