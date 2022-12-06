@@ -110,7 +110,7 @@ export function prettySize(b: number) {
     b = b | 0
     if (b === 0) return "0kb"
     else if (b < 100) return b + "b"
-    else if (b < 1000) return roundWithPrecision(b / 1e2, 1) + "kb"
+    else if (b < 1000) return roundWithPrecision(b / 1e3, 2) + "kb"
     else if (b < 1000000) return roundWithPrecision(b / 1e3, 1) + "kb"
     else return roundWithPrecision(b / 1e6, 1) + "mb"
 }
