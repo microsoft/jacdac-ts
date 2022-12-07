@@ -51,7 +51,9 @@ export class AzureIoTHubConfigurationServer extends JDServiceServer {
     ) {
         super(SRV_CLOUD_CONFIGURATION, options)
 
-        this.serverName = this.addRegister(CloudConfigurationReg.ServerName, [""])
+        this.serverName = this.addRegister(CloudConfigurationReg.ServerName, [
+            "",
+        ])
         this.cloudDeviceId = this.addRegister(
             CloudConfigurationReg.CloudDeviceId,
             [""]
