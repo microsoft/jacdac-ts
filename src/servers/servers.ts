@@ -137,7 +137,7 @@ import { PowerServer } from "./powerserver"
 import { CapacitiveButtonServer } from "./capacitivebuttonserver"
 import { HIDKeyboardServer } from "./hidkeyboardserver"
 import { HIDMouseServer } from "./hidmouseserver"
-import { AzureIoTHubConfiguration } from "./azureiothubconfiguration"
+import { AzureIoTHubConfigurationServer } from "./azureiothubconfiguration"
 import { JDServiceProvider } from "../jdom/servers/serviceprovider"
 import { VibrationMotorServer } from "./vibrationmotorserver"
 import { WifiServer } from "./wifiserver"
@@ -1756,7 +1756,7 @@ function initProviders() {
                 ? {
                       name: "Azure IoT Hub Health (virtual)",
                       serviceClasses: [SRV_CLOUD_CONFIGURATION],
-                      services: () => [new AzureIoTHubConfiguration()],
+                      services: () => [new AzureIoTHubConfigurationServer()],
                   }
                 : undefined,
         ].filter(s => !!s))
