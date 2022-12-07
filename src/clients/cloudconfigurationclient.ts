@@ -14,6 +14,9 @@ import { JDService } from "../jdom/service"
 import { JDServiceClient } from "../jdom/serviceclient"
 import { assert } from "../jdom/utils"
 
+/**
+ * A generic client for cloud configuration servers.
+ */
 export class CloudConfigurationClient extends JDServiceClient {
     private readonly serverNameRegister: JDRegister
     private readonly cloudDeviceIdRegister: JDRegister
