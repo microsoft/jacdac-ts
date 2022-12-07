@@ -78,8 +78,7 @@ import {
     SRV_HID_KEYBOARD,
     SRV_HID_MOUSE,
     SRV_HID_JOYSTICK,
-    //    SRV_AZURE_IOT_HUB,
-    SRV_AZURE_IOT_HUB_HEALTH,
+    SRV_CLOUD_CONFIGURATION,
     DotMatrixVariant,
     SRV_FLEX,
     SRV_WIFI,
@@ -138,7 +137,7 @@ import { PowerServer } from "./powerserver"
 import { CapacitiveButtonServer } from "./capacitivebuttonserver"
 import { HIDKeyboardServer } from "./hidkeyboardserver"
 import { HIDMouseServer } from "./hidmouseserver"
-import { AzureIoTHubHealthServer } from "./azureiothubhealthserver"
+import { AzureIoTHubConfiguration } from "./azureiothubconfiguration"
 import { JDServiceProvider } from "../jdom/servers/serviceprovider"
 import { VibrationMotorServer } from "./vibrationmotorserver"
 import { WifiServer } from "./wifiserver"
@@ -1756,8 +1755,8 @@ function initProviders() {
             Flags.diagnostics
                 ? {
                       name: "Azure IoT Hub Health (virtual)",
-                      serviceClasses: [SRV_AZURE_IOT_HUB_HEALTH],
-                      services: () => [new AzureIoTHubHealthServer()],
+                      serviceClasses: [SRV_CLOUD_CONFIGURATION],
+                      services: () => [new AzureIoTHubConfiguration()],
                   }
                 : undefined,
         ].filter(s => !!s))

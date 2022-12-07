@@ -1,4 +1,3 @@
-import { Packet } from "../jdom/packet"
 import { REPORT_RECEIVE, SRV_MODEL_RUNNER } from "../jdom/constants"
 import { JDService } from "../jdom/service"
 import { ModelRunnerCmd, ModelRunnerReg } from "../jdom/constants"
@@ -7,7 +6,6 @@ import { OutPipe } from "../jdom/pipes"
 import { JDRegister } from "../jdom/register"
 import { JDServiceClient } from "../jdom/serviceclient"
 import { serviceSpecificationFromClassIdentifier } from "../jdom/spec"
-import { jdunpack } from "../jdom/pack"
 import { assert, read32, toHex, uint8ArrayToString } from "../jdom/utils"
 
 /*

@@ -1,12 +1,12 @@
 import {
-    AzureIotHubHealthCmd,
-    AzureIotHubHealthConnectionStatus,
-    AzureIotHubHealthEvent,
-    AzureIotHubHealthReg,
+    CloudConfigurationCmd,
+    CloudConfigurationConnectionStatus,
+    CloudConfigurationEvent,
+    CloudConfigurationReg,
     CHANGE,
     EVENT,
     REPORT_UPDATE,
-    SRV_AZURE_IOT_HUB_HEALTH,
+    SRV_CLOUD_CONFIGURATION,
 } from "../jdom/constants"
 import { jdpack } from "../jdom/pack"
 import { JDRegister } from "../jdom/register"
@@ -14,24 +14,26 @@ import { JDService } from "../jdom/service"
 import { JDServiceClient } from "../jdom/serviceclient"
 import { assert } from "../jdom/utils"
 
-export class AzureIoTHubHealthClient extends JDServiceClient {
+export class CloudConfigurationClient extends JDServiceClient {
     private readonly hubNameRegister: JDRegister
-    private readonly hubDeviceIdRegister: JDRegister
+    private readonly cloudDeviceIdRegister: JDRegister
+    private readonly cloudType: JDRegister
     private readonly connectionStatusRegister: JDRegister
 
     constructor(service: JDService) {
         super(service)
-        assert(service.serviceClass === SRV_AZURE_IOT_HUB_HEALTH)
+        assert(service.serviceClass === SRV_CLOUD_CONFIGURATION)
 
         // tell the bus to refresh these register
         this.hubNameRegister = this.service.register(
-            AzureIotHubHealthReg.HubName
+            CloudConfigurationReg.HubName
         )
-        this.hubDeviceIdRegister = this.service.register(
-            AzureIotHubHealthReg.HubDeviceId
+        this.cloudDeviceIdRegister = this.service.register(
+            CloudConfigurationReg.CloudDeviceId
         )
+        this.cloudType = this.service.register(CloudConfigurationReg.CloudType)
         this.connectionStatusRegister = this.service.register(
-            AzureIotHubHealthReg.ConnectionStatus
+            CloudConfigurationReg.ConnectionStatus
         )
         this.mount(() =>
             this.hubNameRegister.subscribe(REPORT_UPDATE, () =>
@@ -45,7 +47,7 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
         )
         this.mount(() =>
             this.service
-                .event(AzureIotHubHealthEvent.ConnectionStatusChange)
+                .event(CloudConfigurationEvent.ConnectionStatusChange)
                 .on(EVENT, () => {
                     this.connectionStatusRegister.scheduleRefresh()
                 })
@@ -57,13 +59,13 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
     }
 
     get hubDeviceId() {
-        return this.hubDeviceIdRegister.stringValue
+        return this.cloudDeviceIdRegister.stringValue
     }
 
-    get connectionStatus(): AzureIotHubHealthConnectionStatus {
+    get connectionStatus(): CloudConfigurationConnectionStatus {
         const reg = this.connectionStatusRegister
         const status = reg
-            .unpackedValue?.[0] as AzureIotHubHealthConnectionStatus
+            .unpackedValue?.[0] as CloudConfigurationConnectionStatus
         if (status === undefined) reg.scheduleRefresh()
         return status
     }
@@ -73,7 +75,7 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
      */
     async connect() {
         await this.service.sendCmdAsync(
-            AzureIotHubHealthCmd.Connect,
+            CloudConfigurationCmd.Connect,
             undefined,
             true
         )
@@ -84,7 +86,7 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
      */
     async disconnect() {
         await this.service.sendCmdAsync(
-            AzureIotHubHealthCmd.Disconnect,
+            CloudConfigurationCmd.Disconnect,
             undefined,
             true
         )
@@ -97,7 +99,7 @@ export class AzureIoTHubHealthClient extends JDServiceClient {
     async setConnectionString(connectionString: string) {
         const data = jdpack<[string]>("s", [connectionString || ""])
         await this.service.sendCmdAsync(
-            AzureIotHubHealthCmd.SetConnectionString,
+            CloudConfigurationCmd.SetConnectionString,
             data,
             true
         )

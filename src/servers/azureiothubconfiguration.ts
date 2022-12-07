@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Setting } from "../jdom/setting"
 import {
-    AzureIotHubHealthCmd,
-    AzureIotHubHealthConnectionStatus,
-    AzureIotHubHealthEvent,
-    AzureIotHubHealthReg,
+    CloudConfigurationCmd,
+    CloudConfigurationConnectionStatus,
+    CloudConfigurationEvent,
+    CloudConfigurationReg,
     CHANGE,
     CONNECT,
     DISCONNECT,
-    SRV_AZURE_IOT_HUB_HEALTH,
+    SRV_CLOUD_CONFIGURATION,
 } from "../jdom/constants"
 import { Packet } from "../jdom/packet"
 import { JDRegisterServer } from "../jdom/servers/registerserver"
@@ -35,11 +35,12 @@ function parsePropertyBag(
     return r
 }
 
-export class AzureIoTHubHealthServer extends JDServiceServer {
+export class AzureIoTHubConfigurationServer extends JDServiceServer {
     readonly hubName: JDRegisterServer<[string]>
-    readonly hubDeviceId: JDRegisterServer<[string]>
+    readonly cloudDeviceId: JDRegisterServer<[string]>
+    readonly cloudType: JDRegisterServer<[string]>
     readonly connectionStatus: JDRegisterServer<
-        [AzureIotHubHealthConnectionStatus]
+        [CloudConfigurationConnectionStatus]
     >
     connectionString: string
     isReal = false
@@ -48,31 +49,35 @@ export class AzureIoTHubHealthServer extends JDServiceServer {
         options?: JDServerOptions,
         readonly connStringSetting?: Setting
     ) {
-        super(SRV_AZURE_IOT_HUB_HEALTH, options)
+        super(SRV_CLOUD_CONFIGURATION, options)
 
-        this.hubName = this.addRegister(AzureIotHubHealthReg.HubName, [""])
-        this.hubDeviceId = this.addRegister(AzureIotHubHealthReg.HubDeviceId, [
-            "",
+        this.hubName = this.addRegister(CloudConfigurationReg.HubName, [""])
+        this.cloudDeviceId = this.addRegister(
+            CloudConfigurationReg.CloudDeviceId,
+            [""]
+        )
+        this.cloudType = this.addRegister(CloudConfigurationReg.CloudType, [
+            "Azure IoT Hub",
         ])
         this.connectionStatus = this.addRegister(
-            AzureIotHubHealthReg.ConnectionStatus,
-            [AzureIotHubHealthConnectionStatus.Disconnected]
+            CloudConfigurationReg.ConnectionStatus,
+            [CloudConfigurationConnectionStatus.Disconnected]
         )
         this.connectionStatus.on(CHANGE, () =>
-            this.sendEvent(AzureIotHubHealthEvent.ConnectionStatusChange)
+            this.sendEvent(CloudConfigurationEvent.ConnectionStatusChange)
         )
         this.connectionString = this.connStringSetting?.get() || ""
 
         this.addCommand(
-            AzureIotHubHealthCmd.Connect,
+            CloudConfigurationCmd.Connect,
             this.handleConnect.bind(this)
         )
         this.addCommand(
-            AzureIotHubHealthCmd.Disconnect,
+            CloudConfigurationCmd.Disconnect,
             this.handleDisconnect.bind(this)
         )
         this.addCommand(
-            AzureIotHubHealthCmd.SetConnectionString,
+            CloudConfigurationCmd.SetConnectionString,
             this.handleSetConnectionString.bind(this)
         )
     }
@@ -81,7 +86,7 @@ export class AzureIoTHubHealthServer extends JDServiceServer {
         return parsePropertyBag(this.connectionString || "", ";")
     }
 
-    setConnectionStatus(status: AzureIotHubHealthConnectionStatus) {
+    setConnectionStatus(status: CloudConfigurationConnectionStatus) {
         this.connectionStatus.setValues([status])
     }
 
@@ -93,9 +98,9 @@ export class AzureIoTHubHealthServer extends JDServiceServer {
             this.connStringSetting?.set(newConnectionString)
             const connStringParts = parsePropertyBag(this.connectionString, ";")
             this.hubName.setValues([connStringParts["HostName"] || ""])
-            this.hubDeviceId.setValues([connStringParts["DeviceId"] || ""])
+            this.cloudDeviceId.setValues([connStringParts["DeviceId"] || ""])
             // notify connection string changed
-            this.sendEvent(AzureIotHubHealthEvent.ConnectionStatusChange)
+            this.sendEvent(CloudConfigurationEvent.ConnectionStatusChange)
             this.emit(CHANGE)
             await this.handleConnect()
         }
@@ -107,28 +112,28 @@ export class AzureIoTHubHealthServer extends JDServiceServer {
             return
         }
 
-        this.setConnectionStatus(AzureIotHubHealthConnectionStatus.Connecting)
+        this.setConnectionStatus(CloudConfigurationConnectionStatus.Connecting)
 
         if (this.isReal) {
             this.emit(CONNECT, this.connectionString)
         } else {
             await delay(500)
             this.setConnectionStatus(
-                AzureIotHubHealthConnectionStatus.Connected
+                CloudConfigurationConnectionStatus.Connected
             )
         }
     }
 
     private async handleDisconnect() {
         this.setConnectionStatus(
-            AzureIotHubHealthConnectionStatus.Disconnecting
+            CloudConfigurationConnectionStatus.Disconnecting
         )
         if (this.isReal) {
             this.emit(DISCONNECT)
         } else {
             await delay(500)
             this.setConnectionStatus(
-                AzureIotHubHealthConnectionStatus.Disconnected
+                CloudConfigurationConnectionStatus.Disconnected
             )
         }
     }
