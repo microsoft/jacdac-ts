@@ -15,9 +15,9 @@ import { JDServiceClient } from "../jdom/serviceclient"
 import { assert } from "../jdom/utils"
 
 export class CloudConfigurationClient extends JDServiceClient {
-    private readonly hubNameRegister: JDRegister
+    private readonly serverNameRegister: JDRegister
     private readonly cloudDeviceIdRegister: JDRegister
-    private readonly cloudType: JDRegister
+    private readonly cloudTypeRegister: JDRegister
     private readonly connectionStatusRegister: JDRegister
 
     constructor(service: JDService) {
@@ -25,18 +25,20 @@ export class CloudConfigurationClient extends JDServiceClient {
         assert(service.serviceClass === SRV_CLOUD_CONFIGURATION)
 
         // tell the bus to refresh these register
-        this.hubNameRegister = this.service.register(
-            CloudConfigurationReg.HubName
+        this.serverNameRegister = this.service.register(
+            CloudConfigurationReg.ServerName
         )
         this.cloudDeviceIdRegister = this.service.register(
             CloudConfigurationReg.CloudDeviceId
         )
-        this.cloudType = this.service.register(CloudConfigurationReg.CloudType)
+        this.cloudTypeRegister = this.service.register(
+            CloudConfigurationReg.CloudType
+        )
         this.connectionStatusRegister = this.service.register(
             CloudConfigurationReg.ConnectionStatus
         )
         this.mount(() =>
-            this.hubNameRegister.subscribe(REPORT_UPDATE, () =>
+            this.serverNameRegister.subscribe(REPORT_UPDATE, () =>
                 this.emit(CHANGE)
             )
         )
@@ -54,12 +56,16 @@ export class CloudConfigurationClient extends JDServiceClient {
         )
     }
 
-    get hubName() {
-        return this.hubNameRegister.stringValue
+    get serverName() {
+        return this.serverNameRegister.stringValue
     }
 
-    get hubDeviceId() {
+    get cloudDeviceId() {
         return this.cloudDeviceIdRegister.stringValue
+    }
+
+    get cloudType() {
+        return this.cloudTypeRegister.stringValue
     }
 
     get connectionStatus(): CloudConfigurationConnectionStatus {

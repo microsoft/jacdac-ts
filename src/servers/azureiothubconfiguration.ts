@@ -36,7 +36,7 @@ function parsePropertyBag(
 }
 
 export class AzureIoTHubConfigurationServer extends JDServiceServer {
-    readonly hubName: JDRegisterServer<[string]>
+    readonly serverName: JDRegisterServer<[string]>
     readonly cloudDeviceId: JDRegisterServer<[string]>
     readonly cloudType: JDRegisterServer<[string]>
     readonly connectionStatus: JDRegisterServer<
@@ -51,7 +51,7 @@ export class AzureIoTHubConfigurationServer extends JDServiceServer {
     ) {
         super(SRV_CLOUD_CONFIGURATION, options)
 
-        this.hubName = this.addRegister(CloudConfigurationReg.HubName, [""])
+        this.serverName = this.addRegister(CloudConfigurationReg.ServerName, [""])
         this.cloudDeviceId = this.addRegister(
             CloudConfigurationReg.CloudDeviceId,
             [""]
@@ -97,7 +97,7 @@ export class AzureIoTHubConfigurationServer extends JDServiceServer {
             this.connectionString = newConnectionString
             this.connStringSetting?.set(newConnectionString)
             const connStringParts = parsePropertyBag(this.connectionString, ";")
-            this.hubName.setValues([connStringParts["HostName"] || ""])
+            this.serverName.setValues([connStringParts["HostName"] || ""])
             this.cloudDeviceId.setValues([connStringParts["DeviceId"] || ""])
             // notify connection string changed
             this.sendEvent(CloudConfigurationEvent.ConnectionStatusChange)
