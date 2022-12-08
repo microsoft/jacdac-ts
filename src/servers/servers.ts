@@ -197,10 +197,10 @@ const medicalThermometerOptions: AnalogSensorServerOptions = {
 }
 const barometerOptions: AnalogSensorServerOptions = {
     readingValues: [1013],
-    readingError: [0.4],
+    readingError: [1.5],
     streamingInterval: 1000,
-    minReading: 300,
-    maxReading: 2000,
+    minReading: 150,
+    maxReading: 4000,
 }
 const sonarOptions: AnalogSensorServerOptions = {
     variant: DistanceVariant.Ultrasonic,
