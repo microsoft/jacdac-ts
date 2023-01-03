@@ -81,7 +81,7 @@ async function main() {
                 logLevel: "warning",
                 external: ["net", "webusb", "crypto", "fs"],
                 platform: cjs ? "node" : "browser",
-                target: "es2019",
+                target: "es2020",
                 format: mjs ? "esm" : cjs ? "cjs" : "iife",
                 globalName: "jacdac",
                 watch,
