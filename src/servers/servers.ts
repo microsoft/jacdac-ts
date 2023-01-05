@@ -97,6 +97,7 @@ import {
     DcVoltageMeasurementReg,
     DcVoltageMeasurementVoltageMeasurementType,
     SRV_PLANAR_POSITION,
+    SRV_SERIAL,
 } from "../jdom/constants"
 import { JDServerServiceProvider } from "../jdom/servers/serverserviceprovider"
 import { ProtocolTestServer } from "../jdom/servers/protocoltestserver"
@@ -155,6 +156,7 @@ import { CloudAdapterServer } from "./cloudadapterserver"
 import { SatNavServer } from "./satnavserver"
 import { PlanarPositionServer } from "./planarpositionserver"
 import { randomDeviceId } from "../jacdac"
+import { SerialServer } from "./serialserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     readingValues: [21.5],
@@ -1259,6 +1261,11 @@ function initProviders() {
                         readingValues: [0.5],
                     }),
                 ],
+            },
+            {
+                name: "serial (115200/8N1)",
+                serviceClasses: [SRV_SERIAL],
+                services: () => [new SerialServer()],
             },
             {
                 name: "servo",
