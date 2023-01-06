@@ -1551,10 +1551,7 @@ ${dev
                             .filter(
                                 reg =>
                                     !reg.data ||
-                                    !(
-                                        isConstRegister(reg.specification) ||
-                                        reg.code === SystemReg.ReadingError
-                                    )
+                                    !isConstRegister(reg.specification)
                             )
                             // stop asking optional registers
                             .filter(
