@@ -22,6 +22,7 @@ export class SerialServer extends JDServiceServer {
         stopBits?: number
         parityMode?: SerialParityType
         bufferSize?: number
+        connectionName?: string
     }) {
         super(SRV_SERIAL)
         const {
@@ -30,6 +31,7 @@ export class SerialServer extends JDServiceServer {
             stopBits = 1,
             parityMode = SerialParityType.None,
             bufferSize = 64,
+            connectionName,
         } = options || {}
 
         this.connected = this.addRegister(SerialReg.Connected, [false])
@@ -38,7 +40,8 @@ export class SerialServer extends JDServiceServer {
         this.stopBits = this.addRegister(SerialReg.StopBits, [stopBits])
         this.parityMode = this.addRegister(SerialReg.ParityMode, [parityMode])
         this.bufferSize = this.addRegister(SerialReg.BufferSize, [bufferSize])
-
+        if (connectionName)
+            this.addRegister(SerialReg.ConnectionName, [connectionName])
         this.addCommand(SerialCmd.Send, this.handleSend.bind(this))
     }
 
