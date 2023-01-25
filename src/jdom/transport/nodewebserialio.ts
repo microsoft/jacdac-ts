@@ -136,8 +136,7 @@ class NodeWebSerialIO implements HF2_IO {
                 console.debug(`serial: found ${this.port.serialNumber}`)
                 await toPromise(cb => {
                     this.dev = new this.SerialPort(
-                        this.port.path,
-                        { baudRate: 1000000 },
+                        { path: this.port.path, baudRate: 1000000 },
                         cb
                     )
                 })
