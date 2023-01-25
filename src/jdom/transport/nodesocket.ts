@@ -1,5 +1,4 @@
 import { NODESOCKET_TRANSPORT } from "../constants"
-import { Packet } from "../packet"
 import { bufferConcat } from "../utils"
 import { Transport, TransportOptions } from "./transport"
 
@@ -15,7 +14,7 @@ class NodeSocketTransport extends Transport {
 
     constructor(
         readonly port: number = 8082,
-        readonly host: string = "localhost",
+        readonly host: string = "127.0.0.1",
         options?: NodeSocketTransportOptions
     ) {
         super(NODESOCKET_TRANSPORT, options)
@@ -26,7 +25,10 @@ class NodeSocketTransport extends Transport {
             // eslint-disable-next-line @typescript-eslint/no-var-requires
             const net = require("net")
             this.sock = net.createConnection(this.port, this.host, resolve)
-            this.sock.on("error", () => this.disconnect(background))
+            this.sock.on("error", (e: any) => {
+                if (!background) console.error(e)
+                this.disconnect(background)
+            })
             this.sock.on("end", () => this.disconnect(background))
             this.sock.setNoDelay()
 
@@ -82,8 +84,8 @@ class NodeSocketTransport extends Transport {
  * @category transport
  */
 export function createNodeSocketTransport(
-    port = 8082,
-    host = "localhost",
+    port?: number,
+    host?: string,
     options?: NodeSocketTransportOptions
 ) {
     return new NodeSocketTransport(port, host, options)
