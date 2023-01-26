@@ -1,7 +1,7 @@
 import { JDBus } from "../bus"
 import { META_TRACE, META_TRACE_DESCRIPTION } from "../constants"
 import { JDFrameBuffer, Packet } from "../packet"
-import { printPacket } from "../pretty"
+import { printPacket, PrintPacketOptions } from "../pretty"
 import { randomDeviceId } from "../random"
 import { roundWithPrecision, toHex } from "../utils"
 
@@ -31,16 +31,32 @@ export function cleanStack(text: string) {
 export function serializeToTrace(
     frame: JDFrameBuffer,
     start?: number,
-    bus?: JDBus
+    bus?: JDBus,
+    options?: PrintPacketOptions
 ) {
-    const data = toHex(frame).padEnd(84, " ")
-    let t = roundWithPrecision(
-        (frame._jacdac_timestamp || 0) - (start || 0),
-        3
-    ).toString()
-    while (t.length < 7) t += " "
-    let descr = frame._jacdac_meta?.[META_TRACE_DESCRIPTION]
-    if (!descr) {
+    const data = toHex(frame).padEnd(60, " ")
+    const t0 = (frame._jacdac_timestamp || 0) - (start || 0)
+    let t = t0.toFixed(3).padEnd(10, " ")
+
+    let descr = frame._jacdac_meta?.[META_TRACE_DESCRIPTION] ?? ""
+
+    if (options) {
+        const perpkt = Packet.fromFrame(frame, undefined, true).map(pkt => {
+            pkt.sender = undefined
+            if (bus) pkt.assignDevice(bus)
+            return printPacket(pkt, options)
+        })
+        if (
+            perpkt.length == 1 &&
+            perpkt[0].length < 70 &&
+            !perpkt[0].includes("\n")
+        )
+            descr += `${perpkt[0]} (${frame._jacdac_sender ?? "loop"})`
+        else {
+            descr += ` (${frame._jacdac_sender ?? "loop"})\n`
+            descr += perpkt.join("\n") + "\n"
+        }
+    } else if (!descr) {
         descr = Packet.fromFrame(frame, undefined, true)
             .map(pkt => {
                 if (bus) pkt.assignDevice(bus)
@@ -48,7 +64,7 @@ export function serializeToTrace(
             })
             .join(" ;; ")
     }
-    let msg = `${t}\t${data}\t${descr}`
+    let msg = `${t} ${data}   ${descr}`
     const trace = frame._jacdac_meta?.[META_TRACE] as string
     if (trace) msg += "\n" + cleanStack(trace)
     return msg
