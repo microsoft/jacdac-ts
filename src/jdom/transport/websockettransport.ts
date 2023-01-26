@@ -27,7 +27,7 @@ export class WebSocketTransport extends Transport {
     constructor(readonly url: string, options?: WebSocketTransportOptions) {
         super(WEBSOCKET_TRANSPORT, options)
         this.protocols = options?.protocols
-        this.on(FRAME_SEND_DISCONNECT, this.handleSendDisconnect)
+        this.on(FRAME_SEND_DISCONNECT, this.handleSendDisconnect.bind(this))
     }
 
     private handleSendDisconnect() {
@@ -39,11 +39,22 @@ export class WebSocketTransport extends Transport {
     }
 
     protected transportConnectAsync(background?: boolean): Promise<void> {
-        return new Promise(resolve => {
+        return new Promise<void>((resolve, reject) => {
             this.ws = new WebSocket(this.url, this.protocols)
-            this.ws.binaryType = "arraybuffer"
-            this.ws.onopen = () => resolve()
-            this.ws.onerror = () => this.disconnect(background)
+            if (this.ws.binaryType != "arraybuffer")
+                this.ws.binaryType = "arraybuffer"
+            this.ws.onopen = () => {
+                const f = resolve
+                resolve = null
+                if (f) f()
+            }
+            this.ws.onerror = err => {
+                this.disconnect(background)
+                if (resolve) {
+                    resolve = null
+                    reject(err)
+                }
+            }
             this.ws.onclose = () => this.disconnect(background)
             this.ws.onmessage = (ev: MessageEvent<ArrayBuffer>) => {
                 const { data } = ev
@@ -54,7 +65,7 @@ export class WebSocketTransport extends Transport {
     }
 
     protected transportSendPacketAsync(data: Uint8Array): Promise<void> {
-        if (this.ws?.readyState === this.ws.OPEN) {
+        if (this.ws?.readyState === WebSocket.OPEN) {
             this.ws.send(data)
         }
         return Promise.resolve()
