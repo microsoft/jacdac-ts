@@ -4,11 +4,17 @@ const fs = require("fs")
 const childProcess = require("child_process")
 
 let watch = false
+let fast = false
 
 const args = process.argv.slice(2)
 if (args[0] == "--watch" || args[0] == "-watch" || args[0] == "-w") {
     args.shift()
     watch = true
+}
+
+if (args[0] == "--fast" || args[0] == "-fast" || args[0] == "-f") {
+    args.shift()
+    fast = true
 }
 
 if (args.length) {
@@ -88,8 +94,10 @@ async function main() {
             })
         }
         console.log("bundle done")
-        await runTSC(["-b", "."])
-        await runTSC(["-b", "src/worker"])
+        if (!fast) {
+            await runTSC(["-b", "."])
+            await runTSC(["-b", "src/worker"])
+        }
     } catch {}
 }
 
