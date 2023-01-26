@@ -1,4 +1,9 @@
-import { FRAME_SEND_DISCONNECT, WEBSOCKET_TRANSPORT } from "../constants"
+import {
+    FRAME_SEND_DISCONNECT,
+    SIDE_DATA,
+    WEBSOCKET_TRANSPORT,
+} from "../constants"
+import { JSONTryParse } from "../utils"
 import { Transport, TransportOptions } from "./transport"
 
 const RECONNECT_TIMEOUT = 5000
@@ -56,10 +61,15 @@ export class WebSocketTransport extends Transport {
                 }
             }
             this.ws.onclose = () => this.disconnect(background)
-            this.ws.onmessage = (ev: MessageEvent<ArrayBuffer>) => {
+            this.ws.onmessage = (ev: MessageEvent<ArrayBuffer | string>) => {
                 const { data } = ev
-                const buffer = new Uint8Array(data)
-                this.handleFrame(buffer)
+                if (typeof data == "string") {
+                    const d = JSONTryParse(data, null)
+                    if (d) this.emit(SIDE_DATA, d)
+                } else {
+                    const buffer = new Uint8Array(data)
+                    this.handleFrame(buffer)
+                }
             }
         })
     }
@@ -69,6 +79,15 @@ export class WebSocketTransport extends Transport {
             this.ws.send(data)
         }
         return Promise.resolve()
+    }
+
+    override sendSideData(data: any): Promise<void> {
+        if (this.ws?.readyState === WebSocket.OPEN) {
+            this.ws.send(JSON.stringify(data))
+            return Promise.resolve()
+        } else {
+            throw new Error(`socket closed, can't send side data`)
+        }
     }
 
     protected transportDisconnectAsync(background?: boolean): Promise<void> {

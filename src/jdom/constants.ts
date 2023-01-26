@@ -101,6 +101,7 @@ export const IDENTIFY_DURATION = 2000
 export const RESET = "reset"
 
 export const DATA = "data"
+export const SIDE_DATA = "sideData"
 export const CLOSE = "close"
 
 export const DEVICE_CONNECT = "deviceConnect"

@@ -329,6 +329,10 @@ export abstract class Transport extends JDEventSource {
         this.disconnect(true)
     }
 
+    sendSideData(data: any): Promise<void> {
+        throw new Error(`side data not supported on ${this}`)
+    }
+
     dispose() {
         this.disposed = true
         this._cleanups.forEach(c => c())
