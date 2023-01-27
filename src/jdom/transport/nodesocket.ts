@@ -18,6 +18,7 @@ class NodeSocketTransport extends Transport {
         options?: NodeSocketTransportOptions
     ) {
         super(NODESOCKET_TRANSPORT, options)
+        this.shared = true;
     }
 
     protected transportConnectAsync(background?: boolean): Promise<void> {

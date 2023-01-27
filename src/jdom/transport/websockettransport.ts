@@ -31,6 +31,7 @@ export class WebSocketTransport extends Transport {
 
     constructor(readonly url: string, options?: WebSocketTransportOptions) {
         super(WEBSOCKET_TRANSPORT, options)
+        this.shared = true
         this.protocols = options?.protocols
         this.on(FRAME_SEND_DISCONNECT, this.handleSendDisconnect.bind(this))
     }

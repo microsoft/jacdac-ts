@@ -53,10 +53,10 @@ import {
     REGISTER_POLL_REPORT_VOLATILE_MAX_INTERVAL,
     REGISTER_POLL_REPORT_VOLATILE_INTERVAL,
     SRV_INFRASTRUCTURE,
-    CONNECTION_STATE,
     PACKET_RECEIVE_NO_DEVICE,
     FRAME_PROCESS,
     FRAME_SEND,
+    CONNECTION_STATE,
 } from "./constants"
 import { serviceClass } from "./pretty"
 import { JDNode } from "./node"
@@ -309,21 +309,6 @@ export class JDBus extends JDNode {
         // the purpose of this code is to orchestrate
         // interactions with multiple tabs and windows
         const channel = new BroadcastChannel("jacdac")
-        const postConnectionState = () => {
-            channel.postMessage({
-                id: this.selfDevice.shortId,
-                event: CONNECTION_STATE,
-                transports: this._transports.map(tr => ({
-                    type: tr.type,
-                    connectionState: tr.connectionState,
-                })),
-            })
-        }
-        // update other windows with connection status
-        const unsubConnectionState = this.subscribe(
-            CONNECTION_STATE,
-            postConnectionState
-        )
         this._postBroadcastMessage = (
             event: BusBroadcastMessageType,
             msg: Partial<BusBroadcastMessage>
@@ -336,8 +321,23 @@ export class JDBus extends JDNode {
             //console.debug(`jacdac broadcast: ${bmsg.event}`, bmsg)
             channel.postMessage(bmsg)
         }
+        const handleConnectionState = () => {
+            this._postBroadcastMessage?.("connectionstate", <
+                BusBroadcastConnectionStateMessage
+            >{
+                transports: this._transports.map(tr => ({
+                    type: tr.type,
+                    connectionState: tr.connectionState,
+                })),
+            })
+        }
+        // update other windows with connection status
+        const unsubConnectionState = this.subscribe(
+            CONNECTION_STATE,
+            handleConnectionState
+        )
         const handleVisibilityChange = () =>
-            this._postBroadcastMessage("visibilitychange", <
+            this._postBroadcastMessage?.("visibilitychange", <
                 BusBroadcastVisibilityChangeMessage
             >{
                 visibilityState: document.visibilityState,
@@ -381,7 +381,9 @@ export class JDBus extends JDNode {
                         )
                         .forEach(ctr => {
                             this.transports
-                                .filter(tr => tr.type === ctr.type)
+                                .filter(
+                                    tr => !tr.shared && tr.type === ctr.type
+                                )
                                 .forEach(tr => tr.disconnect())
                         })
                 }
