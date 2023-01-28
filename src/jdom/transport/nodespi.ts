@@ -74,6 +74,7 @@ class SpiTransport extends Transport {
         readonly options: SpiTransportOptions
     ) {
         super("spi", options)
+        this.shared = true
         this.handleRxPinRising = this.handleRxPinRising.bind(this)
         this.handleTxPinRising = this.handleTxPinRising.bind(this)
 

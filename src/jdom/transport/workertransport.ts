@@ -27,9 +27,11 @@ class WorkerTransport extends Transport {
         public readonly worker: Worker,
         public readonly options: {
             requestDevice: () => Promise<string>
+            shared: boolean
         } & TransportOptions
     ) {
         super(type, options)
+        this.shared = options.shared
         this.worker.addEventListener("message", this.handleMessage.bind(this))
     }
 
@@ -119,6 +121,7 @@ export function createUSBWorkerTransport(worker: Worker) {
         isWebUSBEnabled() &&
         new WorkerTransport(USB_TRANSPORT, worker, {
             checkPulse: true,
+            shared: false,
             requestDevice: () =>
                 usbRequestDevice(USB_FILTERS).then(dev => dev?.serialNumber),
             connectObservable: new EventTargetObservable(

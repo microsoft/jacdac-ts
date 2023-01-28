@@ -87,6 +87,11 @@ export abstract class Transport extends JDEventSource {
         ].filter(c => !!c)
     }
 
+    /**
+     * Allows multiple clients
+     */
+    shared: boolean;
+
     get bus() {
         return this._bus
     }
