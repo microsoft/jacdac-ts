@@ -1,4 +1,4 @@
-interface Version {
+export interface Version {
     major: number
     minor: number
     patch: number
@@ -38,7 +38,7 @@ function cmp(a: Version, b: Version) {
     }
 }
 
-function tryParse(v: string): Version {
+export function tryParse(v: string): Version {
     if (!v) return null
     if ("*" === v) {
         return {
