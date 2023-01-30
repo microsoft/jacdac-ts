@@ -38,7 +38,7 @@ function cmp(a: Version, b: Version) {
     }
 }
 
-export function tryParse(v: string): Version {
+export function versionTryParse(v: string): Version {
     if (!v) return null
     if ("*" === v) {
         return {
@@ -72,8 +72,8 @@ function strcmp(a: string, b: string) {
 }
 
 export function semverCmp(a: string, b: string) {
-    const aa = tryParse(a)
-    const bb = tryParse(b)
+    const aa = versionTryParse(a)
+    const bb = versionTryParse(b)
     if (!aa && !bb) return strcmp(a, b)
     else return cmp(aa, bb)
 }
