@@ -121,11 +121,10 @@ export class JDService extends JDNode {
      * @category JDOM
      */
     get friendlyName() {
+        const { instanceName, serviceInstanceIndex } = this
         let r = `${this.device.friendlyName}.${this.name}`
-        if (
-            this.device.services({ serviceClass: this.serviceClass }).length > 1
-        )
-            r += `[${this.serviceInstanceIndex}]`
+        if (instanceName) r += `.${instanceName}`
+        else if (serviceInstanceIndex > 0) r += `[${serviceInstanceIndex}]`
         return r
     }
 
