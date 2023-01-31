@@ -577,10 +577,10 @@ export function serviceName(serviceClass: number): string {
     return serv ? serv.name.toUpperCase() : "?"
 }
 
-export function serviceShortIdOrClass(serviceClass: number) {
+export function serviceShortIdOrClass(serviceClass: number, hexPrefix = "0x") {
     if (!isSet(serviceClass)) return "?"
     const serv = serviceSpecificationFromClassIdentifier(serviceClass)
-    return serv?.shortId || `0x${serviceClass.toString(16)}`
+    return serv?.shortId || `${hexPrefix}${serviceClass.toString(16)}`
 }
 
 export function deviceServiceName(pkt: Packet): string {

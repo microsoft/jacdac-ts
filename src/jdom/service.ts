@@ -1,6 +1,6 @@
 import { JDDevice } from "./device"
 import { Packet } from "./packet"
-import { serviceName } from "./pretty"
+import { serviceShortIdOrClass } from "./pretty"
 import { JDRegister } from "./register"
 import {
     PACKET_RECEIVE,
@@ -113,28 +113,37 @@ export class JDService extends JDNode {
      * @category JDOM
      */
     get name() {
-        return serviceName(this.serviceClass)?.toLowerCase()
+        return serviceShortIdOrClass(this.serviceClass, "x").toLowerCase()
     }
 
     /**
-     * Gets the service name and parent names
+     * Gets the service name and parent names and service instance index
      * @category JDOM
      */
     get friendlyName() {
-        const parts = [this.device.friendlyName]
+        let r = `${this.device.friendlyName}.${this.name}`
         if (
             this.device.services({ serviceClass: this.serviceClass }).length > 1
         )
-            parts.push(`[${this.serviceIndex.toString(16)}]`)
-        return parts.join(".")
+            r += `[${this.serviceInstanceIndex}]`
+        return r
     }
 
     /**
-     * Gets the service qualified name
+     * Gets the service qualified name and service instance index
      * @category JDOM
      */
     get qualifiedName() {
-        return `${this.device.qualifiedName}[${this.serviceIndex.toString(16)}]`
+        return `${this.device.qualifiedName}.${this.name}[${this.serviceInstanceIndex}]`
+    }
+
+    /**
+     * Gets the index of this service class instance. Provides a stable ordering into a list of services.
+     */
+    get serviceInstanceIndex() {
+        return this.device
+            .services({ serviceClass: this.serviceClass })
+            .indexOf(this)
     }
 
     /**
