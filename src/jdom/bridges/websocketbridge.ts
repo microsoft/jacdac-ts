@@ -1,5 +1,5 @@
 import { JDBridge } from "../bridge"
-import { CLOSE } from "../constants"
+import { CLOSE, CONNECT } from "../constants"
 
 export class WebSocketBridge extends JDBridge {
     private _ws: WebSocket
@@ -38,6 +38,7 @@ export class WebSocketBridge extends JDBridge {
                     this._ws = ws
                     this._startPromise = undefined
                     console.debug(`web bridge opened`, { url: this.url })
+                    this.emit(CONNECT)
                     resolve()
                 }
                 ws.onerror = e => {

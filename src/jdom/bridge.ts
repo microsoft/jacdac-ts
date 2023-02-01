@@ -14,6 +14,7 @@ export abstract class JDBridge extends JDClient {
     packetSent = 0
     packetProcessed = 0
     currFrame: JDFrameBuffer
+    readonly nodeData: Record<string, object> = {}
 
     constructor(name: string, public readonly infrastructure: boolean = false) {
         super()
