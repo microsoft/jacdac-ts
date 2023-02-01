@@ -5,8 +5,12 @@ export class WebSocketBridge extends JDBridge {
     private _ws: WebSocket
     private _startPromise: Promise<void>
 
-    constructor(readonly url: string, readonly protocols?: string | string[]) {
-        super("ws", true)
+    constructor(
+        name: string,
+        readonly url: string,
+        readonly protocols?: string | string[]
+    ) {
+        super(name, true)
 
         this.mount(() => this.close())
     }
