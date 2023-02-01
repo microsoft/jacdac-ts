@@ -1,12 +1,12 @@
 import { JDBridge } from "../bridge"
 import { CLOSE } from "../constants"
 
-export default class WebSocketBridge extends JDBridge {
+export class WebSocketBridge extends JDBridge {
     private _ws: WebSocket
     private _startPromise: Promise<void>
 
     constructor(readonly url: string, readonly protocols?: string | string[]) {
-        super("brain", true)
+        super("ws", true)
 
         this.mount(() => this.close())
     }
