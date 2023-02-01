@@ -71,15 +71,11 @@ export class CloudManager extends JDNode {
         return this._scripts?.find(d => d.data.id === scriptId)
     }
 
-    async createScript(
-        name: string,
-        editor?: "js" | "blocks"
-    ): Promise<CloudScript> {
+    async createScript(name: string): Promise<CloudScript> {
         const body = {
             name,
             meta: {},
             body: {
-                blocks: editor === "blocks" ? "" : undefined,
                 text: "",
                 compiled: "",
             },
@@ -411,8 +407,10 @@ export interface CloudScriptData extends CloudData {
 }
 
 export interface CloudScriptBody {
-    blocks?: string
     text: string
+    /**
+     * Hex encoded bytecode
+     */
     compiled: string
 }
 
@@ -468,10 +466,6 @@ export class CloudScript extends CloudNode<CloudScriptData> {
 
     get body(): CloudScriptBody {
         return this._body
-    }
-
-    get sourceBlocks(): string {
-        return this.body?.blocks
     }
 
     get sourceText(): string {
