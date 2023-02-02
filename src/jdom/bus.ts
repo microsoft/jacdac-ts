@@ -57,6 +57,7 @@ import {
     PACKET_RECEIVE_NO_DEVICE,
     FRAME_PROCESS,
     FRAME_SEND,
+    DISPOSE,
 } from "./constants"
 import { serviceClass } from "./pretty"
 import { JDNode } from "./node"
@@ -450,7 +451,7 @@ export class JDBus extends JDNode {
      * Adds a transport to the bus. Returns unregistration handler
      * @category Transports and Bridges
      */
-    addTransport(transport: Transport | undefined) {
+    addTransport(transport: Transport | undefined): () => void {
         if (!transport || this._transports.indexOf(transport) > -1) return // already added
 
         this._transports.push(transport)
@@ -458,14 +459,18 @@ export class JDBus extends JDNode {
         const pre = () => this.preConnect(transport)
         this.on(CONNECTING, pre)
 
-        return () => {
+        const unmount = () => {
             const i = this._transports.indexOf(transport)
             if (i > -1) {
+                this.off(CONNECTING, pre)
                 transport.bus = undefined
                 this._transports.splice(i, 1)
-                this.off(CONNECTING, pre)
             }
         }
+
+        transport.on(DISPOSE, unmount)
+
+        return unmount
     }
 
     /**

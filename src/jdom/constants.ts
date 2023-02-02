@@ -103,6 +103,7 @@ export const RESET = "reset"
 export const DATA = "data"
 export const SIDE_DATA = "sideData"
 export const CLOSE = "close"
+export const DISPOSE = "dispose"
 
 export const DEVICE_CONNECT = "deviceConnect"
 export const DEVICE_LOST = "deviceLost"
