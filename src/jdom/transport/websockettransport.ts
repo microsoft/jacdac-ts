@@ -14,6 +14,7 @@ const RECONNECT_TIMEOUT = 5000
  */
 export interface WebSocketTransportOptions extends TransportOptions {
     protocols: string | string[]
+    WebSocket?: any
 }
 
 /**
@@ -28,9 +29,11 @@ export class WebSocketTransport extends Transport {
     private readonly protocols: string | string[]
     private ws: WebSocket
     private lastConnectTimestamp = 0
+    private WebSocket: any
 
     constructor(readonly url: string, options?: WebSocketTransportOptions) {
         super(WEBSOCKET_TRANSPORT, options)
+        this.WebSocket = options?.WebSocket || WebSocket
         this.protocols = options?.protocols
         this.on(FRAME_SEND_DISCONNECT, this.handleSendDisconnect.bind(this))
     }
@@ -49,7 +52,7 @@ export class WebSocketTransport extends Transport {
 
     protected transportConnectAsync(background?: boolean): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            this.ws = new WebSocket(this.url, this.protocols)
+            this.ws = new this.WebSocket(this.url, this.protocols)
             if (this.ws.binaryType != "arraybuffer")
                 this.ws.binaryType = "arraybuffer"
             this.ws.onopen = () => {
@@ -79,14 +82,14 @@ export class WebSocketTransport extends Transport {
     }
 
     protected transportSendPacketAsync(data: Uint8Array): Promise<void> {
-        if (this.ws?.readyState === WebSocket.OPEN) {
+        if (this.ws?.readyState === this.WebSocket.OPEN) {
             this.ws.send(data)
         }
         return Promise.resolve()
     }
 
     override sendSideData(data: any): Promise<void> {
-        if (this.ws?.readyState === WebSocket.OPEN) {
+        if (this.ws?.readyState === this.WebSocket.OPEN) {
             this.ws.send(JSON.stringify(data))
             return Promise.resolve()
         } else {
