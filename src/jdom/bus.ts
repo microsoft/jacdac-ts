@@ -451,22 +451,21 @@ export class JDBus extends JDNode {
      * Adds a transport to the bus. Returns unregistration handler
      * @category Transports and Bridges
      */
-    addTransport(transport: Transport | undefined): () => void {
+    addTransport(transport: Transport | undefined): () => Promise<void> {
         if (!transport || this._transports.indexOf(transport) > -1) return // already added
 
         this._transports.push(transport)
-        transport.bus = this
+        transport.setBus(this)
         const pre = () => this.preConnect(transport)
         this.on(CONNECTING, pre)
 
-        const unmount = () => {
+        const unmount = async () => {
             const i = this._transports.indexOf(transport)
             if (i > -1) {
                 this.off(CONNECTING, pre)
-                transport.bus = undefined
                 this._transports.splice(i, 1)
-
                 this.emit(CONNECTION_STATE)
+                await transport.setBus(undefined)
             }
         }
 
@@ -677,6 +676,7 @@ export class JDBus extends JDNode {
      */
     async dispose() {
         console.debug(`${this.id}: disposing.`)
+        this.emit(DISPOSE)
         await this.stop()
         this._transports.forEach(transport => transport.dispose())
     }

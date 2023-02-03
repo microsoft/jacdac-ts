@@ -12,6 +12,7 @@ import {
     SELF_ANNOUNCE,
     TRANSPORT_CONNECT_RETRY_DELAY,
     TRANSPORT_PULSE_TIMEOUT,
+    DISPOSE,
 } from "../constants"
 import { isCancelError } from "../error"
 import { JDEventSource } from "../eventsource"
@@ -91,13 +92,20 @@ export abstract class Transport extends JDEventSource {
         return this._bus
     }
 
-    set bus(bus: JDBus) {
-        assert(!this._bus && !!bus)
+    async disconnectBus() {
+        if (this._bus) {
+            this._bus.off(SELF_ANNOUNCE, this.checkPulse)
+            await this.disconnect() // async
+        }
+        this._bus = undefined
+    }
+
+    setBus(bus: JDBus) {
+        assert(!this._bus)
+        assert(!!bus)
         this._bus = bus
-        if (this._bus) this.disconnect() // async
         if (this._bus && this._checkPulse)
             this._bus.on(SELF_ANNOUNCE, this.checkPulse)
-        else this._bus.off(SELF_ANNOUNCE, this.checkPulse)
     }
 
     private _connectionState = ConnectionState.Disconnected
@@ -334,6 +342,7 @@ export abstract class Transport extends JDEventSource {
     }
 
     dispose() {
+        this.emit(DISPOSE)
         this.disposed = true
         this._cleanups.forEach(c => c())
         this._cleanups = []
