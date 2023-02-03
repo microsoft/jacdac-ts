@@ -34,15 +34,20 @@ export interface WebSerialOptions {
 export class WebSerialTransport extends Transport {
     private mkTransport: (bus: JDBus) => HF2_IO
     private hf2: Proto
+    private transport: HF2_IO
     constructor(options: WebSerialOptions) {
         super(SERIAL_TRANSPORT, { ...options, checkPulse: true })
         this.mkTransport = options.mkTransport
     }
 
+    description(): string {
+        return this.transport?.description()
+    }
+
     protected async transportConnectAsync(background: boolean) {
-        const transport = this.mkTransport(this.bus)
-        transport.onError = e => this.errorHandler(SERIAL_TRANSPORT, e)
-        this.hf2 = await transport.connectAsync(background)
+        this.transport = this.mkTransport(this.bus)
+        this.transport.onError = e => this.errorHandler(SERIAL_TRANSPORT, e)
+        this.hf2 = await this.transport.connectAsync(background)
         this.hf2.onJDMessage(this.handleFrame.bind(this))
     }
 
@@ -55,6 +60,7 @@ export class WebSerialTransport extends Transport {
     protected async transportDisconnectAsync(background?: boolean) {
         const h = this.hf2
         this.hf2 = undefined
+        this.transport = undefined
         if (h) await h.disconnectAsync()
     }
 }

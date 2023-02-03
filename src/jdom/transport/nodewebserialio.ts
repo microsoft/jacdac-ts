@@ -98,6 +98,12 @@ class NodeWebSerialIO implements HF2_IO {
             .then(() => delay(500))
     }
 
+    description() {
+        return this.port
+            ? `${this.port.path}, vendor: ${this.port.vendorId}, product: ${this.port.productId}`
+            : undefined
+    }
+
     private devInfo() {
         if (!this.port) return "n/a"
         return this.port.vendorId + ":" + this.port.productId

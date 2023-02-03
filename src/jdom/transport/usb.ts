@@ -3,9 +3,9 @@ import { EventTargetObservable } from "./eventtargetobservable"
 import { Flags } from "../flags"
 import { USB_TRANSPORT } from "../constants"
 import { Transport } from "./transport"
-import { JDBus,  BusOptions } from "../bus"
+import { JDBus, BusOptions } from "../bus"
 import { Proto } from "./proto"
-import { USBIO,  USBOptions } from "./usbio"
+import { USBIO, USBOptions } from "./usbio"
 
 export function isWebUSBEnabled(): boolean {
     return !!Flags.webUSB
@@ -50,15 +50,20 @@ function usbGetDevices(): Promise<USBDevice[]> {
 }
 
 class WebUSBTransport extends Transport {
+    private transport: USBIO
     private hf2: Proto
     constructor(public readonly options: USBOptions) {
         super(USB_TRANSPORT, { ...options, checkPulse: true })
     }
 
+    description() {
+        return this.transport?.description()
+    }
+
     protected async transportConnectAsync(background: boolean) {
-        const transport = new USBIO(this.options)
-        transport.onError = e => this.errorHandler(USB_TRANSPORT, e)
-        this.hf2 = await transport.connectAsync(background)
+        this.transport = new USBIO(this.options)
+        this.transport.onError = e => this.errorHandler(USB_TRANSPORT, e)
+        this.hf2 = await this.transport.connectAsync(background)
         this.hf2.onJDMessage(this.handleFrame.bind(this))
     }
 
@@ -71,6 +76,7 @@ class WebUSBTransport extends Transport {
     protected async transportDisconnectAsync(background?: boolean) {
         const h = this.hf2
         this.hf2 = undefined
+        this.transport = undefined
         if (h) await h.disconnectAsync()
     }
 }

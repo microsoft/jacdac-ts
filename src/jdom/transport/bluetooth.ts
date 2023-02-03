@@ -83,6 +83,10 @@ class BluetoothTransport extends Transport {
             this.handleCharacteristicChanged.bind(this)
     }
 
+    description(): string {
+        return this._device?.name
+    }
+
     protected async transportConnectAsync(background: boolean) {
         // get a device
         if (background) {

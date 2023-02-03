@@ -50,6 +50,10 @@ export class USBIO implements HF2_IO {
 
     constructor(public readonly options: USBOptions) {}
 
+    description() {
+        return this.dev?.productName
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onData = (v: Uint8Array) => {}
     onError = (e: Error) => {

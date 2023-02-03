@@ -92,6 +92,10 @@ export abstract class Transport extends JDEventSource {
         return this._bus
     }
 
+    description(): string {
+        return undefined
+    }
+
     async disconnectBus() {
         if (this._bus) {
             this._bus.off(SELF_ANNOUNCE, this.checkPulse)

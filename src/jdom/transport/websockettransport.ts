@@ -35,6 +35,10 @@ export class WebSocketTransport extends Transport {
         this.on(FRAME_SEND_DISCONNECT, this.handleSendDisconnect.bind(this))
     }
 
+    description() {
+        return this.url
+    }
+
     private handleSendDisconnect() {
         const now = this.bus.timestamp
         if (now - this.lastConnectTimestamp > RECONNECT_TIMEOUT) {

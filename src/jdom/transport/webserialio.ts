@@ -16,31 +16,40 @@ export class WebSerialIO implements HF2_IO {
 
     constructor(readonly bus: JDBus) {}
 
+    description() {
+        const info = this.dev?.getInfo()
+        return info
+            ? `vendor: ${info.usbVendorId}, product: ${info.usbProductId}`
+            : undefined
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onData = (v: Uint8Array) => {}
     onError = (e: Error) => {
-        console.warn(`usb error: ${errorCode(e) || ""} ${e ? e.stack : e}`)
+        console.warn(
+            `webserial error: ${errorCode(e) || ""} ${e ? e.stack : e}`
+        )
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     log(msg: string, v?: any) {
         if (Flags.diagnostics) {
-            if (v != undefined) console.debug("usb: " + msg, v)
-            else console.debug("usb: " + msg)
+            if (v != undefined) console.debug("webserial: " + msg, v)
+            else console.debug("webserial: " + msg)
         }
     }
 
     private clearDev() {
         if (this.dev) {
             this.dev = null
-            this.onData = () => console.warn("rogue webserial hf2 onData")
+            this.onData = () => console.warn("webserial: rogue hf2 onData")
         }
     }
 
     disconnectAsync(): Promise<void> {
         this.ready = false
         if (!this.dev) return Promise.resolve()
-        console.debug("close device")
+        console.debug("webserial: close device")
         return this.cancelStreams()
             .catch(e => {
                 // just ignore errors closing, most likely device just disconnected
@@ -60,7 +69,7 @@ export class WebSerialIO implements HF2_IO {
     }
 
     error(msg: string, code?: string) {
-        const e = new JDError(`serial device ${this.devInfo()} (${msg})`, {
+        const e = new JDError(`webserial: device ${this.devInfo()} (${msg})`, {
             code,
         })
         this.onError(e)
@@ -84,7 +93,7 @@ export class WebSerialIO implements HF2_IO {
         if (this.readLoopStarted) return
 
         this.readLoopStarted = true
-        console.debug("start read loop")
+        console.debug("webserial: start read loop")
 
         const readpkt = async (
             reader: ReadableStreamDefaultReader<Uint8Array>

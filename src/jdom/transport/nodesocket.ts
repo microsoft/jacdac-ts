@@ -20,6 +20,10 @@ class NodeSocketTransport extends Transport {
         super(NODESOCKET_TRANSPORT, options)
     }
 
+    description(): string {
+        return `${this.host}:${this.port}`
+    }
+
     protected transportConnectAsync(background?: boolean): Promise<void> {
         return new Promise(resolve => {
             // eslint-disable-next-line @typescript-eslint/no-var-requires

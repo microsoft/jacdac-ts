@@ -115,6 +115,7 @@ export interface HF2_IO {
     disconnectAsync(): Promise<void>
     error(msg: string, code?: string): void
     sendPacketAsync(pkt: Uint8Array): Promise<void>
+    description?: () => string
 }
 
 export class HF2Proto implements Proto {
