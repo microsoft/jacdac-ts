@@ -461,7 +461,9 @@ export class CloudScript extends CloudNode<CloudScriptData> {
     }
 
     get displayName(): string {
-        return `${this.name} ${this.data.version || ""}`
+        return `${this.name} ${
+            this.data.version !== undefined ? `v${this.data.version}` : ""
+        }`
     }
 
     get body(): CloudScriptBody {
