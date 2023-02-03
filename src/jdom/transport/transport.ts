@@ -53,6 +53,7 @@ export abstract class Transport extends JDEventSource {
     private _lastReceivedTime: number
     protected disposed = false
     private _cleanups: (() => void)[]
+    resourceGroupId: string
 
     constructor(readonly type: string, options?: TransportOptions) {
         super()

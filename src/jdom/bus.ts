@@ -465,7 +465,7 @@ export class JDBus extends JDNode {
                 this.off(CONNECTING, pre)
                 this._transports.splice(i, 1)
                 this.emit(CONNECTION_STATE)
-                await transport.setBus(undefined)
+                await transport.disconnectBus()
             }
         }
 
