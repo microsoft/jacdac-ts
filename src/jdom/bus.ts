@@ -465,10 +465,14 @@ export class JDBus extends JDNode {
                 this.off(CONNECTING, pre)
                 transport.bus = undefined
                 this._transports.splice(i, 1)
+
+                this.emit(CONNECTION_STATE)
             }
         }
 
         transport.on(DISPOSE, unmount)
+
+        this.emit(CONNECTION_STATE)
 
         return unmount
     }
