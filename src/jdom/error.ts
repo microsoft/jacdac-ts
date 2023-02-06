@@ -40,7 +40,11 @@ export function isCancelError(e: Error) {
 }
 
 export function isAckError(e: Error) {
-    return errorCode(e) === ERROR_NO_ACK
+    return isCodeError(e, ERROR_NO_ACK)
+}
+
+export function isCodeError(e: Error, code: string) {
+    return errorCode(e) === code
 }
 
 /**

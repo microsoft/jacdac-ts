@@ -1,8 +1,10 @@
 import {
+    ERROR_TRANSPORT_CLOSED,
     FRAME_SEND_DISCONNECT,
     SIDE_DATA,
     WEBSOCKET_TRANSPORT,
 } from "../constants"
+import { throwError } from "../error"
 import { JSONTryParse } from "../utils"
 import { Transport, TransportOptions } from "./transport"
 
@@ -93,7 +95,9 @@ export class WebSocketTransport extends Transport {
             this.ws.send(JSON.stringify(data))
             return Promise.resolve()
         } else {
-            throw new Error(`socket closed, can't send side data`)
+            throwError(`socket closed, can't send side data`, {
+                code: ERROR_TRANSPORT_CLOSED,
+            })
         }
     }
 
