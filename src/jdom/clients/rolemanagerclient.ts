@@ -18,6 +18,7 @@ import {
     SELF_ANNOUNCE,
     SystemEvent,
 } from "../constants"
+import { JDEvent } from "../event"
 import { jdpack, jdunpack, PackedSimpleValue } from "../pack"
 import { Packet } from "../packet"
 import { InPipeReader } from "../pipes"
@@ -172,12 +173,12 @@ export class RoleManagerClient extends JDServiceClient {
     private _roles: Role[] = []
     private _needRefresh = true
     private _lastRefreshAttempt = 0
-
+    public readonly changeEvent: JDEvent
     public readonly startRefreshRoles: () => void
 
     constructor(service: JDService) {
         super(service)
-        const changeEvent = service.event(SystemEvent.Change)
+        this.changeEvent = service.event(SystemEvent.Change)
 
         // always debounce refresh roles
         this.startRefreshRoles = debounceAsync(
@@ -186,7 +187,9 @@ export class RoleManagerClient extends JDServiceClient {
         )
 
         // role manager emits change events
-        this.mount(changeEvent.subscribe(EVENT, this.handleChange.bind(this)))
+        this.mount(
+            this.changeEvent.subscribe(EVENT, this.handleChange.bind(this))
+        )
         // assign roles when need device enter the bus
         this.mount(
             this.bus.subscribe(DEVICE_ANNOUNCE, this.assignRoles.bind(this))
