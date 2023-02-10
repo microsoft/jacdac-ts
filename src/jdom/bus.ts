@@ -272,7 +272,7 @@ export class JDBus extends JDNode {
             serialVendorIds,
         } = options || {}
 
-        this._roleManagerClient = disableRoleManager ? null : undefined
+        this._roleManagerClient = undefined
         this.selfDeviceId = deviceId || randomDeviceId()
         this.scheduler = scheduler || new WallClockScheduler()
         this.parentOrigin = parentOrigin || "*"
@@ -293,7 +293,8 @@ export class JDBus extends JDNode {
         // tell RTC clock the computer time
         this.on(DEVICE_ANNOUNCE, this.handleRealTimeClockSync.bind(this))
         // grab the default role manager
-        this.on(DEVICE_CHANGE, this.handleRoleManager.bind(this))
+        if (!disableRoleManager)
+            this.on(DEVICE_CHANGE, this.handleRoleManager.bind(this))
 
         // start all timers
         this.start()
@@ -805,9 +806,6 @@ export class JDBus extends JDNode {
      * Specifies the current role manager
      */
     setRoleManagerService(service: JDService) {
-        // feature disabled
-        if (this._roleManagerClient === null) return
-
         // unchanged service
         if (this._roleManagerClient?.service === service) return
 
