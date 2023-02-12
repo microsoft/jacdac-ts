@@ -292,6 +292,9 @@ export function isOptionalReadingRegisterCode(code: number) {
         SystemReg.ReadingError,
         SystemReg.ReadingResolution,
         SystemReg.StreamingPreferredInterval,
+
+        SystemReg.StreamingInterval,
+        SystemReg.StreamingSamples,
     ]
     return regs.indexOf(code) > -1
 }

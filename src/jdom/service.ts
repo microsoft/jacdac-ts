@@ -335,7 +335,7 @@ export class JDService extends JDNode {
                     !isOptionalReadingRegisterCode(registerCode)
                 )
                     console.debug(
-                        `attempting to access register ${
+                        `attempting to access register ${this}.${
                             SystemReg[registerCode] ||
                             `0x${registerCode.toString(16)}`
                         }`
