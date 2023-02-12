@@ -1,5 +1,6 @@
 import {
     ERROR_NO_ACK,
+    ERROR_TIMEOUT,
     ERROR_TRANSPORT_DEVICE_LOCKED,
     JACDAC_ERROR,
 } from "./constants"
@@ -41,6 +42,10 @@ export function isCancelError(e: Error) {
 
 export function isAckError(e: Error) {
     return isCodeError(e, ERROR_NO_ACK)
+}
+
+export function isTimeoutError(e: Error) {
+    return isCodeError(e, ERROR_TIMEOUT)
 }
 
 export function isCodeError(e: Error, code: string) {

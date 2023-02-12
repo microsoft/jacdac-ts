@@ -8,6 +8,7 @@ import {
     PACKET_RECEIVE,
     DATA,
     CLOSE,
+    ERROR_TIMEOUT,
 } from "./constants"
 import { Packet } from "./packet"
 import { JDBus } from "./bus"
@@ -242,7 +243,10 @@ export class InPipeReader extends InPipe {
 
     async readAll(timeout = 500) {
         const res = await this.bus.withTimeout(timeout, this.done.signalled)
-        if (!res) throw new Error("Timeout reading pipe: " + timeout + "ms")
+        if (!res)
+            throwError("Timeout reading pipe: " + timeout + "ms", {
+                code: ERROR_TIMEOUT,
+            })
         return {
             meta: this.meta,
             output: this.output,

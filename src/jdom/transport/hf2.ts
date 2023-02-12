@@ -11,8 +11,8 @@ import {
     read32,
     bufferToString,
 } from "../utils"
-import { HF2_TIMEOUT, ERROR_TIMEOUT } from "../constants"
-import { errorCode, throwError } from "../error"
+import { HF2_TIMEOUT } from "../constants"
+import { isTimeoutError, throwError } from "../error"
 
 // see https://github.com/microsoft/uf2/blob/main/hf2.md for full spec
 export const HF2_DEVICE_MAJOR = 42
@@ -214,8 +214,7 @@ export class HF2Proto implements Proto {
                 .catch(e => {
                     console.debug(`hf2 error: ${e.message}; cmd=${cmd}`)
                     if (this.io) {
-                        const code = errorCode(e)
-                        if (code !== ERROR_TIMEOUT) this.error(e)
+                        if (!isTimeoutError(e)) this.error(e)
                     }
                     return null
                 })

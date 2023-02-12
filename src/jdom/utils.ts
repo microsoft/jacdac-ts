@@ -193,7 +193,7 @@ export class PromiseBuffer<T> {
                         if (idx >= 0) {
                             this.waiting.splice(idx, 1)
                             reject(
-                                new JDError("Timeout", {
+                                new JDError(`Timeout (${timeout}ms)`, {
                                     code: ERROR_TIMEOUT,
                                 })
                             )
