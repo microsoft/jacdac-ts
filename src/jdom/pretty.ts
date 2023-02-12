@@ -35,8 +35,10 @@ import {
 } from "./constants"
 import {
     ControlReg,
+    SRV_WIFI,
     SystemCmd,
     SystemReg,
+    WifiReg,
 } from "../../jacdac-spec/dist/specconstants"
 import { jdpack, jdunpack } from "./pack"
 
@@ -161,6 +163,18 @@ export function isDeviceId(devid: string) {
     return devid && /^[a-f0-9]{16,16}$/i.test(devid)
 }
 
+function toIP(buffer: Uint8Array): string {
+    if (!buffer) return undefined
+    if (buffer.length === 4)
+        return `${buffer[0]}.${buffer[1]}.${buffer[2]}.${buffer[3]}`
+    else return toHex(buffer, ".")
+}
+
+function toMAC(buffer: Uint8Array) {
+    const hex = toHex(buffer, ":")
+    return hex
+}
+
 export function decodeMember(
     service: jdspec.ServiceSpec,
     pktInfo: jdspec.PacketInfo,
@@ -181,7 +195,23 @@ export function decodeMember(
     const enumInfo = service?.enums[member.type]
     const isInt = isIntegerType(member.type) || !!enumInfo
 
-    if (member.isFloat && (size == 4 || size == 8)) {
+    if (
+        service?.classIdentifier === SRV_WIFI &&
+        pktInfo.kind === "ro" &&
+        pktInfo.identifier === WifiReg.IpAddress &&
+        offset == 0
+    ) {
+        value = pkt.data
+        humanValue = toIP(pkt.data)
+    } else if (
+        service?.classIdentifier === SRV_WIFI &&
+        pktInfo.kind === "const" &&
+        pktInfo.identifier === WifiReg.Eui48 &&
+        offset == 0
+    ) {
+        value = pkt.data
+        humanValue = toMAC(pkt.data)
+    } else if (member.isFloat && (size == 4 || size == 8)) {
         if (size == 4) numValue = pkt.getNumber(NumberFormat.Float32LE, offset)
         else numValue = pkt.getNumber(NumberFormat.Float64LE, offset)
         value = scaledValue = numValue
