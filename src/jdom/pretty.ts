@@ -175,6 +175,35 @@ function toMAC(buffer: Uint8Array) {
     return hex
 }
 
+export function prettyEnum(
+    enumInfo: jdspec.EnumInfo,
+    numValue: number,
+    separator = " | "
+) {
+    if (!enumInfo) return undefined
+
+    let humanValue = ""
+    if (enumInfo.isFlags) {
+        humanValue = ""
+        let curr = numValue
+        for (const key of Object.keys(enumInfo.members)) {
+            const val = enumInfo.members[key]
+            if ((curr & val) == val) {
+                if (humanValue) humanValue += separator
+                humanValue += key
+                curr &= ~val
+            }
+        }
+        if (curr) {
+            if (humanValue) humanValue += separator
+            humanValue += hexNum(curr)
+        }
+    } else {
+        humanValue = reverseLookup(enumInfo.members, numValue)
+    }
+    return humanValue
+}
+
 export function decodeMember(
     service: jdspec.ServiceSpec,
     pktInfo: jdspec.PacketInfo,
