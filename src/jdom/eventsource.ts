@@ -64,6 +64,25 @@ export function dependencyId(nodes: IEventSource | IEventSource[]) {
 let nextNodeId = 0
 
 /**
+ * Collects unsubscribe handlers and unmounts them
+ */
+export class JDCancellationToken {
+    private subscriptions: (() => void)[] = []
+
+    constructor() {}
+
+    mount(...items: (() => void)[]) {
+        this.subscriptions.push(...items)
+    }
+
+    unmount() {
+        const us = this.subscriptions
+        this.subscriptions = []
+        us.forEach(unsub => unsub())
+    }
+}
+
+/**
  * Base class for evented nodes in Jacdac
  * @category JDOM
  */
@@ -141,12 +160,16 @@ export class JDEventSource implements IEventSource {
      * @param eventName
      * @param timeout
      */
-    async awaitOnce(eventName: string | string[]): Promise<void> {
+    async awaitOnce(
+        eventName: string | string[],
+        token?: JDCancellationToken
+    ): Promise<void> {
         if (!eventName) return
 
         const p = new Promise<void>(resolve => {
             const handler = () => resolve?.()
             this.once(eventName, handler)
+            token?.mount(() => this.off(eventName, handler))
         })
         return p
     }
