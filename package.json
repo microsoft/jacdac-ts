@@ -1,6 +1,6 @@
 {
   "name": "jacdac-ts",
-  "version": "1.30.10",
+  "version": "1.31.0",
   "description": "JavaScript/TypeScript library to interact with Jacdac devices",
   "keywords": [
     "jacdac",
