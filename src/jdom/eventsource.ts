@@ -141,23 +141,14 @@ export class JDEventSource implements IEventSource {
      * @param eventName
      * @param timeout
      */
-    async awaitOnce(
-        eventName: string | string[],
-        timeout = 30000
-    ): Promise<void> {
+    async awaitOnce(eventName: string | string[]): Promise<void> {
         if (!eventName) return
 
-        let handler: () => void
-        const p = new Promise<boolean>((resolve, reject) => {
-            handler = () => resolve?.(true)
+        const p = new Promise<void>(resolve => {
+            const handler = () => resolve?.()
             this.once(eventName, handler)
         })
-        const t = delay(timeout).then(() => false)
-        const res = await Promise.race([p, t])
-        if (!res) {
-            if (handler) this.off(eventName, handler)
-            throwError(`Timeout (${timeout})`, { code: ERROR_TIMEOUT })
-        }
+        return p
     }
 
     private addListenerInternal(
