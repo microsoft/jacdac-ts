@@ -1,7 +1,16 @@
-import { NEW_LISTENER, REMOVE_LISTENER, ERROR, CHANGE } from "./constants"
+import {
+    NEW_LISTENER,
+    REMOVE_LISTENER,
+    ERROR,
+    CHANGE,
+    TIMEOUT,
+    ERROR_TIMEOUT,
+} from "./constants"
 import { Observable, Observer } from "./observable"
 import { Flags } from "./flags"
 import { stack } from "./trace/trace"
+import { delay } from "./utils"
+import { throwError } from "./error"
 
 /**
  * @category JDOM
@@ -125,6 +134,30 @@ export class JDEventSource implements IEventSource {
             this.addListenerInternal(eventName, handler, true)
         )
         return this
+    }
+
+    /**
+     * Awaits an event with a timeout. Throws JacdacError with timeout if operation does not return.
+     * @param eventName
+     * @param timeout
+     */
+    async awaitOnce(
+        eventName: string | string[],
+        timeout = 30000
+    ): Promise<void> {
+        if (!eventName) return
+
+        let handler: () => void
+        const p = new Promise<boolean>((resolve, reject) => {
+            handler = () => resolve?.(true)
+            this.once(eventName, handler)
+        })
+        const t = delay(timeout).then(() => false)
+        const res = await Promise.race([p, t])
+        if (!res) {
+            if (handler) this.off(eventName, handler)
+            throwError(`Timeout (${timeout})`, { code: ERROR_TIMEOUT })
+        }
     }
 
     private addListenerInternal(
