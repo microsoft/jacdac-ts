@@ -24,4 +24,9 @@ export class Flags {
      * Enables/disables WebBLE
      */
     static webBluetooth = false
+
+    /**
+     * Enables developer mode when connecting devices
+     */
+    static developerMode = false
 }

@@ -1,6 +1,7 @@
 import deviceRegistryData from "../../jacdac-spec/dist/devices.json"
 import { CHANGE } from "./constants"
 import { JDEventSource } from "./eventsource"
+import { Flags } from "./flags"
 import { cryptoRandomUint32 } from "./random"
 import { serviceSpecificationFromClassIdentifier } from "./spec"
 import { toFullHex, unique } from "./utils"
@@ -65,7 +66,8 @@ export class DeviceCatalog extends JDEventSource {
             options || {}
         let r = this._specifications.slice(0)
         if (!includeDeprecated) r = r.filter(d => d.status !== "deprecated")
-        if (!includeExperimental) r = r.filter(d => d.status !== "experimental")
+        if (!includeExperimental)
+            r = r.filter(d => d.status !== "experimental" && !!d.storeLink)
         if (transport) r = r.filter(d => d.transport?.type === transport)
         return r
     }
@@ -132,7 +134,7 @@ export class DeviceCatalog extends JDEventSource {
      */
     matchVendorId(type: string, id: number) {
         if (isNaN(id)) return false
-
+        if (Flags.developerMode) return true
         const ids = this.vendorIds(type)
         return ids.indexOf(id) > -1
     }

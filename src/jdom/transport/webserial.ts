@@ -1,4 +1,3 @@
-import { Packet } from "../packet"
 import { Flags } from "../flags"
 import { SERIAL_TRANSPORT } from "../constants"
 import { Transport } from "./transport"
