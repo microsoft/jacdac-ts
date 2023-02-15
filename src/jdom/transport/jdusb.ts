@@ -36,6 +36,7 @@ export class JdUsbProto implements Proto {
     private usb_rx_state = 0
     private usb_rx_ptr = 0
     private rxbuf = new Uint8Array(256)
+    private numFrames = 0
 
     constructor(private io: HF2_IO) {
         io.isFreeFlowing = true
@@ -74,6 +75,7 @@ export class JdUsbProto implements Proto {
     }
 
     private handleFrame(fr: Uint8Array) {
+        this.numFrames++
         const sz = fr[2] + 12
         if (fr.length < 4 || fr.length < sz) {
             this.logError("short frm")
@@ -373,9 +375,17 @@ export class JdUsbProto implements Proto {
     }
 
     async postConnectAsync() {
-        await this.sendJDMessageAsync(
-            this.processingPkt(UsbBridgeCmd.EnableLog)
-        )
+        for (let i = 0; i < 100; ++i) {
+            await this.sendJDMessageAsync(
+                this.processingPkt(UsbBridgeCmd.EnablePackets)
+            )
+            await this.sendJDMessageAsync(
+                this.processingPkt(UsbBridgeCmd.EnableLog)
+            )
+            await delay(100)
+            if (this.numFrames > 0) break
+            this.io.log(`waiting for response ${i}...`)
+        }
         this.io.log("connected")
     }
 
