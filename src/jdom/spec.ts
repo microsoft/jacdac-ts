@@ -80,21 +80,6 @@ export function serviceSpecifications() {
 }
 
 /**
- * @internal
- */
-export function identifierToUrlPath(id: string) {
-    if (!id) return id
-
-    const escape = (s: string) => s.replace(/[.:]/g, "").toLowerCase()
-
-    const parts = id.split(/-/g)
-    if (parts.length === 1) return id.replace(/[.:]/g, "").toLowerCase()
-    return `${parts.slice(0, -1).map(escape).join("-")}/${escape(
-        parts[parts.length - 1]
-    )}`
-}
-
-/**
  * Checks if classIdentifier is compatible with requiredClassIdentifier
  * @category Specification
  */

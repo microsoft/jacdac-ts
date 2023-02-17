@@ -1,5 +1,5 @@
 import deviceRegistryData from "../../jacdac-spec/dist/devices.json"
-import { CHANGE } from "./constants"
+import { CHANGE, DOCS_ROOT } from "./constants"
 import { JDEventSource } from "./eventsource"
 import { Flags } from "./flags"
 import { cryptoRandomUint32 } from "./random"
@@ -190,6 +190,39 @@ export class DeviceCatalog extends JDEventSource {
         const n = cryptoRandomUint32(2)
         return n !== undefined && toFullHex([n[0], n[1]])
     }
+}
+
+/**
+ * Generate a URL image for jacdac-docs
+ */
+export function deviceCatalogImage(
+    specification: jdspec.DeviceSpec | undefined,
+    size?: "avatar" | "lazy" | "catalog" | "preview" | "full" | "list",
+    docsRoot?: string
+) {
+    const sz = size || "full"
+    const root = docsRoot || DOCS_ROOT
+    return (
+        specification &&
+        `${root}images/devices/${identifierToUrlPath(
+            specification.id
+        )}.${sz}.jpg`
+    )
+}
+
+/**
+ * Given an identifier, generate a url path
+ */
+export function identifierToUrlPath(id: string) {
+    if (!id) return id
+
+    const escape = (s: string) => s.replace(/[.:]/g, "").toLowerCase()
+
+    const parts = id.split(/-/g)
+    if (parts.length === 1) return id.replace(/[.:]/g, "").toLowerCase()
+    return `${parts.slice(0, -1).map(escape).join("-")}/${escape(
+        parts[parts.length - 1]
+    )}`
 }
 
 /**

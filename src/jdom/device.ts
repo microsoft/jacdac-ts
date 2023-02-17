@@ -41,7 +41,6 @@ import {
     CMD_EVENT_COUNTER_MASK,
     SRV_BOOTLOADER,
     ERROR_NO_ACK,
-    DOCS_ROOT,
 } from "./constants"
 import { read32, bufferEq, read16 } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
@@ -49,7 +48,7 @@ import { BusInteractionMode, JDBus } from "./bus"
 import { JDService } from "./service"
 import { serviceClass, shortDeviceId } from "./pretty"
 import { JDNode } from "./node"
-import { identifierToUrlPath, isInstanceOf, isSensor } from "./spec"
+import { isInstanceOf, isSensor } from "./spec"
 import { FirmwareInfo, FirmwareUpdater } from "./flashing"
 import { LEDController } from "./ledcontroller"
 import { JDEventSource } from "./eventsource"
@@ -1079,19 +1078,4 @@ export class JDDevice extends JDNode {
         pkt.serviceIndex = JD_SERVICE_INDEX_CTRL
         await this.sendPktWithAck(pkt)
     }
-}
-
-export function deviceCatalogImage(
-    specification: jdspec.DeviceSpec | undefined,
-    size?: "avatar" | "lazy" | "catalog" | "preview" | "full" | "list",
-    docsRoot?: string
-) {
-    const sz = size || "full"
-    const root = docsRoot || DOCS_ROOT
-    return (
-        specification &&
-        `${root}images/devices/${identifierToUrlPath(
-            specification.id
-        )}.${sz}.jpg`
-    )
 }
