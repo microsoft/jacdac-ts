@@ -98,6 +98,7 @@ import {
     DcVoltageMeasurementVoltageMeasurementType,
     SRV_PLANAR_POSITION,
     SRV_SERIAL,
+    SystemReg,
 } from "../jdom/constants"
 import { JDServerServiceProvider } from "../jdom/servers/serverserviceprovider"
 import { ProtocolTestServer } from "../jdom/servers/protocoltestserver"
@@ -148,15 +149,22 @@ import { Flags } from "../jdom/flags"
 import { LedServer } from "./ledserver"
 import { PowerSupplyServer } from "./powersupplyserver"
 import { HIDJoystickServer } from "./hidjoystickserver"
-import { isConstRegister } from "../jdom/spec"
+import {
+    isActuator,
+    isConstRegister,
+    isReading,
+    isSensor,
+    serviceSpecificationFromClassIdentifier,
+} from "../jdom/spec"
 import { PackedSimpleValue } from "../jdom/pack"
 import { MagneticFieldLevelServer } from "./magneticfieldlevelserver"
 import { DualMotorsServer } from "./dualmotorsserver"
 import { CloudAdapterServer } from "./cloudadapterserver"
 import { SatNavServer } from "./satnavserver"
 import { PlanarPositionServer } from "./planarpositionserver"
-import { randomDeviceId } from "../jacdac"
+import { isNumericType, randomDeviceId } from "../jacdac"
 import { SerialServer } from "./serialserver"
+import { genFieldInfo } from "../../jacdac-spec/spectool/jdspec"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     readingValues: [21.5],
@@ -1898,6 +1906,55 @@ export function serviceProviderDefinitionFromServiceClass(
     )
 }
 
+function syntheticServiceProvider(
+    bus: JDBus,
+    serviceClass: number
+): ServiceProviderDefinition {
+    const specification = serviceSpecificationFromClassIdentifier(serviceClass)
+    if (!specification) return undefined
+
+    const { name } = specification
+
+    let server: JDServiceServer
+    if (isSensor(specification)) {
+        const reading = specification.packets.find(isReading)
+        if (reading.fields.length === 1 && isNumericType(reading.fields[0])) {
+            const field = reading.fields[0]
+            const { min, max, scale = 1, defl } = genFieldInfo(reading, field)
+            const value = typeof defl === "number" ? defl : (max - min) / 2
+            server = new AnalogSensorServer(serviceClass, {
+                readingValues: [value / scale],
+                minReading: min / scale,
+                maxReading: max / scale,
+            })
+        }
+    } else if (isActuator(specification)) {
+        const intensity = 0
+        const valueReg = specification.packets.find(
+            pkt => pkt.identifier === SystemReg.Value
+        )
+        const {
+            min,
+            max,
+            scale = 1,
+            defl,
+        } = (valueReg && genFieldInfo(valueReg, valueReg.fields[0])) || {}
+        const value = typeof defl === "number" ? defl : (max - min) / 2
+        server = new JDServiceServer(serviceClass, {
+            intensityValues: [intensity],
+            valueValues: !isNaN(value) ? [value / scale] : undefined,
+        })
+    }
+
+    return (
+        server && {
+            name,
+            serviceClasses: [serviceClass],
+            services: () => [server],
+        }
+    )
+}
+
 /**
  * Starts a service provider that hosts the given service class.
  * @category Servers
@@ -1906,6 +1963,8 @@ export function startServiceProviderFromServiceClass(
     bus: JDBus,
     serviceClass: number
 ) {
-    const provider = serviceProviderDefinitionFromServiceClass(serviceClass)
+    const provider =
+        serviceProviderDefinitionFromServiceClass(serviceClass) ||
+        syntheticServiceProvider(bus, serviceClass)
     return provider ? addServiceProvider(bus, provider) : undefined
 }
