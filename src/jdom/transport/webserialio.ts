@@ -179,9 +179,11 @@ export class WebSerialIO implements HF2_IO {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private async requestDeviceAsync(deviceId?: string) {
         const vendorIds = this.bus.deviceCatalog.vendorIds("serial")
-        const options: SerialPortRequestOptions = {
-            filters: vendorIds.map(usbVendorId => ({ usbVendorId })),
-        }
+        const options: SerialPortRequestOptions = Flags.developerMode
+            ? {}
+            : {
+                  filters: vendorIds.map(usbVendorId => ({ usbVendorId })),
+              }
         try {
             console.debug("request serial", { options })
             this.dev = await navigator.serial.requestPort(options)
@@ -219,7 +221,7 @@ export class WebSerialIO implements HF2_IO {
         if (!this.dev) throwError("device not found", { cancel: true })
 
         await this.dev.open({
-            baudRate: 921600,
+            baudRate: 1500000,
             bufferSize: 32 * 1024,
         })
 
