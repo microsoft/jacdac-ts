@@ -1,12 +1,12 @@
 /** Jacdac IFrame Message protocol */
-export interface IMessage {
+export interface EmbedMessage {
     id?: string
     source: "jacdac"
     type: string
     data: any
     requireAck?: boolean
 }
-export interface IAckMessage extends IMessage {
+export interface EmbedAckMessage extends EmbedMessage {
     type: "ack"
     ackId?: string
     data: {
@@ -15,54 +15,60 @@ export interface IAckMessage extends IMessage {
         error?: any
     }
 }
-export type LogLevel = "error" | "warn" | "log" | "info" | "debug"
-export interface ILogMessage extends IMessage {
+export type EmbedLogLevel = "error" | "warn" | "log" | "info" | "debug"
+export interface EmbedLogMessage extends EmbedMessage {
     type: "log"
     data: {
-        level?: LogLevel
+        level?: EmbedLogLevel
         message: any
     }
 }
-export interface IThemeMessage extends IMessage {
+export interface EmbedThemeMessage extends EmbedMessage {
     type: "theme"
     data: {
         type: "light" | "dark"
     }
 }
-export type Status = "unknown" | "ready"
-export interface IStatusMessage extends IMessage {
-    type: "status"
+export interface EmbedSpecsMessage extends EmbedMessage {
+    type: "specs"
     data: {
-        status: Status
+        services?: jdspec.ServiceSpec[]
     }
 }
-export interface ISaveTextMessage extends IMessage {
+export type EmbedStatus = "unknown" | "ready"
+export interface EmbedStatusMessage extends EmbedMessage {
+    type: "status"
+    data: {
+        status: EmbedStatus
+    }
+}
+export interface EmbedSaveTextMessage extends EmbedMessage {
     type: "save-text"
     data: {
         name: string
         data: string
     }
 }
-export interface IFile {
+export interface EmbedFile {
     name: string
     path: string
     size: number
     mimetype: string
 }
 
-export interface IFileContent {
+export interface EmbedFileContent {
     content: string
     mimetype: string
 }
 
-export interface IModelListMessage extends IMessage {
+export interface EmbedModelListMessage extends EmbedMessage {
     type: "model-list"
     data: {
-        models: IFile[]
-        inputConfigurations: IFile[]
+        models: EmbedFile[]
+        inputConfigurations: EmbedFile[]
     }
 }
-export interface IFileLoadMessage extends IMessage {
+export interface EmbedFileLoadMessage extends EmbedMessage {
     type: "file-load"
     requireAck: true
     data: {
