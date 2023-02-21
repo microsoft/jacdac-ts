@@ -63,7 +63,13 @@ import { serviceClass } from "./pretty"
 import { JDNode } from "./node"
 import { FirmwareBlob, sendStayInBootloaderCommand } from "./flashing"
 import { JDService } from "./service"
-import { isConstRegister, isReading, isSensor } from "./spec"
+import {
+    isConstRegister,
+    isReading,
+    isSensor,
+    loadServiceSpecifications,
+    serviceSpecifications,
+} from "./spec"
 import {
     LoggerPriority,
     LoggerReg,
@@ -740,7 +746,15 @@ export class JDBus extends JDNode {
             this._serviceProviders.forEach(host => (host.bus = undefined))
             this._serviceProviders = []
         }
+        this.clearDevices()
+        this.resetTime(timestamp)
+        this.emit(CHANGE)
+    }
 
+    /**
+     * Clears current device list and let's them repopulate
+     */
+    private clearDevices() {
         // clear devices
         const devs = this._devices
         if (devs?.length) {
@@ -751,7 +765,6 @@ export class JDBus extends JDNode {
                 this.emit(DEVICE_CHANGE, dev)
             })
         }
-        this.resetTime(timestamp)
     }
 
     /**
@@ -1389,6 +1402,23 @@ ${dev
                 this.emit(PACKET_EVENT, pkt)
             else if (pkt.isReport) this.emit(PACKET_REPORT, pkt)
         }
+    }
+
+    /**
+     * Gets the current list of service specifications
+     */
+    get serviceSpecifications() {
+        return serviceSpecifications()
+    }
+
+    /**
+     * Updates the current list of device and clears the bus
+     * @param services
+     */
+    setCustomServiceSpecifications(services: jdspec.ServiceSpec[]) {
+        loadServiceSpecifications(services)
+        this.clearDevices()
+        this.emit(CHANGE)
     }
 
     /**

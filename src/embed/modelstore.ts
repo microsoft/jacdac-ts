@@ -1,51 +1,51 @@
 import { CHANGE } from "../jdom/constants"
 import { JDEventSource } from "../jdom/eventsource"
 import {
-    IFile,
-    IFileContent,
-    IFileLoadMessage,
-    IModelListMessage,
+    EmbedFile,
+    EmbedFileContent,
+    EmbedFileLoadMessage,
+    EmbedModelListMessage,
 } from "./protocol"
-import { ITransport } from "./transport"
+import { EmbedTransport } from "./transport"
 
 export abstract class ModelStore extends JDEventSource {
-    abstract models(): IFile[]
-    abstract inputConfigurations(): IFile[]
-    abstract loadFile(model: IFile): Promise<any>
+    abstract models(): EmbedFile[]
+    abstract inputConfigurations(): EmbedFile[]
+    abstract loadFile(model: EmbedFile): Promise<any>
 }
 
 export class HostedModelStore extends JDEventSource {
-    private _models: IModelListMessage
+    private _models: EmbedModelListMessage
 
-    constructor(public readonly transport: ITransport) {
+    constructor(public readonly transport: EmbedTransport) {
         super()
         this.handleModelList = this.handleModelList.bind(this)
 
         this.transport.onMessage("model-list", this.handleModelList)
     }
 
-    private handleModelList(msg: IModelListMessage) {
+    private handleModelList(msg: EmbedModelListMessage) {
         this._models = msg
         this.emit(CHANGE)
     }
 
-    models(): IFile[] {
+    models(): EmbedFile[] {
         return this._models?.data.models?.slice(0)
     }
 
-    inputConfigurations(): IFile[] {
+    inputConfigurations(): EmbedFile[] {
         return this._models?.data.inputConfigurations?.slice(0)
     }
 
-    async loadFile(model: IFile): Promise<Blob> {
+    async loadFile(model: EmbedFile): Promise<Blob> {
         const { path } = model
         const ack = await this.transport.postMessage({
             type: "file-load",
             requireAck: true,
             data: { path },
-        } as IFileLoadMessage)
+        } as EmbedFileLoadMessage)
 
-        const data = ack?.data?.data as IFileContent
+        const data = ack?.data?.data as EmbedFileContent
         if (!data) return undefined
 
         const base64 = data.mimetype === "application/octet-stream"

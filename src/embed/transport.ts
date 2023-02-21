@@ -1,11 +1,11 @@
 import { JDClient } from "../jdom/client"
-import { IAckMessage, IMessage, IStatusMessage } from "./protocol"
+import { EmbedAckMessage, EmbedMessage, EmbedStatusMessage } from "./protocol"
 
-export interface ITransport {
-    postMessage<TMessage extends IMessage, TResponse extends IMessage>(
+export interface EmbedTransport {
+    postMessage<TMessage extends EmbedMessage, TResponse extends EmbedMessage>(
         msg: TMessage
     ): Promise<TResponse>
-    onMessage<TMessage extends IMessage>(
+    onMessage<TMessage extends EmbedMessage>(
         type: string,
         handler: (msg: TMessage) => void
     ): void
@@ -14,7 +14,7 @@ export interface ITransport {
 /**
  * @internal
  */
-export class IFrameTransport extends JDClient implements ITransport {
+export class IFrameTransport extends JDClient implements EmbedTransport {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private readonly ackAwaiters: Record<string, (msg: any) => void> = {}
 
@@ -41,23 +41,23 @@ export class IFrameTransport extends JDClient implements ITransport {
             data: {
                 status: "ready",
             },
-        } as IStatusMessage)
+        } as EmbedStatusMessage)
     }
 
     /**
      * Post message to client and awaits for ack if needed
      * @internal
      */
-    postMessage<TMessage extends IMessage, IAckMessage>(
+    postMessage<TMessage extends EmbedMessage, AckMessage>(
         msg: TMessage
-    ): Promise<IAckMessage> {
-        let p: Promise<IAckMessage>
+    ): Promise<AckMessage> {
+        let p: Promise<AckMessage>
 
         msg.id = "jd:" + Math.random()
         msg.source = "jacdac"
 
         if (msg.requireAck) {
-            p = new Promise<IAckMessage>(resolve => {
+            p = new Promise<AckMessage>(resolve => {
                 this.ackAwaiters[msg.id] = msg => {
                     resolve(msg)
                 }
@@ -68,7 +68,7 @@ export class IFrameTransport extends JDClient implements ITransport {
         return p || Promise.resolve(undefined)
     }
 
-    onMessage<TMessage extends IMessage>(
+    onMessage<TMessage extends EmbedMessage>(
         type: string,
         handler: (msg: TMessage) => void
     ): void {
@@ -78,12 +78,12 @@ export class IFrameTransport extends JDClient implements ITransport {
     private handleMessage(event: MessageEvent) {
         if (!this.isOriginValid(event)) return
 
-        const msg = event.data as IMessage
+        const msg = event.data as EmbedMessage
         if (!msg || msg.source !== "jacdac") return
 
         // handle acks separately
         if (msg.type === "ack") {
-            const ack = msg as IAckMessage
+            const ack = msg as EmbedAckMessage
             const awaiter = this.ackAwaiters[ack.ackId]
             delete this.ackAwaiters[ack.ackId]
             if (awaiter) awaiter(msg)

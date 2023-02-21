@@ -1,8 +1,8 @@
 import { delay } from "../jdom/utils"
-import { ISaveTextMessage } from "./protocol"
-import { ITransport } from "./transport"
+import { EmbedSaveTextMessage } from "./protocol"
+import { EmbedTransport } from "./transport"
 
-export interface IFileStorage {
+export interface FileStorage {
     saveText(name: string, data: string): Promise<void>
 }
 
@@ -17,7 +17,7 @@ export async function downloadUrl(url: string, name: string): Promise<void> {
     a.remove()
 }
 
-export class BrowserFileStorage implements IFileStorage {
+export class BrowserFileStorage implements FileStorage {
     saveText(name: string, data: string, mimeType?: string): Promise<void> {
         if (!mimeType) {
             if (/\.(csv|txt)/i.test(name)) mimeType = "text/plain"
@@ -30,14 +30,14 @@ export class BrowserFileStorage implements IFileStorage {
     }
 }
 
-export class HostedFileStorage implements IFileStorage {
-    constructor(public readonly transport: ITransport) {}
+export class HostedFileStorage implements FileStorage {
+    constructor(public readonly transport: EmbedTransport) {}
     saveText(name: string, data: string): Promise<void> {
         return this.transport
             .postMessage({
                 type: "save-text",
                 data: { name, data },
-            } as ISaveTextMessage)
+            } as EmbedSaveTextMessage)
             .then(resp => {})
     }
 }
