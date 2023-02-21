@@ -160,12 +160,7 @@ export function serviceSpecificationFromName(
     shortId: string
 ): jdspec.ServiceSpec {
     if (!shortId) return undefined
-    return (
-        _serviceSpecifications.find(s => s.shortId === shortId) ||
-        Object.values(_customServiceSpecifications).find(
-            ser => ser.shortId === shortId
-        )
-    )
+    return _serviceSpecifications.find(s => s.shortId === shortId)
 }
 
 /**
@@ -182,10 +177,9 @@ export function serviceSpecificationFromClassIdentifier(
     if (srv) return srv
 
     // resolve
-    srv =
-        _serviceSpecifications.find(
-            s => s.classIdentifier === classIdentifier
-        ) || _customServiceSpecifications[classIdentifier]
+    srv = _serviceSpecifications.find(
+        s => s.classIdentifier === classIdentifier
+    )
     if (srv) {
         if (!_serviceSpecificationMap) _serviceSpecificationMap = {}
         _serviceSpecificationMap[classIdentifier] = srv
