@@ -40,7 +40,8 @@ export function loadServiceSpecifications(
     errors: { message: string; spec: jdspec.ServiceSpec }[]
 } {
     // combine builtin specs with new specs
-    const builtins = serviceSpecificationData as any as jdspec.ServiceSpec[]
+    const builtins = (serviceSpecificationData ||
+        []) as any as jdspec.ServiceSpec[]
     const specs = builtins.slice(0)
     const added: jdspec.ServiceSpec[] = []
     const errors: { message: string; spec: jdspec.ServiceSpec }[] = []
