@@ -28,37 +28,56 @@ import {
 let _serviceSpecifications: jdspec.ServiceSpec[] =
     serviceSpecificationData as any
 let _serviceSpecificationMap: Record<number, jdspec.ServiceSpec> = undefined
-let _customServiceSpecifications: Record<string, jdspec.ServiceSpec> = {}
 
 /**
  * Override built-in service specifications
- * @param specs
- * @category Specification
+ * @param specs * @category Specification
  */
-export function loadServiceSpecifications(specs: jdspec.ServiceSpec[]) {
-    _serviceSpecifications = specs?.slice(0) || []
-    _serviceSpecificationMap = undefined
-}
+export function loadServiceSpecifications(
+    specifications: jdspec.ServiceSpec[]
+): {
+    added: jdspec.ServiceSpec[]
+    errors: { message: string; spec: jdspec.ServiceSpec }[]
+} {
+    // combine builtin specs with new specs
+    const builtins = (serviceSpecificationData ||
+        []) as any as jdspec.ServiceSpec[]
+    const specs = builtins.slice(0)
+    const added: jdspec.ServiceSpec[] = []
+    const errors: { message: string; spec: jdspec.ServiceSpec }[] = []
 
-/**
- * Adds a custom service specification
- * @param service
- * @category Specification
- */
-export function addCustomServiceSpecification(service: jdspec.ServiceSpec) {
-    if (service && service.classIdentifier) {
-        _customServiceSpecifications[service.classIdentifier] = service
-        _serviceSpecificationMap = undefined
+    if (specifications?.length) {
+        const serviceClasses = new Set<number>(
+            specs.map(s => s.classIdentifier)
+        )
+        const shortIds = new Set<string>(specs.map(s => s.shortId))
+        for (const spec of specifications) {
+            if (serviceClasses.has(spec.classIdentifier)) {
+                errors.push({
+                    message: "classIdentifier already in use",
+                    spec,
+                })
+                continue
+            }
+            if (shortIds.has(spec.shortId)) {
+                errors.push({
+                    message: "shortId already in use",
+                    spec,
+                })
+                continue
+            }
+
+            specs.push(spec)
+            added.push(spec)
+            serviceClasses.add(spec.classIdentifier)
+            shortIds.add(spec.shortId)
+        }
     }
-}
 
-/**
- * Clears any custom service specification
- * @category Specification
- */
-export function clearCustomServiceSpecifications() {
-    _customServiceSpecifications = {}
+    _serviceSpecifications = specs
     _serviceSpecificationMap = undefined
+
+    return { added, errors }
 }
 
 /**
@@ -142,12 +161,7 @@ export function serviceSpecificationFromName(
     shortId: string
 ): jdspec.ServiceSpec {
     if (!shortId) return undefined
-    return (
-        _serviceSpecifications.find(s => s.shortId === shortId) ||
-        Object.values(_customServiceSpecifications).find(
-            ser => ser.shortId === shortId
-        )
-    )
+    return _serviceSpecifications.find(s => s.shortId === shortId)
 }
 
 /**
@@ -164,10 +178,9 @@ export function serviceSpecificationFromClassIdentifier(
     if (srv) return srv
 
     // resolve
-    srv =
-        _serviceSpecifications.find(
-            s => s.classIdentifier === classIdentifier
-        ) || _customServiceSpecifications[classIdentifier]
+    srv = _serviceSpecifications.find(
+        s => s.classIdentifier === classIdentifier
+    )
     if (srv) {
         if (!_serviceSpecificationMap) _serviceSpecificationMap = {}
         _serviceSpecificationMap[classIdentifier] = srv
