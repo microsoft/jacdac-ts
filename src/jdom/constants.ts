@@ -238,7 +238,8 @@ export const ERROR_MICROBIT_UNKNOWN = "microbit/unknown-hardware-revision"
 export const ERROR_MICROBIT_JACDAC_MISSING = "microbit/jacdac-missing"
 export const ERROR_MICROBIT_INVALID_MEMORY = "microbit/invalid-memory"
 export const ERROR_TRANSPORT_HF2_NOT_SUPPORTED = "transport/hf2-not-supported"
-export const ERROR_TRANSPORT_WEBSOCKET_NOT_SUPPORTED = "transport/websocket-not-supported"
+export const ERROR_TRANSPORT_WEBSOCKET_NOT_SUPPORTED =
+    "transport/websocket-not-supported"
 export const ERROR_NO_ACK = "no-ack"
 
 export const ROLE_QUERY_SERVICE_OFFSET = "srvo"
