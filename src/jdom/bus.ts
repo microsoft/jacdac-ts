@@ -185,6 +185,11 @@ export interface BusOptions {
      * Additional serial connection vendor ids
      */
     serialVendorIds?: number[]
+
+    /**
+     * Custom services
+     */
+    services?: jdspec.ServiceSpec[]
 }
 
 /**
@@ -276,6 +281,7 @@ export class JDBus extends JDNode {
             serviceProviderIdSalt,
             resetIn,
             serialVendorIds,
+            services,
         } = options || {}
 
         this._roleManagerClient = undefined
@@ -292,7 +298,6 @@ export class JDBus extends JDNode {
 
         // some transport may be undefined
         transports?.filter(tr => !!tr).map(tr => this.addTransport(tr))
-
         // tell loggers to send data, every now and then
         // send resetin packets
         this.on(SELF_ANNOUNCE, this.handleSelfAnnounce.bind(this))
@@ -301,7 +306,8 @@ export class JDBus extends JDNode {
         // grab the default role manager
         if (!disableRoleManager)
             this.on(DEVICE_CHANGE, this.handleRoleManager.bind(this))
-
+        // extra services
+        if (services?.length) loadServiceSpecifications(services)
         // start all timers
         this.start()
     }

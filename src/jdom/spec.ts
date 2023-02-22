@@ -53,6 +53,11 @@ export function loadServiceSpecifications(
         const shortIds = new Set<string>(specs.map(s => s.shortId))
         for (const spec of specifications) {
             if (serviceClasses.has(spec.classIdentifier)) {
+                const existingSpec = specs.find(
+                    s => s.classIdentifier === spec.classIdentifier
+                )
+                if (JSON.stringify(existingSpec) === JSON.stringify(spec))
+                    continue // inserting a duplicate, ignore
                 errors.push({
                     message: "classIdentifier already in use",
                     spec,
