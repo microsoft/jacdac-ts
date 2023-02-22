@@ -1893,6 +1893,32 @@ export function addServiceProvider(
 }
 
 /**
+ * Adds a single server device on the bus.
+ * @param bus
+ * @param name
+ * @param server
+ * @param serviceOptions
+ * @returns
+ */
+export function addServer(
+    bus: JDBus,
+    name: string,
+    server: JDServiceServer,
+    serviceOptions?: ServiceProviderOptions[]
+) {
+    const services = [server]
+    return addServiceProvider(
+        bus,
+        {
+            name,
+            serviceClasses: services.map(srv => srv.serviceClass),
+            services: () => services,
+        },
+        serviceOptions
+    )
+}
+
+/**
  * Finds the first service provider that supports the given service class
  * @category Servers
  */
