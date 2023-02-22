@@ -858,7 +858,7 @@ export class JDBus extends JDNode {
      * @returns
      * @internal
      */
-    describe() {
+    describe(options?: DeviceFilter) {
         return `
 interaction_mode: ${this.interactionMode}
 auto_connect: ${this.autoConnect}
@@ -866,14 +866,17 @@ reset_in: ${this.resetIn}
 last_reset_in_time: ${this.lastResetInTime}
 transport:
 ${this._transports.map(tr => `  ${tr.type}: ${tr.connectionState}`).join("\n")}
-bridges:
+${
+    this._bridges?.length
+        ? `bridges:
 ${this._bridges
     ?.map(
         tr =>
             `  ${tr.bridgeId}: recv ${tr.packetProcessed}, sent ${tr.packetSent}`
     )
-    .join("\n")}
-
+    .join("\n")}`
+        : ""
+}
 ${this.devices({ ignoreInfrastructure: false })
     .map(
         dev => `device: 
