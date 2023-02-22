@@ -15,7 +15,7 @@ const RECONNECT_TIMEOUT = 5000
  * @category Transport
  */
 export interface WebSocketTransportOptions extends TransportOptions {
-    protocols: string | string[]
+    protocols?: string | string[]
     WebSocket?: any
 }
 
@@ -36,7 +36,7 @@ export class WebSocketTransport extends Transport {
     constructor(readonly url: string, options?: WebSocketTransportOptions) {
         super(WEBSOCKET_TRANSPORT, options)
         this.WebSocket = options?.WebSocket || WebSocket
-        this.protocols = options?.protocols
+        this.protocols = options?.protocols || []
         this.on(FRAME_SEND_DISCONNECT, this.handleSendDisconnect.bind(this))
     }
 

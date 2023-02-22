@@ -12,7 +12,7 @@ export function createNodeWebSocketTransport(
 ) {
     require("websocket-polyfill")
     const ops: WebSocketTransportOptions = {
-        ...(options || { protocols: "wss" }),
+        ...options,
         WebSocket: WebSocket,
     }
     return createWebSocketTransport(url, ops)
