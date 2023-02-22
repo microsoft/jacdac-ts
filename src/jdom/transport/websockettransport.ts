@@ -1,5 +1,6 @@
 import {
     ERROR_TRANSPORT_CLOSED,
+    ERROR_TRANSPORT_WEBSOCKET_NOT_SUPPORTED,
     FRAME_SEND_DISCONNECT,
     SIDE_DATA,
     WEBSOCKET_TRANSPORT,
@@ -20,11 +21,13 @@ export interface WebSocketTransportOptions extends TransportOptions {
 }
 
 /**
- * Indicates if web sockets are supported by this platform
+ * Indicates if web sockets are supported by this platform. Checks that WebSocket and Blob are supported.
  * @returns
  */
 export function isWebSocketTransportSupported() {
-    return typeof WebSocket !== "undefined"
+    return (
+        typeof WebSocket !== "undefined" && typeof globalThis.Blob !== undefined
+    )
 }
 
 export class WebSocketTransport extends Transport {
@@ -117,12 +120,22 @@ export class WebSocketTransport extends Transport {
 }
 
 /**
- * Creates a transport over a web socket connection
+ * Creates a transport over a web socket connection. In Node.js, you will need to provide a WebSocket, Blob polyfill.
+ *
+ * ```javascript
+ * import "websocket-polyfill"
+ * import { Blob } from "buffer"
+ * globalThis.Blob = Blob
+ * ```
  * @category transport
  */
 export function createWebSocketTransport(
     url: string,
     options?: WebSocketTransportOptions
 ): WebSocketTransport {
+    if (!isWebSocketTransportSupported())
+        throwError("WebSocket not supported", {
+            code: ERROR_TRANSPORT_WEBSOCKET_NOT_SUPPORTED,
+        })
     return new WebSocketTransport(url, options)
 }

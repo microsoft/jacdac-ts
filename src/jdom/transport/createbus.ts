@@ -1,4 +1,4 @@
-import { JDBus,  BusOptions } from "../bus"
+import { JDBus, BusOptions } from "../bus"
 import { createUSBTransport, isWebUSBSupported } from "./usb"
 import {
     createWebSerialTransport,
@@ -12,6 +12,10 @@ import {
 } from "./bluetooth"
 import { USBOptions } from "./usbio"
 import { createIFrameBridge } from "../bridges/iframebridge"
+import {
+    createWebSocketTransport,
+    WebSocketTransportOptions,
+} from "./websockettransport"
 
 /**
  * Options to instantiate a bus. By default, the bus acts as a client.
@@ -82,4 +86,29 @@ export function isWebTransportSupported() {
         isWebSerialSupported() ||
         isWebBluetoothSupported()
     )
+}
+
+/**
+ * Create a bus that opens a websocket connection to the local debug server (ws://127.0.0.1:8081)
+ * @param options
+ * @returns
+ */
+export function createWebSocketBus(options?: {
+    url?: string
+    busOptions?: BusOptions
+    webSocketOptions?: WebSocketTransportOptions
+}) {
+    const {
+        url = "ws://127.0.0.1:8081/",
+        webSocketOptions,
+        busOptions = {},
+    } = options || {}
+    const ws = createWebSocketTransport(url, webSocketOptions)
+    const bus = new JDBus([ws], {
+        disableRoleManager: true,
+        client: false,
+        ...busOptions,
+    })
+    bus.autoConnect = true
+    return bus
 }
