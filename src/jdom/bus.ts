@@ -1424,9 +1424,12 @@ ${dev
      * @param services
      */
     setCustomServiceSpecifications(services: jdspec.ServiceSpec[]) {
-        loadServiceSpecifications(services)
-        this.clearDevices()
-        this.emit(CHANGE)
+        const res = loadServiceSpecifications(services)
+        if (res.changed) {
+            this.clearDevices()
+            this.emit(CHANGE)
+        }
+        return res
     }
 
     /**

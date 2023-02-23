@@ -38,7 +38,10 @@ export function loadServiceSpecifications(
 ): {
     added: jdspec.ServiceSpec[]
     errors: { message: string; spec: jdspec.ServiceSpec }[]
+    changed: boolean
 } {
+    const previous = _serviceSpecifications
+
     // combine builtin specs with new specs
     const builtins = (serviceSpecificationData ||
         []) as any as jdspec.ServiceSpec[]
@@ -79,10 +82,12 @@ export function loadServiceSpecifications(
         }
     }
 
-    _serviceSpecifications = specs
-    _serviceSpecificationMap = undefined
-
-    return { added, errors }
+    const changed = JSON.stringify(previous) !== JSON.stringify(specs)
+    if (changed) {
+        _serviceSpecifications = specs
+        _serviceSpecificationMap = undefined
+    }
+    return { added, errors, changed }
 }
 
 /**
