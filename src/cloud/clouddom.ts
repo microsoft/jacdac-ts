@@ -12,6 +12,7 @@ import { jdpack } from "../jdom/pack"
 export const CLOUD_NODE = "cloud"
 export const CLOUD_DEVICE_NODE = "cloudDevice"
 export const CLOUD_SCRIPT_NODE = "cloudScript"
+export const FETCH_ERROR = "fetchError"
 
 /*function timeKey(t?: number) {
     if (!t) t = Date.now()
@@ -204,6 +205,7 @@ export class CloudManager extends JDNode {
                 options,
                 resp,
             })
+            this.emit(FETCH_ERROR, resp)
             this.emit(ERROR, resp.statusText)
             return undefined
         }
