@@ -76,8 +76,7 @@ export class CloudManager extends JDNode {
             name,
             meta: {},
             body: {
-                text: "",
-                compiled: "",
+                program: {},
             },
         }
         const resp = await this.fetchJSON<CloudScriptData>("scripts", {
@@ -198,8 +197,13 @@ export class CloudManager extends JDNode {
         if (body)
             (options.headers as any)["Content-Type"] =
                 "application/json; charset=utf-8"
-        const resp = await fetch(`${this.apiRoot}/api/${path}`, options)
+        const route = `${this.apiRoot}/api/${path}`
+        const resp = await fetch(route, options)
         if (!resp.ok) {
+            console.debug(`${options.method} ${route} -> ${resp.statusText}`, {
+                options,
+                resp,
+            })
             this.emit(ERROR, resp.statusText)
             return undefined
         }
@@ -407,11 +411,7 @@ export interface CloudScriptData extends CloudData {
 }
 
 export interface CloudScriptBody {
-    text: string
-    /**
-     * Hex encoded bytecode
-     */
-    compiled: string
+    program: any
 }
 
 export class CloudScript extends CloudNode<CloudScriptData> {
@@ -468,10 +468,6 @@ export class CloudScript extends CloudNode<CloudScriptData> {
 
     get body(): CloudScriptBody {
         return this._body
-    }
-
-    get sourceText(): string {
-        return this.body?.text
     }
 
     versions(): CloudScript[] {
