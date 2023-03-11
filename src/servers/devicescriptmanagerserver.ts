@@ -14,7 +14,6 @@ import { Packet } from "../jdom/packet"
 export class DeviceScriptManagerServer extends JDServiceServer {
     readonly running: JDRegisterServer<[boolean]>
     readonly autoStart: JDRegisterServer<[boolean]>
-    readonly logging: JDRegisterServer<[boolean]>
     readonly programSize: JDRegisterServer<[number]>
     readonly programHash: JDRegisterServer<[number]>
 
@@ -30,7 +29,6 @@ export class DeviceScriptManagerServer extends JDServiceServer {
         this.autoStart = this.addRegister(DeviceScriptManagerReg.Autostart, [
             true,
         ])
-        this.logging = this.addRegister(DeviceScriptManagerReg.Logging, [true])
         this.programSize = this.addRegister(
             DeviceScriptManagerReg.ProgramSize,
             [this._binary.length]

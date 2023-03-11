@@ -57,9 +57,4 @@ export class DeviceScriptManagerClient extends JDServiceClient {
         const reg = this.service.register(DeviceScriptManagerReg.Autostart)
         await reg.sendSetAsync(jdpack("u8", [value ? 1 : 0]))
     }
-
-    async setLogging(value: boolean) {
-        const reg = this.service.register(DeviceScriptManagerReg.Logging)
-        await reg.sendSetAsync(jdpack("u8", [value ? 1 : 0]))
-    }
 }
