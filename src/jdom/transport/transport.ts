@@ -62,15 +62,16 @@ export abstract class Transport extends JDEventSource {
         this._cleanups = [
             options?.connectObservable?.subscribe({
                 next: async () => {
+                    const { bus } = this
                     if (Flags.diagnostics)
                         console.debug(
                             `${this.type}: device detected, connect ${
-                                this.bus?.autoConnect ? "auto" : "manual"
+                                bus?.autoConnect ? "auto" : "manual"
                             }`
                         )
-                    if (this.bus?.disconnected && this.bus?.autoConnect) {
+                    if (bus?.disconnected && this.bus?.autoConnect) {
                         await delay(TRANSPORT_CONNECT_RETRY_DELAY)
-                        if (this.bus?.disconnected && this.bus?.autoConnect) {
+                        if (bus?.disconnected && bus?.autoConnect) {
                             if (
                                 typeof document === "undefined" || // Node.js
                                 document.visibilityState === "visible" // or tab visible
@@ -130,11 +131,11 @@ export abstract class Transport extends JDEventSource {
             this._connectionState = state
             this._connectionTime =
                 state === ConnectionState.Connected
-                    ? this.bus.timestamp
+                    ? this.bus?.timestamp
                     : undefined
             this._lastReceivedTime = undefined
             this.emit(CONNECTION_STATE, this._connectionState)
-            this.bus.emit(CONNECTION_STATE, this)
+            this.bus?.emit(CONNECTION_STATE, this)
             switch (this._connectionState) {
                 case ConnectionState.Connected:
                     this.emit(CONNECT)
@@ -150,7 +151,7 @@ export abstract class Transport extends JDEventSource {
                     break
             }
             this.emit(CHANGE)
-            this.bus.emit(CHANGE)
+            this.bus?.emit(CHANGE)
         }
     }
 
@@ -180,17 +181,17 @@ export abstract class Transport extends JDEventSource {
 
     private async checkPulse() {
         assert(this._checkPulse)
-        if (!this.connected) return // ignore while connected
-        if (this.bus.safeBoot) return // don't mess with flashing bootloaders
-        const devices = this.bus.devices()
-        if (devices.some(dev => dev.firmwareUpdater))
+        const { bus } = this
+        if (!this.connected || !bus) return // ignore while connected
+        if (bus.safeBoot) return // don't mess with flashing bootloaders
+        const devices = bus.devices()
+        if (devices?.some(dev => dev.firmwareUpdater))
             // don't mess with flashing
             return
 
         // detect if the proxy device is lost
         const t =
-            this.bus.timestamp -
-            (this._lastReceivedTime || this._connectionTime)
+            bus.timestamp - (this._lastReceivedTime || this._connectionTime)
         if (t > TRANSPORT_PULSE_TIMEOUT) {
             this.emit(LOST)
             if (Flags.diagnostics)
@@ -324,7 +325,10 @@ export abstract class Transport extends JDEventSource {
     }
 
     protected handleFrame(payload: Uint8Array, skipCrc = false) {
-        const { timestamp } = this.bus
+        const { bus } = this
+        if (!bus) return
+
+        const { timestamp } = bus
         this._lastReceivedTime = timestamp
         this.bus.processFrame(payload, this.type, skipCrc)
     }
@@ -333,7 +337,8 @@ export abstract class Transport extends JDEventSource {
     protected errorHandler(context: string, exception: any) {
         if (!isCancelError(exception)) {
             this.emit(ERROR, { context, exception })
-            this.bus.emit(ERROR, { transport: this.type, context, exception })
+            // maybe have been already disconnected
+            this.bus?.emit(ERROR, { transport: this.type, context, exception })
         }
         this.emit(CHANGE)
 
