@@ -23,7 +23,7 @@ import {
     UsbBridgeQByte,
 } from "../constants"
 import { jdpack } from "../pack"
-import { throwError } from "../error"
+import { isCancelError, throwError } from "../error"
 
 export class JdUsbProto implements Proto {
     private lock = new PromiseQueue()
@@ -71,7 +71,7 @@ export class JdUsbProto implements Proto {
 
     private handleProcessingFrame(fr: Uint8Array) {
         const cmd = read16(fr, 14)
-        this.io.log("processing frame: 0x" + cmd.toString(16))
+        this.io?.log("processing frame: 0x" + cmd.toString(16))
     }
 
     private handleFrame(fr: Uint8Array) {
@@ -267,11 +267,12 @@ export class JdUsbProto implements Proto {
         while (frameToSend.length + pkt_en.length < 64) {
             frameToSend = bufferConcat(frameToSend, pkt_en)
         }
-        return this.lock.enqueue("talk", async () => {
+        return this.enqueueTalk(async () => {
             for (let i = 0; i < 10; ++i) {
-                this.io.log(`detect hf2 ${i}...`)
-                await this.io.sendPacketAsync(frameToSend)
+                this.io?.log(`detect hf2 ${i}...`)
+                await this.io?.sendPacketAsync(frameToSend)
                 await delay(50)
+                if (!this.io) return
                 if (this.hf2Resp == null) {
                     if (this.isHF2) {
                         this.io.log("switching to HF2")
@@ -289,13 +290,25 @@ export class JdUsbProto implements Proto {
         })
     }
 
+    private async enqueueTalk<T>(talk: () => Promise<T>): Promise<T> {
+        try {
+            if (!this.io) return undefined
+            return this.lock.enqueue("talk", talk)
+        } catch (e) {
+            if (!this.io) return
+            if (isCancelError(e)) return
+            throw e
+        }
+    }
+
     onJDMessage(f: (buf: Uint8Array) => void) {
         this.frameHandler = f
     }
 
-    sendJDMessageAsync(fr: Uint8Array) {
-        return this.lock.enqueue("talk", async () => {
+    async sendJDMessageAsync(fr: Uint8Array) {
+        this.enqueueTalk(async () => {
             for (const buf of this.encodeFrame(fr)) {
+                if (!this.io) break
                 await this.io.sendPacketAsync(buf)
             }
         })
@@ -384,9 +397,10 @@ export class JdUsbProto implements Proto {
             )
             await delay(100)
             if (this.numFrames > 0) break
+            if (!this.io) break
             this.io.log(`waiting for response ${i}...`)
         }
-        this.io.log("connected")
+        this.io?.log("connected")
     }
 
     async disconnectAsync() {

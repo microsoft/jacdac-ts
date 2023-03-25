@@ -12,7 +12,7 @@ import {
     bufferToString,
 } from "../utils"
 import { HF2_TIMEOUT } from "../constants"
-import { isTimeoutError, throwError } from "../error"
+import { isCancelError, isTimeoutError, throwError } from "../error"
 
 // see https://github.com/microsoft/uf2/blob/main/hf2.md for full spec
 export const HF2_DEVICE_MAJOR = 42
@@ -219,10 +219,21 @@ export class HF2Proto implements Proto {
                     return null
                 })
 
-        return this.lock.enqueue("talk", async () => {
+        return this.enqueueTalk(async () => {
             if (!this.io) return null // disconnected
             return await this.sendMsgAsync(pkt).then(handleReturnAsync)
         })
+    }
+
+    private async enqueueTalk<T>(talk: () => Promise<T>): Promise<T> {
+        try {
+            if (!this.io) return undefined
+            return this.lock.enqueue("talk", talk)
+        } catch (e) {
+            if (!this.io) return
+            if (isCancelError(e)) return
+            throw e
+        }
     }
 
     private sendMsgAsync(buf: Uint8Array, serial = 0): Promise<void> {
