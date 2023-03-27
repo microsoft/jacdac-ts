@@ -220,7 +220,6 @@ export const BLUETOOTH_JACDAC_DIAG_CHARACTERISTIC =
     "f8530004-a97f-49f5-a554-3e373fbea2d5"
 
 export const TRANSPORT_CONNECT_RETRY_DELAY = 500
-export const TRANSPORT_PULSE_TIMEOUT = 60000 // don't interfere with manual flashing of devices
 
 export const ERROR_TRANSPORT_DEVICE_LOCKED = "transport/device-locked"
 

@@ -11,7 +11,6 @@ import {
     FRAME_SEND_DISCONNECT,
     SELF_ANNOUNCE,
     TRANSPORT_CONNECT_RETRY_DELAY,
-    TRANSPORT_PULSE_TIMEOUT,
     DISPOSE,
 } from "../constants"
 import { isCancelError } from "../error"
@@ -88,6 +87,11 @@ export abstract class Transport extends JDEventSource {
                 },
             })?.unsubscribe,
         ].filter(c => !!c)
+    }
+
+    protected get pulseTimeout() {
+        // typically, when no packets received within 1s, something went wrong - reconnect
+        return 1000
     }
 
     get bus() {
@@ -192,7 +196,7 @@ export abstract class Transport extends JDEventSource {
         // detect if the proxy device is lost
         const t =
             bus.timestamp - (this._lastReceivedTime || this._connectionTime)
-        if (t > TRANSPORT_PULSE_TIMEOUT) {
+        if (t > this.pulseTimeout) {
             this.emit(LOST)
             if (Flags.diagnostics)
                 console.debug(`${this.type}: lost connection with device`)

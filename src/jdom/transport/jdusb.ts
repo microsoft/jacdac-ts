@@ -9,6 +9,7 @@ import {
     uint8ArrayToString,
     fromUTF8,
     read32,
+    toHex,
 } from "../utils"
 import { HF2_IO } from "./hf2"
 import {
@@ -47,6 +48,7 @@ export class JdUsbProto implements Proto {
                 acc = null
             }
             if (this.hf2Resp) {
+                this.io?.log(`read ${toHex(buf.slice(0, 20))}...`)
                 if (buf.length < this.hf2Resp.length) {
                     acc = buf
                     return
@@ -284,9 +286,13 @@ export class JdUsbProto implements Proto {
                     }
                 }
             }
-            throwError("JDUSB: can't connect, no HF2", {
-                code: ERROR_TRANSPORT_HF2_NOT_SUPPORTED,
-            })
+            throwError(
+                "JDUSB: can't connect, no HF2 nor JDUSB; port=" +
+                    (this.io.description?.() ?? ""),
+                {
+                    code: ERROR_TRANSPORT_HF2_NOT_SUPPORTED,
+                }
+            )
         })
     }
 

@@ -128,7 +128,11 @@ class NodeWebSerialIO implements HF2_IO {
             pkt = new Uint8Array(64)
             pkt.set(p)
         }
-        return toPromise<void>(cb => this.dev.write(pkt, undefined, cb))
+        return toPromise<void>(cb => this.dev.write(pkt, undefined, cb)).catch(
+            e => {
+                this.error("write error: " + e.message)
+            }
+        )
     }
 
     private async tryReconnectAsync(deviceId?: string) {

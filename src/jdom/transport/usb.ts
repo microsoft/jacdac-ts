@@ -79,6 +79,11 @@ class WebUSBTransport extends Transport {
         this.transport = undefined
         if (h) await h.disconnectAsync()
     }
+
+    protected override get pulseTimeout() {
+        // don't interfere with manual WebUSB flashing (micro:bit + MakeCode)
+        return 60000
+    }
 }
 
 function defaultOptions(): USBOptions {
