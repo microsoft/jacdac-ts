@@ -774,6 +774,33 @@ export class JDDevice extends JDNode {
         }
     }
 
+    /**
+     * Check if the device is still there
+     * @returns true if the device is there, undefined on timeout
+     */
+    ping() {
+        return this.bus.withTimeout(
+            200,
+            new Promise<boolean>((resolve, reject) => {
+                this.once(PACKET_ANNOUNCE, () => {
+                    const f = resolve
+                    resolve = null
+                    if (f) f(true)
+                })
+                // ask for announce
+                this.sendCtrlCommand(ControlCmd.Services).then(
+                    () => {},
+                    err => {
+                        if (resolve) {
+                            resolve = null
+                            reject(err)
+                        }
+                    }
+                )
+            })
+        )
+    }
+
     private markRepeatedEvent(pkt: Packet) {
         if (!pkt.isEvent || !pkt.isReport) return
 
