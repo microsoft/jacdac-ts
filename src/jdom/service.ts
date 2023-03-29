@@ -90,6 +90,10 @@ export class JDService extends JDNode {
         })
     }
 
+    get disposed() {
+        return this.device.service(this.serviceIndex) !== this
+    }
+
     /**
      * Gets the node identifier
      * @category JDOM
