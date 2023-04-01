@@ -31,5 +31,8 @@ export interface DeviceFilter {
      * Matches physical devices exclusively
      */
     physical?: boolean
+    /**
+     * Ignore or select lost devices
+     */
+    lost?: boolean
 }
-

@@ -1121,6 +1121,8 @@ ${dev
             r = r.filter(r => !this.findServiceProvider(r.deviceId))
         if (options?.productIdentifier) r = r.filter(r => !!r.productIdentifier)
         if (options?.physical) r = r.filter(r => !!r.isPhysical)
+        if (options?.lost !== undefined)
+            r = r.filter(r => !!r.lost === !!options?.lost)
         return r
     }
 
