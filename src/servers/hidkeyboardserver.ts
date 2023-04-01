@@ -2,6 +2,7 @@ import {
     CHANGE,
     HidKeyboardAction,
     HidKeyboardCmd,
+    HidKeyboardCmdPack,
     HidKeyboardModifiers,
     SRV_HID_KEYBOARD,
 } from "../jdom/constants"
@@ -24,10 +25,9 @@ export class HIDKeyboardServer extends JDServiceServer {
     }
 
     private handleKey(pkt: Packet) {
-        const [rest] =
-            pkt.jdunpack<[[number, HidKeyboardModifiers, HidKeyboardAction][]]>(
-                "r: u16 u8 u8"
-            )
+        const [rest] = pkt.jdunpack<
+            [[number, HidKeyboardModifiers, HidKeyboardAction][]]
+        >(HidKeyboardCmdPack.Key)
         this._lastKey = rest
         this.emit(CHANGE)
     }
