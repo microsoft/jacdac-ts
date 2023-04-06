@@ -32,6 +32,7 @@ import {
     SRV_POWER,
     PowerReg,
     PowerPowerStatus,
+    SRV_SOIL_MOISTURE,
 } from "../jdom/constants"
 import { lightEncode } from "../jdom/light"
 import { jdpack } from "../jdom/pack"
@@ -253,6 +254,26 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
                 prepare: "uncover distance sensor with at least 40cm free",
             },
             op: ">",
+        },
+    ],
+    [SRV_SOIL_MOISTURE]: <ServiceTestRule[]>[
+        <ReadingTestRule>{
+            type: "reading",
+            value: 0,
+            tolerance: 0.2,
+            factory: true,
+            manualSteps: {
+                prepare: "dip in dry dirt",
+            },
+        },
+        <ReadingTestRule>{
+            type: "reading",
+            value: 1,
+            tolerance: 0.2,
+            factory: true,
+            manualSteps: {
+                prepare: "dip in wet dirt",
+            },
         },
     ],
     [SRV_POTENTIOMETER]: <ServiceTestRule[]>[
