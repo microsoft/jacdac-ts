@@ -229,7 +229,7 @@ export class JDBus extends JDNode {
     private _lastResetInTime = 0
     private _restartCounter = 0
     // null means disabled
-    private _roleManagerClient: RoleManagerClient
+    private _roleManager: RoleManagerClient
     private _minLoggerPriority = LoggerPriority.Silent
     private _firmwareBlobs: FirmwareBlob[]
     private _gcDevicesFrozen = 0
@@ -284,7 +284,7 @@ export class JDBus extends JDNode {
             services,
         } = options || {}
 
-        this._roleManagerClient = undefined
+        this._roleManager = undefined
         this.selfDeviceId = deviceId || randomDeviceId()
         this.scheduler = scheduler || new WallClockScheduler()
         this.parentOrigin = parentOrigin || "*"
@@ -818,7 +818,7 @@ export class JDBus extends JDNode {
      * @category Services
      */
     get roleManager(): RoleManagerClient {
-        return this._roleManagerClient
+        return this._roleManager
     }
 
     /**
@@ -826,20 +826,20 @@ export class JDBus extends JDNode {
      */
     setRoleManagerService(service: JDService) {
         // unchanged service
-        if (this._roleManagerClient?.service === service) return
+        if (this._roleManager?.service === service) return
 
         // service changed
         // clean if needed
-        if (this._roleManagerClient) {
+        if (this._roleManager) {
             //console.debug("unmount role manager")
-            this._roleManagerClient.unmount()
-            this._roleManagerClient = undefined
+            this._roleManager.unmount()
+            this._roleManager = undefined
         }
 
         // allocate new manager
         if (service) {
-            this._roleManagerClient = new RoleManagerClient(service)
-            this._roleManagerClient.startRefreshRoles()
+            this._roleManager = new RoleManagerClient(service)
+            this._roleManager.startRefreshRoles()
         }
 
         // notify listeneres
@@ -1040,10 +1040,21 @@ ${dev
             await RealTimeClockServer.syncTime(this)
     }
 
-    private handleRoleManager() {
+    private handleRoleManager(dev: JDDevice) {
+        // device restarted and refreshed services
+        if (this._roleManager?.service?.disposed) {
+            this.setRoleManagerService(undefined)
+        }
+
+        // role manager device got disconnected
+        if (!dev.connected && this._roleManager?.service?.device === dev) {
+            // find another
+            this.setRoleManagerService(undefined)
+        }
+
         if (!this.roleManager) {
             const service = this.services({ serviceClass: SRV_ROLE_MANAGER })[0]
-            this.setRoleManagerService(service)
+            if (service) this.setRoleManagerService(service)
         }
     }
 

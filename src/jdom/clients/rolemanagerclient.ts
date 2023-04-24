@@ -205,6 +205,13 @@ export class RoleManagerClient extends JDServiceClient {
         )
     }
 
+    /**
+     * @hidden
+     */
+    override toString(): string {
+        return `role manager ${this.service.toString()}`
+    }
+
     private handleSelfAnnounce() {
         if (
             this._needRefresh &&

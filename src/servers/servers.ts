@@ -1032,7 +1032,7 @@ function initProviders() {
                 ],
             },
             {
-                name: "light level (photo-resistor)",
+                name: "light level (solar)",
                 serviceClasses: [SRV_LIGHT_LEVEL],
                 services: () => [
                     new SensorServer(SRV_LIGHT_LEVEL, {
@@ -1042,14 +1042,23 @@ function initProviders() {
                 ],
             },
             {
-                name: "line tracker (digital)",
+                name: "line sensor (digital)",
                 serviceClasses: [SRV_REFLECTED_LIGHT],
                 services: () => [new ReflectedLightServer()],
             },
             {
-                name: "line tracker (2x digital)",
+                name: "line sensor (2x digital)",
                 serviceClasses: [SRV_REFLECTED_LIGHT],
                 services: () => [
+                    new ReflectedLightServer(),
+                    new ReflectedLightServer(),
+                ],
+            },
+            {
+                name: "line sensor (3x digital)",
+                serviceClasses: [SRV_REFLECTED_LIGHT],
+                services: () => [
+                    new ReflectedLightServer(),
                     new ReflectedLightServer(),
                     new ReflectedLightServer(),
                 ],
@@ -1522,6 +1531,23 @@ function initProviders() {
                     new AnalogSensorServer(SRV_WATER_LEVEL, {
                         readingValues: [0.5],
                         streamingInterval: 1000,
+                    }),
+                ],
+            },
+            {
+                name: "water pump (relay)",
+                serviceClasses: [SRV_RELAY],
+                services: () => [
+                    new JDServiceServer(SRV_RELAY, {
+                        intensityValues: [false],
+                        isActive: values => !!values?.[0],
+                        variant: RelayVariant.Electromechanical,
+                        registerValues: [
+                            {
+                                code: RelayReg.MaxSwitchingCurrent,
+                                values: [10],
+                            },
+                        ],
                     }),
                 ],
             },
