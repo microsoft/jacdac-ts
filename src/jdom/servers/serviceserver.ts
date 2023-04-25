@@ -58,6 +58,10 @@ export interface JDServerOptions {
      */
     variant?: number
     /**
+     * Optional client variant register
+     */
+    clientVariant?: string
+    /**
      * A map of custom register initial values
      */
     registerValues?: {
@@ -96,6 +100,7 @@ export class JDServiceServer extends JDEventSource {
             intensityValues,
             intensityProcessor,
             registerValues,
+            clientVariant,
             isActive,
         } = options || {}
 
@@ -127,6 +132,8 @@ export class JDServiceServer extends JDEventSource {
                 })
         }
         if (variant) this.addRegister<[number]>(SystemReg.Variant, [variant])
+        if (clientVariant)
+            this.addRegister<[string]>(SystemReg.ClientVariant, [clientVariant])
         this.instanceName = this.addRegister<[string]>(SystemReg.InstanceName, [
             instanceName || "",
         ])

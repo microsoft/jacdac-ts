@@ -230,6 +230,13 @@ const microServoOptions = {
     minAngle: 0,
     maxAngle: 180,
 }
+const microServoContinuousOptions = {
+    stallTorque: SG90_STALL_TORQUE, // kg/cm
+    responseSpeed: SG90_RESPONSE_SPEED, // s/60deg
+    minAngle: -90,
+    maxAngle: 90,
+    clientVariant: "cont=1",
+}
 const microServo270Options = {
     stallTorque: SG90_STALL_TORQUE, // kg/cm
     responseSpeed: SG90_RESPONSE_SPEED, // s/60deg
@@ -1360,6 +1367,27 @@ function initProviders() {
                                     instanceName: `S${i}`,
                                 })
                         ),
+            },
+            {
+                name: "servo (continuous)",
+                serviceClasses: [SRV_SERVO],
+                services: () => [new ServoServer(microServoContinuousOptions)],
+                resetIn: true,
+            },
+            {
+                name: "servo (continuous) x2",
+                serviceClasses: [SRV_SERVO],
+                services: () =>
+                    Array(2)
+                        .fill(0)
+                        .map(
+                            (_, i) =>
+                                new ServoServer({
+                                    ...microServoContinuousOptions,
+                                    instanceName: `S${i}`,
+                                })
+                        ),
+                resetIn: true,
             },
             {
                 name: "settings",
