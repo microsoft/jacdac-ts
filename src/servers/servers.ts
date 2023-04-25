@@ -1064,7 +1064,7 @@ function initProviders() {
                 ],
             },
             {
-                name: "line tracker (analog)",
+                name: "line sensor (analog)",
                 serviceClasses: [SRV_REFLECTED_LIGHT],
                 services: () => [
                     new ReflectedLightServer({
