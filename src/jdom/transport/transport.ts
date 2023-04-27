@@ -50,6 +50,7 @@ export abstract class Transport extends JDEventSource {
     private _checkPulse: boolean
     private _connectionTime: number
     private _lastReceivedTime: number
+    private _lastPulse: number
     protected disposed = false
     private _cleanups: (() => void)[]
     resourceGroupId: string
@@ -185,8 +186,19 @@ export abstract class Transport extends JDEventSource {
 
     private async checkPulse() {
         assert(this._checkPulse)
-        const { bus } = this
-        if (!this.connected || !bus) return // ignore while connected
+
+        const { bus, _lastPulse } = this
+
+        const n = Date.now()
+        this._lastPulse = n
+        if (_lastPulse) {
+            const d = n - _lastPulse
+            // ignore pulse checks that are too much out of the 500ms period -
+            // we might have been very busy and didn't process any incoming packets
+            if (d < 400 || d > 700) return
+        }
+
+        if (!this.connected || !bus) return // ignore while not connected
         if (bus.safeBoot) return // don't mess with flashing bootloaders
         const devices = bus.devices()
         if (devices?.some(dev => dev.firmwareUpdater))
@@ -199,7 +211,9 @@ export abstract class Transport extends JDEventSource {
         if (t > this.pulseTimeout) {
             this.emit(LOST)
             if (Flags.diagnostics)
-                console.debug(`${this.type}: lost connection with device`)
+                console.debug(
+                    `${this.type}: lost connection with device t=${bus.timestamp}`
+                )
             if (this._lastReceivedTime !== undefined) await this.reconnect()
             else await this.disconnect(true)
         }
