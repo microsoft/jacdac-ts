@@ -27,6 +27,7 @@ import {
     SRV_HUMIDITY,
     SRV_SERVO,
     ServoReg,
+    SRV_REFLECTED_LIGHT,
     SRV_VIBRATION_MOTOR,
     VibrationMotorCmd,
     SRV_POWER,
@@ -179,6 +180,26 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
             type: "event",
             eventName: "up",
             factory: true,
+        },
+    ],
+    [SRV_REFLECTED_LIGHT]: <ServiceTestRule[]>[
+        <ReadingTestRule>{
+            type: "reading",
+            value: 0,
+            tolerance: 0.3,
+            factory: true,
+            manualSteps: {
+                prepare: "place the sensor over a dark surface",
+            },
+        },
+        <ReadingTestRule>{
+            type: "reading",
+            value: 0,
+            tolerance: 0.3,
+            factory: true,
+            manualSteps: {
+                prepare: "place the sensor over a light surface",
+            },
         },
     ],
     [SRV_MOTION]: <ServiceTestRule[]>[
