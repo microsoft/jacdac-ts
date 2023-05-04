@@ -35,6 +35,10 @@ import {
 } from "./constants"
 import {
     ControlReg,
+    DeviceScriptManagerReg,
+    GPIOReg,
+    SRV_DEVICE_SCRIPT_MANAGER,
+    SRV_GPIO,
     SRV_WIFI,
     SystemCmd,
     SystemReg,
@@ -175,6 +179,16 @@ function toMAC(buffer: Uint8Array) {
     return hex
 }
 
+function toBits(buffer: Uint8Array) {
+    let bitString = ""
+    buffer.forEach(byte => {
+        for (let i = 7; i >= 0; i--) {
+            bitString += (byte >> i) & 1
+        }
+    })
+    return bitString
+}
+
 export function prettyEnum(
     enumInfo: jdspec.EnumInfo,
     numValue: number,
@@ -232,6 +246,23 @@ export function decodeMember(
     ) {
         value = pkt.data
         humanValue = toIP(pkt.data)
+    } else if (
+        service?.classIdentifier === SRV_GPIO &&
+        pktInfo.kind === "ro" &&
+        pktInfo.identifier === GPIOReg.State &&
+        offset == 0
+    ) {
+        value = pkt.data
+        humanValue = toBits(pkt.data)
+    } else if (
+        service?.classIdentifier === SRV_DEVICE_SCRIPT_MANAGER &&
+        pktInfo.kind === "const" &&
+        pktInfo.identifier === DeviceScriptManagerReg.RuntimeVersion &&
+        offset == 0
+    ) {
+        value = pkt.data
+        humanValue =
+            value?.length >= 2 ? `${value[2]}.${value[1]}.${value[0]}` : "?"
     } else if (
         service?.classIdentifier === SRV_WIFI &&
         pktInfo.kind === "const" &&
