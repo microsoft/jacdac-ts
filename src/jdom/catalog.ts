@@ -143,7 +143,7 @@ export class DeviceCatalog extends JDEventSource {
      * Generates a unique firmware identifier
      * @returns
      */
-    uniqueFirmwareId() {
+    uniqueFirmwareId(decimal?: boolean) {
         const genFirmwareId = () => {
             const n = cryptoRandomUint32(1)
             if (n === undefined) return undefined
@@ -158,7 +158,7 @@ export class DeviceCatalog extends JDEventSource {
         ) {
             id = genFirmwareId()
         }
-        return id !== undefined && toFullHex([id])
+        return id !== undefined && (decimal ? id.toString() : toFullHex([id]))
     }
 
     /**
