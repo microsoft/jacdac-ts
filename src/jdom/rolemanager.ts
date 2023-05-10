@@ -13,6 +13,12 @@ import { JDService } from "./service"
 import { serviceSpecificationFromClassIdentifier } from "./spec"
 import { JDClient } from "./client"
 
+export function escapeRoleName(role: string) {
+    const m = /^(.+)(\?|\[)/.exec(role)
+    const roleName = m?.[1] || role
+    return roleName
+}
+
 /**
  * A binding from a name to a service
  * @category Roles
