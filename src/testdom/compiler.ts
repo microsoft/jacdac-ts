@@ -101,17 +101,26 @@ function createReadingRule(
     }[op || "=="]
     let count = 0
     let seen = count >= samples
+    let incorrect: number = undefined
     return (node, logger) => {
         if (!seen) {
             const { register } = node
-            const [current] = register.unpackedValue
+            const [current] = register.unpackedValue as number[]
             const active = current !== undefined && opf(current, value, tol)
-            if (active) count++
-            else count = 0
+            if (active) {
+                count++
+                incorrect = undefined
+            }
+            else {
+                count = 0
+                incorrect = current
+            }
             // recompute
             seen = count >= samples
         }
-        if (!seen) logger(`missing or incorrect ${type} value`)
+        if (incorrect) logger(`incorrect ${type} value (${incorrect})`)
+        else if (count === 0) logger(`missing ${type} value`)
+        else if (!seen) logger(`waiting for more ${type} values (${count} < ${seen})`)
         else logger(`${type} value seen`)
         return seen ? TestState.Pass : TestState.Running
     }

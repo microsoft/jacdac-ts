@@ -257,19 +257,19 @@ const builtinTestRules: Record<number, ServiceTestRule[]> = {
     [SRV_DISTANCE]: <ServiceTestRule[]>[
         <ReadingTestRule>{
             type: "reading",
-            value: 0.1,
-            samples: 5,
+            value: 0.2,
+            samples: 1,
             factory: true,
             op: "<",
             manualSteps: {
                 prepare:
-                    "cover distance sensor to get a reading less than 10cm",
+                    "cover distance sensor to get a reading less than 20cm",
             },
         },
         <ReadingTestRule>{
             type: "reading",
             value: 0.4,
-            samples: 5,
+            samples: 1,
             factory: true,
             manualSteps: {
                 prepare: "uncover distance sensor with at least 40cm free",
