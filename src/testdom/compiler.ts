@@ -110,8 +110,7 @@ function createReadingRule(
             if (active) {
                 count++
                 incorrect = undefined
-            }
-            else {
+            } else {
                 count = 0
                 incorrect = current
             }
@@ -120,7 +119,8 @@ function createReadingRule(
         }
         if (incorrect) logger(`incorrect ${type} value (${incorrect})`)
         else if (count === 0) logger(`missing ${type} value`)
-        else if (!seen) logger(`waiting for more ${type} values (${count} < ${seen})`)
+        else if (!seen)
+            logger(`waiting for more ${type} values (${count} < ${seen})`)
         else logger(`${type} value seen`)
         return seen ? TestState.Pass : TestState.Running
     }
