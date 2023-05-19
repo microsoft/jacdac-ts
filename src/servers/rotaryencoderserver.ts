@@ -1,8 +1,8 @@
 import { RotaryEncoderReg, SRV_ROTARY_ENCODER } from "../jdom/constants"
-import { JDSensorServer } from "./sensorserver"
+import { SensorServer } from "./sensorserver"
 import { JDRegisterServer } from "../jdom/servers/registerserver"
 
-export class RotaryEncoderServer extends JDSensorServer<[number]> {
+export class RotaryEncoderServer extends SensorServer<[number]> {
     readonly clicksPerTurn: JDRegisterServer<[number]>
 
     constructor() {

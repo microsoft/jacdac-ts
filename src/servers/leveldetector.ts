@@ -1,11 +1,11 @@
 import { JDClient } from "../jdom/client"
 import { CHANGE, SystemEvent, SystemReadingThreshold } from "../jdom/constants"
-import { JDAnalogSensorServer } from "./analogsensorserver"
+import { AnalogSensorServer } from "./analogsensorserver"
 
 export class LevelDetector extends JDClient {
     private _state: SystemReadingThreshold
 
-    constructor(readonly service: JDAnalogSensorServer) {
+    constructor(readonly service: AnalogSensorServer) {
         super()
         this.reset()
         if (this.service.inactiveThreshold)

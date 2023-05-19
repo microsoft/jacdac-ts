@@ -5,7 +5,7 @@ import {
     REFRESH,
     SRV_BUTTON,
 } from "../jdom/constants"
-import { JDSensorServer } from "./sensorserver"
+import { SensorServer } from "./sensorserver"
 import { JDRegisterServer } from "../jdom/servers/registerserver"
 import { jdpack } from "../jdom/pack"
 
@@ -13,7 +13,7 @@ import { jdpack } from "../jdom/pack"
  * Server implementation for the button service
  * @category Servers
  */
-export class ButtonServer extends JDSensorServer<[number]> {
+export class ButtonServer extends SensorServer<[number]> {
     public static readonly HOLD_TIME = 500
     public static readonly INACTIVE_VALUE = 0
     public static readonly ACTIVE_VALUE = 1

@@ -7,7 +7,7 @@ import {
 } from "../jdom/constants"
 import { jdpack } from "../jdom/pack"
 import { JDRegisterServer } from "../jdom/servers/registerserver"
-import { JDSensorServer } from "./sensorserver"
+import { SensorServer } from "./sensorserver"
 
 /**
  * @internal
@@ -68,7 +68,7 @@ const standardGamepadMapping = [
     [GamepadButtons.Menu, 9],
 ]
 
-export class GamepadServer extends JDSensorServer<
+export class GamepadServer extends SensorServer<
     [GamepadButtons, number, number]
 > {
     readonly variant: JDRegisterServer<[GamepadVariant]>

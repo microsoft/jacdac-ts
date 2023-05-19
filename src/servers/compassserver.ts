@@ -5,9 +5,9 @@ import {
     SystemStatusCodes,
 } from "../jdom/constants"
 import { JDRegisterServer } from "../jdom/servers/registerserver"
-import { JDAnalogSensorServer } from "./analogsensorserver"
+import { AnalogSensorServer } from "./analogsensorserver"
 
-export class CompassServer extends JDAnalogSensorServer {
+export class CompassServer extends AnalogSensorServer {
     private enabled: JDRegisterServer<[boolean]>
     constructor() {
         super(SRV_COMPASS, {

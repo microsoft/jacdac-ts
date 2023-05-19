@@ -1,8 +1,8 @@
 import { MatrixKeypadReg, SRV_MATRIX_KEYPAD } from "../jdom/constants"
 import { JDRegisterServer } from "../jdom/servers/registerserver"
-import { JDSensorServer } from "./sensorserver"
+import { SensorServer } from "./sensorserver"
 
-export class MatrixKeypadServer extends JDSensorServer<[[number][]]> {
+export class MatrixKeypadServer extends SensorServer<[[number][]]> {
     readonly rows: JDRegisterServer<[number]>
     readonly columns: JDRegisterServer<[number]>
     readonly labels: JDRegisterServer<[[string][]]>

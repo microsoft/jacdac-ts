@@ -5,9 +5,9 @@ import {
     SwitchVariant,
 } from "../jdom/constants"
 import { JDRegisterServer } from "../jdom/servers/registerserver"
-import { JDSensorServer } from "./sensorserver"
+import { SensorServer } from "./sensorserver"
 
-export class SwitchServer extends JDSensorServer<[boolean]> {
+export class SwitchServer extends SensorServer<[boolean]> {
     readonly variant: JDRegisterServer<[SwitchVariant]>
 
     constructor(options?: { variant?: SwitchVariant }) {

@@ -1,15 +1,15 @@
 import { SystemReg } from "../jdom/constants"
 import { JDRegisterServer } from "../jdom/servers/registerserver"
 import { LevelDetector } from "./leveldetector"
-import { JDSensorServer, JDSensorServiceOptions } from "./sensorserver"
+import { SensorServer, SensorServiceOptions } from "./sensorserver"
 
 /**
  * Creation options for AnalogSensorServer
  * @category Servers
  * @internal
  */
-export interface JDAnalogSensorServerOptions
-    extends JDSensorServiceOptions<[number]> {
+export interface AnalogSensorServerOptions
+    extends SensorServiceOptions<[number]> {
     minReading?: number
     maxReading?: number
     inactiveThreshold?: number
@@ -21,12 +21,12 @@ export interface JDAnalogSensorServerOptions
  * Base class for analog sensor servers
  * @category Servers
  */
-export class JDAnalogSensorServer extends JDSensorServer<[number]> {
+export class AnalogSensorServer extends SensorServer<[number]> {
     readonly inactiveThreshold: JDRegisterServer<[number]>
     readonly activeThreshold: JDRegisterServer<[number]>
     readonly levelDetector: LevelDetector
 
-    constructor(serviceClass: number, options?: JDAnalogSensorServerOptions) {
+    constructor(serviceClass: number, options?: AnalogSensorServerOptions) {
         super(serviceClass, options)
         const {
             minReading,
