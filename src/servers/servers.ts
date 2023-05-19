@@ -1930,6 +1930,7 @@ export function addServiceProvider(
     const options = {
         resetIn: definition.resetIn,
         deviceId,
+        deviceDescription: definition.name,
     }
     const d =
         definition.factory?.(services) ||

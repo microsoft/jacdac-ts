@@ -38,6 +38,7 @@ export class JDServerServiceProvider extends JDServiceProvider {
         options?: {
             deviceId?: string
             resetIn?: boolean
+            deviceDescription?: string
         }
     ) {
         super(template, options?.deviceId)

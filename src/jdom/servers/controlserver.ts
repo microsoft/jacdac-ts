@@ -24,12 +24,13 @@ export class ControlServer extends JDServiceServer {
 
     statusLightColor: number = undefined
 
-    constructor(options?: { resetIn?: boolean }) {
+    constructor(options?: { resetIn?: boolean; deviceDescription?: string }) {
         super(SRV_CONTROL)
-        const { resetIn } = options || {}
+        const { resetIn, deviceDescription } = options || {}
         this.startTime = Date.now()
         this.deviceDescription = this.addRegister<[string]>(
-            ControlReg.DeviceDescription
+            ControlReg.DeviceDescription,
+            [deviceDescription || "Simulated"]
         )
         this.mcuTemperature = this.addRegister<[number]>(
             ControlReg.McuTemperature,
@@ -39,7 +40,6 @@ export class ControlServer extends JDServiceServer {
         if (resetIn)
             this.resetIn = this.addRegister<[number]>(ControlReg.ResetIn, [0])
 
-        this.addRegister(ControlReg.DeviceDescription, ["Simulated"])
         this.addRegister(ControlReg.FirmwareVersion, ["0.0.0"])
         this.addRegister(ControlReg.ProductIdentifier, [0])
         this.addRegister(ControlReg.BootloaderProductIdentifier, [0])
@@ -111,5 +111,3 @@ export class ControlServer extends JDServiceServer {
         this.emit(CHANGE)
     }
 }
-
-
