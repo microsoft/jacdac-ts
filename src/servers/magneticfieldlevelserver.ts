@@ -7,13 +7,13 @@ import {
     SystemReadingThreshold,
 } from "../jdom/constants"
 import { JDServerOptions } from "../jdom/servers/serviceserver"
-import { SensorServer } from "./sensorserver"
+import { JDSensorServer } from "./sensorserver"
 
 export interface MagneticFieldLevelServerOptions extends JDServerOptions {
     variant: MagneticFieldLevelVariant
 }
 
-export class MagneticFieldLevelServer extends SensorServer<[number]> {
+export class MagneticFieldLevelServer extends JDSensorServer<[number]> {
     private _state = SystemReadingThreshold.Neutral
 
     static ACTIVE_THRESHOLD = 0.3

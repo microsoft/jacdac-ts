@@ -1,6 +1,6 @@
 import { SatNavReg, SRV_SAT_NAV } from "../jdom/constants"
 import { JDRegisterServer } from "../jdom/servers/registerserver"
-import { SensorServer, SensorServiceOptions } from "./sensorserver"
+import { JDSensorServer, JDSensorServiceOptions } from "./sensorserver"
 
 export type SatNavReadingType = [
     number, // time
@@ -11,10 +11,10 @@ export type SatNavReadingType = [
     number // altitude accuracy
 ]
 
-export class SatNavServer extends SensorServer<SatNavReadingType> {
+export class SatNavServer extends JDSensorServer<SatNavReadingType> {
     readonly enabled: JDRegisterServer<[boolean]>
 
-    constructor(options?: SensorServiceOptions<SatNavReadingType>) {
+    constructor(options?: JDSensorServiceOptions<SatNavReadingType>) {
         super(
             SRV_SAT_NAV,
             options || {

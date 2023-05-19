@@ -1,8 +1,8 @@
 import { CHANGE, RainGaugeReg, SRV_RAIN_GAUGE } from "../jdom/constants"
 import { JDRegisterServer } from "../jdom/servers/registerserver"
-import { AnalogSensorServer } from "./analogsensorserver"
+import { JDAnalogSensorServer } from "./analogsensorserver"
 
-export class RainGaugeServer extends AnalogSensorServer {
+export class RainGaugeServer extends JDAnalogSensorServer {
     readonly precipitationPrecision: JDRegisterServer<[number]>
     private _tiltCount = 0
     private _level = 0

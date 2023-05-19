@@ -1,4 +1,4 @@
-import { SensorServer } from "./sensorserver"
+import { JDSensorServer } from "./sensorserver"
 import {
     RealTimeClockCmd,
     RealTimeClockReg,
@@ -38,7 +38,7 @@ export function dateToClock(n: Date): RealTimeClockReadingType {
     return [year, month, dayOfMonth, dayOfWeek, hour, min, sec]
 }
 
-export class RealTimeClockServer extends SensorServer<RealTimeClockReadingType> {
+export class RealTimeClockServer extends JDSensorServer<RealTimeClockReadingType> {
     readonly drift: JDRegisterServer<[number]>
     readonly precision: JDRegisterServer<[number]>
     private lastSecond = 0

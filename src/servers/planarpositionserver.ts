@@ -1,8 +1,8 @@
 import { SRV_PLANAR_POSITION } from "../jacdac"
 import { JDRegisterServer } from "../jdom/servers/registerserver"
-import { SensorServer } from "./sensorserver"
+import { JDSensorServer } from "./sensorserver"
 
-export class PlanarPositionServer extends SensorServer<[number, number]> {
+export class PlanarPositionServer extends JDSensorServer<[number, number]> {
     position: JDRegisterServer<[number]>
 
     constructor() {

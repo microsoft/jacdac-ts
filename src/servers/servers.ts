@@ -119,7 +119,7 @@ import { RainGaugeServer } from "./raingaugeserver"
 import { RealTimeClockServer } from "./realtimeclockserver"
 import { ReflectedLightServer } from "./reflectedlightserver"
 import { RotaryEncoderServer } from "./rotaryencoderserver"
-import { SensorServer, SensorServiceOptions } from "./sensorserver"
+import { JDSensorServer, JDSensorServiceOptions } from "./sensorserver"
 import { ServoServer } from "./servoserver"
 import { SettingsServer } from "./settingsserver"
 import { SpeechSynthesisServer } from "./speechsynthesisserver"
@@ -128,8 +128,8 @@ import { TrafficLightServer } from "./trafficlightserver"
 import { fromHex, hash, stringToUint8Array, toFullHex } from "../jdom/utils"
 import { SoundPlayerServer, SoundPlayerSound } from "./soundplayerserver"
 import {
-    AnalogSensorServer,
-    AnalogSensorServerOptions,
+    JDAnalogSensorServer,
+    JDAnalogSensorServerOptions,
 } from "./analogsensorserver"
 import { RandomNumberGeneratorServer } from "./randomnumbergeneratorserver"
 import { CompassServer } from "./compassserver"
@@ -165,7 +165,7 @@ import { isNumericType, randomDeviceId } from "../jacdac"
 import { SerialServer } from "./serialserver"
 import { genFieldInfo } from "../../jacdac-spec/spectool/jdspec"
 
-const indoorThermometerOptions: AnalogSensorServerOptions = {
+const indoorThermometerOptions: JDAnalogSensorServerOptions = {
     readingValues: [21.5],
     streamingInterval: 1000,
     minReading: -5,
@@ -173,7 +173,7 @@ const indoorThermometerOptions: AnalogSensorServerOptions = {
     readingError: [0.25],
     variant: TemperatureVariant.Indoor,
 }
-const outdoorThermometerOptions: AnalogSensorServerOptions = {
+const outdoorThermometerOptions: JDAnalogSensorServerOptions = {
     readingValues: [21.5],
     streamingInterval: 1000,
     minReading: -40,
@@ -181,14 +181,14 @@ const outdoorThermometerOptions: AnalogSensorServerOptions = {
     readingError: [0.25],
     variant: TemperatureVariant.Outdoor,
 }
-const outdoorHumidityOptions: AnalogSensorServerOptions = {
+const outdoorHumidityOptions: JDAnalogSensorServerOptions = {
     streamingInterval: 1000,
     readingValues: [40],
     readingError: [0.1],
     minReading: 10,
     maxReading: 99,
 }
-const soilThermometerOptions: AnalogSensorServerOptions = {
+const soilThermometerOptions: JDAnalogSensorServerOptions = {
     readingValues: [15],
     streamingInterval: 1000,
     minReading: -55,
@@ -196,7 +196,7 @@ const soilThermometerOptions: AnalogSensorServerOptions = {
     readingError: [0.5],
     variant: TemperatureVariant.Outdoor,
 }
-const medicalThermometerOptions: AnalogSensorServerOptions = {
+const medicalThermometerOptions: JDAnalogSensorServerOptions = {
     readingValues: [37.5],
     streamingInterval: 1000,
     minReading: 35,
@@ -204,14 +204,14 @@ const medicalThermometerOptions: AnalogSensorServerOptions = {
     readingError: [0.5],
     variant: TemperatureVariant.Body,
 }
-const barometerOptions: AnalogSensorServerOptions = {
+const barometerOptions: JDAnalogSensorServerOptions = {
     readingValues: [1013],
     readingError: [1.5],
     streamingInterval: 1000,
     minReading: 150,
     maxReading: 4000,
 }
-const sonarOptions: AnalogSensorServerOptions = {
+const sonarOptions: JDAnalogSensorServerOptions = {
     variant: DistanceVariant.Ultrasonic,
     minReading: 0.02,
     maxReading: 4,
@@ -249,28 +249,28 @@ const microServo360Options = {
     minAngle: 0,
     maxAngle: 360,
 }
-const windDirectionOptions: AnalogSensorServerOptions = {
+const windDirectionOptions: JDAnalogSensorServerOptions = {
     readingValues: [0],
     readingError: [5],
     streamingInterval: 5000,
 }
-const windSpeedOptions: AnalogSensorServerOptions = {
+const windSpeedOptions: JDAnalogSensorServerOptions = {
     readingValues: [0],
     readingError: [2],
     streamingInterval: 5000,
     registerValues: [{ code: WindSpeedReg.MaxWindSpeed, values: [80] }],
 }
-const eCO2Options: AnalogSensorServerOptions = {
+const eCO2Options: JDAnalogSensorServerOptions = {
     readingValues: [400],
     streamingInterval: 1000,
     variant: ECO2Variant.VOC,
 }
-const CO2Options: AnalogSensorServerOptions = {
+const CO2Options: JDAnalogSensorServerOptions = {
     readingValues: [400],
     streamingInterval: 1000,
     variant: ECO2Variant.NDIR,
 }
-const tvocOptions: AnalogSensorServerOptions = {
+const tvocOptions: JDAnalogSensorServerOptions = {
     readingValues: [500],
     streamingInterval: 1000,
 }
@@ -287,11 +287,11 @@ const microbitSounds: SoundPlayerSound[] = [
     [0, "twinkle"],
     [0, "yawn"],
 ]
-const soundLevel: AnalogSensorServerOptions = {
+const soundLevel: JDAnalogSensorServerOptions = {
     readingValues: [0],
     intensityValues: [false],
 }
-const soundSpectrum: SensorServiceOptions<[Uint8Array]> = {
+const soundSpectrum: JDSensorServiceOptions<[Uint8Array]> = {
     readingValues: [new Uint8Array(0)],
     intensityValues: [false],
     registerValues: [
@@ -400,7 +400,7 @@ function initProviders() {
                 name: "water acidity (pH)",
                 serviceClasses: [SRV_ACIDITY],
                 services: () => [
-                    new AnalogSensorServer(SRV_ACIDITY, {
+                    new JDAnalogSensorServer(SRV_ACIDITY, {
                         minReading: 2.5,
                         maxReading: 10,
                         readingValues: [7],
@@ -413,7 +413,10 @@ function initProviders() {
                 name: "barometer",
                 serviceClasses: [SRV_AIR_PRESSURE],
                 services: () => [
-                    new AnalogSensorServer(SRV_AIR_PRESSURE, barometerOptions),
+                    new JDAnalogSensorServer(
+                        SRV_AIR_PRESSURE,
+                        barometerOptions
+                    ),
                 ],
             },
             {
@@ -535,7 +538,7 @@ function initProviders() {
                 name: "color",
                 serviceClasses: [SRV_COLOR],
                 services: () => [
-                    new SensorServer<[number, number, number]>(SRV_COLOR, {
+                    new JDSensorServer<[number, number, number]>(SRV_COLOR, {
                         readingValues: [0.5, 0, 0.5],
                         preferredStreamingInterval: 1000,
                     }),
@@ -553,7 +556,7 @@ function initProviders() {
                     SRV_DC_VOLTAGE_MEASUREMENT,
                 ],
                 services: () => [
-                    new AnalogSensorServer(SRV_DC_CURRENT_MEASUREMENT, {
+                    new JDAnalogSensorServer(SRV_DC_CURRENT_MEASUREMENT, {
                         readingValues: [0.001],
                         readingResolution: 0.001,
                         streamingInterval: 100,
@@ -566,7 +569,7 @@ function initProviders() {
                             },
                         ],
                     }),
-                    new AnalogSensorServer(SRV_DC_VOLTAGE_MEASUREMENT, {
+                    new JDAnalogSensorServer(SRV_DC_VOLTAGE_MEASUREMENT, {
                         readingValues: [5],
                         streamingInterval: 100,
                         readingResolution: 0.001,
@@ -591,7 +594,7 @@ function initProviders() {
                 name: "distance (sonar)",
                 serviceClasses: [SRV_DISTANCE],
                 services: () => [
-                    new AnalogSensorServer(SRV_DISTANCE, sonarOptions),
+                    new JDAnalogSensorServer(SRV_DISTANCE, sonarOptions),
                 ],
             },
             {
@@ -603,27 +606,27 @@ function initProviders() {
                 name: "eCO₂",
                 serviceClasses: [SRV_E_CO2],
                 services: () => [
-                    new AnalogSensorServer(SRV_E_CO2, eCO2Options),
+                    new JDAnalogSensorServer(SRV_E_CO2, eCO2Options),
                 ],
             },
             {
                 name: "eCO₂ + TVOC",
                 serviceClasses: [SRV_E_CO2, SRV_TVOC],
                 services: () => [
-                    new AnalogSensorServer(SRV_E_CO2, eCO2Options),
-                    new AnalogSensorServer(SRV_TVOC, tvocOptions),
+                    new JDAnalogSensorServer(SRV_E_CO2, eCO2Options),
+                    new JDAnalogSensorServer(SRV_TVOC, tvocOptions),
                 ],
             },
             {
                 name: "eCO₂ + humidity + thermometer",
                 serviceClasses: [SRV_E_CO2, SRV_HUMIDITY, SRV_TEMPERATURE],
                 services: () => [
-                    new AnalogSensorServer(SRV_E_CO2, CO2Options),
-                    new AnalogSensorServer(
+                    new JDAnalogSensorServer(SRV_E_CO2, CO2Options),
+                    new JDAnalogSensorServer(
                         SRV_HUMIDITY,
                         outdoorHumidityOptions
                     ),
-                    new AnalogSensorServer(
+                    new JDAnalogSensorServer(
                         SRV_TEMPERATURE,
                         indoorThermometerOptions
                     ),
@@ -633,7 +636,7 @@ function initProviders() {
                 name: "flex sensor",
                 serviceClasses: [SRV_FLEX],
                 services: () => [
-                    new AnalogSensorServer(SRV_FLEX, {
+                    new JDAnalogSensorServer(SRV_FLEX, {
                         readingValues: [0.5],
                     }),
                 ],
@@ -642,16 +645,19 @@ function initProviders() {
                 name: "gyroscope",
                 serviceClasses: [SRV_GYROSCOPE],
                 services: () => [
-                    new SensorServer<[number, number, number]>(SRV_GYROSCOPE, {
-                        readingValues: [0, 0, 0],
-                    }),
+                    new JDSensorServer<[number, number, number]>(
+                        SRV_GYROSCOPE,
+                        {
+                            readingValues: [0, 0, 0],
+                        }
+                    ),
                 ],
             },
             {
                 name: "heart rate",
                 serviceClasses: [SRV_HEART_RATE],
                 services: () => [
-                    new AnalogSensorServer(SRV_HEART_RATE, {
+                    new JDAnalogSensorServer(SRV_HEART_RATE, {
                         readingValues: [80],
                         streamingInterval: 100,
                         variant: HeartRateVariant.Finger,
@@ -662,7 +668,7 @@ function initProviders() {
                 name: "humidity",
                 serviceClasses: [SRV_HUMIDITY],
                 services: () => [
-                    new AnalogSensorServer(
+                    new JDAnalogSensorServer(
                         SRV_HUMIDITY,
                         outdoorHumidityOptions
                     ),
@@ -672,11 +678,11 @@ function initProviders() {
                 name: "humidity + temperature",
                 serviceClasses: [SRV_HUMIDITY, SRV_TEMPERATURE],
                 services: () => [
-                    new AnalogSensorServer(
+                    new JDAnalogSensorServer(
                         SRV_TEMPERATURE,
                         outdoorThermometerOptions
                     ),
-                    new AnalogSensorServer(
+                    new JDAnalogSensorServer(
                         SRV_HUMIDITY,
                         outdoorHumidityOptions
                     ),
@@ -690,15 +696,18 @@ function initProviders() {
                     SRV_AIR_PRESSURE,
                 ],
                 services: () => [
-                    new AnalogSensorServer(
+                    new JDAnalogSensorServer(
                         SRV_TEMPERATURE,
                         outdoorThermometerOptions
                     ),
-                    new AnalogSensorServer(
+                    new JDAnalogSensorServer(
                         SRV_HUMIDITY,
                         outdoorHumidityOptions
                     ),
-                    new AnalogSensorServer(SRV_AIR_PRESSURE, barometerOptions),
+                    new JDAnalogSensorServer(
+                        SRV_AIR_PRESSURE,
+                        barometerOptions
+                    ),
                 ],
             },
             {
@@ -720,7 +729,7 @@ function initProviders() {
                 name: "illuminance",
                 serviceClasses: [SRV_ILLUMINANCE],
                 services: () => [
-                    new AnalogSensorServer(SRV_ILLUMINANCE, {
+                    new JDAnalogSensorServer(SRV_ILLUMINANCE, {
                         readingValues: [1],
                     }),
                 ],
@@ -1042,7 +1051,7 @@ function initProviders() {
                 name: "light level (solar)",
                 serviceClasses: [SRV_LIGHT_LEVEL],
                 services: () => [
-                    new SensorServer(SRV_LIGHT_LEVEL, {
+                    new JDSensorServer(SRV_LIGHT_LEVEL, {
                         readingValues: [0.5],
                         variant: LightLevelVariant.PhotoResistor,
                     }),
@@ -1143,7 +1152,7 @@ function initProviders() {
                 name: "motion",
                 serviceClasses: [SRV_MOTION],
                 services: () => [
-                    new SensorServer(SRV_MOTION, {
+                    new JDSensorServer(SRV_MOTION, {
                         readingValues: [false],
                         streamingInterval: 1000,
                     }),
@@ -1175,7 +1184,7 @@ function initProviders() {
                 name: "pulse oxymeter",
                 serviceClasses: [SRV_PULSE_OXIMETER],
                 services: () => [
-                    new SensorServer<[number]>(SRV_PULSE_OXIMETER, {
+                    new JDSensorServer<[number]>(SRV_PULSE_OXIMETER, {
                         readingValues: [98],
                         streamingInterval: 1000,
                     }),
@@ -1196,11 +1205,11 @@ function initProviders() {
                 name: "oxymeter + heart beat",
                 serviceClasses: [SRV_PULSE_OXIMETER, SRV_HEART_RATE],
                 services: () => [
-                    new SensorServer<[number]>(SRV_PULSE_OXIMETER, {
+                    new JDSensorServer<[number]>(SRV_PULSE_OXIMETER, {
                         readingValues: [98],
                         streamingInterval: 1000,
                     }),
-                    new AnalogSensorServer(SRV_HEART_RATE, {
+                    new JDAnalogSensorServer(SRV_HEART_RATE, {
                         readingValues: [80],
                         streamingInterval: 1000,
                         variant: HeartRateVariant.Finger,
@@ -1279,7 +1288,7 @@ function initProviders() {
                 name: "rotary potentiometer",
                 serviceClasses: [SRV_POTENTIOMETER],
                 services: () => [
-                    new AnalogSensorServer(SRV_POTENTIOMETER, {
+                    new JDAnalogSensorServer(SRV_POTENTIOMETER, {
                         variant: PotentiometerVariant.Rotary,
                         readingValues: [0.5],
                     }),
@@ -1398,7 +1407,7 @@ function initProviders() {
                 name: "slider (potentiometer)",
                 serviceClasses: [SRV_POTENTIOMETER],
                 services: () => [
-                    new AnalogSensorServer(SRV_POTENTIOMETER, {
+                    new JDAnalogSensorServer(SRV_POTENTIOMETER, {
                         variant: PotentiometerVariant.Slider,
                     }),
                 ],
@@ -1407,7 +1416,7 @@ function initProviders() {
                 name: "soil moisture",
                 serviceClasses: [SRV_SOIL_MOISTURE],
                 services: () => [
-                    new AnalogSensorServer(SRV_SOIL_MOISTURE, {
+                    new JDAnalogSensorServer(SRV_SOIL_MOISTURE, {
                         readingValues: [0.5],
                         readingError: [0.05],
                         streamingInterval: 1000,
@@ -1432,14 +1441,14 @@ function initProviders() {
                 name: "sound level",
                 serviceClasses: [SRV_SOUND_LEVEL],
                 services: () => [
-                    new AnalogSensorServer(SRV_SOUND_LEVEL, soundLevel),
+                    new JDAnalogSensorServer(SRV_SOUND_LEVEL, soundLevel),
                 ],
             },
             {
                 name: "sound spectrum",
                 serviceClasses: [SRV_SOUND_SPECTRUM],
                 services: () => [
-                    new SensorServer<[Uint8Array]>(
+                    new JDSensorServer<[Uint8Array]>(
                         SRV_SOUND_SPECTRUM,
                         soundSpectrum
                     ),
@@ -1491,7 +1500,7 @@ function initProviders() {
                 name: "thermometer (outdoor)",
                 serviceClasses: [SRV_TEMPERATURE],
                 services: () => [
-                    new AnalogSensorServer(
+                    new JDAnalogSensorServer(
                         SRV_TEMPERATURE,
                         outdoorThermometerOptions
                     ),
@@ -1501,7 +1510,7 @@ function initProviders() {
                 name: "thermometer (soil)",
                 serviceClasses: [SRV_TEMPERATURE],
                 services: () => [
-                    new AnalogSensorServer(
+                    new JDAnalogSensorServer(
                         SRV_TEMPERATURE,
                         soilThermometerOptions
                     ),
@@ -1511,7 +1520,7 @@ function initProviders() {
                 name: "thermometer (medical)",
                 serviceClasses: [SRV_TEMPERATURE],
                 services: () => [
-                    new AnalogSensorServer(
+                    new JDAnalogSensorServer(
                         SRV_TEMPERATURE,
                         medicalThermometerOptions
                     ),
@@ -1533,13 +1542,15 @@ function initProviders() {
             {
                 name: "TVOC",
                 serviceClasses: [SRV_TVOC],
-                services: () => [new AnalogSensorServer(SRV_TVOC, tvocOptions)],
+                services: () => [
+                    new JDAnalogSensorServer(SRV_TVOC, tvocOptions),
+                ],
             },
             {
                 name: "UV index",
                 serviceClasses: [SRV_UV_INDEX],
                 services: () => [
-                    new AnalogSensorServer(SRV_UV_INDEX, {
+                    new JDAnalogSensorServer(SRV_UV_INDEX, {
                         readingValues: [5],
                         minReading: 0,
                         maxReading: 11,
@@ -1556,7 +1567,7 @@ function initProviders() {
                 name: "water level",
                 serviceClasses: [SRV_WATER_LEVEL],
                 services: () => [
-                    new AnalogSensorServer(SRV_WATER_LEVEL, {
+                    new JDAnalogSensorServer(SRV_WATER_LEVEL, {
                         readingValues: [0.5],
                         streamingInterval: 1000,
                     }),
@@ -1583,7 +1594,7 @@ function initProviders() {
                 name: "weight scale (jewelry)",
                 serviceClasses: [SRV_WEIGHT_SCALE],
                 services: () => [
-                    new AnalogSensorServer(SRV_WEIGHT_SCALE, {
+                    new JDAnalogSensorServer(SRV_WEIGHT_SCALE, {
                         readingValues: [0.001],
                         variant: WeightScaleVariant.Jewelry,
                         maxReading: 0.2,
@@ -1596,7 +1607,7 @@ function initProviders() {
                 name: "weight scale (body)",
                 serviceClasses: [SRV_WEIGHT_SCALE],
                 services: () => [
-                    new AnalogSensorServer(SRV_WEIGHT_SCALE, {
+                    new JDAnalogSensorServer(SRV_WEIGHT_SCALE, {
                         readingValues: [60],
                         variant: WeightScaleVariant.Body,
                         maxReading: 180,
@@ -1608,7 +1619,7 @@ function initProviders() {
                 name: "weight scale (food)",
                 serviceClasses: [SRV_WEIGHT_SCALE],
                 services: () => [
-                    new AnalogSensorServer(SRV_WEIGHT_SCALE, {
+                    new JDAnalogSensorServer(SRV_WEIGHT_SCALE, {
                         readingValues: [0.5],
                         variant: WeightScaleVariant.Food,
                         maxReading: 6,
@@ -1620,7 +1631,7 @@ function initProviders() {
                 name: "wind direction",
                 serviceClasses: [SRV_WIND_DIRECTION],
                 services: () => [
-                    new AnalogSensorServer(
+                    new JDAnalogSensorServer(
                         SRV_WIND_DIRECTION,
                         windDirectionOptions
                     ),
@@ -1630,7 +1641,7 @@ function initProviders() {
                 name: "wind speed",
                 serviceClasses: [SRV_WIND_SPEED],
                 services: () => [
-                    new AnalogSensorServer(SRV_WIND_SPEED, windSpeedOptions),
+                    new JDAnalogSensorServer(SRV_WIND_SPEED, windSpeedOptions),
                 ],
             },
             {
@@ -1641,8 +1652,8 @@ function initProviders() {
                     SRV_RAIN_GAUGE,
                 ],
                 services: () => [
-                    new AnalogSensorServer(SRV_WIND_SPEED, windSpeedOptions),
-                    new AnalogSensorServer(
+                    new JDAnalogSensorServer(SRV_WIND_SPEED, windSpeedOptions),
+                    new JDAnalogSensorServer(
                         SRV_WIND_DIRECTION,
                         windDirectionOptions
                     ),
@@ -1655,7 +1666,7 @@ function initProviders() {
                 services: () => [
                     new MotorServer("L"),
                     new MotorServer("R"),
-                    new AnalogSensorServer(SRV_DISTANCE, sonarOptions),
+                    new JDAnalogSensorServer(SRV_DISTANCE, sonarOptions),
                     new LedServer({
                         numPixels: 5,
                         variant: LedVariant.Stick,
@@ -1708,7 +1719,7 @@ function initProviders() {
                     new DotMatrixServer(5, 5),
                     new ButtonServer("A"),
                     new ButtonServer("B"),
-                    new SensorServer<[number, number, number]>(
+                    new JDSensorServer<[number, number, number]>(
                         SRV_ACCELEROMETER,
                         {
                             readingValues: [
@@ -1718,8 +1729,8 @@ function initProviders() {
                             ],
                         }
                     ),
-                    new AnalogSensorServer(SRV_SOUND_LEVEL, soundLevel),
-                    new SensorServer(SRV_LIGHT_LEVEL, {
+                    new JDAnalogSensorServer(SRV_SOUND_LEVEL, soundLevel),
+                    new JDSensorServer(SRV_LIGHT_LEVEL, {
                         readingValues: [0.5],
                         variant: LightLevelVariant.ReverseBiasedLED,
                     }),
@@ -1732,7 +1743,7 @@ function initProviders() {
                 serviceClasses: [SRV_POWER, SRV_HUMIDITY],
                 services: () => [
                     new PowerServer(),
-                    new AnalogSensorServer(
+                    new JDAnalogSensorServer(
                         SRV_HUMIDITY,
                         outdoorHumidityOptions
                     ),
@@ -1994,7 +2005,7 @@ function syntheticServiceProvider(
             const field = reading.fields[0]
             const { min, max, scale = 1, defl } = genFieldInfo(reading, field)
             const value = typeof defl === "number" ? defl : (max - min) / 2
-            server = new AnalogSensorServer(serviceClass, {
+            server = new JDAnalogSensorServer(serviceClass, {
                 readingValues: [value / scale],
                 minReading: min / scale,
                 maxReading: max / scale,

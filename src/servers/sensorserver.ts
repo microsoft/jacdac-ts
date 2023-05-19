@@ -15,7 +15,7 @@ import { JDServiceServer, JDServerOptions } from "../jdom/servers/serviceserver"
  * @category Servers
  * @internal
  */
-export interface SensorServiceOptions<TReading extends PackedValues>
+export interface JDSensorServiceOptions<TReading extends PackedValues>
     extends JDServerOptions {
     readingValues?: TReading
     readingError?: TReading
@@ -23,7 +23,7 @@ export interface SensorServiceOptions<TReading extends PackedValues>
     preferredStreamingInterval?: number
 }
 
-export class SensorServer<
+export class JDSensorServer<
     TReading extends PackedValues
 > extends JDServiceServer {
     readonly reading: JDRegisterServer<TReading>
@@ -37,7 +37,7 @@ export class SensorServer<
 
     constructor(
         public readonly serviceClass: number,
-        options?: SensorServiceOptions<TReading>
+        options?: JDSensorServiceOptions<TReading>
     ) {
         super(serviceClass, options)
         const {
