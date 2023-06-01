@@ -1155,7 +1155,7 @@ ${dev
     }
 
     /**
-     * Adds the service provider to the bus and returns the associated devoce
+     * Adds the service provider to the bus and returns the associated device
      * @param provider instance to add
      * @category Services
      */
