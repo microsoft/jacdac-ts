@@ -23,7 +23,7 @@ export interface RosMessage {
     node: string
     topic: string
     message: any
-    messageSource: string
+    messageSource?: string
 }
 
 /**
@@ -34,6 +34,8 @@ export interface RosMessage {
 export class RosServer extends JDServiceServer {
     // topic -> nodes
     private _subscriptions: Record<string, Set<string>> = {}
+    private _messages: RosMessage[] = []
+    maxMessages = 10
 
     constructor() {
         super(SRV_ROS)
@@ -79,6 +81,13 @@ export class RosServer extends JDServiceServer {
     }
 
     /**
+     * Gets the latest messages
+     */
+    get messages(): RosMessage[] {
+        return this._messages.slice(0)
+    }
+
+    /**
      * Publishes a message on the bus if any subscription is active.
      * @param node source node for the message
      * @param topic topic of the message
@@ -88,8 +97,18 @@ export class RosServer extends JDServiceServer {
         if (!this._subscriptions[topic]?.size)
             return;
 
+        this.pushMessage({node, topic, message})
+
         const data = jdpack<[string, string, any]>(RosCmdPack.PublishMessage, [node, topic, JSON.stringify(message)])
         await this.sendPacketAsync(Packet.from(RosReportMessage, data))
+
+        this.emit(CHANGE)
+    }
+
+    private pushMessage(msg: RosMessage) {
+        this._messages.push(msg)
+        while (this._messages.length > this.maxMessages)
+            this._messages.unshift()
     }
 
     private async handlePublishMessage(pkt: Packet) {
@@ -98,6 +117,9 @@ export class RosServer extends JDServiceServer {
         >(RosCmdPack.PublishMessage)
         const message = JSONTryParse(messageSource)
 
-        this.emit(PUBLISH, <RosMessage>{ node, topic, message, messageSource })
+        const msg: RosMessage = { node, topic, message, messageSource }
+        this.pushMessage(msg)
+        this.emit(PUBLISH, msg)
+        this.emit(CHANGE)
     }
 }
