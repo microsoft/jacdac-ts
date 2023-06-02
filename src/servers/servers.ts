@@ -1767,7 +1767,7 @@ function initProviders() {
             {
                 name: "ROS (simulator)",
                 serviceClasses: [SRV_ROS],
-                services: () => [new RosServer()]
+                services: () => [new RosServer()],
             },
             Flags.diagnostics
                 ? {

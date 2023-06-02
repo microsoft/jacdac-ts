@@ -28,7 +28,7 @@ export interface RosMessage {
 
 /**
  * A thin ROS server implementation.
- * 
+ *
  * Maintains a list of subscription for message and raises event on publishing and subscriptions.
  */
 export class RosServer extends JDServiceServer {
@@ -61,7 +61,7 @@ export class RosServer extends JDServiceServer {
         if (!sub.has(node)) {
             sub.add(node)
             this.emit(SUBSCRIBE, { node, topic })
-            this.emit(CHANGE)    
+            this.emit(CHANGE)
         }
     }
 
@@ -94,12 +94,15 @@ export class RosServer extends JDServiceServer {
      * @param message JSON data payload; that will be converted to string
      */
     public async publishMessage(node: string, topic: string, message: any) {
-        if (!this._subscriptions[topic]?.size)
-            return;
+        if (!this._subscriptions[topic]?.size) return
 
-        this.pushMessage({node, topic, message})
+        this.pushMessage({ node, topic, message })
 
-        const data = jdpack<[string, string, any]>(RosCmdPack.PublishMessage, [node, topic, JSON.stringify(message)])
+        const data = jdpack<[string, string, any]>(RosCmdPack.PublishMessage, [
+            node,
+            topic,
+            JSON.stringify(message),
+        ])
         await this.sendPacketAsync(Packet.from(RosReportMessage, data))
 
         this.emit(CHANGE)
