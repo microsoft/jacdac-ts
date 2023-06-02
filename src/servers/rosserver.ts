@@ -1,4 +1,4 @@
-import { JSONTryParse } from "../jacdac"
+import { JSONTryParse, jdpack } from "../jacdac"
 import { CHANGE, RosCmd, RosCmdPack, SRV_ROS } from "../jdom/constants"
 import { Packet } from "../jdom/packet"
 import { JDServiceServer } from "../jdom/servers/serviceserver"
@@ -56,5 +56,10 @@ export class RosServer extends JDServiceServer {
         const message = JSONTryParse(messageSource)
 
         this.emit(PUBLISH, <RosMessage>{ node, topic, message, messageSource })
+
+        // publish report
+        const data = jdpack("z s", [topic, messageSource])
+        const msgPkt = Packet.from(0x83, data)
+        await this.sendPacketAsync(msgPkt)
     }
 }
