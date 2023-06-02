@@ -51,12 +51,15 @@ export class RosServer extends JDServiceServer {
     }
 
     /**
-     * Publishes a message on the bus
-     * @param node 
-     * @param topic 
-     * @param message 
+     * Publishes a message on the bus if any subscription is active.
+     * @param node source node for the message
+     * @param topic topic of the message
+     * @param message JSON data payload; that will be converted to string
      */
     public async publishMessage(node: string, topic: string, message: any) {
+        if (!this.subscriptions[topic]?.size)
+            return;
+
         const data = jdpack<[string, string, any]>(RosCmdPack.PublishMessage, [node, topic, JSON.stringify(message)])
         await this.sendPacketAsync(Packet.from(RosReportMessage, data))
     }
