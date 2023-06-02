@@ -8,11 +8,17 @@ export const SUBSCRIBE = "subscribe"
 export const PUBLISH = "publish"
 export const RosReportMessage = 0x83
 
+/**
+ * Emitted with SUBSCRIBE on new subscription
+ */
 export interface RosSubscription {
     node: string
     topic: string
 }
 
+/**
+ * Emitted with PUBLISH when receiving a publish message command
+ */
 export interface RosMessage {
     node: string
     topic: string
@@ -20,9 +26,14 @@ export interface RosMessage {
     messageSource: string
 }
 
+/**
+ * A thin ROS server implementation.
+ * 
+ * Maintains a list of subscription for message and raises event on publishing and subscriptions.
+ */
 export class RosServer extends JDServiceServer {
     // topic -> nodes
-    public readonly subscriptions: Record<string, Set<string>> = {}
+    private _subscriptions: Record<string, Set<string>> = {}
 
     constructor() {
         super(SRV_ROS)
@@ -43,11 +54,28 @@ export class RosServer extends JDServiceServer {
         )
 
         const sub =
-            this.subscriptions[topic] ||
-            (this.subscriptions[topic] = new Set<string>())
-        sub.add(node)
-        this.emit(SUBSCRIBE, { node, topic })
+            this._subscriptions[topic] ||
+            (this._subscriptions[topic] = new Set<string>())
+        if (!sub.has(node)) {
+            sub.add(node)
+            this.emit(SUBSCRIBE, { node, topic })
+            this.emit(CHANGE)    
+        }
+    }
+
+    /**
+     * Clears all subscriptions
+     */
+    clear() {
+        this._subscriptions = {}
         this.emit(CHANGE)
+    }
+
+    /**
+     * Gets the list of subscription handled by this node
+     */
+    subscriptions() {
+        return Object.keys(this.subscriptions)
     }
 
     /**
@@ -57,7 +85,7 @@ export class RosServer extends JDServiceServer {
      * @param message JSON data payload; that will be converted to string
      */
     public async publishMessage(node: string, topic: string, message: any) {
-        if (!this.subscriptions[topic]?.size)
+        if (!this._subscriptions[topic]?.size)
             return;
 
         const data = jdpack<[string, string, any]>(RosCmdPack.PublishMessage, [node, topic, JSON.stringify(message)])
