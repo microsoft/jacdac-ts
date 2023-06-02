@@ -49,6 +49,17 @@ export class RosServer extends JDServiceServer {
         this.emit(CHANGE)
     }
 
+    /**
+     * Publishes a message on the bus
+     * @param node 
+     * @param topic 
+     * @param message 
+     */
+    public async publishMessage(node: string, topic: string, message: any) {
+        const data = jdpack<[string, string, any]>(RosCmdPack.PublishMessage, [node, topic, JSON.stringify(message)])
+        await this.sendPacketAsync(Packet.from(0x83, data))
+    }
+
     private async handlePublishMessage(pkt: Packet) {
         const [node, topic, messageSource] = pkt.jdunpack<
             [string, string, string]
@@ -56,10 +67,5 @@ export class RosServer extends JDServiceServer {
         const message = JSONTryParse(messageSource)
 
         this.emit(PUBLISH, <RosMessage>{ node, topic, message, messageSource })
-
-        // publish report
-        const data = jdpack("z s", [topic, messageSource])
-        const msgPkt = Packet.from(0x83, data)
-        await this.sendPacketAsync(msgPkt)
     }
 }
