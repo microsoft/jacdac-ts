@@ -99,6 +99,7 @@ import {
     SRV_PLANAR_POSITION,
     SRV_SERIAL,
     SystemReg,
+    SRV_ROS,
 } from "../jdom/constants"
 import { JDServerServiceProvider } from "../jdom/servers/serverserviceprovider"
 import { ProtocolTestServer } from "../jdom/servers/protocoltestserver"
@@ -161,7 +162,7 @@ import { DualMotorsServer } from "./dualmotorsserver"
 import { CloudAdapterServer } from "./cloudadapterserver"
 import { SatNavServer } from "./satnavserver"
 import { PlanarPositionServer } from "./planarpositionserver"
-import { isNumericType, randomDeviceId } from "../jacdac"
+import { RosServer, isNumericType, randomDeviceId } from "../jacdac"
 import { SerialServer } from "./serialserver"
 import { genFieldInfo } from "../../jacdac-spec/spectool/jdspec"
 
@@ -1762,6 +1763,11 @@ function initProviders() {
                         connectionName: "simulated",
                     }),
                 ],
+            },
+            {
+                name: "ROS (simulator)",
+                serviceClasses: [SRV_ROS],
+                services: () => [new RosServer()]
             },
             Flags.diagnostics
                 ? {
