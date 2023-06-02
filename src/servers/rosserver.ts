@@ -6,6 +6,7 @@ import { JDServiceServer } from "../jdom/servers/serviceserver"
 export const ADVERTISE = "advertise"
 export const SUBSCRIBE = "subscribe"
 export const PUBLISH = "publish"
+export const RosReportMessage = 0x83
 
 export interface RosSubscription {
     node: string
@@ -57,7 +58,7 @@ export class RosServer extends JDServiceServer {
      */
     public async publishMessage(node: string, topic: string, message: any) {
         const data = jdpack<[string, string, any]>(RosCmdPack.PublishMessage, [node, topic, JSON.stringify(message)])
-        await this.sendPacketAsync(Packet.from(0x83, data))
+        await this.sendPacketAsync(Packet.from(RosReportMessage, data))
     }
 
     private async handlePublishMessage(pkt: Packet) {
