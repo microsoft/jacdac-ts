@@ -74,7 +74,7 @@ export class RosServer extends JDServiceServer {
     /**
      * Gets the list of subscription handled by this node
      */
-    subscriptions() {
+    get subscriptions(): string[] {
         return Object.keys(this.subscriptions)
     }
 
