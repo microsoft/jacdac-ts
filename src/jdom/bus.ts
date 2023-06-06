@@ -911,13 +911,15 @@ ${dev
                         } (${toHex(reg.data)}) ${
                             reg.notImplemented ? "- not implemented" : ""
                         }
-            last data: ${reg.lastDataTimestamp || ""}, last get: ${
-                            reg.lastGetTimestamp || ""
+            last data: ${reg.lastDataTimestamp | 0 || ""}, last get: ${
+                            reg.lastGetTimestamp | 0 || ""
                         }, last set: ${
-                            reg.lastSetTimestamp || ""
+                            reg.lastSetTimestamp | 0 || ""
                         }, last gets attempts: ${reg.lastGetAttempts},`
                 ),
-            ...srv.events.map(ev => `        event ${ev.name}: ${ev.count}`),
+            ...srv.events
+                .filter(ev => ev.count > 0)
+                .map(ev => `        event ${ev.name}: ${ev.count}`),
         ].join("\n")
     )
     .join("\n")}
