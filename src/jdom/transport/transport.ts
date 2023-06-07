@@ -214,8 +214,14 @@ export abstract class Transport extends JDEventSource {
                 console.debug(
                     `${this.type}: lost connection with device t=${bus.timestamp}`
                 )
-            if (this._lastReceivedTime !== undefined) await this.reconnect()
-            else await this.disconnect(true)
+            if (this._lastReceivedTime !== undefined) {
+                await this.reconnect()
+                if (this.connectionState == ConnectionState.Disconnected) {
+                    // try again
+                    await delay(500)
+                    await this.reconnect()
+                }
+            } else await this.disconnect(true)
         }
     }
 
@@ -283,7 +289,7 @@ export abstract class Transport extends JDEventSource {
                             if (!background) this.errorHandler(CONNECT, e)
                             else if (Flags.diagnostics)
                                 console.debug(
-                                    `${this.type}: background connect failed`
+                                    `${this.type}: background connect failed, ${e.message}`
                                 )
                         } else {
                             if (Flags.diagnostics)

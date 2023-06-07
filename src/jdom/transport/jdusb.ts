@@ -273,7 +273,7 @@ export class JdUsbProto implements Proto {
             for (let i = 0; i < 10; ++i) {
                 this.io?.log(`detect hf2 ${i}...`)
                 await this.io?.sendPacketAsync(frameToSend)
-                await delay(50)
+                await delay(200)
                 if (!this.io) return
                 if (this.hf2Resp == null) {
                     if (this.isHF2) {
