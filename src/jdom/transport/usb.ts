@@ -53,7 +53,11 @@ class WebUSBTransport extends Transport {
     private transport: USBIO
     private hf2: Proto
     constructor(public readonly options: USBOptions) {
-        super(USB_TRANSPORT, { ...options, checkPulse: true })
+        super(USB_TRANSPORT, {
+            ...options,
+            checkPulse: true,
+            disconnectOnError: true,
+        })
     }
 
     description() {
