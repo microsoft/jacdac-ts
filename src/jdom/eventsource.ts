@@ -243,7 +243,7 @@ export class JDEventSource implements IEventSource {
         const eventListeners = this.listeners[eventName]
         if (!eventListeners || eventListeners.length == 0) {
             // report unhandled errors
-            if (eventName == ERROR) console.error(args[0])
+            if (eventName == ERROR && Flags.diagnostics) console.debug(args[0])
             return false
         }
         for (let i = 0; i < eventListeners.length; ++i) {
