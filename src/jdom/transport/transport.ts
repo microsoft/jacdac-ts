@@ -12,6 +12,7 @@ import {
     SELF_ANNOUNCE,
     TRANSPORT_CONNECT_RETRY_DELAY,
     DISPOSE,
+    TRANSPORT_ERROR,
 } from "../constants"
 import { isCancelError } from "../error"
 import { JDEventSource } from "../eventsource"
@@ -37,6 +38,7 @@ export enum ConnectionState {
 export interface TransportOptions {
     // if no packets is received within the pulse interval, disconnect/reconnect
     checkPulse?: boolean
+    disconnectOnError?: boolean
     connectObservable?: Observable<void>
     disconnectObservable?: Observable<void>
 }
@@ -53,12 +55,14 @@ export abstract class Transport extends JDEventSource {
     private _lastPulse: number
     protected disposed = false
     private _cleanups: (() => void)[]
+    private _disconnectOnError: boolean
     resourceGroupId: string
 
     constructor(readonly type: string, options?: TransportOptions) {
         super()
         this.checkPulse = this.checkPulse.bind(this)
         this._checkPulse = !!options?.checkPulse
+        this._disconnectOnError = !!options?.disconnectOnError
         this._cleanups = [
             options?.connectObservable?.subscribe({
                 next: async () => {
@@ -362,13 +366,19 @@ export abstract class Transport extends JDEventSource {
         if (!isCancelError(exception)) {
             this.emit(ERROR, { context, exception })
             // maybe have been already disconnected
-            this.bus?.emit(ERROR, { transport: this.type, context, exception })
+            this.bus?.emit(TRANSPORT_ERROR, {
+                transport: this,
+                context,
+                exception,
+            })
         }
         this.emit(CHANGE)
 
-        // when a microbit flash is initiated via file download, the device will
-        // stop responding. we should not try to reconnect while this is the case
-        this.disconnect(true)
+        if (this._disconnectOnError) {
+            // when a microbit flash is initiated via file download, the device will
+            // stop responding. we should not try to reconnect while this is the case
+            this.disconnect(true)
+        }
     }
 
     sendSideData(data: any): Promise<void> {

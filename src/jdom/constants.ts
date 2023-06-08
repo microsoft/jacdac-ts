@@ -140,6 +140,7 @@ export const REPORT_UPDATE = "reportUpdate"
 export const COMMAND_RECEIVE = "commandReceive"
 
 export const ERROR = "error"
+export const TRANSPORT_ERROR = "transportError"
 export const PANIC = "panic"
 export const TRACE = "trace"
 export const TIMEOUT = "timeout"
