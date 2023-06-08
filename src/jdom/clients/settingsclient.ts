@@ -55,7 +55,7 @@ export class SettingsClient extends JDServiceClient {
                 SettingsCmd.Set,
                 jdpack("z b", [key, value])
             )
-            await this.service.sendPacketAsync(pkt)
+            await this.service.sendPacketAsync(pkt, true)
             this.emit(CHANGE)
         }
     }
@@ -94,4 +94,3 @@ export class SettingsClient extends JDServiceClient {
         this.emit(CHANGE)
     }
 }
-
