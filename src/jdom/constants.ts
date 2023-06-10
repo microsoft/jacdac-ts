@@ -133,6 +133,7 @@ export const PACKET_INVALID_DATA = "packetInvalidData"
 export const PACKET_DATA_NORMALIZE = "packetDataNormalize"
 
 export const FRAME_PROCESS = "frameProcess"
+export const FRAME_PROCESS_LARGE = "frameProcessLarge"
 export const FRAME_SEND = "frameSend"
 
 export const REPORT_RECEIVE = "reportReceive"

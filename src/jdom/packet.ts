@@ -64,6 +64,10 @@ export type JDFrameBuffer = Uint8Array & {
     _jacdac_meta?: any
 }
 
+export function isLargeFrame(frame: Uint8Array) {
+    return frame[2] === 0xff
+}
+
 /**
  * A Jacdac packet
  * @category JDOM

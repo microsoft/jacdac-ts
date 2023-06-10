@@ -1,4 +1,4 @@
-import { JDFrameBuffer, Packet } from "./packet"
+import { JDFrameBuffer, Packet, isLargeFrame } from "./packet"
 import { JDDevice } from "./device"
 import { strcmp, arrayConcatMany, toHex } from "./utils"
 import {
@@ -58,6 +58,7 @@ import {
     FRAME_PROCESS,
     FRAME_SEND,
     DISPOSE,
+    FRAME_PROCESS_LARGE,
 } from "./constants"
 import { serviceClass } from "./pretty"
 import { JDNode } from "./node"
@@ -1063,6 +1064,10 @@ ${dev
     async sendFrameAsync(frame: JDFrameBuffer) {
         if (frame._jacdac_timestamp === undefined)
             frame._jacdac_timestamp = this.timestamp
+        if (isLargeFrame(frame)) {
+            this.emit(FRAME_PROCESS_LARGE, frame)
+            return
+        }
         this.emit(FRAME_SEND, frame)
         // loopback processing:
         this.processFrame(frame, frame._jacdac_sender)
@@ -1362,6 +1367,10 @@ ${dev
         if (sender) frame._jacdac_sender = sender
         if (frame._jacdac_timestamp === undefined)
             frame._jacdac_timestamp = this.timestamp
+        if (isLargeFrame(frame)) {
+            this.emit(FRAME_PROCESS_LARGE, frame)
+            return
+        }
         this.emit(FRAME_PROCESS, frame)
         for (const pkt of Packet.fromFrame(
             frame,
