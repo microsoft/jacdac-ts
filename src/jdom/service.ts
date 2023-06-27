@@ -15,6 +15,7 @@ import {
     CMD_GET_REG,
     CMD_SET_REG,
     COMMAND_RECEIVE,
+    ERROR_TIMEOUT,
 } from "./constants"
 import { JDNode } from "./node"
 import {
@@ -41,6 +42,7 @@ import { jdpack, jdunpack, PackedValues } from "./pack"
 import { Flags } from "./flags"
 import { isMixinService } from "../../jacdac-spec/spectool/jdutils"
 import { JDServiceServer } from "./servers/serviceserver"
+import { JDError } from "./error"
 
 /**
  * A Jacdac service client hosting registers, events.
@@ -454,8 +456,9 @@ export class JDService extends JDNode {
                 resolve = null
                 this.off(REPORT_RECEIVE, handleRes)
                 reject(
-                    new Error(
-                        `timeout (${timeout}ms) waiting for response to ${pkt}`
+                    new JDError(
+                        `timeout (${timeout}ms) waiting for response to ${pkt}`,
+                        { code: ERROR_TIMEOUT }
                     )
                 )
             })
