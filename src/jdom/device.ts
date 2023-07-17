@@ -772,6 +772,9 @@ export class JDDevice extends JDNode {
             this.bus.emit(CHANGE)
             this.emit(CHANGE)
         }
+
+        // update status led
+        this.statusLight?.processAnnouncement()
     }
 
     /**
@@ -851,7 +854,7 @@ export class JDDevice extends JDNode {
             pkt.isCommand &&
             pkt.serviceCommand == ControlCmd.SetStatusLight
         )
-            pkt.device.statusLight?.handlePacket(pkt)
+            pkt.device.statusLight?.processPacket(pkt)
     }
 
     /**

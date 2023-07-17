@@ -15,6 +15,7 @@ function trgbToValues(trgb: number) {
 
 export class LEDController extends JDEventSource {
     private _color: number
+    private _announces = 0
 
     constructor(
         public readonly service: JDService,
@@ -30,6 +31,8 @@ export class LEDController extends JDEventSource {
     async setColor(color: number) {
         if (color !== this._color) {
             this._color = color
+            this._announces = 0
+
             if (this._color !== undefined) {
                 const data = jdpack(
                     ControlCmdPack.SetStatusLight,
@@ -51,7 +54,18 @@ export class LEDController extends JDEventSource {
         }
     }
 
-    handlePacket(pkt: Packet) {
+    processAnnouncement() {
+        if (this._color === undefined) return
+        this._announces++
+        if (this._announces > 2) {
+            // jacdac will blink at least once per announce cycle
+            this._color = undefined
+            this._announces = 0
+            this.emit(CHANGE)
+        }
+    }
+
+    processPacket(pkt: Packet) {
         const [toRed, toGreen, toBlue] = jdunpack<
             [number, number, number, number]
         >(pkt.data, ControlCmdPack.SetStatusLight)
