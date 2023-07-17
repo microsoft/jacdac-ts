@@ -23,7 +23,7 @@ export class IndexedScreenServer extends JDServiceServer {
 
     _pixels: Uint8Array
 
-    constructor(options: IndexedScreenServerOptions) {
+    constructor(options?: IndexedScreenServerOptions) {
         super(SRV_INDEXED_SCREEN, options)
 
         const {
@@ -37,7 +37,7 @@ export class IndexedScreenServer extends JDServiceServer {
                 [0, 0, 0, 0],
                 [0xff, 0xff, 0xff, 0xff],
             ],
-        } = options
+        } = options || {}
 
         this.width = this.addRegister(IndexedScreenReg.Width, [width])
         this.height = this.addRegister(IndexedScreenReg.Width, [height])
