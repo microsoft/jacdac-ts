@@ -29,7 +29,7 @@ export class IndexedScreenServer extends JDServiceServer {
         const {
             width = 8,
             height = 8,
-            brightness,
+            brightness = 0,
             rotation = 0,
             widthMajor,
             bitsPerPixel = 1,
@@ -40,7 +40,7 @@ export class IndexedScreenServer extends JDServiceServer {
         } = options || {}
 
         this.width = this.addRegister(IndexedScreenReg.Width, [width])
-        this.height = this.addRegister(IndexedScreenReg.Width, [height])
+        this.height = this.addRegister(IndexedScreenReg.Height, [height])
         this.bitsPerPixel = this.addRegister(IndexedScreenReg.BitsPerPixel, [
             bitsPerPixel,
         ])
@@ -49,10 +49,9 @@ export class IndexedScreenServer extends JDServiceServer {
             widthMajor ?? width < height ?? false,
         ])
         this.palette = this.addRegister(IndexedScreenReg.Palette, [palette])
-        if (brightness !== undefined)
-            this.brightness = this.addRegister(IndexedScreenReg.Brightness, [
-                128,
-            ])
+        this.brightness = this.addRegister(IndexedScreenReg.Brightness, [
+            brightness,
+        ])
         this.width.skipBoundaryCheck = true
         this.width.skipErrorInjection = true
         this.height.skipBoundaryCheck = true
