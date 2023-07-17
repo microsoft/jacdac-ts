@@ -78,7 +78,6 @@ import {
     SRV_HID_KEYBOARD,
     SRV_HID_MOUSE,
     SRV_HID_JOYSTICK,
-    SRV_CLOUD_CONFIGURATION,
     DotMatrixVariant,
     SRV_FLEX,
     SRV_WIFI,
