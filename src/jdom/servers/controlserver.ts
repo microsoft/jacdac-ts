@@ -1,12 +1,10 @@
 import {
-    CHANGE,
     ControlAnnounceFlags,
     ControlCmd,
     ControlReg,
     IDENTIFY,
     SRV_CONTROL,
 } from "../constants"
-import { jdunpack } from "../pack"
 import { Packet } from "../packet"
 import { JDRegisterServer } from "./registerserver"
 import { JDServiceServer } from "./serviceserver"
@@ -21,8 +19,6 @@ export class ControlServer extends JDServiceServer {
     readonly resetIn: JDRegisterServer<[number]>
     readonly uptime: JDRegisterServer<[number]>
     private startTime: number
-
-    statusLightColor: number = undefined
 
     constructor(options?: { resetIn?: boolean; deviceDescription?: string }) {
         super(SRV_CONTROL)
@@ -48,10 +44,6 @@ export class ControlServer extends JDServiceServer {
         this.addCommand(ControlCmd.Identify, this.identify.bind(this))
         this.addCommand(ControlCmd.Reset, this.handleReset.bind(this))
         this.addCommand(ControlCmd.Noop, null)
-        this.addCommand(
-            ControlCmd.SetStatusLight,
-            this.handleSetStatusLight.bind(this)
-        )
     }
 
     async announce() {
@@ -101,13 +93,5 @@ export class ControlServer extends JDServiceServer {
     private handleReset() {
         this.startTime = Date.now()
         this.device.reset()
-    }
-
-    private handleSetStatusLight(pkt: Packet) {
-        const [toRed, toGreen, toBlue] = jdunpack<
-            [number, number, number, number]
-        >(pkt.data, "u8 u8 u8 u8")
-        this.statusLightColor = (toRed << 16) | (toGreen << 8) | toBlue
-        this.emit(CHANGE)
     }
 }

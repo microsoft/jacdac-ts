@@ -241,6 +241,12 @@ export function rgbToHtmlColor(rgb: number) {
     return `#${("000000" + rgb.toString(16)).slice(-6)}`
 }
 
+export function rgbaToHtmlColor(rgb: number, a: number) {
+    return `rgba(${(rgb >> 16) & 0xff}, ${(rgb >> 8) & 0xff}, ${
+        (rgb >> 0) & 0xff
+    }, ${a})`
+}
+
 export function toFullHex(n: number[]) {
     return (
         "0x" + n.map(id => ("000000000" + id.toString(16)).slice(-8)).join("")

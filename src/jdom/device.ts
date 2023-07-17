@@ -844,6 +844,14 @@ export class JDDevice extends JDNode {
 
         const service = this.service(pkt.serviceIndex)
         if (service) service.processPacket(pkt)
+
+        // status light handling
+        if (
+            pkt.serviceIndex == JD_SERVICE_INDEX_CTRL &&
+            pkt.isCommand &&
+            pkt.serviceCommand == ControlCmd.SetStatusLight
+        )
+            pkt.device.statusLight?.handlePacket(pkt)
     }
 
     /**
