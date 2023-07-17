@@ -9,7 +9,7 @@ export interface IndexedScreenServerOptions extends JDServerOptions {
     brightness?: number
     rotation?: 0 | 90 | 180 | 270
     widthMajor?: boolean
-    palette: [number, number, number, number][]
+    palette?: [number, number, number, number][]
 }
 
 export class IndexedScreenServer extends JDServiceServer {

@@ -99,6 +99,7 @@ import {
     SRV_SERIAL,
     SystemReg,
     SRV_ROS,
+    SRV_INDEXED_SCREEN,
 } from "../jdom/constants"
 import { JDServerServiceProvider } from "../jdom/servers/serverserviceprovider"
 import { ProtocolTestServer } from "../jdom/servers/protocoltestserver"
@@ -161,9 +162,11 @@ import { DualMotorsServer } from "./dualmotorsserver"
 import { CloudAdapterServer } from "./cloudadapterserver"
 import { SatNavServer } from "./satnavserver"
 import { PlanarPositionServer } from "./planarpositionserver"
-import { RosServer, isNumericType, randomDeviceId } from "../jacdac"
 import { SerialServer } from "./serialserver"
-import { genFieldInfo } from "../../jacdac-spec/spectool/jdspec"
+import { genFieldInfo, isNumericType } from "../../jacdac-spec/spectool/jdspec"
+import { RosServer } from "./rosserver"
+import { IndexedScreenServer } from "./indexedscreenserver"
+import { randomDeviceId } from "../jdom/random"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     readingValues: [21.5],
@@ -1767,6 +1770,21 @@ function initProviders() {
                 name: "ROS (simulator)",
                 serviceClasses: [SRV_ROS],
                 services: () => [new RosServer()],
+            },
+            {
+                name: "Display 128x64 monochrome",
+                serviceClasses: [SRV_INDEXED_SCREEN],
+                services: () => [
+                    new IndexedScreenServer({
+                        width: 128,
+                        height: 64,
+                        bitsPerPixel: 1,
+                        palette: [
+                            [0, 0, 0, 0],
+                            [0xff, 0xff, 0xff, 0],
+                        ],
+                    }),
+                ],
             },
             Flags.diagnostics
                 ? {
