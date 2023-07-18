@@ -122,12 +122,13 @@ export class IndexedScreenServer extends JDServiceServer {
         const data = this._pixels.data
         for (let iy = 0; iy < height; ++iy) {
             for (let ix = 0; ix < width; ++ix) {
-                const c = palette[0] // TODO decode payload
-                const ip = (iy * width + ix) * 4
-                data[ip] = c[0] // r
-                data[ip + 1] = c[1] // g
-                data[ip + 2] = c[2] // b
-                data[ip + 3] = 0xff // a
+                const ipal = 0 // todo
+                const c = palette[ipal]
+                const ipix = (iy * width + ix) * 4
+                data[ipix] = c[0] // r
+                data[ipix + 1] = c[1] // g
+                data[ipix + 2] = c[2] // b
+                data[ipix + 3] = 0xff // a
             }
         }
 
