@@ -103,6 +103,17 @@ export class IndexedScreenServer extends JDServiceServer {
         const [palette] = this.palette.values()
         const { x, y, width, height } = this._clip
 
+        const u32palette = new Uint32Array(palette.length)
+        for (let i = 0; i < u32palette.length; ++i) {
+            // TODO make sure packing is all right
+            // this fixes alpha to 0xff just in case
+            u32palette[i] =
+                palette[i][0] |
+                (palette[i][1] << 8) |
+                (palette[i][2] << 16) |
+                (0xff << 24)
+        }
+
         // blit image into image data
         /**
          * A Canvas Pixel ArrayBuffer is an ArrayBuffer whose data is represented in left-to-right
@@ -112,17 +123,29 @@ export class IndexedScreenServer extends JDServiceServer {
          * in this array must be in the range 0..255, representing the 8 bit value for
          * that component. The components must be assigned consecutive indices starting with 0 for the top left pixel's red component.
          */
-        const data = this._pixels.data
-        for (let iy = 0; iy < height; ++iy) {
-            for (let ix = 0; ix < width; ++ix) {
-                const ipal = 0 // todo
-                const c = palette[ipal]
-                const ipix = ((iy + y) * width + ix + x) * 4
-                data[ipix] = c[0] // r
-                data[ipix + 1] = c[1] // g
-                data[ipix + 2] = c[2] // b
-                data[ipix + 3] = 0xff // a
+
+        const pixdata = this._pixels.data
+        const data = new Uint32Array(
+            pixdata.buffer,
+            pixdata.byteOffset,
+            pixdata.byteLength >> 2
+        )
+        let sp = 0
+        const [bpp] = this.bitsPerPixel.values()
+        const mask = (1 << bpp) - 1
+        const alignVal = bpp == 1 ? 1 : 4
+
+        for (let ix = 0; ix < width; ++ix) {
+            for (let iy = 0; iy < height; ) {
+                let ipix = iy * width + ix
+                const b = imgData[sp++]
+                for (let m = 0; m < 8; m += bpp) {
+                    data[ipix] = u32palette[(b >> m) & mask]
+                    ipix += width
+                    iy++
+                }
             }
+            while (sp & (alignVal - 1)) sp++
         }
 
         // send update
