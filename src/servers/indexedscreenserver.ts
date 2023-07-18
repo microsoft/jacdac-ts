@@ -1,4 +1,4 @@
-import { IndexedScreenReg, SRV_INDEXED_SCREEN } from "../jdom/constants"
+import { CHANGE, IndexedScreenReg, SRV_INDEXED_SCREEN } from "../jdom/constants"
 import { JDRegisterServer } from "../jdom/servers/registerserver"
 import { JDServerOptions, JDServiceServer } from "../jdom/servers/serviceserver"
 
@@ -29,7 +29,7 @@ export class IndexedScreenServer extends JDServiceServer {
         const {
             width = 8,
             height = 8,
-            brightness = 0,
+            brightness = 1,
             rotation = 0,
             widthMajor,
             bitsPerPixel = 1,
@@ -60,5 +60,12 @@ export class IndexedScreenServer extends JDServiceServer {
 
     get pixels() {
         return this._pixels
+    }
+
+    set pixels(pixels: Uint8Array) {
+        if (this._pixels !== pixels) {
+            this._pixels = pixels
+            this.emit(CHANGE)
+        }
     }
 }
