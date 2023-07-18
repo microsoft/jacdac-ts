@@ -8,6 +8,7 @@ import {
 import {
     CHANGE,
     DEVICE_CHANGE,
+    FRAME_PROCESS_LARGE,
     PACKET_RECEIVE,
     PACKET_SEND,
     REPORT_UPDATE,
@@ -327,6 +328,10 @@ export class JDServiceServer extends JDEventSource {
         const [status] = this.statusCode.values()
         if (status !== SystemStatusCodes.Ready) return
         this.calibrate()
+    }
+
+    processLargeFrame(command: string, data: Uint8Array) {
+        this.emit(FRAME_PROCESS_LARGE, command, data)
     }
 
     async calibrate() {

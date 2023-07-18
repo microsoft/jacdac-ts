@@ -1,5 +1,6 @@
 import {
     CHANGE,
+    FRAME_PROCESS_LARGE,
     IndexedScreenCmd,
     IndexedScreenCmdPack,
     IndexedScreenReg,
@@ -77,6 +78,8 @@ export class IndexedScreenServer extends JDServiceServer {
         this.width.on(CHANGE, this.updatePixels.bind(this))
         this.height.on(CHANGE, this.updatePixels.bind(this))
 
+        this.on(FRAME_PROCESS_LARGE, this.handleLargeFrame.bind(this))
+
         this.updatePixels()
     }
 
@@ -96,19 +99,9 @@ export class IndexedScreenServer extends JDServiceServer {
         return this._pixels
     }
 
-    private handleStartUpdate(pkt: Packet) {
-        const [x, y, width, height] = pkt.jdunpack<
-            [number, number, number, number]
-        >(IndexedScreenCmdPack.StartUpdate)
-
-        this._clip = { x, y, width, height }
-    }
-
-    private handleSetPixels(pkt: Packet) {
+    setImage(imgData: Uint8Array) {
         const [palette] = this.palette.values()
         const { x, y, width, height } = this._clip
-        // decode payload into pixel
-        const setdata = pkt.data
 
         // blit image into image data
         /**
@@ -124,7 +117,7 @@ export class IndexedScreenServer extends JDServiceServer {
             for (let ix = 0; ix < width; ++ix) {
                 const ipal = 0 // todo
                 const c = palette[ipal]
-                const ipix = (iy * width + ix) * 4
+                const ipix = ((iy + y) * width + ix + x) * 4
                 data[ipix] = c[0] // r
                 data[ipix + 1] = c[1] // g
                 data[ipix + 2] = c[2] // b
@@ -134,5 +127,21 @@ export class IndexedScreenServer extends JDServiceServer {
 
         // send update
         this.emit(CHANGE)
+    }
+
+    private handleStartUpdate(pkt: Packet) {
+        const [x, y, width, height] = pkt.jdunpack<
+            [number, number, number, number]
+        >(IndexedScreenCmdPack.StartUpdate)
+
+        this._clip = { x, y, width, height }
+    }
+
+    private handleLargeFrame(command: string, data: Uint8Array) {
+        if (command === "pixels") this.setImage(data)
+    }
+
+    private handleSetPixels(pkt: Packet) {
+        this.setImage(pkt.data)
     }
 }
