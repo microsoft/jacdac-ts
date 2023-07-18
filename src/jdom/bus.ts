@@ -1,6 +1,6 @@
 import { JDFrameBuffer, Packet, isLargeFrame } from "./packet"
 import { JDDevice } from "./device"
-import { F, arrayConcatMany, toHex, uint8ArrayToString } from "./utils"
+import { arrayConcatMany, strcmp, toHex, uint8ArrayToString } from "./utils"
 import {
     JD_SERVICE_INDEX_CTRL,
     CMD_ADVERTISEMENT_DATA,
