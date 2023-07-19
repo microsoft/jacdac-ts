@@ -100,6 +100,7 @@ import { DeviceFilter } from "./filters/devicefilter"
 import { Flags } from "./flags"
 import { stack } from "./trace/trace"
 import { DeviceCatalog } from "./catalog"
+import { jdunpack } from "./pack"
 
 export type BusBroadcastMessageType =
     | "visibilitychange"
@@ -1389,16 +1390,17 @@ ${dev
             const device = this.device(did, true)
             if (device) {
                 // decode the topic?
-                const size = frame[16]
-                const topic = uint8ArrayToString(frame.slice(16, size))
+                const [topic, data]: [string, Uint8Array] = jdunpack(
+                    frame.slice(16),
+                    "z b"
+                )
                 const { si, command } =
                     /^jd\/(?<si>\d+)\/(?<command>.+)$/.exec(topic)?.groups || {}
                 const serviceIndex = parseInt(si)
                 if (serviceIndex > 0) {
                     const service = device.service(serviceIndex)
                     const twin = service?.twin
-                    if (twin)
-                        twin.processLargeFrame(command, frame.slice(16 + size))
+                    if (twin) twin.processLargeFrame(command, data)
                 }
             }
         }
