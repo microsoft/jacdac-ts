@@ -100,7 +100,7 @@ export class IndexedScreenServer extends JDServiceServer {
         for (let i = 0; i < u32palette.length; ++i) {
             // TODO make sure packing is all right
             // this fixes alpha to 0xff just in case
-            u32palette[i] = 0xff000000 & (palette[i] >> 8)
+            u32palette[i] = 0xff000000 | (palette[i] >> 8)
         }
 
         // blit image into image data
