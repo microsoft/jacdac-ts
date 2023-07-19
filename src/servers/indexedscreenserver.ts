@@ -17,7 +17,7 @@ export interface IndexedScreenServerOptions extends JDServerOptions {
     brightness?: number
     rotation?: 0 | 90 | 180 | 270
     // r,g,b,padding
-    palette?: [number, number, number, number][]
+    palette?: number[]
 }
 
 export class IndexedScreenServer extends JDServiceServer {
@@ -27,7 +27,7 @@ export class IndexedScreenServer extends JDServiceServer {
     readonly brightness: JDRegisterServer<[number]>
     readonly widthMajor: JDRegisterServer<[boolean]>
     readonly rotation: JDRegisterServer<[number]>
-    readonly palette: JDRegisterServer<[[number, number, number, number][]]>
+    readonly palette: JDRegisterServer<[number[]]>
 
     private _clip: { x: number; y: number; width: number; height: number }
     private _pixels: ImageData
@@ -41,10 +41,7 @@ export class IndexedScreenServer extends JDServiceServer {
             brightness = 1,
             rotation = 0,
             bitsPerPixel = 1,
-            palette = [
-                [0, 0, 0, 0],
-                [0xff, 0xff, 0xff, 0xff],
-            ],
+            palette = [0xff000000, 0xffffffff],
         } = options || {}
 
         this.width = this.addRegister(IndexedScreenReg.Width, [width])
@@ -103,11 +100,7 @@ export class IndexedScreenServer extends JDServiceServer {
         for (let i = 0; i < u32palette.length; ++i) {
             // TODO make sure packing is all right
             // this fixes alpha to 0xff just in case
-            u32palette[i] =
-                palette[i][0] |
-                (palette[i][1] << 8) |
-                (palette[i][2] << 16) |
-                (0xff << 24)
+            u32palette[i] = 0xff000000 & (palette[i] >> 8)
         }
 
         // blit image into image data

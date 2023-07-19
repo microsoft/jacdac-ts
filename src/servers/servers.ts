@@ -1779,10 +1779,9 @@ function initProviders() {
                         width: 128,
                         height: 64,
                         bitsPerPixel: 1,
-                        palette: [
-                            [0, 0, 0, 0xff],
-                            [0xff, 0xff, 0xff, 0xff],
-                        ],
+                        palette: [0x000000, 0xffffff].map(
+                            c => 0x000000ff & (c << 8)
+                        ),
                     }),
                 ],
             },
@@ -1799,12 +1798,7 @@ function initProviders() {
                             0xfff609, 0x249ca3, 0x78dc52, 0x003fad, 0x87f2ff,
                             0x8e2ec4, 0xa4839f, 0x5c406c, 0xe5cdc4, 0x91463d,
                             0x000000,
-                        ].map(c => [
-                            (c >> 16) & 0xff,
-                            (c >> 8) & 0xff,
-                            c & 0xff,
-                            0xff,
-                        ]),
+                        ].map(c => 0x000000ff & (c << 8)),
                     }),
                 ],
             },
