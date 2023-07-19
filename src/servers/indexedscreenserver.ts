@@ -16,7 +16,7 @@ export interface IndexedScreenServerOptions extends JDServerOptions {
     bitsPerPixel?: 1 | 2 | 4 | 8
     brightness?: number
     rotation?: 0 | 90 | 180 | 270
-    // r,g,b,padding
+    // 24bit rgb colors
     palette?: number[]
 }
 
@@ -27,7 +27,7 @@ export class IndexedScreenServer extends JDServiceServer {
     readonly brightness: JDRegisterServer<[number]>
     readonly widthMajor: JDRegisterServer<[boolean]>
     readonly rotation: JDRegisterServer<[number]>
-    readonly palette: JDRegisterServer<[number[]]>
+    readonly palette: JDRegisterServer<[Uint8Array]>
 
     private _clip: { x: number; y: number; width: number; height: number }
     private _pixels: ImageData
@@ -41,7 +41,7 @@ export class IndexedScreenServer extends JDServiceServer {
             brightness = 1,
             rotation = 0,
             bitsPerPixel = 1,
-            palette = [0xff000000, 0xffffffff],
+            palette = [0xff0000, 0xffffff],
         } = options || {}
 
         this.width = this.addRegister(IndexedScreenReg.Width, [width])
@@ -51,7 +51,14 @@ export class IndexedScreenServer extends JDServiceServer {
         ])
         this.rotation = this.addRegister(IndexedScreenReg.Rotation, [rotation])
         this.widthMajor = this.addRegister(IndexedScreenReg.WidthMajor, [false])
-        this.palette = this.addRegister(IndexedScreenReg.Palette, [palette])
+        const pbuf = new Uint8Array(palette.length << 2)
+        for (let i = 0; i < palette.length; ++i) {
+            pbuf[i * 4] = (palette[i] >> 16) & 0xff
+            pbuf[i * 4 + 1] = (palette[i] >> 8) & 0xff
+            pbuf[i * 4 + 2] = palette[i] & 0xff
+            pbuf[i * 4 + 3] = 0xff
+        }
+        this.palette = this.addRegister(IndexedScreenReg.Palette, [pbuf])
         this.brightness = this.addRegister(IndexedScreenReg.Brightness, [
             brightness,
         ])
@@ -96,11 +103,15 @@ export class IndexedScreenServer extends JDServiceServer {
         const [palette] = this.palette.values()
         const { x, y, width, height } = this._clip
 
-        const u32palette = new Uint32Array(palette.length)
+        const u32palette = new Uint32Array(palette.length >> 2)
         for (let i = 0; i < u32palette.length; ++i) {
             // TODO make sure packing is all right
             // this fixes alpha to 0xff just in case
-            u32palette[i] = 0xff000000 | (palette[i] >> 8)
+            u32palette[i] =
+                0xff000000 |
+                (palette[i * 4] << 16) |
+                (palette[i * 4 + 1] << 8) |
+                palette[i * 4 + 2]
         }
 
         // blit image into image data
