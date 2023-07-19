@@ -1383,22 +1383,25 @@ ${dev
     }
 
     private processLargeFrame(frame: JDFrameBuffer) {
-        const did = toHex(frame.slice(0, 8))
-        const device = this.device(did, true)
-        if (device) {
-            // decode the topic
-            const size = frame[8]
-            const topic = uint8ArrayToString(frame.slice(8, 8 + size))
-            const { si, command } =
-                /^jd\/(?<si>\d+)\/(?<command>.+)$/.exec(topic)?.groups || {}
-            const serviceIndex = parseInt(si)
-            if (serviceIndex > 0) {
-                const service = device.service(serviceIndex)
-                const twin = service?.twin
-                if (twin) twin.processLargeFrame(command, frame.slice(8 + size))
+        if (!this.passive) {
+            // don't try to route large packet in a passive bus
+            const did = toHex(frame.slice(0, 8))
+            const device = this.device(did, true)
+            if (device) {
+                // decode the topic
+                const size = frame[8]
+                const topic = uint8ArrayToString(frame.slice(8, 8 + size))
+                const { si, command } =
+                    /^jd\/(?<si>\d+)\/(?<command>.+)$/.exec(topic)?.groups || {}
+                const serviceIndex = parseInt(si)
+                if (serviceIndex > 0) {
+                    const service = device.service(serviceIndex)
+                    const twin = service?.twin
+                    if (twin)
+                        twin.processLargeFrame(command, frame.slice(8 + size))
+                }
             }
         }
-
         this.emit(FRAME_PROCESS_LARGE, frame)
     }
 
