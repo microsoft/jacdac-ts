@@ -1065,7 +1065,7 @@ ${dev
         if (frame._jacdac_timestamp === undefined)
             frame._jacdac_timestamp = this.timestamp
         if (isLargeFrame(frame)) {
-            this.emit(FRAME_PROCESS_LARGE, frame)
+            this.processLargeFrame(frame)
             return
         }
         this.emit(FRAME_SEND, frame)
