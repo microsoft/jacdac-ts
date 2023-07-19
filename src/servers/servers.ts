@@ -1772,7 +1772,7 @@ function initProviders() {
                 services: () => [new RosServer()],
             },
             {
-                name: "Display 128x64 monochrome",
+                name: "Display 128x64 monochrome (1bpp)",
                 serviceClasses: [SRV_INDEXED_SCREEN],
                 services: () => [
                     new IndexedScreenServer({
@@ -1780,9 +1780,31 @@ function initProviders() {
                         height: 64,
                         bitsPerPixel: 1,
                         palette: [
-                            [0, 0, 0, 0],
-                            [0xff, 0xff, 0xff, 0],
+                            [0, 0, 0, 0xff],
+                            [0xff, 0xff, 0xff, 0xff],
                         ],
+                    }),
+                ],
+            },
+            {
+                name: "Display 128x64 16colors (4bpp)",
+                serviceClasses: [SRV_INDEXED_SCREEN],
+                services: () => [
+                    new IndexedScreenServer({
+                        width: 128,
+                        height: 64,
+                        bitsPerPixel: 4,
+                        palette: [
+                            0x000000, 0xffffff, 0xff2121, 0xff93c4, 0xff8135,
+                            0xfff609, 0x249ca3, 0x78dc52, 0x003fad, 0x87f2ff,
+                            0x8e2ec4, 0xa4839f, 0x5c406c, 0xe5cdc4, 0x91463d,
+                            0x000000,
+                        ].map(c => [
+                            (c >> 16) & 0xff,
+                            (c >> 8) & 0xff,
+                            c & 0xff,
+                            0xff,
+                        ]),
                     }),
                 ],
             },

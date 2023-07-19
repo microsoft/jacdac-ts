@@ -16,7 +16,6 @@ export interface IndexedScreenServerOptions extends JDServerOptions {
     bitsPerPixel?: 1 | 2 | 4 | 8
     brightness?: number
     rotation?: 0 | 90 | 180 | 270
-    widthMajor?: boolean
     // r,g,b,padding
     palette?: [number, number, number, number][]
 }
@@ -30,8 +29,8 @@ export class IndexedScreenServer extends JDServiceServer {
     readonly rotation: JDRegisterServer<[number]>
     readonly palette: JDRegisterServer<[[number, number, number, number][]]>
 
-    _clip: { x: number; y: number; width: number; height: number }
-    _pixels: ImageData
+    private _clip: { x: number; y: number; width: number; height: number }
+    private _pixels: ImageData
 
     constructor(options?: IndexedScreenServerOptions) {
         super(SRV_INDEXED_SCREEN, options)
@@ -41,7 +40,6 @@ export class IndexedScreenServer extends JDServiceServer {
             height = 8,
             brightness = 1,
             rotation = 0,
-            widthMajor,
             bitsPerPixel = 1,
             palette = [
                 [0, 0, 0, 0],
@@ -55,9 +53,7 @@ export class IndexedScreenServer extends JDServiceServer {
             bitsPerPixel,
         ])
         this.rotation = this.addRegister(IndexedScreenReg.Rotation, [rotation])
-        this.widthMajor = this.addRegister(IndexedScreenReg.WidthMajor, [
-            widthMajor ?? width < height ?? false,
-        ])
+        this.widthMajor = this.addRegister(IndexedScreenReg.WidthMajor, [false])
         this.palette = this.addRegister(IndexedScreenReg.Palette, [palette])
         this.brightness = this.addRegister(IndexedScreenReg.Brightness, [
             brightness,
@@ -137,7 +133,7 @@ export class IndexedScreenServer extends JDServiceServer {
 
         for (let ix = 0; ix < width; ++ix) {
             for (let iy = 0; iy < height; ) {
-                let ipix = iy * width + ix
+                let ipix = (iy + y) * width + ix + x
                 const b = imgData[sp++]
                 for (let m = 0; m < 8; m += bpp) {
                     data[ipix] = u32palette[(b >> m) & mask]
