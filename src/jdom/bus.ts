@@ -1385,12 +1385,12 @@ ${dev
     private processLargeFrame(frame: JDFrameBuffer) {
         if (!this.passive) {
             // don't try to route large packet in a passive bus
-            const did = toHex(frame.slice(0, 8))
+            const did = toHex(frame.slice(8, 8))
             const device = this.device(did, true)
             if (device) {
-                // decode the topic
-                const size = frame[8]
-                const topic = uint8ArrayToString(frame.slice(8, 8 + size))
+                // decode the topic?
+                const size = frame[16]
+                const topic = uint8ArrayToString(frame.slice(16, size))
                 const { si, command } =
                     /^jd\/(?<si>\d+)\/(?<command>.+)$/.exec(topic)?.groups || {}
                 const serviceIndex = parseInt(si)
@@ -1398,7 +1398,7 @@ ${dev
                     const service = device.service(serviceIndex)
                     const twin = service?.twin
                     if (twin)
-                        twin.processLargeFrame(command, frame.slice(8 + size))
+                        twin.processLargeFrame(command, frame.slice(16 + size))
                 }
             }
         }
