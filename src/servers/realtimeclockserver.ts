@@ -20,7 +20,7 @@ export type RealTimeClockReadingType = [
     number,
     number,
     number,
-    number
+    number,
 ]
 
 /**
@@ -53,7 +53,7 @@ export class RealTimeClockServer extends SensorServer<RealTimeClockReadingType> 
         this.drift = this.addRegister<[number]>(RealTimeClockReg.Drift, [0])
         this.precision = this.addRegister<[number]>(
             RealTimeClockReg.Precision,
-            [0]
+            [0],
         )
 
         this.addCommand(RealTimeClockCmd.SetTime, this.handleSetTime.bind(this))
@@ -65,7 +65,7 @@ export class RealTimeClockServer extends SensorServer<RealTimeClockReadingType> 
         const pkt = Packet.jdpacked<RealTimeClockReadingType>(
             RealTimeClockCmd.SetTime,
             "u16 u8 u8 u8 u8 u8 u8",
-            values
+            values,
         )
         await pkt.sendAsMultiCommandAsync(bus, SRV_REAL_TIME_CLOCK)
     }

@@ -15,7 +15,7 @@ export class RainGaugeServer extends AnalogSensorServer {
 
         this.precipitationPrecision = this.addRegister<[number]>(
             RainGaugeReg.PrecipitationPrecision,
-            [bucketSize || 0.2794]
+            [bucketSize || 0.2794],
         )
         this._level = 0
     }

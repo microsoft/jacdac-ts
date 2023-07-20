@@ -47,7 +47,7 @@ async function handleMessage(event: MessageEvent) {
             //info(`jdsw: send`)
             proxy?.send(payload).then(
                 () => {},
-                e => handleError(payload, e)
+                e => handleError(payload, e),
             )
             // don't wait or acknowledge
             break

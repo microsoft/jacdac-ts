@@ -13,7 +13,7 @@ export class MotorServer extends JDServiceServer {
         options?: {
             loadTorque?: number
             loadRotationSpeed?: number
-        }
+        },
     ) {
         super(SRV_MOTOR, { instanceName })
 
@@ -28,7 +28,7 @@ export class MotorServer extends JDServiceServer {
         if (loadRotationSpeed)
             this.loadRotationSpeed = this.addRegister<[number]>(
                 MotorReg.LoadRotationSpeed,
-                [loadRotationSpeed]
+                [loadRotationSpeed],
             )
     }
 }

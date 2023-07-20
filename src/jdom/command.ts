@@ -64,14 +64,14 @@ export function packArguments(info: jdspec.PacketInfo, args: PackedValues) {
                 throw new Error(
                     `expecting ${Math.abs(fld.storage)} bytes; got ${
                         arg.length
-                    }`
+                    }`,
                 )
             }
         }
 
         if (dst >= JD_SERIAL_MAX_PAYLOAD_SIZE)
             throw new Error(
-                `jacdac packet length too large, ${dst} > ${JD_SERIAL_MAX_PAYLOAD_SIZE} bytes`
+                `jacdac packet length too large, ${dst} > ${JD_SERIAL_MAX_PAYLOAD_SIZE} bytes`,
             )
 
         if (repeatIdx != -1 && i + 1 >= info.fields.length) {

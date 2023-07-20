@@ -78,12 +78,12 @@ export class DeviceCatalog extends JDEventSource {
      * @returns
      */
     specificationFromProductIdentifier(
-        productIdentifier: number
+        productIdentifier: number,
     ): jdspec.DeviceSpec {
         if (isNaN(productIdentifier)) return undefined
 
         const spec = this._specifications.find(
-            spec => spec.productIdentifiers?.indexOf(productIdentifier) > -1
+            spec => spec.productIdentifiers?.indexOf(productIdentifier) > -1,
         )
         return spec
     }
@@ -102,11 +102,11 @@ export class DeviceCatalog extends JDEventSource {
      */
     specificationsForService(
         serviceClass: number,
-        options?: DeviceSpecificationOptions
+        options?: DeviceSpecificationOptions,
     ): jdspec.DeviceSpec[] {
         if (isNaN(serviceClass)) return undefined
         return this.specifications(options).filter(
-            spec => spec.services?.indexOf(serviceClass) > -1
+            spec => spec.services?.indexOf(serviceClass) > -1,
         )
     }
 
@@ -198,14 +198,14 @@ export class DeviceCatalog extends JDEventSource {
 export function deviceCatalogImage(
     specification: jdspec.DeviceSpec | undefined,
     size?: "avatar" | "lazy" | "catalog" | "preview" | "full" | "list",
-    docsRoot?: string
+    docsRoot?: string,
 ) {
     const sz = size || "full"
     const root = docsRoot || DOCS_ROOT
     return (
         specification &&
         `${root}images/devices/${identifierToUrlPath(
-            specification.id
+            specification.id,
         )}.${sz}.jpg`
     )
 }
@@ -221,7 +221,7 @@ export function identifierToUrlPath(id: string) {
     const parts = id.split(/-/g)
     if (parts.length === 1) return id.replace(/[.:]/g, "").toLowerCase()
     return `${parts.slice(0, -1).map(escape).join("-")}/${escape(
-        parts[parts.length - 1]
+        parts[parts.length - 1],
     )}`
 }
 

@@ -29,33 +29,33 @@ export class CloudConfigurationClient extends JDServiceClient {
 
         // tell the bus to refresh these register
         this.serverNameRegister = this.service.register(
-            CloudConfigurationReg.ServerName
+            CloudConfigurationReg.ServerName,
         )
         this.cloudDeviceIdRegister = this.service.register(
-            CloudConfigurationReg.CloudDeviceId
+            CloudConfigurationReg.CloudDeviceId,
         )
         this.cloudTypeRegister = this.service.register(
-            CloudConfigurationReg.CloudType
+            CloudConfigurationReg.CloudType,
         )
         this.connectionStatusRegister = this.service.register(
-            CloudConfigurationReg.ConnectionStatus
+            CloudConfigurationReg.ConnectionStatus,
         )
         this.mount(() =>
             this.serverNameRegister.subscribe(REPORT_UPDATE, () =>
-                this.emit(CHANGE)
-            )
+                this.emit(CHANGE),
+            ),
         )
         this.mount(() =>
             this.connectionStatusRegister.subscribe(REPORT_UPDATE, () => {
                 this.emit(CHANGE)
-            })
+            }),
         )
         this.mount(() =>
             this.service
                 .event(CloudConfigurationEvent.ConnectionStatusChange)
                 .on(EVENT, () => {
                     this.connectionStatusRegister.scheduleRefresh()
-                })
+                }),
         )
     }
 
@@ -86,7 +86,7 @@ export class CloudConfigurationClient extends JDServiceClient {
         await this.service.sendCmdAsync(
             CloudConfigurationCmd.Connect,
             undefined,
-            true
+            true,
         )
     }
 
@@ -97,7 +97,7 @@ export class CloudConfigurationClient extends JDServiceClient {
         await this.service.sendCmdAsync(
             CloudConfigurationCmd.Disconnect,
             undefined,
-            true
+            true,
         )
     }
 
@@ -110,7 +110,7 @@ export class CloudConfigurationClient extends JDServiceClient {
         await this.service.sendCmdAsync(
             CloudConfigurationCmd.SetConnectionString,
             data,
-            true
+            true,
         )
     }
 }

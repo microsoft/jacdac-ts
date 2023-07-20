@@ -19,7 +19,7 @@ export class JDServiceClient extends JDClient {
         super()
 
         const statusCodeChanged = this.service.event(
-            SystemEvent.StatusCodeChanged
+            SystemEvent.StatusCodeChanged,
         )
         this.mount(statusCodeChanged?.subscribe(EVENT, () => this.emit(CHANGE)))
     }

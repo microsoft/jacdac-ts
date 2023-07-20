@@ -34,7 +34,7 @@ let _serviceSpecificationMap: Record<number, jdspec.ServiceSpec> = undefined
  * @param specs * @category Specification
  */
 export function loadServiceSpecifications(
-    specifications: jdspec.ServiceSpec[]
+    specifications: jdspec.ServiceSpec[],
 ): {
     added: jdspec.ServiceSpec[]
     errors: { message: string; spec: jdspec.ServiceSpec }[]
@@ -51,13 +51,13 @@ export function loadServiceSpecifications(
 
     if (specifications?.length) {
         const serviceClasses = new Set<number>(
-            specs.map(s => s.classIdentifier)
+            specs.map(s => s.classIdentifier),
         )
         const shortIds = new Set<string>(specs.map(s => s.shortId))
         for (const spec of specifications) {
             if (serviceClasses.has(spec.classIdentifier)) {
                 const existingSpec = specs.find(
-                    s => s.classIdentifier === spec.classIdentifier
+                    s => s.classIdentifier === spec.classIdentifier,
                 )
                 if (JSON.stringify(existingSpec) === JSON.stringify(spec))
                     continue // inserting a duplicate, ignore
@@ -114,7 +114,7 @@ export function serviceSpecifications() {
  */
 export function isInstanceOf(
     classIdentifier: number,
-    requiredClassIdentifier: number
+    requiredClassIdentifier: number,
 ): boolean {
     // garbage data
     if (isNaN(classIdentifier)) return false
@@ -168,7 +168,7 @@ export function isInfrastructure(spec: jdspec.ServiceSpec) {
  * @category Specification
  */
 export function serviceSpecificationFromName(
-    shortId: string
+    shortId: string,
 ): jdspec.ServiceSpec {
     if (!shortId) return undefined
     return _serviceSpecifications.find(s => s.shortId === shortId)
@@ -180,7 +180,7 @@ export function serviceSpecificationFromName(
  * @category Specification
  */
 export function serviceSpecificationFromClassIdentifier(
-    classIdentifier: number
+    classIdentifier: number,
 ): jdspec.ServiceSpec {
     if (isNaN(classIdentifier)) return undefined
     // try lookup cache
@@ -189,7 +189,7 @@ export function serviceSpecificationFromClassIdentifier(
 
     // resolve
     srv = _serviceSpecifications.find(
-        s => s.classIdentifier === classIdentifier
+        s => s.classIdentifier === classIdentifier,
     )
     if (srv) {
         if (!_serviceSpecificationMap) _serviceSpecificationMap = {}
@@ -394,7 +394,7 @@ export function isReportOf(cmd: jdspec.PacketInfo, report: jdspec.PacketInfo) {
  */
 export function isPipeReportOf(
     cmd: jdspec.PacketInfo,
-    pipeReport: jdspec.PacketInfo
+    pipeReport: jdspec.PacketInfo,
 ) {
     return (
         pipeReport.kind == "pipe_report" &&
@@ -514,7 +514,7 @@ export function clampToStorage(v: number, tp: jdspec.StorageType) {
  */
 export function memberValueToString(
     value: any,
-    info: jdspec.PacketMember
+    info: jdspec.PacketMember,
 ): string {
     if (value === undefined || value === null) return ""
     switch (info.type) {
@@ -532,7 +532,7 @@ export function memberValueToString(
  */
 export function tryParseMemberValue(
     text: string,
-    info: jdspec.PacketMember
+    info: jdspec.PacketMember,
 ): { value?: any; error?: string } {
     if (!text) return {}
 

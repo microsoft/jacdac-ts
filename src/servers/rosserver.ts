@@ -42,17 +42,17 @@ export class RosServer extends JDServiceServer {
 
         this.addCommand(
             RosCmd.SubscribeMessage,
-            this.handleSubscribeMessage.bind(this)
+            this.handleSubscribeMessage.bind(this),
         )
         this.addCommand(
             RosCmd.PublishMessage,
-            this.handlePublishMessage.bind(this)
+            this.handlePublishMessage.bind(this),
         )
     }
 
     private handleSubscribeMessage(pkt: Packet) {
         const [node, topic] = pkt.jdunpack<[string, string]>(
-            RosCmdPack.SubscribeMessage
+            RosCmdPack.SubscribeMessage,
         )
 
         const sub =

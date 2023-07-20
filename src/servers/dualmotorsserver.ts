@@ -13,7 +13,7 @@ export class DualMotorsServer extends JDServiceServer {
         options?: {
             loadTorque?: number
             loadRotationSpeed?: number
-        }
+        },
     ) {
         super(SRV_DUAL_MOTORS, { instanceName })
 
@@ -21,7 +21,7 @@ export class DualMotorsServer extends JDServiceServer {
 
         this.speed = this.addRegister<[number, number]>(
             DualMotorsReg.Speed,
-            [0, 0]
+            [0, 0],
         )
         this.enabled = this.addRegister<[boolean]>(DualMotorsReg.Enabled, [
             false,
@@ -29,12 +29,12 @@ export class DualMotorsServer extends JDServiceServer {
         if (loadTorque)
             this.loadTorque = this.addRegister<[number]>(
                 DualMotorsReg.LoadTorque,
-                [loadTorque]
+                [loadTorque],
             )
         if (loadRotationSpeed)
             this.loadRotationSpeed = this.addRegister<[number]>(
                 DualMotorsReg.LoadRotationSpeed,
-                [loadRotationSpeed]
+                [loadRotationSpeed],
             )
     }
 }

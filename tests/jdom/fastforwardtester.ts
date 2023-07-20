@@ -45,7 +45,7 @@ export function makeTest(test: (bus: FastForwardTester) => Promise<void>) {
 
 // Wrapper that provides bus construction, initializaiton, and teardown
 export async function withTestBus(
-    test: (bus: FastForwardTester) => Promise<void>
+    test: (bus: FastForwardTester) => Promise<void>,
 ) {
     const tester = new FastForwardTester()
     let error: unknown
@@ -78,7 +78,7 @@ export class FastForwardTester
             new JDBus([], {
                 scheduler: new FastForwardScheduler(),
                 client: false,
-            })
+            }),
         )
         loadSpecifications() // TODO this reimplements mkBus
         assert(this.bus.scheduler instanceof FastForwardScheduler)
@@ -124,12 +124,12 @@ export class FastForwardTester
     // separate the promise / await portion.
     // Perhaps have createService and fast-fowrad await?
     public async createServices<T extends Record<string, JDServiceServer>>(
-        servers: T
+        servers: T,
     ): Promise<{ [key in keyof T]: CreatedServerService<T[key]> }> {
         // attach servers to the bus as devices
         const devices = Object.entries(servers).map(([name, server]) => {
             const device = this.bus.addServiceProvider(
-                new JDServerServiceProvider("fastforward", [server])
+                new JDServerServiceProvider("fastforward", [server]),
             )
             return {
                 name: name,
@@ -141,24 +141,24 @@ export class FastForwardTester
         // Wait for created devices to be announced, so services become available
         const deviceIds = devices.map(elt => elt.device.deviceId)
         await (this.bus.scheduler as FastForwardScheduler).runToPromise(
-            this.waitForAnnounce(deviceIds)
+            this.waitForAnnounce(deviceIds),
         )
 
         // Create the output map
         const namesToServices: [
             string,
-            CreatedServerService<JDServiceServer>
+            CreatedServerService<JDServiceServer>,
         ][] = devices.map(({ name, server, device }) => {
             const services = device.services({
                 serviceClass: server.serviceClass,
             })
             assert(
                 services.length > 0,
-                `created device ${device.friendlyName} has no service of ${server.specification.name}`
+                `created device ${device.friendlyName} has no service of ${server.specification.name}`,
             )
             assert(
                 services.length == 1,
-                `created device ${device.friendlyName} has multiple service of ${server.specification.name}`
+                `created device ${device.friendlyName} has multiple service of ${server.specification.name}`,
             )
             return [
                 name,
@@ -171,7 +171,7 @@ export class FastForwardTester
 
         const namesToServicesObject = namesToServices.reduce(
             (last, [name, service]) => Object.assign(last, { [name]: service }),
-            {}
+            {},
         )
 
         return namesToServicesObject as {
@@ -182,7 +182,7 @@ export class FastForwardTester
     // Wrapper arround TestDriver.waitForAll that advances scheduler time
     async waitFor(
         events: TesterEvent | TesterEvent[],
-        options: SynchronizationTimingOptions = {}
+        options: SynchronizationTimingOptions = {},
     ): Promise<number> {
         return this.scheduler.runToPromise(this.driver.waitFor(events, options))
     }
@@ -197,7 +197,7 @@ export class FastForwardTester
     // Can be nested.
     async assertWith<T>(
         events: TesterEvent | TesterEvent[],
-        body: () => Promise<T>
+        body: () => Promise<T>,
     ): Promise<T> {
         let eventsList: TesterEvent[] // TODO dedup w/ TestDriver:waitFor
         if (Array.isArray(events)) {
@@ -222,11 +222,11 @@ export class FastForwardTester
 
         const holdingPromises = holdingListeners.map(
             // fails when any fails (holding listeners cannot complete)
-            holdingListener => holdingListener.holdingPromise
+            holdingListener => holdingListener.holdingPromise,
         )
 
         const waitingTriggerPromises = new Set<Promise<unknown>>(
-            triggerPromises
+            triggerPromises,
         )
 
         // Stack a promise on top of the body promise to check that all events were satisfied
@@ -242,7 +242,7 @@ export class FastForwardTester
                     rejected => {
                         // reject the overall promise if any of the triggering promises reject
                         reject(rejected)
-                    }
+                    },
                 )
             })
 
@@ -252,7 +252,7 @@ export class FastForwardTester
                     rejected => {
                         // reject the overall promise if any of the holding promises reject
                         reject(rejected)
-                    }
+                    },
                 )
             })
 
@@ -269,7 +269,7 @@ export class FastForwardTester
         const value = await this.scheduler.runToPromise(overallPromise)
 
         holdingListeners.forEach(holdingListener =>
-            holdingListener.terminateHold()
+            holdingListener.terminateHold(),
         )
 
         return value

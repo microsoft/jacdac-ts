@@ -239,7 +239,7 @@ export class JDBus extends JDNode {
     private _unsubscribeBroadcastChannel: () => void
     private _postBroadcastMessage: (
         event: BusBroadcastMessageType,
-        msg: Partial<BusBroadcastMessage>
+        msg: Partial<BusBroadcastMessage>,
     ) => void
     private _streaming = false
     private _interactionMode = BusInteractionMode.Active
@@ -338,11 +338,11 @@ export class JDBus extends JDNode {
         // update other windows with connection status
         const unsubConnectionState = this.subscribe(
             CONNECTION_STATE,
-            postConnectionState
+            postConnectionState,
         )
         this._postBroadcastMessage = (
             event: BusBroadcastMessageType,
-            msg: Partial<BusBroadcastMessage>
+            msg: Partial<BusBroadcastMessage>,
         ) => {
             const bmsg = {
                 id: this.selfDevice.shortId,
@@ -359,7 +359,7 @@ export class JDBus extends JDNode {
                 visibilityState: document.visibilityState,
             })
         const handleBroadcastMessage = async (
-            msg: MessageEvent<BusBroadcastMessage>
+            msg: MessageEvent<BusBroadcastMessage>,
         ) => {
             const { data } = msg
             const { event } = data
@@ -393,7 +393,7 @@ export class JDBus extends JDNode {
                         .filter(
                             tr =>
                                 tr.connectionState ===
-                                ConnectionState.Connecting
+                                ConnectionState.Connecting,
                         )
                         .forEach(ctr => {
                             this.transports
@@ -410,7 +410,7 @@ export class JDBus extends JDNode {
             unsubConnectionState()
             document.removeEventListener(
                 "visibilitychange",
-                handleVisibilityChange
+                handleVisibilityChange,
             )
             channel.removeEventListener("message", handleBroadcastMessage)
             channel.close()
@@ -605,7 +605,7 @@ export class JDBus extends JDNode {
         return Promise.all(
             this._transports
                 .filter(t => t !== transport)
-                .map(t => t.disconnect())
+                .map(t => t.disconnect()),
         )
     }
 
@@ -651,7 +651,7 @@ export class JDBus extends JDNode {
         if (!this._gcInterval)
             this._gcInterval = this.scheduler.setInterval(
                 this.gcDevices.bind(this),
-                JD_DEVICE_DISCONNECTED_DELAY
+                JD_DEVICE_DISCONNECTED_DELAY,
             )
     }
 
@@ -880,7 +880,7 @@ ${
 ${this._bridges
     ?.map(
         tr =>
-            `  ${tr.bridgeId}: recv ${tr.packetProcessed}, sent ${tr.packetSent}`
+            `  ${tr.bridgeId}: recv ${tr.packetProcessed}, sent ${tr.packetSent}`,
     )
     .join("\n")}`
         : ""
@@ -914,18 +914,18 @@ ${dev
                             reg.notImplemented ? "- not implemented" : ""
                         }
             last data: ${reg.lastDataTimestamp | 0 || ""}, last get: ${
-                            reg.lastGetTimestamp | 0 || ""
-                        }, last set: ${
-                            reg.lastSetTimestamp | 0 || ""
-                        }, last gets attempts: ${reg.lastGetAttempts},`
+                reg.lastGetTimestamp | 0 || ""
+            }, last set: ${
+                reg.lastSetTimestamp | 0 || ""
+            }, last gets attempts: ${reg.lastGetAttempts},`,
                 ),
             ...srv.events
                 .filter(ev => ev.count > 0)
                 .map(ev => `        event ${ev.name}: ${ev.count}`),
-        ].join("\n")
+        ].join("\n"),
     )
     .join("\n")}
-`
+`,
             )
             .join("\n")}`
     }
@@ -940,7 +940,7 @@ ${dev
         const resolve = (): JDNode => {
             const m =
                 /^(?<type>bus|device|service|register|event|field)(:(?<dev>\w+)(:(?<srv>\w+)(:(?<reg>\w+(:(?<idx>\w+))?))?)?)?$/.exec(
-                    id
+                    id,
                 )
             if (!m) return undefined
             const type = m.groups["type"]
@@ -1006,7 +1006,7 @@ ${dev
      */
     delay<T>(millis: number, value?: T): Promise<T | undefined> {
         return new Promise(resolve =>
-            this.scheduler.setTimeout(() => resolve(value), millis)
+            this.scheduler.setTimeout(() => resolve(value), millis),
         )
     }
 
@@ -1074,8 +1074,8 @@ ${dev
         this.processFrame(frame, frame._jacdac_sender)
         await Promise.all(
             this._transports.map(transport =>
-                transport.sendPacketWhenConnectedAsync(frame)
-            )
+                transport.sendPacketWhenConnectedAsync(frame),
+            ),
         )
     }
 
@@ -1133,7 +1133,7 @@ ${dev
             r = r.filter(
                 s =>
                     s.deviceId !== this.selfDeviceId &&
-                    s.serviceClasses.indexOf(SRV_INFRASTRUCTURE) < 0
+                    s.serviceClasses.indexOf(SRV_INFRASTRUCTURE) < 0,
             )
         if (options?.announced) r = r.filter(s => s.announced)
         if (options?.ignoreSimulators)
@@ -1245,7 +1245,7 @@ ${dev
      */
     services(options?: ServiceFilter & DeviceFilter): JDService[] {
         return arrayConcatMany(
-            this.devices(options).map(d => d.services(options))
+            this.devices(options).map(d => d.services(options)),
         )
     }
 
@@ -1259,7 +1259,7 @@ ${dev
     device(
         id: string,
         skipCreate?: boolean,
-        pkt?: Packet
+        pkt?: Packet,
     ): JDDevice | undefined {
         if (id === "0000000000000000" && !skipCreate) {
             console.warn("jacdac: trying to access device 0000000000000000")
@@ -1277,7 +1277,7 @@ ${dev
                 console.debug(
                     `${id === this.selfDeviceId ? "self" : "new"} device ${
                         d.shortId
-                    } (${id})`
+                    } (${id})`,
                 )
             // stable sort
             this._devices.sort((l, r) => strcmp(l.deviceId, r.deviceId))
@@ -1376,7 +1376,7 @@ ${dev
         for (const pkt of Packet.fromFrame(
             frame,
             frame._jacdac_timestamp,
-            skipCrc
+            skipCrc,
         )) {
             if (frame._jacdac_replay) pkt.replay = true
             this.processPacketCore(pkt)
@@ -1392,7 +1392,7 @@ ${dev
                 // decode the topic?
                 const [topic, data]: [string, Uint8Array] = jdunpack(
                     frame.slice(16),
-                    "z b"
+                    "z b",
                 )
                 const { si, command } =
                     /^jd\/(?<si>\d+)\/(?<command>.+)$/.exec(topic)?.groups || {}
@@ -1514,7 +1514,7 @@ ${dev
                     this._dashboard ? [SRV_DASHBOARD] : undefined,
                     this._proxy ? [SRV_PROXY] : undefined,
                 ].filter(sc => !!sc),
-            ]
+            ],
         )
         pkt.serviceIndex = JD_SERVICE_INDEX_CTRL
         pkt.deviceIdentifier = this.selfDeviceId
@@ -1535,7 +1535,7 @@ ${dev
         const rst = Packet.jdpacked<[number]>(
             CMD_SET_REG | ControlReg.ResetIn,
             "u32",
-            [RESET_IN_TIME_US]
+            [RESET_IN_TIME_US],
         )
         await rst.sendAsMultiCommandAsync(this, SRV_CONTROL)
     }
@@ -1549,12 +1549,12 @@ ${dev
             .map(
                 srv =>
                     srv.readingRegister &&
-                    srv.register(SensorReg.StreamingSamples)
+                    srv.register(SensorReg.StreamingSamples),
             )
             .filter(reg => !!reg)
 
         await Promise.all(
-            readingRegisters.map(reg => reg.sendSetPackedAsync([0]))
+            readingRegisters.map(reg => reg.sendSetPackedAsync([0])),
         )
     }
 
@@ -1571,7 +1571,7 @@ ${dev
             const pkt = Packet.jdpacked<[LoggerPriority]>(
                 CMD_SET_REG | LoggerReg.MinPriority,
                 "u8",
-                [this._minLoggerPriority]
+                [this._minLoggerPriority],
             )
             await pkt.sendAsMultiCommandAsync(this, SRV_LOGGER)
         }
@@ -1599,7 +1599,7 @@ ${dev
             } else {
                 this._refreshRegistersInterval = this.scheduler.setInterval(
                     this.handleRefreshRegisters.bind(this),
-                    REFRESH_REGISTER_POLL
+                    REFRESH_REGISTER_POLL,
                 )
             }
         }
@@ -1617,7 +1617,7 @@ ${dev
                 device.announced && // needs services
                 !device.lost && // ignore lost devices
                 // !device.hasService(SRV_PROXY) && // proxies run servers!
-                !device.firmwareUpdater
+                !device.firmwareUpdater,
         )
 
         // skip if no devices or any device is currently flashing
@@ -1642,24 +1642,24 @@ ${dev
                                     reg.needsRefresh ||
                                     // listening for updates
                                     reg.listenerCount(REPORT_RECEIVE) > 0 ||
-                                    reg.listenerCount(REPORT_UPDATE) > 0
+                                    reg.listenerCount(REPORT_UPDATE) > 0,
                             )
                             // ask if data is missing or non-const/status code
                             .filter(
                                 reg =>
                                     !reg.data ||
-                                    !isConstRegister(reg.specification)
+                                    !isConstRegister(reg.specification),
                             )
                             // stop asking optional registers
                             .filter(
                                 reg =>
                                     !reg.specification?.optional ||
                                     reg.lastGetAttempts <
-                                        REGISTER_OPTIONAL_POLL_COUNT
-                            )
-                    )
-                )
-            )
+                                        REGISTER_OPTIONAL_POLL_COUNT,
+                            ),
+                    ),
+                ),
+            ),
         )
 
         // refresh values
@@ -1680,14 +1680,14 @@ ${dev
             ) {
                 // compute refresh interval
                 const intervalRegister = service.register(
-                    SensorReg.StreamingInterval
+                    SensorReg.StreamingInterval,
                 )
                 let interval = intervalRegister?.uintValue
                 // no interval data
                 if (interval === undefined) {
                     // use preferred interval data or default to 50
                     const preferredIntervalRegister = service.register(
-                        SensorReg.StreamingPreferredInterval
+                        SensorReg.StreamingPreferredInterval,
                     )
                     const preferredInterval =
                         preferredIntervalRegister?.uintValue
@@ -1719,7 +1719,7 @@ ${dev
                         specification.preferredInterval ||
                         STREAMING_DEFAULT_INTERVAL
                 const streamingSamplesRegister = service.register(
-                    SensorReg.StreamingSamples
+                    SensorReg.StreamingSamples,
                 )
                 if (streamingSamplesRegister) {
                     const streamingSamplesAge =
@@ -1746,14 +1746,14 @@ ${dev
                     ? Math.min(
                           REGISTER_POLL_REPORT_VOLATILE_MAX_INTERVAL,
                           REGISTER_POLL_REPORT_VOLATILE_INTERVAL *
-                              (1 << backoff)
+                              (1 << backoff),
                       )
                     : Math.min(
                           REGISTER_POLL_REPORT_MAX_INTERVAL,
                           (noDataYet
                               ? REGISTER_POLL_FIRST_REPORT_INTERVAL
                               : REGISTER_POLL_REPORT_INTERVAL) *
-                              (1 << backoff)
+                              (1 << backoff),
                       )
                 if (age > expiration) {
                     //console.log(`bus: poll ${register.id}`, register, age, backoff, expiration)
@@ -1809,7 +1809,7 @@ ${dev
                         clearTimeout(tid)
                         reject(e)
                     }
-                }
+                },
             )
         })
     }

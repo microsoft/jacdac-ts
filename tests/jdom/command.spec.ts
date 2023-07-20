@@ -11,7 +11,7 @@ suite("packArguments", () => {
     function testOne(cmdid: number, args: PackedValues) {
         const service = serviceSpecificationFromClassIdentifier(SRV_PROTO_TEST)
         const cmd = service.packets.find(
-            pkt => pkt.kind === "command" && pkt.identifier === cmdid
+            pkt => pkt.kind === "command" && pkt.identifier === cmdid,
         )
         const pkt = packArguments(cmd, args)
         console.log({ args, pkt })

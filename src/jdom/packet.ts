@@ -98,7 +98,7 @@ export class Packet {
         p._header = data.slice(0, JD_SERIAL_HEADER_SIZE)
         p._data = data.slice(
             JD_SERIAL_HEADER_SIZE,
-            JD_SERIAL_HEADER_SIZE + p.size
+            JD_SERIAL_HEADER_SIZE + p.size,
         )
         p.sender = data._jacdac_sender
         p.timestamp = timestamp ?? data._jacdac_timestamp
@@ -261,7 +261,7 @@ export class Packet {
     set data(buf: Uint8Array) {
         if (buf.length > JD_SERIAL_MAX_PAYLOAD_SIZE)
             throw Error(
-                `jacdac packet length too large, ${buf.length} > ${JD_SERIAL_MAX_PAYLOAD_SIZE} bytes`
+                `jacdac packet length too large, ${buf.length} > ${JD_SERIAL_MAX_PAYLOAD_SIZE} bytes`,
             )
         this._header[12] = buf.length
         this._data = buf
@@ -449,7 +449,7 @@ export class Packet {
     static jdpacked<T extends PackedValues>(
         service_command: number,
         fmt: string,
-        nums: T
+        nums: T,
     ) {
         return Packet.from(service_command, jdpack<T>(fmt, nums))
     }
@@ -490,11 +490,11 @@ export class Packet {
             if (cmd & PIPE_CLOSE_MASK) cmdname += " close"
         } else if (this.isEvent) {
             const spec = serviceSpecificationFromClassIdentifier(
-                this.serviceClass
+                this.serviceClass,
             )
             const code = this.eventCode
             const pkt = spec?.packets.find(
-                pkt => pkt.kind === "event" && pkt.identifier === code
+                pkt => pkt.kind === "event" && pkt.identifier === code,
             )
             cmdname = pkt?.name
         } else {
@@ -507,7 +507,7 @@ export class Packet {
 function frameToPackets(
     frame: JDFrameBuffer,
     timestamp: number,
-    skipCrc = false
+    skipCrc = false,
 ) {
     if (timestamp === undefined) timestamp = frame._jacdac_timestamp
     const size = frame.length < 12 ? 0 : frame[2]
@@ -515,7 +515,7 @@ function frameToPackets(
         warn(
             `${timestamp | 0}ms: got only ${frame.length} bytes; expecting ${
                 size + 12
-            }`
+            }`,
         )
         return []
     } else if (size < 4) {
@@ -535,8 +535,8 @@ function frameToPackets(
                     `${
                         timestamp | 0
                     }ms: crc mismatch; sz=${size} got:${actual}, exp:${computed}, ${toHex(
-                        frame
-                    )}`
+                        frame,
+                    )}`,
                 )
                 return []
             }
@@ -549,13 +549,13 @@ function frameToPackets(
                 warn(
                     `${timestamp | 0}ms: invalid frame compression, res len=${
                         res.length
-                    }`
+                    }`,
                 )
                 break
             }
             const pkt = bufferConcat(
                 frame.slice(0, 12),
-                frame.slice(ptr, ptr + psz)
+                frame.slice(ptr, ptr + psz),
             )
             const p = Packet.fromBinary(pkt)
             p.timestamp = timestamp

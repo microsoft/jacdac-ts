@@ -31,20 +31,20 @@ export class DeviceScriptManagerServer extends JDServiceServer {
         ])
         this.programSize = this.addRegister(
             DeviceScriptManagerReg.ProgramSize,
-            [this._binary.length]
+            [this._binary.length],
         )
         this.programHash = this.addRegister(
             DeviceScriptManagerReg.ProgramHash,
-            [fnv1(this._binary)]
+            [fnv1(this._binary)],
         )
 
         this.addCommand(
             DeviceScriptManagerCmd.DeployBytecode,
-            this.handleDeployBytecode.bind(this)
+            this.handleDeployBytecode.bind(this),
         )
         this.addCommand(
             DeviceScriptManagerCmd.ReadBytecode,
-            this.handleReadBytecode.bind(this)
+            this.handleReadBytecode.bind(this),
         )
     }
 

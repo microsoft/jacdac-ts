@@ -47,7 +47,7 @@ abstract class BaseRegisterEvent extends EventWithHoldAdapter<JDRegister> {
     // Checks if a value is within a condition specified as either an exact matching number of valid interval
     protected valueWithinCondition(
         value: number,
-        requirement: number | [number, number]
+        requirement: number | [number, number],
     ) {
         if (typeof requirement == "number") {
             // is a single number, check exact match
@@ -58,7 +58,7 @@ abstract class BaseRegisterEvent extends EventWithHoldAdapter<JDRegister> {
                 high = requirement[1] as number
             assert(
                 low <= high,
-                `lower end of requirement range ${low} must be <= higher end of requirement range ${high}`
+                `lower end of requirement range ${low} must be <= higher end of requirement range ${high}`,
             )
             return value >= low && value <= high
         }
@@ -70,7 +70,7 @@ class BaseRegisterUpdateEvent extends BaseRegisterEvent {
     constructor(
         protected readonly busRegister: RegisterTester,
         protected trigger: number | [number, number],
-        protected options: RegisterValueOptions
+        protected options: RegisterValueOptions,
     ) {
         super(busRegister)
     }
@@ -95,7 +95,7 @@ class BaseRegisterUpdateEvent extends BaseRegisterEvent {
         } else if (!precondition) {
             // otherwise assert precondition
             throw new RegisterConditionError(
-                `register value ${this.register.name} = ${thisValue} not in precondition ${this.options.precondition}`
+                `register value ${this.register.name} = ${thisValue} not in precondition ${this.options.precondition}`,
             )
         } else {
             return false
@@ -108,7 +108,7 @@ class RegisterUpdateEvent extends BaseRegisterUpdateEvent {
         return new RegisterUpdateEventHold(
             this.busRegister,
             this.trigger,
-            this.options
+            this.options,
         )
     }
 }
@@ -117,7 +117,7 @@ class RegisterUpdateEventHold extends BaseRegisterUpdateEvent {
     constructor(
         protected readonly busRegister: RegisterTester,
         protected trigger: number | [number, number],
-        protected options: RegisterValueOptions
+        protected options: RegisterValueOptions,
     ) {
         super(busRegister, trigger, options)
     }
@@ -131,7 +131,7 @@ class RegisterUpdateEventHold extends BaseRegisterUpdateEvent {
 
         if (!hold) {
             throw new RegisterConditionError(
-                `register value ${this.register.name} = ${thisValue} not in hold condition ${this.trigger}`
+                `register value ${this.register.name} = ${thisValue} not in hold condition ${this.trigger}`,
             )
         }
     }
@@ -140,7 +140,7 @@ class RegisterUpdateEventHold extends BaseRegisterUpdateEvent {
 class RegisterHold extends BaseRegisterEvent {
     constructor(
         protected readonly busRegister: RegisterTester,
-        protected value: number | [number, number]
+        protected value: number | [number, number],
     ) {
         super(busRegister)
     }
@@ -154,7 +154,7 @@ class RegisterHold extends BaseRegisterEvent {
 
         if (!valid) {
             throw new RegisterConditionError(
-                `register value ${this.register.name} = ${thisValue} not in precondition ${this.value}`
+                `register value ${this.register.name} = ${thisValue} not in precondition ${this.value}`,
             )
         }
     }
@@ -170,7 +170,7 @@ export class RegisterTester {
     // Event that fires on a register update (even with unchagned value), optionally with a starting (arming) and to (trigger) filter
     public onValue(
         trigger: number | [number, number],
-        options: RegisterValueOptions = {}
+        options: RegisterValueOptions = {},
     ) {
         return new RegisterUpdateEvent(this, trigger, options)
     }

@@ -3,7 +3,10 @@ import { TestDriver } from "./base"
 import { ServiceTester } from "./servicewrapper"
 
 export class ButtonTestRoutine {
-    constructor(readonly service: ServiceTester, readonly driver: TestDriver) {}
+    constructor(
+        readonly service: ServiceTester,
+        readonly driver: TestDriver,
+    ) {}
 
     public async testClick() {
         // Avoid over-use of "this" everywhere
@@ -21,7 +24,7 @@ export class ButtonTestRoutine {
                     })
                     .hold(),
             ],
-            { synchronization: 50 }
+            { synchronization: 50 },
         )
         this.driver.log("saw down")
 
@@ -34,7 +37,7 @@ export class ButtonTestRoutine {
                     })
                     .hold(),
             ],
-            { within: 500, synchronization: 50 }
+            { within: 500, synchronization: 50 },
         )
         this.driver.log("saw up")
     }
@@ -55,7 +58,7 @@ export class ButtonTestRoutine {
                     })
                     .hold(),
             ],
-            { synchronization: 50 }
+            { synchronization: 50 },
         )
 
         this.driver.log("saw down, continue holding")
@@ -64,7 +67,7 @@ export class ButtonTestRoutine {
                 service.nextEvent(ButtonEvent.Hold).hold(),
                 register.hold([0.5, 1.0]),
             ],
-            { after: 500, tolerance: 100 }
+            { after: 500, tolerance: 100 },
         )
 
         this.driver.log("saw hold (1), continue holding")
@@ -73,7 +76,7 @@ export class ButtonTestRoutine {
                 service.nextEvent(ButtonEvent.Hold).hold(),
                 register.hold([0.5, 1.0]),
             ],
-            { after: 500, tolerance: 100 }
+            { after: 500, tolerance: 100 },
         )
 
         this.driver.log("saw hold (2), continue holding")
@@ -82,7 +85,7 @@ export class ButtonTestRoutine {
                 service.nextEvent(ButtonEvent.Hold).hold(),
                 register.hold([0.5, 1.0]),
             ],
-            { after: 500, tolerance: 100 }
+            { after: 500, tolerance: 100 },
         )
 
         this.driver.log("done, release")
@@ -91,7 +94,7 @@ export class ButtonTestRoutine {
                 service.onEvent(ButtonEvent.Up).hold(), // ignore any continued hold events
                 register.onValue([0, 0.5]).hold(),
             ],
-            { synchronization: 50 }
+            { synchronization: 50 },
         )
 
         this.driver.log("saw up")

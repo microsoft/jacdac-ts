@@ -15,7 +15,7 @@ export class ReflectedLightServer extends AnalogSensorServer {
 
         this.variant = this.addRegister<[ReflectedLightVariant]>(
             ReflectedLightReg.Variant,
-            [variant || ReflectedLightVariant.InfraredDigital]
+            [variant || ReflectedLightVariant.InfraredDigital],
         )
     }
 }

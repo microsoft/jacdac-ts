@@ -52,7 +52,7 @@ export function versionTryParse(v: string): Version {
     if (/^v\d/i.test(v)) v = v.slice(1)
     const m =
         /^(\d+)\.(\d+)\.(\d+)(-([0-9a-zA-Z\-\.]+))?(\+([0-9a-zA-Z\-\.]+))?$/.exec(
-            v
+            v,
         )
     if (m)
         return {

@@ -39,7 +39,7 @@ export class CharacterScreenServer extends JDServiceServer {
         ])
         this.brightness = this.addRegister<[number]>(
             CharacterScreenReg.Brightness,
-            [brightness]
+            [brightness],
         )
         this.rows = this.addRegister<[number]>(CharacterScreenReg.Rows, [rows])
         this.columns = this.addRegister<[number]>(CharacterScreenReg.Columns, [
@@ -47,14 +47,14 @@ export class CharacterScreenServer extends JDServiceServer {
         ])
         this.variant = this.addRegister<[CharacterScreenVariant]>(
             CharacterScreenReg.Variant,
-            [variant || CharacterScreenVariant.LCD]
+            [variant || CharacterScreenVariant.LCD],
         )
         this.message = this.addRegister<[string]>(CharacterScreenReg.Message, [
             "",
         ])
         this.textDirection = this.addRegister<[CharacterScreenTextDirection]>(
             CharacterScreenReg.TextDirection,
-            [textDirection || CharacterScreenTextDirection.LeftToRight]
+            [textDirection || CharacterScreenTextDirection.LeftToRight],
         )
     }
 }

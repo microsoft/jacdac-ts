@@ -42,7 +42,7 @@ import {
 import { resolveServiceCommandTest, resolveTestRules } from "./testrules"
 
 function createSetIntensityAndValueRule(
-    rule: SetIntensityAndValueTestRule
+    rule: SetIntensityAndValueTestRule,
 ): TestNode {
     const { name: ruleName, steps } = rule
     const name =
@@ -52,7 +52,7 @@ function createSetIntensityAndValueRule(
                 ({ duration, intensity, value }) =>
                     `${prettyDuration(duration)}: ${
                         intensity !== undefined ? `i:${intensity}, ` : ""
-                    }${value !== undefined ? `v:${value}}` : ""}`
+                    }${value !== undefined ? `v:${value}}` : ""}`,
             )
             .join(", ")}`
     return new ServiceCommandTest({
@@ -71,7 +71,7 @@ function createSetIntensityAndValueRule(
                     if (intensity !== undefined)
                         await intensityRegister.sendSetPackedAsync(
                             [intensity],
-                            true
+                            true,
                         )
                     if (value !== undefined)
                         await valueRegister.sendSetPackedAsync([value], true)
@@ -90,7 +90,7 @@ function createSetIntensityAndValueRule(
 }
 
 function createReadingRule(
-    rule: ReadingTestRule
+    rule: ReadingTestRule,
 ): (node: RegisterTest, logger: TestLogger) => TestState {
     const { value, tolerance, samples = 1, type, op } = rule
     const tol = isNaN(tolerance) || tolerance <= 0 ? 0 : tolerance
@@ -128,7 +128,7 @@ function createReadingRule(
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function createEventRule(
-    rule: EventTestRule
+    rule: EventTestRule,
 ): (node: EventTest, logger: TestLogger) => TestState {
     return (node, logger) => {
         const { event } = node
@@ -139,7 +139,7 @@ function createEventRule(
 }
 
 function createOracleRule(
-    oracle: OracleTestSpec
+    oracle: OracleTestSpec,
 ): (node: RegisterTest, logger: TestLogger) => TestState {
     let samples = 0
     const threshold = 5
@@ -171,7 +171,7 @@ function createOracleRule(
             logger(
                 tolerance <= 0
                     ? `${value} != ${oracleValue}`
-                    : `error ${Math.abs(value - oracleValue)} > ${tolerance}`
+                    : `error ${Math.abs(value - oracleValue)} > ${tolerance}`,
             )
             return TestState.Fail
         }
@@ -182,7 +182,7 @@ function createOracleRule(
             logger(
                 tolerance <= 0
                     ? `${value} == ${oracleValue}`
-                    : `error ${Math.abs(value - oracleValue)} <= ${tolerance}`
+                    : `error ${Math.abs(value - oracleValue)} <= ${tolerance}`,
             )
             return TestState.Pass
         }
@@ -191,7 +191,7 @@ function createOracleRule(
 
 function createReadingTest(
     specification: jdspec.ServiceSpec,
-    readingRule: ReadingTestRule
+    readingRule: ReadingTestRule,
 ) {
     const { type, name, value, tolerance, manualSteps, op = "==" } = readingRule
     const registerId =
@@ -201,7 +201,7 @@ function createReadingTest(
             ? SystemReg.Intensity
             : SystemReg.Value
     const registerSpec = specification.packets.find(
-        pkt => isRegister(pkt) && pkt.identifier === registerId
+        pkt => isRegister(pkt) && pkt.identifier === registerId,
     )
     return new RegisterTest(
         name ||
@@ -210,35 +210,35 @@ function createReadingTest(
             }`,
         manualSteps,
         registerId,
-        createReadingRule(readingRule)
+        createReadingRule(readingRule),
     )
 }
 
 function createEventTest(
     specification: jdspec.ServiceSpec,
-    eventRule: EventTestRule
+    eventRule: EventTestRule,
 ) {
     const { name, eventName, manualSteps } = eventRule
     const pkt = specification.packets.find(
-        pkt => isEvent(pkt) && pkt.name === eventName
+        pkt => isEvent(pkt) && pkt.name === eventName,
     )
     return new EventTest(
         name || `raise event ${eventName}`,
         manualSteps,
         pkt.identifier,
-        createEventRule(eventRule)
+        createEventRule(eventRule),
     )
 }
 
 function compileTestRule(
     specification: jdspec.ServiceSpec,
-    rule: ServiceTestRule
+    rule: ServiceTestRule,
 ): TestNode {
     const { type } = rule
     switch (type) {
         case "setIntensityAndValue":
             return createSetIntensityAndValueRule(
-                rule as SetIntensityAndValueTestRule
+                rule as SetIntensityAndValueTestRule,
             )
         case "value":
         case "intensity":
@@ -321,14 +321,14 @@ function createStatusCodeTest() {
 
             logger(`expected status code equals to 0x0,0x0 or 0x3,0x0`)
             return TestState.Fail
-        }
+        },
     )
 }
 
 export function createDeviceTest(
     bus: JDBus,
     device: DeviceTestSpec,
-    oracles?: OracleTestSpec[]
+    oracles?: OracleTestSpec[],
 ): DeviceTest {
     const { deviceCatalog } = bus
     const { productIdentifier, firmwareVersion, factory } = device
@@ -355,15 +355,15 @@ export function createDeviceTest(
                     const ok = value === firmwareVersion
                     if (value && !ok)
                         logger(
-                            `incorrect firmware version, expected ${firmwareVersion}`
+                            `incorrect firmware version, expected ${firmwareVersion}`,
                         )
                     return ok
                         ? TestState.Pass
                         : value
                         ? TestState.Fail
                         : TestState.Running
-                }
-            )
+                },
+            ),
         )
     }
     deviceTest.appendChild(controlTest)
@@ -375,7 +375,7 @@ export function createDeviceTest(
     for (const service of services) {
         const { serviceClass, count = 1, disableBuiltinRules } = service
         const serviceOracle = oracles?.find(
-            oracle => oracle.serviceClass === serviceClass
+            oracle => oracle.serviceClass === serviceClass,
         )
         const specification =
             serviceSpecificationFromClassIdentifier(serviceClass)
@@ -383,7 +383,7 @@ export function createDeviceTest(
             const serviceTest = new ServiceTest(
                 specification?.shortName.toLowerCase() ||
                     `0x${serviceClass.toString(16)}`,
-                serviceClass
+                serviceClass,
             )
             {
                 // add status code
@@ -413,8 +413,8 @@ export function createDeviceTest(
                                 return unpackedValue?.length > 0
                                     ? TestState.Pass
                                     : TestState.Running
-                            }
-                        )
+                            },
+                        ),
                     )
                 }
                 // add oracle
@@ -423,14 +423,14 @@ export function createDeviceTest(
                         `${readingSpec.name} near oracle`,
                         undefined,
                         SystemReg.Reading,
-                        createOracleRule(serviceOracle)
+                        createOracleRule(serviceOracle),
                     )
                     const oracleNode = new RegisterOracle(
                         `oracle reading`,
                         serviceOracle.deviceId,
                         serviceOracle.serviceIndex,
                         serviceClass,
-                        serviceOracle.tolerance
+                        serviceOracle.tolerance,
                     )
                     rt.appendChild(oracleNode)
                     serviceTest.appendChild(rt)
@@ -445,7 +445,7 @@ export function createDeviceTest(
                             isRegister(p) &&
                             !isReading(p) &&
                             p.identifier !== SystemReg.StreamingInterval &&
-                            p.identifier !== SystemReg.StreamingSamples
+                            p.identifier !== SystemReg.StreamingSamples,
                     )
                     ?.map(
                         p =>
@@ -460,8 +460,8 @@ export function createDeviceTest(
                                         return TestState.Pass
                                     register.scheduleRefresh()
                                     return TestState.Running
-                                }
-                            )
+                                },
+                            ),
                     )
                     ?.forEach(node => serviceTest.appendChild(node))
 
@@ -476,7 +476,7 @@ export function createDeviceTest(
                     .map(rule => compileTestRule(specification, rule))
                     .filter(r => !!r)
                 testNodes?.forEach(testRule =>
-                    serviceTest.appendChild(testRule)
+                    serviceTest.appendChild(testRule),
                 )
 
                 // import member tests
@@ -502,7 +502,7 @@ export function createPanelTest(bus: JDBus, panel: PanelTestSpec) {
             deviceId,
             serviceIndex,
             serviceClass,
-            tolerance
+            tolerance,
         )
         panelTest.appendChild(oracleNode)
     }

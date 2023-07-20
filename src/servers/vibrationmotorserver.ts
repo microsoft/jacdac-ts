@@ -25,11 +25,11 @@ export class VibrationMotorServer extends JDServiceServer {
 
         this.maxVibrations = this.addRegister<[number]>(
             VibrationMotorReg.MaxVibrations,
-            [maxVibrations]
+            [maxVibrations],
         )
         this.addCommand(
             VibrationMotorCmd.Vibrate,
-            this.handleVibrate.bind(this)
+            this.handleVibrate.bind(this),
         )
         this.on(REFRESH, this.handleRefresh.bind(this))
     }

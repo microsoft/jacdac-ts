@@ -79,16 +79,16 @@ export class SensorAggregatorClient extends JDServiceClient {
             if (!specification)
                 error(
                     `missing specification from service 0x${serviceClass.toString(
-                        16
-                    )}`
+                        16,
+                    )}`,
                 )
             const freeze = !!deviceId
             const readingReg = specification.packets.find(isReading)
             if (!readingReg)
                 error(
                     `service 0x${serviceClass.toString(
-                        16
-                    )} does not have a reading register`
+                        16,
+                    )} does not have a reading register`,
                 )
             let sampleType: SensorAggregatorSampleType = undefined
             let sampleSize = 0
@@ -114,7 +114,7 @@ export class SensorAggregatorClient extends JDServiceClient {
                     sampleSize,
                     sampleType,
                     sampleShift,
-                ])
+                ]),
             )
         })
 
@@ -127,7 +127,7 @@ export class SensorAggregatorClient extends JDServiceClient {
                 cfg.samplingInterval,
                 cfg.samplesInWindow,
                 0,
-            ])
+            ]),
         )
         await this.service
             .register(SensorAggregatorReg.Inputs)
@@ -144,8 +144,8 @@ export class SensorAggregatorClient extends JDServiceClient {
         const reg = this.service.register(SensorAggregatorReg.CurrentSample)
         return this.mount(
             reg.subscribe(REPORT_RECEIVE, () =>
-                handler(bufferToArray(reg.data, NumberFormat.Float32LE))
-            )
+                handler(bufferToArray(reg.data, NumberFormat.Float32LE)),
+            ),
         )
     }
 
@@ -160,11 +160,11 @@ export class SensorAggregatorClient extends JDServiceClient {
         const info: any = {
             numSamples: this.getReg(
                 SensorAggregatorReg.NumSamples,
-                r => r.intValue
+                r => r.intValue,
             ),
             sampleSize: this.getReg(
                 SensorAggregatorReg.SampleSize,
-                r => r.intValue
+                r => r.intValue,
             ),
         }
         for (const id of Object.keys(info)) {

@@ -11,7 +11,7 @@ import { ServiceTester } from "../../src/tstester/servicewrapper"
 // Configured to ignore differences for a 16-bit fixed point
 function withTolerance(
     center: number,
-    tolerance = 1 / 32767
+    tolerance = 1 / 32767,
 ): [number, number] {
     return [center * (1 - tolerance), center * (1 + tolerance)]
 }
@@ -33,14 +33,14 @@ suite('"CSV" trace server', () => {
                     { time: 0.8, "BP95.position": 1.0 },
                     { time: 1.0, "BP95.position": 0.8 },
                     { time: 1.2, "BP95.position": 0.6 },
-                ]
+                ],
             )
             const register = new RegisterTester(
-                pot.service.register(SystemReg.Reading)
+                pot.service.register(SystemReg.Reading),
             )
 
             await tester.waitFor(
-                register.onValue(withTolerance(0.5))
+                register.onValue(withTolerance(0.5)),
                 // absolute time not tested, just wait for first sample
             )
             await tester.waitFor(register.onValue(withTolerance(1.0)), {
@@ -55,7 +55,7 @@ suite('"CSV" trace server', () => {
                 after: 200,
                 tolerance: 50,
             })
-        })
+        }),
     )
 
     test(
@@ -73,21 +73,21 @@ suite('"CSV" trace server', () => {
                     { time: 0.6, "BP95.position": 0.5 },
                     { time: 0.8, "BP95.position": null }, // ignored, previous value unchanged
                     { time: 1.0, "BP95.position": 1.0 },
-                ]
+                ],
             )
             const register = new RegisterTester(
-                pot.service.register(SystemReg.Reading)
+                pot.service.register(SystemReg.Reading),
             )
 
             await tester.waitFor(
-                register.onValue(withTolerance(0.5))
+                register.onValue(withTolerance(0.5)),
                 // absolute time not tested, just wait for first sample
             )
             await tester.waitFor(register.onValue(withTolerance(1.0)), {
                 after: 400,
                 tolerance: 50,
             })
-        })
+        }),
     )
 
     test(
@@ -105,7 +105,7 @@ suite('"CSV" trace server', () => {
                     { time: 0.0, "AB34.pressure": ButtonServer.INACTIVE_VALUE },
                     { time: 0.7, "AB34.pressure": ButtonServer.ACTIVE_VALUE },
                     { time: 0.9, "AB34.pressure": ButtonServer.INACTIVE_VALUE },
-                ]
+                ],
             )
             const service = new ServiceTester(button.service)
             const register = service.register(ButtonReg.Pressure)
@@ -116,11 +116,11 @@ suite('"CSV" trace server', () => {
                     register
                         .onValue(withTolerance(ButtonServer.ACTIVE_VALUE), {
                             precondition: withTolerance(
-                                ButtonServer.INACTIVE_VALUE
+                                ButtonServer.INACTIVE_VALUE,
                             ),
                         })
                         .hold(),
-                ]
+                ],
                 // absolute time not tested, just wait for first sample
             )
             await tester.waitFor(
@@ -129,13 +129,13 @@ suite('"CSV" trace server', () => {
                     register
                         .onValue(withTolerance(ButtonServer.INACTIVE_VALUE), {
                             precondition: withTolerance(
-                                ButtonServer.ACTIVE_VALUE
+                                ButtonServer.ACTIVE_VALUE,
                             ),
                         })
                         .hold(),
                 ],
-                { after: 200, tolerance: 50, synchronization: 50 }
+                { after: 200, tolerance: 50, synchronization: 50 },
             )
-        })
+        }),
     )
 })

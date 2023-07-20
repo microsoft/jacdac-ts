@@ -17,7 +17,7 @@ export class HIDJoystickServer extends JDServiceServer {
             buttonCount: number
             axisCount: number
             buttonsAnalog: boolean
-        } & JDServerOptions
+        } & JDServerOptions,
     ) {
         super(SRV_HID_JOYSTICK, options)
         const {
@@ -32,7 +32,7 @@ export class HIDJoystickServer extends JDServiceServer {
 
         this.addCommand(
             HidJoystickCmd.SetButtons,
-            this.handleSetButtons.bind(this)
+            this.handleSetButtons.bind(this),
         )
         this.addCommand(HidJoystickCmd.SetAxis, this.handleSetAxis.bind(this))
     }

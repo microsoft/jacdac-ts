@@ -624,11 +624,11 @@ function initProviders() {
                     new AnalogSensorServer(SRV_E_CO2, CO2Options),
                     new AnalogSensorServer(
                         SRV_HUMIDITY,
-                        outdoorHumidityOptions
+                        outdoorHumidityOptions,
                     ),
                     new AnalogSensorServer(
                         SRV_TEMPERATURE,
-                        indoorThermometerOptions
+                        indoorThermometerOptions,
                     ),
                 ],
             },
@@ -667,7 +667,7 @@ function initProviders() {
                 services: () => [
                     new AnalogSensorServer(
                         SRV_HUMIDITY,
-                        outdoorHumidityOptions
+                        outdoorHumidityOptions,
                     ),
                 ],
             },
@@ -677,11 +677,11 @@ function initProviders() {
                 services: () => [
                     new AnalogSensorServer(
                         SRV_TEMPERATURE,
-                        outdoorThermometerOptions
+                        outdoorThermometerOptions,
                     ),
                     new AnalogSensorServer(
                         SRV_HUMIDITY,
-                        outdoorHumidityOptions
+                        outdoorHumidityOptions,
                     ),
                 ],
             },
@@ -695,11 +695,11 @@ function initProviders() {
                 services: () => [
                     new AnalogSensorServer(
                         SRV_TEMPERATURE,
-                        outdoorThermometerOptions
+                        outdoorThermometerOptions,
                     ),
                     new AnalogSensorServer(
                         SRV_HUMIDITY,
-                        outdoorHumidityOptions
+                        outdoorHumidityOptions,
                     ),
                     new AnalogSensorServer(SRV_AIR_PRESSURE, barometerOptions),
                 ],
@@ -1265,7 +1265,7 @@ function initProviders() {
                                             values: [5],
                                         },
                                     ],
-                                })
+                                }),
                         ),
             },
             {
@@ -1323,7 +1323,7 @@ function initProviders() {
                                 new ServoServer({
                                     ...microServoOptions,
                                     instanceName: `S${i}`,
-                                })
+                                }),
                         ),
             },
             {
@@ -1338,7 +1338,7 @@ function initProviders() {
                                 new ServoServer({
                                     ...microServoOptions,
                                     instanceName: `S${i}`,
-                                })
+                                }),
                         ),
             },
             {
@@ -1353,7 +1353,7 @@ function initProviders() {
                                 new ServoServer({
                                     ...microServoOptions,
                                     instanceName: `S${i}`,
-                                })
+                                }),
                         ),
             },
             {
@@ -1368,7 +1368,7 @@ function initProviders() {
                                 new ServoServer({
                                     ...microServoOptions,
                                     instanceName: `S${i}`,
-                                })
+                                }),
                         ),
             },
             {
@@ -1388,7 +1388,7 @@ function initProviders() {
                                 new ServoServer({
                                     ...microServoContinuousOptions,
                                     instanceName: `S${i}`,
-                                })
+                                }),
                         ),
                 resetIn: true,
             },
@@ -1444,7 +1444,7 @@ function initProviders() {
                 services: () => [
                     new SensorServer<[Uint8Array]>(
                         SRV_SOUND_SPECTRUM,
-                        soundSpectrum
+                        soundSpectrum,
                     ),
                 ],
             },
@@ -1496,7 +1496,7 @@ function initProviders() {
                 services: () => [
                     new AnalogSensorServer(
                         SRV_TEMPERATURE,
-                        outdoorThermometerOptions
+                        outdoorThermometerOptions,
                     ),
                 ],
             },
@@ -1506,7 +1506,7 @@ function initProviders() {
                 services: () => [
                     new AnalogSensorServer(
                         SRV_TEMPERATURE,
-                        soilThermometerOptions
+                        soilThermometerOptions,
                     ),
                 ],
             },
@@ -1516,7 +1516,7 @@ function initProviders() {
                 services: () => [
                     new AnalogSensorServer(
                         SRV_TEMPERATURE,
-                        medicalThermometerOptions
+                        medicalThermometerOptions,
                     ),
                 ],
             },
@@ -1625,7 +1625,7 @@ function initProviders() {
                 services: () => [
                     new AnalogSensorServer(
                         SRV_WIND_DIRECTION,
-                        windDirectionOptions
+                        windDirectionOptions,
                     ),
                 ],
             },
@@ -1647,7 +1647,7 @@ function initProviders() {
                     new AnalogSensorServer(SRV_WIND_SPEED, windSpeedOptions),
                     new AnalogSensorServer(
                         SRV_WIND_DIRECTION,
-                        windDirectionOptions
+                        windDirectionOptions,
                     ),
                     new RainGaugeServer(),
                 ],
@@ -1719,7 +1719,7 @@ function initProviders() {
                                 0.5,
                                 -(1 - (0.5 * 0.5 + 0.5 * 0.5)),
                             ],
-                        }
+                        },
                     ),
                     new AnalogSensorServer(SRV_SOUND_LEVEL, soundLevel),
                     new SensorServer(SRV_LIGHT_LEVEL, {
@@ -1737,7 +1737,7 @@ function initProviders() {
                     new PowerServer(),
                     new AnalogSensorServer(
                         SRV_HUMIDITY,
-                        outdoorHumidityOptions
+                        outdoorHumidityOptions,
                     ),
                 ],
                 factory: services => {
@@ -1896,14 +1896,14 @@ function fingerPrint() {
 function stableSimulatorDeviceId(
     bus: JDBus,
     template: string,
-    salt: string
+    salt: string,
 ): string {
     const fg = fingerPrint()
     const others = bus.serviceProviders().filter(sp => sp.template === template)
     const word0 = hash(stringToUint8Array(salt + template + others.length), 32)
     const word1 = hash(
         stringToUint8Array(salt + fg + template + others.length + 1),
-        32
+        32,
     )
     const id = toFullHex([word0, word1])
     return id.slice(2)
@@ -1917,7 +1917,7 @@ export interface ServiceProviderOptions {
 
 function applyServiceOptions(
     services: JDServiceServer[],
-    serviceOptions: ServiceProviderOptions[]
+    serviceOptions: ServiceProviderOptions[],
 ) {
     serviceOptions?.forEach(({ serviceClass, serviceOffset, constants }) => {
         const srvs = services.filter(srv => srv.serviceClass === serviceClass)
@@ -1925,19 +1925,19 @@ function applyServiceOptions(
         if (!service) {
             console.warn(
                 `service provider: service 0x${serviceClass.toString(
-                    16
+                    16,
                 )} not found at offset ${serviceOffset || 0}`,
-                { srvs }
+                { srvs },
             )
         } else {
             const { specification } = service
             Object.entries(constants).forEach(([name, value]) => {
                 const spec = specification.packets.find(
-                    pkt => isConstRegister(pkt) && pkt.name === name
+                    pkt => isConstRegister(pkt) && pkt.name === name,
                 )
                 if (!spec)
                     console.warn(
-                        `service provider: unknown register ${specification.name}.${name}`
+                        `service provider: unknown register ${specification.name}.${name}`,
                     )
                 else {
                     const reg = service.register(spec.identifier)
@@ -1956,7 +1956,7 @@ function applyServiceOptions(
 export function addServiceProvider(
     bus: JDBus,
     definition: ServiceProviderDefinition,
-    serviceOptions?: ServiceProviderOptions[]
+    serviceOptions?: ServiceProviderOptions[],
 ) {
     const services = definition.services()
     applyServiceOptions(services, definition.serviceOptions)
@@ -1988,7 +1988,7 @@ export function addServer(
     bus: JDBus,
     name: string,
     server: JDServiceServer,
-    serviceOptions?: ServiceProviderOptions[]
+    serviceOptions?: ServiceProviderOptions[],
 ) {
     const services = [server]
     return addServiceProvider(
@@ -1998,7 +1998,7 @@ export function addServer(
             serviceClasses: services.map(srv => srv.serviceClass),
             services: () => services,
         },
-        serviceOptions
+        serviceOptions,
     )
 }
 
@@ -2007,18 +2007,18 @@ export function addServer(
  * @category Servers
  */
 export function serviceProviderDefinitionFromServiceClass(
-    serviceClass: number
+    serviceClass: number,
 ) {
     return initProviders().find(
         provider =>
             provider.serviceClasses.length === 1 &&
-            provider.serviceClasses[0] === serviceClass
+            provider.serviceClasses[0] === serviceClass,
     )
 }
 
 function syntheticServiceProvider(
     bus: JDBus,
-    serviceClass: number
+    serviceClass: number,
 ): ServiceProviderDefinition {
     const specification = serviceSpecificationFromClassIdentifier(serviceClass)
     if (!specification) return undefined
@@ -2041,7 +2041,7 @@ function syntheticServiceProvider(
     } else if (isActuator(specification)) {
         const intensity = 0
         const valueReg = specification.packets.find(
-            pkt => pkt.identifier === SystemReg.Value
+            pkt => pkt.identifier === SystemReg.Value,
         )
         const {
             min,
@@ -2071,7 +2071,7 @@ function syntheticServiceProvider(
  */
 export function startServiceProviderFromServiceClass(
     bus: JDBus,
-    serviceClass: number
+    serviceClass: number,
 ) {
     const provider =
         serviceProviderDefinitionFromServiceClass(serviceClass) ||

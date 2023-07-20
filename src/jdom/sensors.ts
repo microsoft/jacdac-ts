@@ -11,7 +11,7 @@ let _sensorSpecs: jdspec.ServiceSpec[]
 export function sensorSpecifications() {
     if (!_sensorSpecs) {
         _sensorSpecs = serviceSpecifications().filter(
-            srv => !srv.shortName.startsWith("_") && isSensor(srv)
+            srv => !srv.shortName.startsWith("_") && isSensor(srv),
         )
     }
     return _sensorSpecs
@@ -24,7 +24,7 @@ export function sensorSpecifications() {
  */
 export function snapshotSensors(
     bus: JDBus,
-    sparse?: boolean
+    sparse?: boolean,
 ): Record<string, number[] | Record<string, number>[]> {
     const r = toMap(
         sensorSpecifications(),
@@ -45,7 +45,7 @@ export function snapshotSensors(
                 })
             return sparse && !r.length ? undefined : r
         },
-        sparse
+        sparse,
     )
     return r
 }

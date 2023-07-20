@@ -24,7 +24,7 @@ export interface SensorServiceOptions<TReading extends PackedValues>
 }
 
 export class SensorServer<
-    TReading extends PackedValues
+    TReading extends PackedValues,
 > extends JDServiceServer {
     readonly reading: JDRegisterServer<TReading>
     readonly readingError: JDRegisterServer<TReading>
@@ -37,7 +37,7 @@ export class SensorServer<
 
     constructor(
         public readonly serviceClass: number,
-        options?: SensorServiceOptions<TReading>
+        options?: SensorServiceOptions<TReading>,
     ) {
         super(serviceClass, options)
         const {
@@ -48,10 +48,10 @@ export class SensorServer<
         } = options || {}
         this.reading = this.addRegister<TReading>(
             SystemReg.Reading,
-            readingValues
+            readingValues,
         )
         this.streamingSamples = this.addRegister<[number]>(
-            SensorReg.StreamingSamples
+            SensorReg.StreamingSamples,
         )
         this.streamingInterval = this.addRegister<[number]>(
             SensorReg.StreamingInterval,
@@ -60,22 +60,22 @@ export class SensorServer<
                     preferredStreamingInterval ||
                     this.reading.specification.preferredInterval ||
                     STREAMING_DEFAULT_INTERVAL,
-            ]
+            ],
         )
         if (preferredStreamingInterval !== undefined)
             this.preferredStreamingInterval = this.addRegister<[number]>(
                 SensorReg.StreamingPreferredInterval,
-                [preferredStreamingInterval]
+                [preferredStreamingInterval],
             )
         if (readingError !== undefined) {
             this.readingError = this.addRegister<TReading>(
                 SystemReg.ReadingError,
-                readingError
+                readingError,
             )
             this.reading.errorRegister = this.readingError
             this.readingError.on(
                 CHANGE,
-                () => (this.lastErrorReadingChanged = true)
+                () => (this.lastErrorReadingChanged = true),
             )
         }
 

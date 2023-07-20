@@ -3,7 +3,10 @@ import { TestDriver } from "./base"
 import { ServiceTester } from "./servicewrapper"
 
 export class PotentiometerTestRoutine {
-    constructor(readonly service: ServiceTester, readonly driver: TestDriver) {}
+    constructor(
+        readonly service: ServiceTester,
+        readonly driver: TestDriver,
+    ) {}
 
     public async testMin() {
         const register = this.service.register(PotentiometerReg.Position)
@@ -35,7 +38,7 @@ export class PotentiometerTestRoutine {
         await this.driver.waitFor(
             register.onValue([0.1, 0.2], {
                 precondition: [0, 0.1],
-            })
+            }),
         )
         this.driver.log(`saw approx 1 / 10`)
 
@@ -44,7 +47,7 @@ export class PotentiometerTestRoutine {
                 register.onValue([i / 10.0, (i + 1) / 10.0], {
                     precondition: [(i - 1) / 10.0, i / 1.0],
                 }),
-                { after: 200, tolerance: 200 }
+                { after: 200, tolerance: 200 },
             )
             this.driver.log(`saw approx ${i + 1} / 10`)
         }
@@ -62,7 +65,7 @@ export class PotentiometerTestRoutine {
         await this.driver.waitFor(
             register.onValue([0.8, 0.9], {
                 precondition: [0.9, 1.0],
-            })
+            }),
         )
         this.driver.log(`saw approx 9 / 10`)
 
@@ -71,7 +74,7 @@ export class PotentiometerTestRoutine {
                 register.onValue([i / 10.0, (i + 1) / 10.0], {
                     precondition: [(i + 1) / 10.0, (i + 2) / 10.0],
                 }),
-                { after: 200, tolerance: 200 }
+                { after: 200, tolerance: 200 },
             )
             this.driver.log(`saw approx ${i + 1} / 10`)
         }

@@ -64,11 +64,11 @@ export class IndexedScreenServer extends JDServiceServer {
         ])
         this.addCommand(
             IndexedScreenCmd.SetPixels,
-            this.handleSetPixels.bind(this)
+            this.handleSetPixels.bind(this),
         )
         this.addCommand(
             IndexedScreenCmd.StartUpdate,
-            this.handleStartUpdate.bind(this)
+            this.handleStartUpdate.bind(this),
         )
         this.width.skipBoundaryCheck = true
         this.width.skipErrorInjection = true
@@ -128,7 +128,7 @@ export class IndexedScreenServer extends JDServiceServer {
         const data = new Uint32Array(
             pixdata.buffer,
             pixdata.byteOffset,
-            pixdata.byteLength >> 2
+            pixdata.byteLength >> 2,
         )
         let sp = 0
         const [bpp] = this.bitsPerPixel.values()

@@ -8,7 +8,7 @@ export class BrailleDisplayServer extends JDServiceServer {
     readonly length: JDRegisterServer<[number]>
 
     constructor(
-        options?: { patterns?: string; length?: number } & JDServerOptions
+        options?: { patterns?: string; length?: number } & JDServerOptions,
     ) {
         super(SRV_BRAILLE_DISPLAY, options)
         const { patterns = "", length = 12 } = options || {}

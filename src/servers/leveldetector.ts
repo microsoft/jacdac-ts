@@ -12,18 +12,18 @@ export class LevelDetector extends JDClient {
             this.mount(
                 this.service.inactiveThreshold.subscribe(
                     CHANGE,
-                    this.reset.bind(this)
-                )
+                    this.reset.bind(this),
+                ),
             )
         if (this.service.activeThreshold)
             this.mount(
                 this.service.activeThreshold.subscribe(
                     CHANGE,
-                    this.reset.bind(this)
-                )
+                    this.reset.bind(this),
+                ),
             )
         this.mount(
-            this.service.reading.subscribe(CHANGE, this.update.bind(this))
+            this.service.reading.subscribe(CHANGE, this.update.bind(this)),
         )
     }
 

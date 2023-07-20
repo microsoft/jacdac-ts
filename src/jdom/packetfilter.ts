@@ -163,9 +163,8 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
                 // resolve device by name
                 const deviceId = bus
                     .devices()
-                    .find(
-                        d => d.shortId === value || d.name === value
-                    )?.deviceId
+                    .find(d => d.shortId === value || d.name === value)
+                    ?.deviceId
                 if (deviceId) {
                     const data =
                         devices[deviceId] ||
@@ -312,7 +311,8 @@ function compileFilter(props: PacketFilterProps) {
     if (repeatedAnnounce !== undefined)
         filters.push(
             pkt =>
-                (!pkt.isAnnounce || pkt.isRepeatedAnnounce) === repeatedAnnounce
+                (!pkt.isAnnounce || pkt.isRepeatedAnnounce) ===
+                repeatedAnnounce,
         )
     if (resetIn !== undefined)
         filters.push(
@@ -321,7 +321,7 @@ function compileFilter(props: PacketFilterProps) {
                     pkt.isRegisterSet &&
                     pkt.serviceClass === SRV_CONTROL &&
                     pkt.registerIdentifier === ControlReg.ResetIn
-                ) === resetIn
+                ) === resetIn,
         )
     if (minPriority !== undefined)
         filters.push(
@@ -329,7 +329,7 @@ function compileFilter(props: PacketFilterProps) {
                 (pkt.isRegisterSet &&
                     pkt.serviceClass == SRV_LOGGER &&
                     pkt.registerIdentifier === LoggerReg.MinPriority) ===
-                minPriority
+                minPriority,
         )
     if (requiresAck !== undefined)
         filters.push(pkt => pkt.requiresAck === requiresAck)
@@ -340,7 +340,7 @@ function compileFilter(props: PacketFilterProps) {
 
     if (regGet !== undefined && regSet !== undefined)
         filters.push(
-            pkt => pkt.isRegisterGet === regGet && pkt.isRegisterSet === regSet
+            pkt => pkt.isRegisterGet === regGet && pkt.isRegisterSet === regSet,
         )
     else if (regGet !== undefined)
         filters.push(pkt => pkt.isRegisterGet === regGet)
@@ -349,7 +349,7 @@ function compileFilter(props: PacketFilterProps) {
 
     if (log !== undefined)
         filters.push(
-            pkt => (pkt.serviceClass === SRV_LOGGER && pkt.isReport) === log
+            pkt => (pkt.serviceClass === SRV_LOGGER && pkt.isReport) === log,
         )
     if (selfDevice !== undefined) {
         filters.push(pkt => {
@@ -369,15 +369,15 @@ function compileFilter(props: PacketFilterProps) {
     if (serviceClasses) {
         filters.push(pkt =>
             serviceClasses.some(serviceClass =>
-                isInstanceOf(pkt.serviceClass, serviceClass)
-            )
+                isInstanceOf(pkt.serviceClass, serviceClass),
+            ),
         )
     }
     if (pkts) {
         filters.push(
             pkt =>
                 pkts.indexOf(pkt.decoded?.info.identifier.toString(16)) > -1 ||
-                pkts.indexOf(pkt.decoded?.info.name) > -1
+                pkts.indexOf(pkt.decoded?.info.name) > -1,
         )
     }
     if (productIdentifiers)

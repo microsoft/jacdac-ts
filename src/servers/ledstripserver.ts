@@ -145,7 +145,7 @@ export class LedStripServer extends JDServiceServer {
             numColumns?: number
             maxPixels?: number
             maxPower?: number
-        } & JDServerOptions
+        } & JDServerOptions,
     ) {
         super(SRV_LED_STRIP, options)
 
@@ -161,11 +161,11 @@ export class LedStripServer extends JDServiceServer {
         ])
         this.actualBrightness = this.addRegister<[number]>(
             LedStripReg.ActualBrightness,
-            [15]
+            [15],
         )
         this.lightType = this.addRegister<[LedStripLightType]>(
             LedStripReg.LightType,
-            [LedStripLightType.WS2812B_GRB]
+            [LedStripLightType.WS2812B_GRB],
         )
         this.numPixels = this.addRegister<[number]>(LedStripReg.NumPixels, [
             numPixels,
@@ -182,12 +182,12 @@ export class LedStripServer extends JDServiceServer {
         if (numColumns !== undefined)
             this.numColumns = this.addRegister<[number]>(
                 LedStripReg.NumColumns,
-                [numColumns]
+                [numColumns],
             )
 
         this.brightness.on(
             CHANGE,
-            () => (this.intensity = this.requested_intensity)
+            () => (this.intensity = this.requested_intensity),
         )
         this.numPixels.on(CHANGE, this.allocRxBuffer.bind(this))
         this.maxPixels.on(CHANGE, this.allocRxBuffer.bind(this))
@@ -461,7 +461,7 @@ export class LedStripServer extends JDServiceServer {
             const col = rgb(
                 (col0.r * fade0 + col1.r * fade1 + 0x8000) >> 16,
                 (col0.g * fade0 + col1.g * fade1 + 0x8000) >> 16,
-                (col0.b * fade0 + col1.b * fade1 + 0x8000) >> 16
+                (col0.b * fade0 + col1.b * fade1 + 0x8000) >> 16,
             )
             if (!this.set_next(usehsv ? hsv(col.r, col.g, col.b) : col)) break
             colpos += colstep

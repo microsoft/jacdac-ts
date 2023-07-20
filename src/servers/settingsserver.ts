@@ -45,7 +45,7 @@ export class SettingsServer extends JDServiceServer {
         const resp = Packet.jdpacked<[string, Uint8Array]>(
             SettingsCmd.Get,
             "z b",
-            [key, payload]
+            [key, payload],
         )
         await this.sendPacketAsync(resp)
     }
@@ -65,7 +65,7 @@ export class SettingsServer extends JDServiceServer {
     private async handleListKeys(pkt: Packet) {
         const pipe = OutPipe.from(this.device.bus, pkt, true)
         await pipe.respondForEach(Object.keys(this.settings), k =>
-            jdpack<[string]>("s", [k])
+            jdpack<[string]>("s", [k]),
         )
     }
 

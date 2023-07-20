@@ -33,15 +33,15 @@ export class ServerCsvSource {
             string,
             JDRegisterServer<[number]>
         >,
-        protected readonly data: Record<string, number>[]
+        protected readonly data: Record<string, number>[],
     ) {
         const servers = Object.entries(registerMap).map(
-            ([colName, register]) => register.service
+            ([colName, register]) => register.service,
         )
         this.server = servers[0]
         assert(
             servers.every(serverElt => serverElt == this.server),
-            "all registers must be on same server"
+            "all registers must be on same server",
         )
 
         // TODO timings are only approximate, perhaps this should use bus.scheduler.setTimeout

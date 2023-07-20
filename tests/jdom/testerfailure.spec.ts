@@ -22,8 +22,8 @@ suite("testdriver with button server", () => {
         testFn: (
             tester: FastForwardTester,
             button: ButtonServer,
-            buttonService: ServiceTester
-        ) => void
+            buttonService: ServiceTester,
+        ) => void,
     ) {
         return makeTest(async tester => {
             const { button } = await tester.createServices({
@@ -38,7 +38,7 @@ suite("testdriver with button server", () => {
             } catch (e) {
                 if (!(e instanceof expectedError)) {
                     throw new Error(
-                        `Expected error of type ${expectedError.name}, instead got error of type ${e.constructor.name}(${e.message})`
+                        `Expected error of type ${expectedError.name}, instead got error of type ${e.constructor.name}(${e.message})`,
                     )
                 }
                 testPassed = true
@@ -46,7 +46,7 @@ suite("testdriver with button server", () => {
             if (!testPassed) {
                 // can't throw this error in the try block
                 throw new Error(
-                    `Expected error of type ${expectedError.name}, did not get error`
+                    `Expected error of type ${expectedError.name}, did not get error`,
                 )
             }
         })
@@ -61,8 +61,8 @@ suite("testdriver with button server", () => {
                 await tester.waitFor(service.nextEvent(ButtonEvent.Up), {
                     within: 1000,
                 })
-            }
-        )
+            },
+        ),
     )
 
     test(
@@ -75,10 +75,10 @@ suite("testdriver with button server", () => {
                     register.onValue(10, {
                         precondition: 1, // would start at 0
                     }),
-                    { within: 1000 }
+                    { within: 1000 },
                 )
-            }
-        )
+            },
+        ),
     )
 
     test(
@@ -88,7 +88,7 @@ suite("testdriver with button server", () => {
             await tester.waitFor(service.nextEvent(ButtonEvent.Down), {
                 after: 250,
             })
-        })
+        }),
     )
 
     test(
@@ -97,6 +97,6 @@ suite("testdriver with button server", () => {
             await tester.waitFor(service.nextEvent(ButtonEvent.Down), {
                 within: 250,
             })
-        })
+        }),
     )
 })

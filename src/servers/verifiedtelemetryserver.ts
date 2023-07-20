@@ -22,7 +22,7 @@ export class VerifiedTelemetryServer extends JDServiceServer {
         options?: {
             fingerprintType?: VerifiedTelemetryFingerprintType
             telemetryStatusInterval?: number
-        } & JDServerOptions
+        } & JDServerOptions,
     ) {
         super(SRV_VERIFIED_TELEMETRY, options)
 
@@ -33,11 +33,11 @@ export class VerifiedTelemetryServer extends JDServiceServer {
 
         this.telemetryStatus = this.addRegister(
             VerifiedTelemetryReg.TelemetryStatus,
-            [VerifiedTelemetryStatus.Working]
+            [VerifiedTelemetryStatus.Working],
         )
         this.telemetryStatusInterval = this.addRegister(
             VerifiedTelemetryReg.TelemetryStatusInterval,
-            [telemetryStatusInterval]
+            [telemetryStatusInterval],
         )
         this.fingerprintType = this.addRegister<
             [VerifiedTelemetryFingerprintType]
@@ -45,26 +45,26 @@ export class VerifiedTelemetryServer extends JDServiceServer {
 
         this.fingerprintTemplate = this.addRegister(
             VerifiedTelemetryReg.FingerprintTemplate,
-            [50, new Uint8Array(0)]
+            [50, new Uint8Array(0)],
         )
         this.addCommand(
             VerifiedTelemetryCmd.ResetFingerprintTemplate,
-            this.handleResetTelemetryTemplate.bind(this)
+            this.handleResetTelemetryTemplate.bind(this),
         )
         this.addCommand(
             VerifiedTelemetryCmd.RetrainFingerprintTemplate,
-            this.handleRetrainTelemetryTemplate.bind(this)
+            this.handleRetrainTelemetryTemplate.bind(this),
         )
 
         // events
         this.telemetryStatus.on(CHANGE, () =>
             this.sendEvent(
                 VerifiedTelemetryEvent.TelemetryStatusChange,
-                this.telemetryStatus.data
-            )
+                this.telemetryStatus.data,
+            ),
         )
         this.fingerprintTemplate.on(CHANGE, () =>
-            this.sendEvent(VerifiedTelemetryEvent.FingerprintTemplateChange)
+            this.sendEvent(VerifiedTelemetryEvent.FingerprintTemplateChange),
         )
     }
 

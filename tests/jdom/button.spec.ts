@@ -23,7 +23,7 @@ suite("button server", () => {
                         .onValue([0.5, 1], { precondition: [0, 0.5] })
                         .hold(),
                 ],
-                { within: 100, synchronization: 50 }
+                { within: 100, synchronization: 50 },
             )
 
             button.server.up()
@@ -34,9 +34,9 @@ suite("button server", () => {
                         .onValue([0, 0.5], { precondition: [0.5, 1] })
                         .hold(),
                 ],
-                { within: 100, synchronization: 50 }
+                { within: 100, synchronization: 50 },
             )
-        })
+        }),
     )
 
     test(
@@ -56,7 +56,7 @@ suite("button server", () => {
                         .onValue([0.5, 1], { precondition: [0, 0.5] })
                         .hold(),
                 ],
-                { within: 100, synchronization: 50 }
+                { within: 100, synchronization: 50 },
             )
 
             await tester.waitFor(
@@ -64,7 +64,7 @@ suite("button server", () => {
                     service.nextEvent(ButtonEvent.Hold).hold(),
                     register.hold([0.5, 1]),
                 ],
-                { after: 500, tolerance: 100 }
+                { after: 500, tolerance: 100 },
             )
 
             button.server.up()
@@ -73,9 +73,9 @@ suite("button server", () => {
                     service.nextEvent(ButtonEvent.Up).hold(),
                     register.onValue([0, 0.5]).hold(),
                 ],
-                { within: 100, synchronization: 50 }
+                { within: 100, synchronization: 50 },
             )
-        })
+        }),
     )
 
     test(
@@ -111,7 +111,7 @@ suite("button server", () => {
                 after: 500,
                 tolerance: 100,
             })
-        })
+        }),
     )
 
     test(
@@ -159,6 +159,6 @@ suite("button server", () => {
                 after: 500,
                 tolerance: 100,
             })
-        })
+        }),
     )
 })

@@ -72,14 +72,14 @@ export interface TestDriverInterface {
     // Returns the amount of time spent waiting to the last event, or throws an error if not within timing bounds.
     waitFor(
         event: TesterEvent[],
-        options?: SynchronizationTimingOptions
+        options?: SynchronizationTimingOptions,
     ): Promise<number>
 }
 
 export class TestDriver implements TestDriverInterface {
     constructor(
         protected readonly bus: JDBus,
-        protected readonly ui: ConsoleUi
+        protected readonly ui: ConsoleUi,
     ) {}
 
     // TODO should this even exist?
@@ -92,17 +92,17 @@ export class TestDriver implements TestDriverInterface {
     // Otherwise, a WaitTimeoutError is thrown.
     protected async makePromiseTimed<T>(
         promise: Promise<T>,
-        options: WaitTimingOptions
+        options: WaitTimingOptions,
     ): Promise<T> {
         let after: number, within: number // resolve the more expressive options to a simpler representation
         if (options.tolerance !== undefined) {
             assert(
                 options.after !== undefined,
-                "tolerance must be used with after"
+                "tolerance must be used with after",
             )
             assert(
                 options.within == undefined,
-                "tolerance may not be used with within"
+                "tolerance may not be used with within",
             )
             after = options.after - options.tolerance
             within = options.after + options.tolerance
@@ -123,7 +123,7 @@ export class TestDriver implements TestDriverInterface {
                 this.bus.scheduler.setTimeout(() => {
                     timedOut = true
                     resolve(null)
-                }, within)
+                }, within),
             )
             result = await Promise.race([promise, timeoutPromise])
         } else {
@@ -137,11 +137,11 @@ export class TestDriver implements TestDriverInterface {
             if (elapsedTime < after) {
                 if (options.tolerance !== undefined) {
                     throw new WaitTimeoutError(
-                        `got event at ${elapsedTime} ms, before after=${after} ms (${options.after}±${options.tolerance} ms)`
+                        `got event at ${elapsedTime} ms, before after=${after} ms (${options.after}±${options.tolerance} ms)`,
                     )
                 } else {
                     throw new WaitTimeoutError(
-                        `got event at ${elapsedTime} ms, before after=${after} ms`
+                        `got event at ${elapsedTime} ms, before after=${after} ms`,
                     )
                 }
             } else {
@@ -150,7 +150,7 @@ export class TestDriver implements TestDriverInterface {
         } else {
             if (options.tolerance !== undefined) {
                 throw new WaitTimeoutError(
-                    `timed out at within=${within} ms (${options.after}±${options.tolerance} ms)`
+                    `timed out at within=${within} ms (${options.after}±${options.tolerance} ms)`,
                 )
             } else {
                 throw new WaitTimeoutError(`timed out at within=${within} ms`)
@@ -160,7 +160,7 @@ export class TestDriver implements TestDriverInterface {
 
     async waitFor(
         events: TesterEvent | TesterEvent[],
-        options: SynchronizationTimingOptions = {}
+        options: SynchronizationTimingOptions = {},
     ): Promise<number> {
         let eventsList: TesterEvent[]
         if (Array.isArray(events)) {
@@ -186,7 +186,7 @@ export class TestDriver implements TestDriverInterface {
                 // wrap with timing code
                 const timedPromise = this.makePromiseTimed(
                     triggerPromise,
-                    options
+                    options,
                 )
                 // wrap trigger promise with synchronization code - TODO: unify?
                 if (options.synchronization !== undefined) {
@@ -198,7 +198,7 @@ export class TestDriver implements TestDriverInterface {
                                 this.bus.scheduler.timestamp - firstTriggerTime
                             if (triggerDelta > options.synchronization) {
                                 throw new WaitSynchronizationError(
-                                    `event triggered ${triggerDelta} ms from first, greater than maximum ${options.synchronization}`
+                                    `event triggered ${triggerDelta} ms from first, greater than maximum ${options.synchronization}`,
                                 )
                             }
                         }
@@ -216,14 +216,14 @@ export class TestDriver implements TestDriverInterface {
 
         // Per Promise.all documentation, this rejects when any rejects.
         const holdingPromises = holdingListeners.map(
-            holdingListener => holdingListener.holdingPromise
+            holdingListener => holdingListener.holdingPromise,
         )
         await Promise.race(holdingPromises.concat(Promise.all(triggerPromises)))
         const end = this.bus.scheduler.timestamp
 
         // Clean up any holding promises
         holdingListeners.forEach(holdingListener =>
-            holdingListener.terminateHold()
+            holdingListener.terminateHold(),
         )
 
         return end - start

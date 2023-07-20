@@ -16,7 +16,7 @@ export class MatrixKeypadServer extends SensorServer<[[number][]]> {
         this.rows = this.addRegister(MatrixKeypadReg.Rows, [rows])
         this.labels = this.addRegister(
             MatrixKeypadReg.Labels,
-            labels ? [labels.map(l => [l])] : undefined
+            labels ? [labels.map(l => [l])] : undefined,
         )
     }
 

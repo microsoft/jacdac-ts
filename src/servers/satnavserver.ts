@@ -8,7 +8,7 @@ export type SatNavReadingType = [
     number, // longitude
     number, // accuracy
     number, // altitude,
-    number // altitude accuracy
+    number, // altitude accuracy
 ]
 
 export class SatNavServer extends SensorServer<SatNavReadingType> {
@@ -19,14 +19,14 @@ export class SatNavServer extends SensorServer<SatNavReadingType> {
             SRV_SAT_NAV,
             options || {
                 streamingInterval: 1000,
-            }
+            },
         )
         this.enabled = this.addRegister(SatNavReg.Enabled, [false])
     }
 
     setGeolocationPosition(
         loc: GeolocationPosition,
-        skipChangeEvent?: boolean
+        skipChangeEvent?: boolean,
     ) {
         const { timestamp, coords } = loc
         const { latitude, longitude, accuracy, altitude, altitudeAccuracy } =
@@ -40,14 +40,14 @@ export class SatNavServer extends SensorServer<SatNavReadingType> {
                 altitude || 0,
                 altitudeAccuracy || 0,
             ],
-            skipChangeEvent
+            skipChangeEvent,
         )
     }
 }
 
 export function watchLocation(
     server: SatNavServer,
-    options?: PositionOptions
+    options?: PositionOptions,
 ): () => void {
     let id: number = undefined
     const success: PositionCallback = pos => {
@@ -71,7 +71,7 @@ export function watchLocation(
                 enableHighAccuracy: false,
                 timeout: 5000,
                 maximumAge: 0,
-            }
+            },
         )
         console.log("geo: mount", { id })
         navigator.geolocation.getCurrentPosition(success, error)

@@ -15,7 +15,10 @@ export abstract class JDBridge extends JDClient {
     packetProcessed = 0
     currFrame: JDFrameBuffer
 
-    constructor(name: string, public readonly infrastructure: boolean = false) {
+    constructor(
+        name: string,
+        public readonly infrastructure: boolean = false,
+    ) {
         super()
         this.bridgeId = `bridge-${name}-` + randomDeviceId()
         this.handleSendFrame = this.handleSendFrame.bind(this)
@@ -31,7 +34,7 @@ export abstract class JDBridge extends JDClient {
             this._bus = newBus
             if (this._bus) {
                 this.mount(
-                    this._bus.subscribe(FRAME_PROCESS, this.handleSendFrame)
+                    this._bus.subscribe(FRAME_PROCESS, this.handleSendFrame),
                 )
                 this.mount(this._bus.addBridge(this))
             }
@@ -78,7 +81,7 @@ export abstract class JDBridge extends JDClient {
 
 class ProxyBridge extends JDBridge {
     constructor(
-        readonly _sendPacket: (pkt: Uint8Array, sender: string) => void
+        readonly _sendPacket: (pkt: Uint8Array, sender: string) => void,
     ) {
         super("proxy", true)
     }
@@ -88,7 +91,7 @@ class ProxyBridge extends JDBridge {
 }
 
 export function createProxyBridge(
-    sendPacket: (pkt: Uint8Array, sender: string) => void
+    sendPacket: (pkt: Uint8Array, sender: string) => void,
 ) {
     return new ProxyBridge(sendPacket)
 }

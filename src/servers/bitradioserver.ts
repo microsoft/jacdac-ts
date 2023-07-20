@@ -130,14 +130,14 @@ class RadioPacket {
                 return getNumber(
                     this.data,
                     NumberFormat.Int32LE,
-                    PACKET_PREFIX_LENGTH
+                    PACKET_PREFIX_LENGTH,
                 )
             case PACKET_TYPE_DOUBLE:
             case PACKET_TYPE_DOUBLE_VALUE:
                 return getNumber(
                     this.data,
                     NumberFormat.Float64LE,
-                    PACKET_PREFIX_LENGTH
+                    PACKET_PREFIX_LENGTH,
                 )
         }
         return undefined
@@ -151,7 +151,7 @@ class RadioPacket {
                     this.data,
                     NumberFormat.Int32LE,
                     PACKET_PREFIX_LENGTH,
-                    val
+                    val,
                 )
                 break
             case PACKET_TYPE_DOUBLE:
@@ -160,7 +160,7 @@ class RadioPacket {
                     this.data,
                     NumberFormat.Float64LE,
                     PACKET_PREFIX_LENGTH,
-                    val
+                    val,
                 )
                 break
         }
@@ -170,7 +170,7 @@ class RadioPacket {
         const len = this.data[PACKET_PREFIX_LENGTH]
         return this.data.slice(
             PACKET_PREFIX_LENGTH + 1,
-            PACKET_PREFIX_LENGTH + 1 + len
+            PACKET_PREFIX_LENGTH + 1 + len,
         )
     }
 
@@ -215,25 +215,25 @@ export class BitRadioServer extends JDServiceServer {
         this.group = this.addRegister<[number]>(BitRadioReg.Group, [1])
         this.transmissionPower = this.addRegister<[number]>(
             BitRadioReg.TransmissionPower,
-            [6]
+            [6],
         )
         this.frequencyBand = this.addRegister<[number]>(
             BitRadioReg.FrequencyBand,
-            [7]
+            [7],
         )
 
         this.addCommand(
             BitRadioCmd.SendString,
-            this.handleSendString.bind(this)
+            this.handleSendString.bind(this),
         )
         this.addCommand(
             BitRadioCmd.SendNumber,
-            this.handleSendNumber.bind(this)
+            this.handleSendNumber.bind(this),
         )
         this.addCommand(BitRadioCmd.SendValue, this.handleSendValue.bind(this))
         this.addCommand(
             BitRadioCmd.SendBuffer,
-            this.handleSendBuffer.bind(this)
+            this.handleSendBuffer.bind(this),
         )
     }
 

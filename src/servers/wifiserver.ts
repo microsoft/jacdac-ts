@@ -59,24 +59,24 @@ export class WifiServer extends JDServiceServer {
         this.addCommand(WifiCmd.Reconnect, this.handleReconnect.bind(this))
         this.addCommand(
             WifiCmd.LastScanResults,
-            this.handleLastScanResults.bind(this)
+            this.handleLastScanResults.bind(this),
         )
         this.addCommand(
             WifiCmd.ListKnownNetworks,
-            this.handleListKnownNetworks.bind(this)
+            this.handleListKnownNetworks.bind(this),
         )
         this.addCommand(WifiCmd.AddNetwork, this.handleAddNetwork.bind(this))
         this.addCommand(
             WifiCmd.ForgetAllNetworks,
-            this.handleForgetAllNetworks.bind(this)
+            this.handleForgetAllNetworks.bind(this),
         )
         this.addCommand(
             WifiCmd.ForgetNetwork,
-            this.handleForgetNetwork.bind(this)
+            this.handleForgetNetwork.bind(this),
         )
         this.addCommand(
             WifiCmd.SetNetworkPriority,
-            this.handleSetNetworkPriority.bind(this)
+            this.handleSetNetworkPriority.bind(this),
         )
 
         this.ipAddress.on(CHANGE, this.handleIpChange.bind(this))
@@ -97,7 +97,7 @@ export class WifiServer extends JDServiceServer {
 
     private get scannedKnownNetworks() {
         return this._lastScanResults.filter(n =>
-            this._knownNetworks.some(kn => kn.ssid === n.ssid)
+            this._knownNetworks.some(kn => kn.ssid === n.ssid),
         )
     }
 
@@ -129,7 +129,7 @@ export class WifiServer extends JDServiceServer {
             jdpack<[number, number]>("u16 u16", [
                 this._lastScanResults.length,
                 this.scannedKnownNetworks.length,
-            ])
+            ]),
         )
     }
 
@@ -144,8 +144,8 @@ export class WifiServer extends JDServiceServer {
             ({ flags, rssi, channel, bssid, ssid }) =>
                 jdpack<[WifiAPFlags, number, number, Uint8Array, string]>(
                     "u32 x[4] i8 u8 b[6] s[33]",
-                    [flags, rssi, channel, bssid, ssid]
-                )
+                    [flags, rssi, channel, bssid, ssid],
+                ),
         )
     }
 
@@ -158,7 +158,7 @@ export class WifiServer extends JDServiceServer {
                     priority,
                     flags,
                     ssid,
-                ])
+                ]),
         )
     }
 
@@ -173,7 +173,7 @@ export class WifiServer extends JDServiceServer {
                     flags: scanned?.flags,
                     priority: 0,
                     password: "",
-                })
+                }),
             )
         }
         network.password = password
@@ -189,7 +189,7 @@ export class WifiServer extends JDServiceServer {
     private handleForgetNetwork(pkt: Packet) {
         const [ssid] = pkt.jdunpack<[string]>("s")
         this._knownNetworks = this._knownNetworks.filter(
-            network => network.ssid !== ssid
+            network => network.ssid !== ssid,
         )
         const [currentSsid] = this.ssid.values()
         if (ssid === currentSsid) this.disconnect()
@@ -199,7 +199,7 @@ export class WifiServer extends JDServiceServer {
     private handleSetNetworkPriority(pkt: Packet) {
         const [priority, ssid] = pkt.jdunpack<[number, string]>("i16 s")
         const network = this._knownNetworks.find(
-            network => network.ssid === ssid
+            network => network.ssid === ssid,
         )
         if (network) network.priority = priority
         this.sendEvent(WifiEvent.NetworksChanged)
