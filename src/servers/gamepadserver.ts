@@ -72,7 +72,7 @@ export class GamepadServer extends SensorServer<
     [GamepadButtons, number, number]
 > {
     readonly variant: JDRegisterServer<[GamepadVariant]>
-    readonly buttonsAvailable: JDRegisterServer<[GamepadButtons]>
+    readonly buttonsAvailable: JDRegisterServer<[0 | GamepadButtons]>
 
     constructor(options?: {
         instanceName?: string
@@ -81,18 +81,20 @@ export class GamepadServer extends SensorServer<
     }) {
         super(SRV_GAMEPAD, {
             instanceName: options?.instanceName,
-            readingValues: [0, 0, 0],
+            readingValues: [<GamepadButtons>0, 0, 0],
             streamingInterval: 50,
         })
-        const { variant = GamepadVariant.Thumb, buttonsAvailable = 0 } =
-            options || {}
+        const {
+            variant = GamepadVariant.Thumb,
+            buttonsAvailable = <GamepadButtons>0,
+        } = options || {}
 
         this.variant = this.addRegister<[GamepadVariant]>(GamepadReg.Variant, [
             variant,
         ])
         this.buttonsAvailable = this.addRegister<[GamepadButtons]>(
             GamepadReg.ButtonsAvailable,
-            [buttonsAvailable]
+            [buttonsAvailable],
         )
     }
 
@@ -126,7 +128,7 @@ export class GamepadServer extends SensorServer<
         const { buttons, axes } = gamepad
         const [buttonsAvailable] = this.buttonsAvailable.values()
 
-        let newButtons: GamepadButtons = 0
+        let newButtons: GamepadButtons = <GamepadButtons>0
         for (const [b, id] of standardGamepadMapping) {
             if ((b & buttonsAvailable) == b && !!buttons[id].pressed) {
                 newButtons |= b
@@ -175,7 +177,7 @@ export class GamepadServer extends SensorServer<
         if (newButtons !== oldButtons) {
             await this.sendEvent(
                 GamepadEvent.ButtonsChanged,
-                jdpack<[number]>("u32", [newButtons])
+                jdpack<[number]>("u32", [newButtons]),
             )
         }
     }
