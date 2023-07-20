@@ -16,7 +16,7 @@ export class SwitchServer extends SensorServer<[boolean]> {
 
         this.variant = this.addRegister(
             SwitchReg.Variant,
-            variant !== undefined ? [variant] : undefined
+            variant !== undefined ? [variant] : undefined,
         )
     }
 

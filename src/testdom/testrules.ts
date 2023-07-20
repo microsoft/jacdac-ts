@@ -386,7 +386,7 @@ export function resolveReadingTolerage(serviceClass: number) {
 
 function createGamepadButtonTests(
     test: ServiceMemberTestNode,
-    buttons: number
+    buttons: number,
 ) {
     const addReadingTest = (name: string, flag: number) => {
         let seenEventArg = false
@@ -402,7 +402,7 @@ function createGamepadButtonTests(
                     const [buttons] = (register.unpackedValue || []) as [
                         GamepadButtons,
                         number,
-                        number
+                        number,
                     ]
                     const seen = !!(buttons & flag)
                     if (!seenEventArg && !seen)
@@ -411,8 +411,8 @@ function createGamepadButtonTests(
                         seenEventArg = seen
                     }
                     return seenEventArg ? TestState.Pass : TestState.Running
-                }
-            )
+                },
+            ),
         )
     }
     const addEventTest = (name: string, flag: number) => {
@@ -433,8 +433,8 @@ function createGamepadButtonTests(
                         seenEventArg = seen
                     }
                     return seenEventArg ? TestState.Pass : TestState.Running
-                }
-            )
+                },
+            ),
         )
     }
     if (test.children.length !== 0) return // TODO: revisit this
@@ -479,7 +479,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
         start: test => {
             const service = test.service
             const buttonsAvailable = service.register(
-                GamepadReg.ButtonsAvailable
+                GamepadReg.ButtonsAvailable,
             )
             const buttons = buttonsAvailable.unpackedValue
             if (buttons?.length > 0) {
@@ -492,9 +492,9 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                         unsubscribe()
                         createGamepadButtonTests(
                             test,
-                            buttonsAvailable.unpackedValue[0]
+                            buttonsAvailable.unpackedValue[0],
                         )
-                    }
+                    },
                 )
                 return unsubscribe
             }
@@ -514,7 +514,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                 test.state = TestState.Running
                 const dotsRegister = service.register(DotMatrixReg.Dots)
                 const brightnessRegister = service.register(
-                    DotMatrixReg.Brightness
+                    DotMatrixReg.Brightness,
                 )
                 let dots: Uint8Array = undefined
                 while (dots === undefined && mounted) {
@@ -598,7 +598,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                                 pixels[i * 3 + 2] = (color >> 0) & 0xff
                                 await pixelsRegister.sendSetPackedAsync(
                                     [pixels],
-                                    true
+                                    true,
                                 )
                                 await delay(Math.max(100, 500 - i * 20))
                             }
@@ -610,7 +610,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                             if (!mounted) break
                             await pixelsRegister.sendSetPackedAsync(
                                 [pixels],
-                                true
+                                true,
                             )
                             await delay(500)
                         }
@@ -714,7 +714,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     const encoded = lightEncode(
                         `setall #
                             show 20`,
-                        [color]
+                        [color],
                     )
                     await service?.sendCmdAsync(LedStripCmd.Run, encoded)
                     await delay(500)
@@ -756,7 +756,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     }
                     await service.sendCmdAsync(
                         BuzzerCmd.PlayTone,
-                        pack(f, 200, 20)
+                        pack(f, 200, 20),
                     )
                     await delay(1000)
                     f = f << 1
@@ -868,7 +868,7 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                     }
                     await service.sendCmdAsync(
                         VibrationMotorCmd.Vibrate,
-                        pack(ms, ms / MAX_DURATION)
+                        pack(ms, ms / MAX_DURATION),
                     )
                     await delay(ms + 1000)
                     ms = ms << 1
@@ -895,10 +895,10 @@ const builtinServiceCommandTests: Record<number, ServiceMemberOptions> = {
                 test.state = TestState.Running
                 const service = test.service
                 const clicksPerTurnRegister = service.register(
-                    RotaryEncoderReg.ClicksPerTurn
+                    RotaryEncoderReg.ClicksPerTurn,
                 )
                 const positionRegister = service.register(
-                    RotaryEncoderReg.Position
+                    RotaryEncoderReg.Position,
                 )
 
                 // read number of clicks

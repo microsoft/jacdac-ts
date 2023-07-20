@@ -19,7 +19,7 @@ export class LEDController extends JDEventSource {
 
     constructor(
         public readonly service: JDService,
-        public readonly command: number
+        public readonly command: number,
     ) {
         super()
     }
@@ -36,7 +36,7 @@ export class LEDController extends JDEventSource {
             if (this._color !== undefined) {
                 const data = jdpack(
                     ControlCmdPack.SetStatusLight,
-                    trgbToValues(color)
+                    trgbToValues(color),
                 )
                 await this.service.sendCmdAsync(this.command, data)
             }

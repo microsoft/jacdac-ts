@@ -76,7 +76,7 @@ export class BusStatsMonitor extends JDEventSource {
             devices: this.bus.devices({ ignoreInfrastructure: true }).length,
             simulators: this.bus.serviceProviders().length,
             transport: this.bus.transports.find(
-                transport => transport.connected
+                transport => transport.connected,
             )?.type,
             ...r,
         }

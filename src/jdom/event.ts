@@ -38,7 +38,7 @@ export class JDEvent extends JDServiceMemberNode {
     get fields() {
         if (!this._fields)
             this._fields = this.specification?.fields.map(
-                (field, index) => new JDField(this, index, field)
+                (field, index) => new JDField(this, index, field),
             )
         return this._fields.slice()
     }

@@ -31,7 +31,7 @@ export class CloudAdapterServer extends JDServiceServer {
         options?: {
             connectionName?: string
             controlled?: boolean
-        } & JDServerOptions
+        } & JDServerOptions,
     ) {
         super(SRV_CLOUD_ADAPTER, options)
 
@@ -41,21 +41,21 @@ export class CloudAdapterServer extends JDServiceServer {
         ])
         this.connectionNameRegister = this.addRegister(
             CloudAdapterReg.ConnectionName,
-            [options?.connectionName || ""]
+            [options?.connectionName || ""],
         )
         this.addCommand(
             CloudAdapterCmd.UploadJson,
-            this.handleUpload.bind(this)
+            this.handleUpload.bind(this),
         )
         this.addCommand(
             CloudAdapterCmd.UploadBinary,
-            this.handleUploadBin.bind(this)
+            this.handleUploadBin.bind(this),
         )
         this.connectedRegister.on(CHANGE, () =>
-            this.sendEvent(CloudAdapterEvent.Change)
+            this.sendEvent(CloudAdapterEvent.Change),
         )
         this.connectionNameRegister.on(CHANGE, () =>
-            this.sendEvent(CloudAdapterEvent.Change)
+            this.sendEvent(CloudAdapterEvent.Change),
         )
     }
 

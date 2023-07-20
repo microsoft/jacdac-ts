@@ -69,7 +69,7 @@ export class ButtonServer extends SensorServer<[number]> {
                     this.device.bus.timestamp + ButtonServer.HOLD_TIME
                 await this.sendEvent(
                     ButtonEvent.Hold,
-                    jdpack<[number]>("u32", [time])
+                    jdpack<[number]>("u32", [time]),
                 )
             }
         } else {
@@ -80,7 +80,7 @@ export class ButtonServer extends SensorServer<[number]> {
                 this._nextHold = undefined
                 await this.sendEvent(
                     ButtonEvent.Up,
-                    jdpack<[number]>("u32", [time])
+                    jdpack<[number]>("u32", [time]),
                 )
             }
         }

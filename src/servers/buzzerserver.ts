@@ -46,7 +46,7 @@ export class BuzzerServer extends JDServiceServer {
     private handlePlayTone(pkt: Packet) {
         const [period, , duration] = jdunpack<[number, number, number]>(
             pkt.data,
-            "u16 u16 u16"
+            "u16 u16 u16",
         )
         const frequency = 1000000 / period
         const [volume] = this.volume.values()

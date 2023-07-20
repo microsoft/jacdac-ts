@@ -21,7 +21,7 @@ export class DotMatrixServer extends JDServiceServer {
         options?: {
             brightness?: number
             variant?: DotMatrixVariant
-        }
+        },
     ) {
         super(SRV_DOT_MATRIX)
         const { brightness, variant } = options || {}

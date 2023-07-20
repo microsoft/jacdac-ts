@@ -80,7 +80,7 @@ export class ModelRunnerClient extends JDServiceClient {
             this.service,
             ModelRunnerCmd.SetModel,
             model,
-            onProgress
+            onProgress,
         )
     }
 
@@ -101,16 +101,16 @@ export class ModelRunnerClient extends JDServiceClient {
             modelSize: this.getReg(ModelRunnerReg.ModelSize, r => r.intValue),
             arenaSize: this.getReg(
                 ModelRunnerReg.AllocatedArenaSize,
-                r => r.intValue
+                r => r.intValue,
             ),
             inputShape: this.getReg(ModelRunnerReg.InputShape, r =>
-                bufferToArray(r.data, NumberFormat.UInt16LE)
+                bufferToArray(r.data, NumberFormat.UInt16LE),
             ),
             outputShape: this.getReg(ModelRunnerReg.OutputShape, r =>
-                bufferToArray(r.data, NumberFormat.UInt16LE)
+                bufferToArray(r.data, NumberFormat.UInt16LE),
             ),
             lastError: this.getReg(ModelRunnerReg.LastError, r =>
-                uint8ArrayToString(r.data)
+                uint8ArrayToString(r.data),
             ),
         }
         for (const id of Object.keys(info)) {

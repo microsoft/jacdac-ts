@@ -62,7 +62,7 @@ export class FastForwardScheduler implements Scheduler {
         assert(!this.schedulerDone, "can't restart scheduler")
         assert(
             !this.schedulerRunning,
-            "can't have multiple concurrent runs of a scheduler"
+            "can't have multiple concurrent runs of a scheduler",
         )
         this.schedulerRunning = true
 
@@ -89,7 +89,7 @@ export class FastForwardScheduler implements Scheduler {
     public async runToPromise<T>(promise: Promise<T>): Promise<T> {
         assert(
             this.schedulerRunning,
-            "scheduler must be running to advance time"
+            "scheduler must be running to advance time",
         )
 
         this.driverQueue.add(promise)
@@ -98,16 +98,16 @@ export class FastForwardScheduler implements Scheduler {
                 const removed = this.driverQueue.delete(promise)
                 assert(
                     removed,
-                    "failed to remove fulfilled promise from driver queue"
+                    "failed to remove fulfilled promise from driver queue",
                 )
             },
             rejected => {
                 const removed = this.driverQueue.delete(promise)
                 assert(
                     removed,
-                    "failed to remove rejected promise from driver queue"
+                    "failed to remove rejected promise from driver queue",
                 )
-            }
+            },
         )
 
         return promise

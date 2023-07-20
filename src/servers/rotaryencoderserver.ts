@@ -10,7 +10,7 @@ export class RotaryEncoderServer extends SensorServer<[number]> {
 
         this.clicksPerTurn = this.addRegister<[number]>(
             RotaryEncoderReg.ClicksPerTurn,
-            [12]
+            [12],
         )
     }
 

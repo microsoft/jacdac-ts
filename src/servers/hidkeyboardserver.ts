@@ -198,11 +198,14 @@ export const selectors: SMap<number> = {
  * @internal
  */
 export const reverseSelectors: { [index: number]: string } = Object.keys(
-    selectors
-).reduce((r, key) => {
-    if (!r[selectors[key]]) r[selectors[key]] = key
-    return r
-}, {} as { [index: number]: string })
+    selectors,
+).reduce(
+    (r, key) => {
+        if (!r[selectors[key]]) r[selectors[key]] = key
+        return r
+    },
+    {} as { [index: number]: string },
+)
 
 /**
  * @internal
@@ -225,7 +228,7 @@ export const modifierCodes = {
 export function renderKeyboardKey(
     selector: number,
     modifiers: HidKeyboardModifiers,
-    pretty: boolean
+    pretty: boolean,
 ) {
     const flags = pretty
         ? [
@@ -262,7 +265,7 @@ export function renderKeyboardKey(
                 ? sel.toUpperCase()
                 : !pretty && sel.length > 1
                 ? `{${sel}}`
-                : sel
+                : sel,
         )
     const value = values.filter(v => !!v).join(sep)
     return value

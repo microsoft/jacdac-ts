@@ -39,12 +39,12 @@ export class GamepadHostManager extends JDClient {
         window.addEventListener(
             "gamepadconnected",
             this.handleGamepadConnected,
-            false
+            false,
         )
         window.addEventListener(
             "gamepaddisconnected",
             this.handleGamepadDisconnected,
-            false
+            false,
         )
     }
 
@@ -53,11 +53,11 @@ export class GamepadHostManager extends JDClient {
 
         window.removeEventListener(
             "gamepadconnected",
-            this.handleGamepadConnected
+            this.handleGamepadConnected,
         )
         window.removeEventListener(
             "gamepaddisconnected",
-            this.handleGamepadDisconnected
+            this.handleGamepadDisconnected,
         )
     }
 

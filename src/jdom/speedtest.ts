@@ -38,7 +38,7 @@ export async function packetSpeedTest(dev: JDDevice) {
 
     return {
         msg: `${pktsPerSecond.toFixed(1)} pkts/s; ${dropRate.toFixed(
-            2
+            2,
         )}% dropped`,
         pktsPerSecond,
         dropRate,

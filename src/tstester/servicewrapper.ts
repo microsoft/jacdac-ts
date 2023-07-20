@@ -23,7 +23,7 @@ class BaseServiceEventTrigger extends EventWithHoldAdapter<JDEvent> {
 export class ServiceHold extends BaseServiceEventTrigger {
     protected processHold(data: JDEvent) {
         throw new Error(
-            `service ${this.service.name} got event ${data.code} (${data.name}) when hold asserted`
+            `service ${this.service.name} got event ${data.code} (${data.name}) when hold asserted`,
         )
     }
 }
@@ -32,7 +32,7 @@ export class ServiceHold extends BaseServiceEventTrigger {
 class BaseServiceAnyEventTrigger extends BaseServiceEventTrigger {
     constructor(
         protected readonly service: ServiceTester,
-        protected eventCode: number
+        protected eventCode: number,
     ) {
         super(service)
     }
@@ -55,7 +55,7 @@ class ServiceAnyEventTrigger extends BaseServiceAnyEventTrigger {
 class ServiceAnyEventHeldTrigger extends BaseServiceAnyEventTrigger {
     protected processHold(data: JDEvent) {
         throw new Error(
-            `service ${this.service.name} got event ${data.code} (${data.name}) when hold asserted`
+            `service ${this.service.name} got event ${data.code} (${data.name}) when hold asserted`,
         )
     }
 }
@@ -67,7 +67,7 @@ export class ServiceNextEventError extends TestErrorBase {}
 class BaseServiceNextEventTrigger extends BaseServiceEventTrigger {
     constructor(
         protected readonly service: ServiceTester,
-        protected eventCode?: number
+        protected eventCode?: number,
     ) {
         super(service)
     }
@@ -77,7 +77,7 @@ class BaseServiceNextEventTrigger extends BaseServiceEventTrigger {
             return true
         } else {
             throw new ServiceNextEventError(
-                `service ${this.service.name} got next event ${data.code} (${data.name}) not expected ${this.eventCode}`
+                `service ${this.service.name} got next event ${data.code} (${data.name}) not expected ${this.eventCode}`,
             )
         }
     }
@@ -94,7 +94,7 @@ class ServiceNextEventTrigger extends BaseServiceNextEventTrigger {
 class ServiceNextEventHeldTrigger extends BaseServiceNextEventTrigger {
     protected processHold(data: JDEvent) {
         throw new Error(
-            `service ${this.service.name} got event ${data.code} (${data.name}) when hold asserted`
+            `service ${this.service.name} got event ${data.code} (${data.name}) when hold asserted`,
         )
     }
 }

@@ -6,7 +6,7 @@ export function hsvToCss(
     saturation: number,
     value: number,
     brightness: number,
-    monochrome?: boolean
+    monochrome?: boolean,
 ) {
     const csshue = (hue * 360) / 0xff
     const csssat = (monochrome ? 0xff : saturation) / 0xff

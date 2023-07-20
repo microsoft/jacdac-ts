@@ -45,7 +45,7 @@ export interface IEventSource {
      */
     subscribe<T>(
         eventName: string | string[],
-        next: (value: T) => void
+        next: (value: T) => void,
     ): () => void
 }
 
@@ -122,7 +122,7 @@ export class JDEventSource implements IEventSource {
     on(eventName: string | string[], handler: EventHandler) {
         if (!handler) return this
         normalizeEventNames(eventName).forEach(eventName =>
-            this.addListenerInternal(eventName, handler, false)
+            this.addListenerInternal(eventName, handler, false),
         )
         return this
     }
@@ -136,7 +136,7 @@ export class JDEventSource implements IEventSource {
      */
     off(eventName: string | string[], handler: EventHandler) {
         normalizeEventNames(eventName).forEach(eventName =>
-            this.removeListenerInternal(eventName, handler)
+            this.removeListenerInternal(eventName, handler),
         )
         return this
     }
@@ -150,7 +150,7 @@ export class JDEventSource implements IEventSource {
      */
     once(eventName: string | string[], handler: EventHandler) {
         normalizeEventNames(eventName).forEach(eventName =>
-            this.addListenerInternal(eventName, handler, true)
+            this.addListenerInternal(eventName, handler, true),
         )
         return this
     }
@@ -162,7 +162,7 @@ export class JDEventSource implements IEventSource {
      */
     async awaitOnce(
         eventName: string | string[],
-        token?: JDCancellationToken
+        token?: JDCancellationToken,
     ): Promise<void> {
         if (!eventName) return
 
@@ -177,7 +177,7 @@ export class JDEventSource implements IEventSource {
     private addListenerInternal(
         eventName: string,
         handler: EventHandler,
-        once: boolean
+        once: boolean,
     ): void {
         if (!eventName || !handler) {
             return
@@ -186,7 +186,7 @@ export class JDEventSource implements IEventSource {
         const eventListeners =
             this.listeners[eventName] || (this.listeners[eventName] = [])
         const listener = eventListeners.find(
-            listener => listener.handler === handler
+            listener => listener.handler === handler,
         )
         if (listener) {
             listener.once = !!once
@@ -210,7 +210,7 @@ export class JDEventSource implements IEventSource {
 
     private removeListenerInternal(
         eventName: string,
-        handler: EventHandler
+        handler: EventHandler,
     ): void {
         if (!eventName || !handler) return
 
@@ -312,7 +312,7 @@ export class JDEventSource implements IEventSource {
      */
     subscribe<T>(
         eventName: string | string[],
-        next: (value: T) => void
+        next: (value: T) => void,
     ): () => void {
         const observer = this.observe<T>(eventName)
         return observer.subscribe({ next }).unsubscribe
@@ -353,7 +353,7 @@ export class JDSubscriptionScope {
 class EventObservable<T> implements Observable<T> {
     constructor(
         public readonly eventEmitter: JDEventSource,
-        public readonly eventNames: string[]
+        public readonly eventNames: string[],
     ) {
         //console.log(`obs`, this.eventNames)
     }

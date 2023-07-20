@@ -132,7 +132,7 @@ export function sizeOfNumberFormat(format: NumberFormat) {
 export function getNumber(
     buf: ArrayLike<number>,
     fmt: NumberFormat,
-    offset: number
+    offset: number,
 ) {
     switch (fmt) {
         case NumberFormat.UInt8BE:
@@ -176,7 +176,7 @@ export function setNumber(
     buf: Uint8Array,
     fmt: NumberFormat,
     offset: number,
-    r: number
+    r: number,
 ) {
     const inf = fmtInfo(fmt)
     if (inf.isFloat) {

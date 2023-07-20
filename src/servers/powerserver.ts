@@ -19,7 +19,7 @@ export class PowerServer extends JDServiceServer {
         this.maxPower = this.addRegister<[number]>(PowerReg.MaxPower, [500])
         this.powerStatus = this.addRegister<[PowerPowerStatus]>(
             PowerReg.PowerStatus,
-            [PowerPowerStatus.Disallowed]
+            [PowerPowerStatus.Disallowed],
         )
         this.currentDraw = this.addRegister<[number]>(PowerReg.CurrentDraw, [0])
 

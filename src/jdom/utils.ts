@@ -17,7 +17,7 @@ export function memcpy(
     trgOff: number,
     src: ArrayLike<number>,
     srcOff?: number,
-    len?: number
+    len?: number,
 ) {
     if (srcOff === void 0) srcOff = 0
     if (len === void 0) len = src.length - srcOff
@@ -42,7 +42,7 @@ export function bufferEq(a: Uint8Array, b: ArrayLike<number>, offset = 0) {
 export function arrayEq<T = unknown>(
     a: T[],
     b: T[],
-    isEqual?: (a: T, b: T) => boolean
+    isEqual?: (a: T, b: T) => boolean,
 ) {
     const eq = isEqual || Object.is
     return a?.length === b?.length && (!a || a.every((_, i) => eq(_, b[i])))
@@ -135,14 +135,14 @@ export function toUTF8(str: string, cesu8?: boolean) {
                 res += String.fromCharCode(
                     0xe0 | (code >> 12),
                     0x80 | ((code >> 6) & 0x3f),
-                    0x80 | (code & 0x3f)
+                    0x80 | (code & 0x3f),
                 )
             else
                 res += String.fromCharCode(
                     0xf0 | (code >> 18),
                     0x80 | ((code >> 12) & 0x3f),
                     0x80 | ((code >> 6) & 0x3f),
-                    0x80 | (code & 0x3f)
+                    0x80 | (code & 0x3f),
                 )
         }
     }
@@ -195,7 +195,7 @@ export class PromiseBuffer<T> {
                             reject(
                                 new JDError(`Timeout (${timeout}ms)`, {
                                     code: ERROR_TIMEOUT,
-                                })
+                                }),
                             )
                         }
                     })
@@ -229,8 +229,8 @@ export class PromiseQueue {
                     err => {
                         cleanup()
                         reject(err)
-                    }
-                )
+                    },
+                ),
             )
             if (arr.length == 1) arr[0]()
         })
@@ -400,7 +400,7 @@ export function assert(
     cond: boolean,
     msg = "Assertion failed",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    debugData?: any
+    debugData?: any,
 ) {
     if (!cond) {
         if (debugData) console.debug(`assertion filed ${msg}`, debugData)
@@ -508,7 +508,7 @@ export function debounce(handler: () => void, delay: number): () => void {
 
 export function debounceAsync(
     handler: () => Promise<void>,
-    delay: number
+    delay: number,
 ): () => void {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let timeOutId: any
@@ -524,7 +524,7 @@ export function debounceAsync(
 
 export function JSONTryParse<T = unknown>(
     src: string,
-    defaultValue?: T
+    defaultValue?: T,
 ): T | undefined | null {
     if (src === undefined) return undefined
     if (src === null) return null
@@ -539,7 +539,7 @@ export function JSONTryParse<T = unknown>(
 export function roundWithPrecision(
     x: number,
     digits: number,
-    round = Math.round
+    round = Math.round,
 ): number {
     digits = digits | 0
     // invalid digits input
@@ -556,7 +556,7 @@ export function roundWithPrecision(
 export function renderWithPrecision(
     x: number,
     digits: number,
-    round = Math.round
+    round = Math.round,
 ): string {
     const r = roundWithPrecision(x, digits, round)
     let rs = r.toLocaleString()
@@ -582,7 +582,7 @@ export function unique<T>(values: T[]): T[] {
 export function uniqueMap<T, U>(
     values: T[],
     id: (value: T) => string,
-    converter: (value: T) => U
+    converter: (value: T) => U,
 ) {
     const r: SMap<T> = {}
     for (let i = 0; i < values.length; ++i) {
@@ -599,7 +599,7 @@ export function toMap<T, V>(
     a: T[],
     keyConverter: (value: T, index: number) => string,
     valueConverter: (value: T, index: number) => V,
-    ignoreMissingValues?: boolean
+    ignoreMissingValues?: boolean,
 ): SMap<V> {
     const m: SMap<V> = {}
     if (a)
@@ -628,7 +628,7 @@ export function ellipseFirstSentence(text: string) {
 export function ellipseJoin(
     values: string[],
     maxChars: number,
-    ellipse = "..."
+    ellipse = "...",
 ) {
     let r = ""
     for (let i = 0; i < values.length && r.length < maxChars; ++i) {
@@ -652,7 +652,7 @@ export function uniqueName(
     names: string[],
     name: string,
     separator = "",
-    startCount = 2
+    startCount = 2,
 ): string {
     if (names.indexOf(name) < 0) return name
     // allocate names
@@ -684,7 +684,7 @@ export function pick(...values: number[]) {
  */
 export function splitFilter<T>(
     values: ArrayLike<T>,
-    condition: (t: T) => boolean
+    condition: (t: T) => boolean,
 ): [T[], T[]] {
     if (!values) return [undefined, undefined]
 

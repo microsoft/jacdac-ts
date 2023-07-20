@@ -17,7 +17,7 @@ export class ServoServer extends JDServiceServer {
             maxAngle?: number
             responseSpeed?: number
             stallTorque?: number
-        } & JDServerOptions
+        } & JDServerOptions,
     ) {
         super(SRV_SERVO, options)
         const {
@@ -38,11 +38,11 @@ export class ServoServer extends JDServiceServer {
         this.offset = this.addRegister<[number]>(ServoReg.Offset, [0])
         this.responseSpeed = this.addRegister<[number]>(
             ServoReg.ResponseSpeed,
-            responseSpeed !== undefined ? [responseSpeed] : undefined
+            responseSpeed !== undefined ? [responseSpeed] : undefined,
         )
         this.stallTorque = this.addRegister<[number]>(
             ServoReg.StallTorque,
-            stallTorque !== undefined ? [stallTorque] : undefined
+            stallTorque !== undefined ? [stallTorque] : undefined,
         )
 
         this.angle.on(PACKET_DATA_NORMALIZE, (values: [number]) => {

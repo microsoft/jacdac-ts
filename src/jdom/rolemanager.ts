@@ -50,13 +50,13 @@ export class RoleManager extends JDClient {
         super()
         this.bus = bus
         this.mount(
-            this.bus.subscribe(DEVICE_ANNOUNCE, this.addServices.bind(this))
+            this.bus.subscribe(DEVICE_ANNOUNCE, this.addServices.bind(this)),
         )
         this.mount(
             this.bus.subscribe(
                 DEVICE_DISCONNECT,
-                this.removeServices.bind(this)
-            )
+                this.removeServices.bind(this),
+            ),
         )
         this.updateRoles(configuration || [])
     }
@@ -102,13 +102,13 @@ export class RoleManager extends JDClient {
 
         // remove unknown roles
         const supportedNewRoles = newRoles.filter(({ serviceClass }) =>
-            serviceSpecificationFromClassIdentifier(serviceClass)
+            serviceSpecificationFromClassIdentifier(serviceClass),
         )
 
         // ensure that preferred deviceid/service index is unique
         const preferreds: Set<string> = new Set()
         for (const role of supportedNewRoles.filter(
-            r => !!r.preferredDeviceId
+            r => !!r.preferredDeviceId,
         )) {
             const key =
                 role.preferredDeviceId + (role.preferredServiceIndex || -1)
@@ -164,7 +164,7 @@ export class RoleManager extends JDClient {
                             newRole.preferredDeviceId &&
                         (isNaN(newRole.preferredServiceIndex) ||
                             r.service.serviceIndex ===
-                                newRole.preferredServiceIndex)
+                                newRole.preferredServiceIndex),
                 )
                 if (otherBinding) {
                     otherBinding.service = undefined
@@ -199,7 +199,7 @@ export class RoleManager extends JDClient {
         role: string,
         serviceClass: number,
         preferredDeviceId?: string,
-        preferredServiceIndex?: number
+        preferredServiceIndex?: number,
     ) {
         const newRoles = this._roles.slice(0).map(r => ({ ...r }))
         let binding = newRoles.find(r => r.role === role)
@@ -222,7 +222,7 @@ export class RoleManager extends JDClient {
                 r =>
                     r !== binding &&
                     r.preferredDeviceId === preferredDeviceId &&
-                    r.preferredServiceIndex === preferredServiceIndex
+                    r.preferredServiceIndex === preferredServiceIndex,
             )
             if (other) {
                 other.preferredDeviceId = undefined
@@ -258,7 +258,7 @@ export class RoleManager extends JDClient {
                 s =>
                     s.device.deviceId === role.preferredDeviceId &&
                     (isNaN(role.preferredServiceIndex) ||
-                        role.preferredServiceIndex === s.serviceIndex)
+                        role.preferredServiceIndex === s.serviceIndex),
             )
             if (newOne) {
                 theOne = newOne
@@ -277,7 +277,7 @@ export class RoleManager extends JDClient {
             let c = 0
             if (r.preferredDeviceId || l.preferredDeviceId)
                 c = -(l.preferredDeviceId || "").localeCompare(
-                    r.preferredDeviceId || ""
+                    r.preferredDeviceId || "",
                 )
             if (c != 0) return c
             if (
@@ -336,7 +336,7 @@ export function startRoles<
             preferredDeviceId?: string
             preferredServiceIndex?: number
         }
-    >
+    >,
 >(
     bus: JDBus,
     bindings: TRoles,
@@ -346,7 +346,7 @@ export function startRoles<
          * Calls update even if not all role around bound
          */
         incomplete?: boolean
-    }
+    },
 ) {
     const { incomplete } = options || {}
     const roleManager = new RoleManager(bus)
@@ -356,7 +356,7 @@ export function startRoles<
             serviceClass: bindings[role].serviceClass,
             preferredDeviceId: bindings[role].preferredDeviceId,
             preferredServiceIndex: bindings[role].preferredServiceIndex,
-        }))
+        })),
     )
     const roles = () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

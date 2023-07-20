@@ -30,7 +30,7 @@ export abstract class JDServiceMemberNode extends JDNode {
     constructor(
         service: JDService,
         code: number,
-        isPacket: (pkt: jdspec.PacketInfo) => boolean
+        isPacket: (pkt: jdspec.PacketInfo) => boolean,
     ) {
         super()
         this._specification = null
@@ -74,7 +74,7 @@ export abstract class JDServiceMemberNode extends JDNode {
             // lookup once
             this._specification = this.service.specification?.packets.find(
                 packet =>
-                    this.isPacket(packet) && packet.identifier === this.code
+                    this.isPacket(packet) && packet.identifier === this.code,
             )
         return this._specification
     }

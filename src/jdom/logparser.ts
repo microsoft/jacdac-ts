@@ -127,7 +127,7 @@ Time [s],Value,Parity Error,Framing Error
 export function replayLogicLog(
     bus: JDBus,
     frames: JDFrameBuffer[],
-    speed?: number
+    speed?: number,
 ): void {
     const player = new TracePlayer(bus, speed)
     player.trace = new Trace(frames)

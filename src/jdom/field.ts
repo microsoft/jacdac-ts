@@ -30,7 +30,7 @@ export class JDField extends JDNode {
     constructor(
         member: JDServiceMemberNode,
         index: number,
-        specification: jdspec.PacketMember
+        specification: jdspec.PacketMember,
     ) {
         super()
         this.member = member
@@ -46,7 +46,7 @@ export class JDField extends JDNode {
         return `${this.nodeKind}:${
             this.member.service.device.deviceId
         }:${this.member.service.serviceIndex.toString(
-            16
+            16,
         )}:${this.member.code.toString(16)}:${this.index.toString(16)}`
     }
 

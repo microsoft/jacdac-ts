@@ -53,7 +53,7 @@ export function createConnectButton() {
         connectBtn.position(4, 4)
         connectBtn.mousePressed(connect)
         bus.on(CONNECTION_STATE, () =>
-            bus.connected ? connectBtn?.hide() : connectBtn?.show()
+            bus.connected ? connectBtn?.hide() : connectBtn?.show(),
         )
         if (bus.connected) {
             connectBtn?.hide()
@@ -123,8 +123,8 @@ export const events: Record<
                         ev.code === pkt.identifier
                     )
                         handler(ev)
-                })
-        )
+                }),
+        ),
 )
 
 // always show connect button if needed

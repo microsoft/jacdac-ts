@@ -150,8 +150,8 @@ function jdunpackCore(buf: Uint8Array, fmt: string, repeat: number) {
                 jdunpackCore(
                     bufferSlice(buf, off, buf.length),
                     fmt.slice(fp0),
-                    1
-                )
+                    1,
+                ),
             )
             return res
         }
@@ -217,7 +217,7 @@ function jdunpackCore(buf: Uint8Array, fmt: string, repeat: number) {
 */
 export function jdunpack<T extends PackedValues>(
     buf: Uint8Array,
-    fmt: string
+    fmt: string,
 ): T {
     if (!buf || !fmt) return undefined
 
@@ -233,7 +233,7 @@ export function jdunpack<T extends PackedValues>(
         }
         if (buf.length < sz) {
             throw new Error(
-                `size mistmatch, expected ${fmt} (${sz} bytes), got ${buf.length}`
+                `size mistmatch, expected ${fmt} (${sz} bytes), got ${buf.length}`,
             )
         }
         return [getNumber(buf, nf, 0)] as T
@@ -297,7 +297,7 @@ function jdpackCore(
     trg: Uint8Array,
     fmt: string,
     data: PackedValues,
-    off: number
+    off: number,
 ) {
     //console.log({ fmt, data })
     let idx = 0
@@ -333,7 +333,7 @@ function jdpackCore(
                 if (trg) {
                     v *= parser.div
                     const st: jdspec.StorageType = numberFormatToStorageType(
-                        parser.nfmt
+                        parser.nfmt,
                     )
                     if (parser.div == 1 && (st == 4 || st == -4))
                         // no clamping
@@ -437,7 +437,7 @@ export function jdpack<T extends PackedValues>(fmt: string, data: T) {
 export function jdpackEqual<T extends PackedValues>(
     fmt: string,
     left: T,
-    right: T
+    right: T,
 ) {
     if (!left !== !right) return false
     if (!left) return true

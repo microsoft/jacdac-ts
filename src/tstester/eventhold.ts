@@ -14,13 +14,13 @@ export abstract class EventWithHoldAdapter<T> extends TesterEvent {
 
     protected processTrigger(data: T): boolean {
         throw new Error(
-            "this function should never be called when not overridden"
+            "this function should never be called when not overridden",
         )
     }
 
     protected processHold(data: T): void {
         throw new Error(
-            "this function should never be called when not overridden"
+            "this function should never be called when not overridden",
         )
     }
 
@@ -40,7 +40,7 @@ export abstract class EventWithHoldAdapter<T> extends TesterEvent {
     public makePromise() {
         assert(
             this.hasTrigger || this.hasHold,
-            "EventWithHoldAdapter must define processTrigger or processHold"
+            "EventWithHoldAdapter must define processTrigger or processHold",
         )
 
         let triggerResolve: (value: unknown) => void // value not used, but needs an argument there

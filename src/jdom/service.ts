@@ -244,7 +244,7 @@ export class JDService extends JDNode {
     get intensityRegister(): JDRegister {
         if (!this._intensityRegister) {
             const pkt = this.specification?.packets.find(pkt =>
-                isIntensity(pkt)
+                isIntensity(pkt),
             )
             this._intensityRegister = pkt && this.register(pkt.identifier)
         }
@@ -277,7 +277,7 @@ export class JDService extends JDNode {
     get specification() {
         if (this._specification === null)
             this._specification = serviceSpecificationFromClassIdentifier(
-                this.serviceClass
+                this.serviceClass,
             )
         return this._specification
     }
@@ -333,7 +333,7 @@ export class JDService extends JDNode {
             if (
                 spec &&
                 !spec.packets.some(
-                    pkt => isRegister(pkt) && pkt.identifier === registerCode
+                    pkt => isRegister(pkt) && pkt.identifier === registerCode,
                 )
             ) {
                 if (
@@ -344,12 +344,12 @@ export class JDService extends JDNode {
                         `attempting to access register ${this}.${
                             SystemReg[registerCode] ||
                             `0x${registerCode.toString(16)}`
-                        }`
+                        }`,
                     )
                 return undefined
             }
             this._registers.push(
-                (register = new JDRegister(this, registerCode))
+                (register = new JDRegister(this, registerCode)),
             )
         }
         return register
@@ -371,7 +371,7 @@ export class JDService extends JDNode {
             if (
                 spec &&
                 !spec.packets.some(
-                    pkt => isEvent(pkt) && pkt.identifier === eventCode
+                    pkt => isEvent(pkt) && pkt.identifier === eventCode,
                 )
             ) {
                 if (Flags.diagnostics)
@@ -379,7 +379,7 @@ export class JDService extends JDNode {
                         `attempting to access event ${
                             SystemEvent[eventCode] ||
                             `0x${eventCode.toString(16)}`
-                        }`
+                        }`,
                     )
                 return undefined
             }
@@ -424,10 +424,10 @@ export class JDService extends JDNode {
     sendCmdPackedAsync<TValues extends PackedValues>(
         cmd: number,
         values?: TValues,
-        ack?: boolean
+        ack?: boolean,
     ) {
         const spec = this.specification.packets.find(
-            pkt => pkt.kind === "command" && pkt.identifier === cmd
+            pkt => pkt.kind === "command" && pkt.identifier === cmd,
         )
         const packFormat = spec?.packFormat
         if (!packFormat) throw new Error("Unknown packing format")
@@ -458,8 +458,8 @@ export class JDService extends JDNode {
                 reject(
                     new JDError(
                         `timeout (${timeout}ms) waiting for response to ${pkt}`,
-                        { code: ERROR_TIMEOUT }
-                    )
+                        { code: ERROR_TIMEOUT },
+                    ),
                 )
             })
 
@@ -544,7 +544,7 @@ export class JDService extends JDNode {
     async receiveWithInPipe<TValues extends PackedValues>(
         cmd: number,
         packFormat: string,
-        timeout?: number
+        timeout?: number,
     ) {
         const inp = new InPipeReader(this.device.bus)
         await this.sendPacketAsync(inp.openCommand(cmd), true)

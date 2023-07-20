@@ -6,7 +6,7 @@ export function startDevTools() {
     if (
         typeof window !== "undefined" &&
         !/^https:\/\/microsoft.github.io\/jacdac-docs\//.test(
-            window.location.href
+            window.location.href,
         )
     )
         window.location.href = `https://microsoft.github.io/jacdac-docs/clients/javascript/devtools.html#${window.location.href}`
@@ -21,7 +21,7 @@ export function injectDevTools(
     bus: JDBus,
     options?: {
         dashboardUrl?: string
-    }
+    },
 ): () => void {
     // check that dev tools haven't been injected already
     if (
@@ -98,7 +98,7 @@ export function injectDevTools(
         "allow-popups",
         "allow-popups-to-escape-sandbox",
         "allow-same-origin",
-        "allow-scripts"
+        "allow-scripts",
     )
     iframe.src = `${dashboardUrl}?embed=1&connect=0&transient=1#${frameid}`
     container.append(iframe)
@@ -113,7 +113,7 @@ export function injectDevTools(
                 data,
                 sender,
             })
-        })
+        }),
     )
     const cleanup = () => {
         unsub?.()
@@ -122,7 +122,7 @@ export function injectDevTools(
 
     const addButton = (
         text: string,
-        onclick: (btn: HTMLButtonElement) => void
+        onclick: (btn: HTMLButtonElement) => void,
     ) => {
         const btn = document.createElement("button")
         btn.innerText = text

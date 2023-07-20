@@ -23,7 +23,7 @@ export class SoundPlayerServer extends JDServiceServer {
         this.volume = this.addRegister(SoundPlayerReg.Volume, [0.5])
         this.addCommand(
             SoundPlayerCmd.ListSounds,
-            this.handleListSounds.bind(this)
+            this.handleListSounds.bind(this),
         )
         this.addCommand(SoundPlayerCmd.Play, this.handlePlay.bind(this))
     }
@@ -31,7 +31,7 @@ export class SoundPlayerServer extends JDServiceServer {
     private async handleListSounds(pkt: Packet) {
         const pipe = OutPipe.from(this.device.bus, pkt, true)
         await pipe.respondForEach(this.sounds, sound =>
-            jdpack<[number, string]>("u32 s", sound)
+            jdpack<[number, string]>("u32 s", sound),
         )
     }
 

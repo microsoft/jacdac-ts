@@ -50,12 +50,12 @@ export class AnalogSensorServer extends SensorServer<[number]> {
             if (inactiveThreshold !== undefined)
                 this.inactiveThreshold = this.addRegister<[number]>(
                     SystemReg.InactiveThreshold,
-                    [inactiveThreshold]
+                    [inactiveThreshold],
                 )
             if (activeThreshold !== undefined)
                 this.activeThreshold = this.addRegister<[number]>(
                     SystemReg.ActiveThreshold,
-                    [activeThreshold]
+                    [activeThreshold],
                 )
             this.levelDetector = new LevelDetector(this)
         }

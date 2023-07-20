@@ -25,7 +25,7 @@ export class OutPipe {
     constructor(
         private device: JDDevice,
         private port: number,
-        readonly hosted?: boolean
+        readonly hosted?: boolean,
     ) {}
 
     static from(bus: JDBus, pkt: Packet, hosted?: boolean) {
@@ -53,7 +53,7 @@ export class OutPipe {
 
     async respondForEach<T>(
         items: ArrayLike<T>,
-        converter: (item: T) => Uint8Array
+        converter: (item: T) => Uint8Array,
     ) {
         const n = items.length
         for (let i = 0; i < n; ++i) {
@@ -66,7 +66,8 @@ export class OutPipe {
 
     private async sendData(buf: Uint8Array, flags: number, closing: boolean) {
         if (!this.device) {
-            if (closing) return // ignore as device may be already gone
+            // ignore as device may be already gone
+            if (closing) return
             else throwError("sending data over closed pipe")
         }
         const cmd =
@@ -111,14 +112,14 @@ export class OutPipe {
         service: JDService,
         cmd: number,
         data: Uint8Array,
-        onProgress?: (p: number) => void
+        onProgress?: (p: number) => void,
     ): Promise<void> {
         const { device } = service
 
         onProgress?.(0)
         const resp = await service.sendCmdAwaitResponseAsync(
             Packet.jdpacked(cmd, "u32", [data.length]),
-            3000
+            3000,
         )
         onProgress?.(0.05)
         const [pipePort] = jdunpack<[number]>(resp.data, "u16")
@@ -145,7 +146,7 @@ export class InPipe extends JDClient {
         this._handlePacket = this._handlePacket.bind(this)
         this.allocPort()
         this.mount(
-            this.bus.selfDevice.subscribe(PACKET_RECEIVE, this._handlePacket)
+            this.bus.selfDevice.subscribe(PACKET_RECEIVE, this._handlePacket),
         )
     }
 
@@ -218,7 +219,7 @@ export class InPipeReader extends InPipe {
             this.subscribe(DATA, (pkt: Packet) => {
                 if (pkt.serviceCommand & PIPE_METADATA_MASK) this.meta.push(pkt)
                 else this.output.push(pkt)
-            })
+            }),
         )
         this.mount(this.subscribe(CLOSE, this.done.signal))
     }

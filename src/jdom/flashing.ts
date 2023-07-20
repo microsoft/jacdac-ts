@@ -73,7 +73,10 @@ function log(msg: string) {
 }
 
 export class FirmwareUpdater extends JDEventSource {
-    constructor(readonly bus: JDBus, readonly blob: FirmwareBlob) {
+    constructor(
+        readonly bus: JDBus,
+        readonly blob: FirmwareBlob,
+    ) {
         super()
     }
 
@@ -89,7 +92,7 @@ export class FirmwareUpdater extends JDEventSource {
      */
     async flash(
         updateCandidates: FirmwareInfo[],
-        ignoreFirmwareCheck: boolean
+        ignoreFirmwareCheck: boolean,
     ) {
         if (!updateCandidates?.length) return
         const { bus, blob } = this
@@ -115,14 +118,14 @@ export class FirmwareUpdater extends JDEventSource {
             .filter(
                 f =>
                     !!ignoreFirmwareCheck ||
-                    f.dev_class == blob.productIdentifier
+                    f.dev_class == blob.productIdentifier,
             )
             .filter(f =>
                 updateCandidates.find(
                     uc =>
                         uc.deviceId === f.device.deviceId ||
-                        isDualDeviceId(uc.deviceId, f.device.deviceId)
-                )
+                        isDualDeviceId(uc.deviceId, f.device.deviceId),
+                ),
             )
         if (!flashers.length) {
             log(`no devices to flash`)
@@ -130,7 +133,7 @@ export class FirmwareUpdater extends JDEventSource {
         }
         if (flashers.length != updateCandidates.length) {
             console.error(
-                `expected ${updateCandidates.length} flashers, got ${flashers.length}`
+                `expected ${updateCandidates.length} flashers, got ${flashers.length}`,
             )
             return
         }
@@ -142,7 +145,7 @@ export class FirmwareUpdater extends JDEventSource {
                 f.device.firmwareUpdater = this
                 const dualDevice = bus.device(
                     dualDeviceId(f.device.deviceId),
-                    true
+                    true,
                 )
                 if (dualDevice) dualDevice.firmwareUpdater = this
                 unmounts.push(() => {
@@ -170,7 +173,10 @@ class FlashClient {
     private progressTotal: number
     private progressIndex: number
 
-    constructor(readonly updater: FirmwareUpdater, adpkt: Packet) {
+    constructor(
+        readonly updater: FirmwareUpdater,
+        adpkt: Packet,
+    ) {
         const d = bufferToArray(adpkt.data, NumberFormat.UInt32LE)
         this.pageSize = d[1]
         this.flashSize = d[2]
@@ -211,14 +217,14 @@ class FlashClient {
             log(
                 `flashing ${d.device.shortId}; available flash=${
                     d.flashSize / 1024
-                }kb; page=${d.pageSize}b`
+                }kb; page=${d.pageSize}b`,
             )
         }
 
         const setsession = Packet.jdpacked<[number]>(
             BootloaderCmd.SetSession,
             "u32",
-            [this.sessionId]
+            [this.sessionId],
         )
 
         this.allPending()
@@ -283,7 +289,7 @@ class FlashClient {
         log(
             `flash ${prettySize(this.pageSize)} at ${(
                 pageAddr & 0xffffff
-            ).toString(16)}`
+            ).toString(16)}`,
         )
 
         if (page.data.length != this.pageSize)
@@ -301,7 +307,7 @@ class FlashClient {
                 log(
                     `send sub page ${currSubpage}/${
                         numSubpage - 1
-                    } at ${suboff.toString(16)}[${sz}]`
+                    } at ${suboff.toString(16)}[${sz}]`,
                 )
                 const hd = jdpack("u32 u16 u8 u8 u32 u32 u32 u32 u32", [
                     pageAddr,
@@ -317,7 +323,7 @@ class FlashClient {
                 assert(hd.length == 4 * 7)
                 const p = Packet.from(
                     BootloaderCmd.PageData,
-                    bufferConcat(hd, page.data.slice(suboff, suboff + sz))
+                    bufferConcat(hd, page.data.slice(suboff, suboff + sz)),
                 )
                 // in first round, just broadcast everything
                 // in other rounds, broadcast everything except for last packet
@@ -369,7 +375,7 @@ class FlashClient {
                 log(
                     `page ${
                         pageAddr & 0xffffff
-                    } done, ${i}/${BL_RETRIES} retries`
+                    } done, ${i}/${BL_RETRIES} retries`,
                 )
                 return
             }
@@ -429,7 +435,7 @@ const UF2_MAGIC_END = 0x0ab16f30
  */
 export function parseUF2Firmware(
     uf2: Uint8Array,
-    store: string
+    store: string,
 ): FirmwareBlob[] {
     const blobs: FirmwareBlob[] = []
     let currBlob: FirmwareBlob
@@ -483,7 +489,7 @@ export function parseUF2Firmware(
         }
         currPage.data.set(
             uf2.slice(off + 32, off + 32 + payloadSize),
-            trgaddr - currPage.targetAddress
+            trgaddr - currPage.targetAddress,
         )
     }
     flush()
@@ -539,7 +545,7 @@ export interface FirmwareInfo {
  */
 export async function parseFirmwareFile(
     blob: Blob,
-    store?: string
+    store?: string,
 ): Promise<FirmwareBlob[]> {
     const data = await readBlobToUint8Array(blob)
     const buf = new Uint8Array(data)
@@ -549,7 +555,7 @@ export async function parseFirmwareFile(
 
 async function createFlashers(
     updater: FirmwareUpdater,
-    bootloaderDeviceIds?: string[]
+    bootloaderDeviceIds?: string[],
 ) {
     const bus = updater.bus
     const flashers: FlashClient[] = []
@@ -582,7 +588,7 @@ async function createFlashers(
             } else {
                 for (const id of bootloaderDeviceIds) {
                     const bl_announce = Packet.onlyHeader(
-                        CMD_ADVERTISEMENT_DATA
+                        CMD_ADVERTISEMENT_DATA,
                     )
                     bl_announce.serviceIndex = 1
                     bl_announce.deviceIdentifier = id

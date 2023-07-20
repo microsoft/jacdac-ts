@@ -98,7 +98,7 @@ export function prettyUnit(u: jdspec.Unit | string): string {
 
 export function prettyMemberUnit(
     specification: jdspec.PacketMember,
-    showDataType?: boolean
+    showDataType?: boolean,
 ) {
     const parts: string[] = [
         prettyUnit(specification.unit),
@@ -192,7 +192,7 @@ function toBits(buffer: Uint8Array) {
 export function prettyEnum(
     enumInfo: jdspec.EnumInfo,
     numValue: number,
-    separator = " | "
+    separator = " | ",
 ) {
     if (!enumInfo) return undefined
 
@@ -223,7 +223,7 @@ export function decodeMember(
     pktInfo: jdspec.PacketInfo,
     member: jdspec.PacketMember,
     pkt: Packet,
-    offset: number
+    offset: number,
 ): DecodedMember {
     if (!member) return null
 
@@ -389,7 +389,7 @@ export function decodeMember(
 
 export function valueToFlags(
     enumInfo: jdspec.EnumInfo,
-    value: number
+    value: number,
 ): number[] {
     const r: number[] = []
     const curr = value
@@ -410,7 +410,7 @@ export function decodeMembers(
     service: jdspec.ServiceSpec,
     pktInfo: jdspec.PacketInfo,
     pkt: Packet,
-    off = 0
+    off = 0,
 ) {
     const fields = pktInfo.fields.slice(0)
     let startRep = fields.findIndex(f => f.startRepeats)
@@ -448,7 +448,7 @@ export function wrapDecodedMembers(decoded: DecodedMember[]) {
 
 function syntheticPktInfo(
     kind: jdspec.PacketKind,
-    addr: number
+    addr: number,
 ): jdspec.PacketInfo {
     return {
         kind,
@@ -467,7 +467,7 @@ function syntheticPktInfo(
 
 function decodeRegister(
     service: jdspec.ServiceSpec,
-    pkt: Packet
+    pkt: Packet,
 ): DecodedPacket {
     const isSet = pkt.isRegisterSet
     const isGet = pkt.isRegisterGet
@@ -477,7 +477,7 @@ function decodeRegister(
     let error = ""
     const addr = pkt.serviceCommand & CMD_REG_MASK
     let regInfo = service?.packets.find(
-        p => isRegister(p) && p.identifier == addr
+        p => isRegister(p) && p.identifier == addr,
     )
     if (!regInfo) {
         regInfo = syntheticPktInfo("rw", addr)
@@ -491,12 +491,12 @@ function decodeRegister(
             const recoded: string = toHex(
                 jdpack(
                     regInfo.packFormat,
-                    jdunpack(pkt.data, regInfo.packFormat)
-                )
+                    jdunpack(pkt.data, regInfo.packFormat),
+                ),
             )
             if (recoded !== undefined && recoded !== toHex(pkt.data)) {
                 error = `invalid data packing, ${toHex(
-                    pkt.data
+                    pkt.data,
                 )} recoded to ${recoded}`
             }
         } catch (e) {
@@ -528,7 +528,7 @@ function decodeEvent(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket {
     const evCode = pkt.eventCode
     const evInfo =
         service?.packets.find(
-            p => p.kind == "event" && p.identifier == evCode
+            p => p.kind == "event" && p.identifier == evCode,
         ) || syntheticPktInfo("event", evCode)
 
     const decoded = decodeMembers(service, evInfo, pkt)
@@ -546,12 +546,12 @@ function decodeEvent(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket {
 
 function decodeCommand(
     service: jdspec.ServiceSpec,
-    pkt: Packet
+    pkt: Packet,
 ): DecodedPacket {
     const kind = pkt.isCommand ? "command" : "report"
     const cmdInfo =
         service?.packets.find(
-            p => p.kind == kind && p.identifier == pkt.serviceCommand
+            p => p.kind == kind && p.identifier == pkt.serviceCommand,
         ) || syntheticPktInfo(kind, pkt.serviceCommand)
 
     const decoded = decodeMembers(service, cmdInfo, pkt)
@@ -603,11 +603,12 @@ function decodePipe(pkt: Packet): DecodedPacket {
                 p.pipeType == pipeType &&
                 /pipe/.test(p.kind) &&
                 /meta/.test(p.kind) == meta &&
-                /command/.test(p.kind) == (dir == "command")
+                /command/.test(p.kind) == (dir == "command"),
         )
         .filter(
             p =>
-                !meta || pkt.getNumber(NumberFormat.UInt16LE, 0) == p.identifier
+                !meta ||
+                pkt.getNumber(NumberFormat.UInt16LE, 0) == p.identifier,
         )
 
     const cmdInfo = candidates[0]
@@ -690,7 +691,7 @@ export function commandName(n: number, serviceClass?: number): string {
             const serviceSpec =
                 serviceSpecificationFromClassIdentifier(serviceClass)
             regName = serviceSpec?.packets.find(
-                pkt => isRegister(pkt) && pkt.identifier === reg
+                pkt => isRegister(pkt) && pkt.identifier === reg,
             )?.name
         }
         return (
@@ -707,7 +708,7 @@ export function commandName(n: number, serviceClass?: number): string {
         r = serviceSpec?.packets.find(
             pkt =>
                 (pkt.kind === "command" || pkt.kind === "report") &&
-                pkt.identifier === n
+                pkt.identifier === n,
         )?.name
     }
     return r
@@ -753,7 +754,7 @@ export function hexDump(d: ArrayLike<number>): string {
 
 export function printPacket(
     pkt: Packet,
-    opts: PrintPacketOptions = {}
+    opts: PrintPacketOptions = {},
 ): string {
     const frame_flags = pkt.frameFlags
     const devname = pkt.friendlyDeviceName

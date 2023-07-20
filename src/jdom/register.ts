@@ -68,7 +68,7 @@ export class JDRegister extends JDServiceMemberNode {
     get fields() {
         if (!this._fields)
             this._fields = this.specification?.fields.map(
-                (field, index) => new JDField(this, index, field)
+                (field, index) => new JDField(this, index, field),
             )
         return this._fields.slice()
     }
@@ -159,7 +159,7 @@ export class JDRegister extends JDServiceMemberNode {
      */
     sendSetPackedAsync(
         values: PackedValues,
-        autoRefresh?: boolean
+        autoRefresh?: boolean,
     ): Promise<void> {
         const fmt = this.specification?.packFormat
         if (!fmt) throw new Error("unknown register data format")
@@ -228,7 +228,7 @@ export class JDRegister extends JDServiceMemberNode {
         return unpackedToObject(
             this.unpackedValue,
             specification?.fields,
-            specification.name
+            specification.name,
         )
     }
 
@@ -341,14 +341,14 @@ export class JDRegister extends JDServiceMemberNode {
                     .then(() => {
                         if (resolve)
                             return this.sendGetAsync().then(() =>
-                                bus.delay(REGISTER_REFRESH_RETRY_1)
+                                bus.delay(REGISTER_REFRESH_RETRY_1),
                             )
                     })
                     .then(() => {
                         if (resolve) return this.sendGetAsync()
                     })
                     .catch(e => reject(e))
-            })
+            }),
         )
     }
 
@@ -370,7 +370,7 @@ export class JDRegister extends JDServiceMemberNode {
         console.assert(
             !this._lastReportPkt,
             `register reported changed not implemented`,
-            { register: this }
+            { register: this },
         )
         super.setNotImplemented()
     }

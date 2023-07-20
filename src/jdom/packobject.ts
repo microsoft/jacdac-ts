@@ -18,7 +18,7 @@ export interface PackedObject {
 export function unpackedToObject(
     data: PackedValues,
     fields: jdspec.PacketMember[],
-    defaultName?: string
+    defaultName?: string,
 ): PackedObject {
     if (!data || !fields) return undefined
     const r: PackedObject = {}
@@ -59,7 +59,7 @@ export function unpackedToObject(
 export function objectToUnpacked(
     pkt: jdspec.PacketInfo,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    msg: any
+    msg: any,
 ): PackedValues {
     if (!msg) return []
 
@@ -88,7 +88,7 @@ export function objectToUnpacked(
                             arow.push(vrow[rname])
                         }
                         return arow
-                    })
+                    }),
                 )
                 break
             } else {

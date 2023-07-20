@@ -3,11 +3,11 @@ import { EmbedAckMessage, EmbedMessage, EmbedStatusMessage } from "./protocol"
 
 export interface EmbedTransport {
     postMessage<TMessage extends EmbedMessage, TResponse extends EmbedMessage>(
-        msg: TMessage
+        msg: TMessage,
     ): Promise<TResponse>
     onMessage<TMessage extends EmbedMessage>(
         type: string,
-        handler: (msg: TMessage) => void
+        handler: (msg: TMessage) => void,
     ): void
 }
 
@@ -24,7 +24,7 @@ export class IFrameTransport extends JDClient implements EmbedTransport {
 
         window.addEventListener("message", this.handleMessage, false)
         this.mount(() =>
-            window.removeEventListener("message", this.handleMessage, false)
+            window.removeEventListener("message", this.handleMessage, false),
         )
     }
 
@@ -49,7 +49,7 @@ export class IFrameTransport extends JDClient implements EmbedTransport {
      * @internal
      */
     postMessage<TMessage extends EmbedMessage, AckMessage>(
-        msg: TMessage
+        msg: TMessage,
     ): Promise<AckMessage> {
         let p: Promise<AckMessage>
 
@@ -70,7 +70,7 @@ export class IFrameTransport extends JDClient implements EmbedTransport {
 
     onMessage<TMessage extends EmbedMessage>(
         type: string,
-        handler: (msg: TMessage) => void
+        handler: (msg: TMessage) => void,
     ): void {
         this.on(`message:${type}`, handler)
     }

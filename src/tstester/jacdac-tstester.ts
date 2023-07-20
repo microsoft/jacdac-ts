@@ -61,7 +61,7 @@ export function main(document: Document) {
             ui.log(`starting pot test: ${serviceTester.name}`)
             const potTest = new PotentiometerTestRoutine(
                 serviceTester,
-                testdriver
+                testdriver,
             )
             try {
                 await potTest.testMax()
@@ -81,7 +81,7 @@ export function main(document: Document) {
             ui.log(`starting pixel test: ${serviceTester.name}`)
             const ledStripTest = new LedStripTestRoutine(
                 serviceTester,
-                testdriver
+                testdriver,
             )
             try {
                 await ledStripTest.testSolidColors()
@@ -110,8 +110,8 @@ export function main(document: Document) {
                 .map(service => service.name)
             ui.log(
                 `- ${deviceTester.device.shortId}: ${deviceServiceNames.join(
-                    ","
-                )}`
+                    ",",
+                )}`,
             )
         })
     }

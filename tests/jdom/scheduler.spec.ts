@@ -13,7 +13,7 @@ suite("fast forward scheduler", () => {
             }, 500)
             await tester.waitForDelay(501)
             assert(done)
-        })
+        }),
     )
 
     test(
@@ -25,7 +25,7 @@ suite("fast forward scheduler", () => {
             }, 100)
             await tester.waitForDelay(501)
             assert(count == 5)
-        })
+        }),
     )
 
     test(
@@ -39,7 +39,7 @@ suite("fast forward scheduler", () => {
             tester.bus.scheduler.clearTimeout(handler)
             await tester.waitForDelay(101)
             assert(!called)
-        })
+        }),
     )
 
     test(
@@ -54,7 +54,7 @@ suite("fast forward scheduler", () => {
             await tester.waitForDelay(301)
             tester.bus.scheduler.clearInterval(handler)
             assert(count == 3)
-        })
+        }),
     )
 
     test(
@@ -71,6 +71,6 @@ suite("fast forward scheduler", () => {
             await tester.waitForDelay(501)
             assert(finished1 == 400)
             assert(finished2 == 500)
-        })
+        }),
     )
 })

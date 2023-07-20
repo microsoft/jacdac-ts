@@ -53,7 +53,7 @@ export class LedServer extends JDServiceServer {
         this.brightness = this.addRegister<[number]>(LedReg.Brightness, [15])
         this.actualBrightness = this.addRegister<[number]>(
             LedReg.ActualBrightness,
-            [15]
+            [15],
         )
         this.numPixels = this.addRegister<[number]>(LedReg.NumPixels, [n])
         this.maxPower = this.addRegister<[number]>(LedReg.MaxPower, [maxPower])
@@ -68,7 +68,7 @@ export class LedServer extends JDServiceServer {
         if (luminousIntensity !== undefined)
             this.luminousIntensity = this.addRegister(
                 LedReg.LuminousIntensity,
-                [luminousIntensity]
+                [luminousIntensity],
             )
         if (waveLength !== undefined)
             this.waveLength = this.addRegister(LedReg.WaveLength, [waveLength])

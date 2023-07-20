@@ -52,7 +52,7 @@ export abstract class TestNode extends JDNode {
 
     constructor(
         private _name: string,
-        private _manualSteps: ManualSteps = undefined
+        private _manualSteps: ManualSteps = undefined,
     ) {
         super()
     }
@@ -177,7 +177,7 @@ export abstract class TestNode extends JDNode {
                 .find(
                     (o: RegisterOracle) =>
                         o.serviceClass === reg.service.serviceClass &&
-                        o.code === reg.code
+                        o.code === reg.code,
                 ) || this.parent?.resolveOracle(reg)
         )
     }
@@ -190,7 +190,7 @@ export abstract class TestNode extends JDNode {
 
     protected mount() {
         this.subscriptions.mount(
-            this.node.subscribe(CHANGE, this.handleChange.bind(this))
+            this.node.subscribe(CHANGE, this.handleChange.bind(this)),
         )
     }
 
@@ -253,7 +253,7 @@ export abstract class TestNode extends JDNode {
     protected computeChildrenState() {
         return this._children.reduce(
             (s, c) => Math.max(s, c.state),
-            TestState.Pass
+            TestState.Pass,
         )
     }
 
@@ -282,7 +282,10 @@ export abstract class TestNode extends JDNode {
 }
 
 export class PanelTest extends TestNode {
-    constructor(id: string, readonly specification: PanelTestSpec) {
+    constructor(
+        id: string,
+        readonly specification: PanelTestSpec,
+    ) {
         super(id || "panel")
     }
     get nodeKind(): string {
@@ -303,7 +306,7 @@ export class PanelTest extends TestNode {
 
     override get label() {
         const children = this.children.filter(
-            c => c.nodeKind === DEVICE_TEST_KIND
+            c => c.nodeKind === DEVICE_TEST_KIND,
         )
         const found = children.filter(c => !!c.node).length
         return `${this.name}, found ${found}/${children.length} devices`
@@ -321,14 +324,14 @@ export class DeviceTest extends TestNode {
     constructor(
         readonly productIdentifier: number,
         readonly specification: jdspec.DeviceSpec,
-        readonly testSpecification: DeviceTestSpec
+        readonly testSpecification: DeviceTestSpec,
     ) {
         super(
             specification
                 ? `${specification.name} (0x${productIdentifier.toString(16)})`
                 : productIdentifier
                 ? `0x${productIdentifier.toString(16)}`
-                : "???"
+                : "???",
         )
     }
     get nodeKind(): string {
@@ -348,7 +351,7 @@ export class DeviceTest extends TestNode {
     }
     get serviceTests() {
         return this.children.filter(
-            child => child.nodeKind === SERVICE_TEST_KIND
+            child => child.nodeKind === SERVICE_TEST_KIND,
         ) as ServiceTest[]
     }
 
@@ -376,7 +379,7 @@ export class DeviceTest extends TestNode {
             .filter(d => !deviceTests.some(t => t.device === d))
             // ignore oracles
             .filter(
-                d => !oracles?.find(oracle => oracle.deviceId === d.deviceId)
+                d => !oracles?.find(oracle => oracle.deviceId === d.deviceId),
             )
         // quadratic search, find first device that matches a test
         const device = unboundDevices.find(d => this.test(d))
@@ -389,7 +392,7 @@ export class DeviceTest extends TestNode {
         this.subscriptions.mount(
             device.subscribe(DISCONNECT, () => {
                 if (device === this.node) this.node = undefined
-            })
+            }),
         )
     }
 
@@ -507,7 +510,10 @@ export class StatusLightTest extends TestNode {
 }
 
 export class ServiceTest extends TestNode {
-    constructor(name: string, readonly serviceClass: number) {
+    constructor(
+        name: string,
+        readonly serviceClass: number,
+    ) {
         super(name)
     }
     get nodeKind(): string {
@@ -590,7 +596,11 @@ export class ServiceCommandTest extends ServiceMemberTestNode {
 }
 
 export abstract class RegisterTestNode extends ServiceMemberTestNode {
-    constructor(name: string, manualSteps: ManualSteps, readonly code: number) {
+    constructor(
+        name: string,
+        manualSteps: ManualSteps,
+        readonly code: number,
+    ) {
         super(name, manualSteps)
     }
     get register() {
@@ -613,7 +623,7 @@ export abstract class RegisterTestNode extends ServiceMemberTestNode {
             register.subscribe(REPORT_UPDATE, () => {
                 this.updateState()
                 this.emit(CHANGE)
-            })
+            }),
         )
         this.updateState()
     }
@@ -628,7 +638,7 @@ export class RegisterOracle extends RegisterTestNode {
         readonly deviceId: string,
         readonly serviceIndex: number,
         readonly serviceClass: number,
-        readonly tolerance: number
+        readonly tolerance: number,
     ) {
         super(name, undefined, SystemReg.Reading)
     }
@@ -665,8 +675,8 @@ export class RegisterTest extends RegisterTestNode {
         code: number,
         readonly computeState: (
             node: RegisterTest,
-            logger: TestLogger
-        ) => TestState
+            logger: TestLogger,
+        ) => TestState,
     ) {
         super(name, manualSteps, code)
     }
@@ -712,8 +722,8 @@ export class EventTest extends ServiceMemberTestNode {
         readonly code: number,
         readonly computeState: (
             node: EventTest,
-            logger: TestLogger
-        ) => TestState
+            logger: TestLogger,
+        ) => TestState,
     ) {
         super(name, manualSteps)
     }
@@ -739,7 +749,7 @@ export class EventTest extends ServiceMemberTestNode {
             event.subscribe(EVENT, () => {
                 this.updateState()
                 this.emit(CHANGE)
-            })
+            }),
         )
     }
 

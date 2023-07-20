@@ -23,9 +23,9 @@ suite("rolemanager", () => {
             assert(roleManager.isBound, "role manager not found")
             assert(
                 roleManager.roles(true).find(r => r.role === "button")
-                    .service === button.service
+                    .service === button.service,
             )
-        })
+        }),
     ),
         test(
             "bind 2 button",
@@ -50,13 +50,13 @@ suite("rolemanager", () => {
                 const roles = roleManager.roles(true)
                 assert(
                     !!roles.find(r => r.role === "button").service,
-                    "button not bound"
+                    "button not bound",
                 )
                 assert(
                     !!roles.find(r => r.role === "button2").service,
-                    "button2 not bound"
+                    "button2 not bound",
                 )
-            })
+            }),
         ),
         test(
             "bind 2 button with preferences",
@@ -83,14 +83,14 @@ suite("rolemanager", () => {
                 assert(
                     roles.find(r => r.role === "button").service ===
                         button.service,
-                    "button not bound"
+                    "button not bound",
                 )
                 assert(
                     roles.find(r => r.role === "button2").service ===
                         button2.service,
-                    "button2 not bound"
+                    "button2 not bound",
                 )
-            })
+            }),
         ),
         test(
             "bind 2 button with preferences, reversed",
@@ -117,14 +117,14 @@ suite("rolemanager", () => {
                 assert(
                     roles.find(r => r.role === "button").service ===
                         button.service,
-                    "button not bound"
+                    "button not bound",
                 )
                 assert(
                     roles.find(r => r.role === "button2").service ===
                         button2.service,
-                    "button2 not bound"
+                    "button2 not bound",
                 )
-            })
+            }),
         ),
         test(
             "bind sep 2 button with preferences",
@@ -138,7 +138,7 @@ suite("rolemanager", () => {
                 roleManager.updateRole(
                     "button",
                     SRV_BUTTON,
-                    button.service.device.deviceId
+                    button.service.device.deviceId,
                 )
                 roleManager.updateRole("button2", SRV_BUTTON)
                 assert(roleManager.isBound, "role manager not found")
@@ -146,14 +146,14 @@ suite("rolemanager", () => {
                 assert(
                     roles.find(r => r.role === "button").service ===
                         button.service,
-                    "button not bound"
+                    "button not bound",
                 )
                 assert(
                     roles.find(r => r.role === "button2").service ===
                         button2.service,
-                    "button2 not bound"
+                    "button2 not bound",
                 )
-            })
+            }),
         )
     test(
         "bind sep 2 button with preferences reverse",
@@ -168,20 +168,20 @@ suite("rolemanager", () => {
             roleManager.updateRole(
                 "button",
                 SRV_BUTTON,
-                button.service.device.deviceId
+                button.service.device.deviceId,
             )
             assert(roleManager.isBound, "role manager not found")
             const roles = roleManager.roles(true)
             assert(
                 roles.find(r => r.role === "button").service === button.service,
-                "button not bound"
+                "button not bound",
             )
             assert(
                 roles.find(r => r.role === "button2").service ===
                     button2.service,
-                "button2 not bound"
+                "button2 not bound",
             )
-        })
+        }),
     )
     test(
         "double bind reverse",
@@ -196,34 +196,34 @@ suite("rolemanager", () => {
             roleManager.updateRole(
                 "button",
                 SRV_BUTTON,
-                button.service.device.deviceId
+                button.service.device.deviceId,
             )
             assert(roleManager.isBound, "role manager not found")
             const roles = roleManager.roles(true)
             assert(
                 roles.find(r => r.role === "button").service === button.service,
-                "button not bound"
+                "button not bound",
             )
             assert(
                 roles.find(r => r.role === "button2").service ===
                     button2.service,
-                "button2 not bound"
+                "button2 not bound",
             )
             roleManager.updateRole(
                 "button",
                 SRV_BUTTON,
-                button2.service.device.deviceId
+                button2.service.device.deviceId,
             )
             assert(
                 roles.find(r => r.role === "button2").service ===
                     button.service,
-                "double button not bound"
+                "double button not bound",
             )
             assert(
                 roles.find(r => r.role === "button").service ===
                     button2.service,
-                "double button2 not bound"
+                "double button2 not bound",
             )
-        })
+        }),
     )
 })

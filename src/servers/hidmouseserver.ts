@@ -57,7 +57,7 @@ export class HIDMouseServer extends JDServiceServer {
         this.setLastCommand(
             `set buttons ${btns || "?"} ${(
                 HidMouseButtonEvent[event] || "?"
-            ).toLocaleLowerCase()}`
+            ).toLocaleLowerCase()}`,
         )
     }
 

@@ -124,7 +124,7 @@ export class DeviceStatsMonitor extends JDEventSource {
                 .filter(e => !!e.restartCounter) // ignore total 0
                 .reduce(
                     (s, e) => s + Math.max(e.restartCounter - e.received, 0),
-                    0
+                    0,
                 ) / this._data.length || 0
         return r
     }
@@ -192,7 +192,7 @@ export class DeviceStatsMonitor extends JDEventSource {
         const { current } = this
         const { announce, dropped, restarts } = current
         return `announce ${announce}, drop ${Math.floor(
-            dropped
+            dropped,
         )}, restart ${restarts}`
     }
 }
@@ -292,7 +292,7 @@ export class JDDevice extends JDNode {
                     s =>
                         s.instanceName ||
                         s.specification?.camelName ||
-                        s.serviceClass.toString(16)
+                        s.serviceClass.toString(16),
                 )
                 .join(", ")
         )
@@ -443,11 +443,10 @@ export class JDDevice extends JDNode {
     get firmwareInfo(): FirmwareInfo {
         const ctrl = this.service(JD_SERVICE_INDEX_CTRL)
 
-        const productIdentifier = ctrl?.register(
-            ControlReg.ProductIdentifier
-        )?.uintValue
+        const productIdentifier = ctrl?.register(ControlReg.ProductIdentifier)
+            ?.uintValue
         const bootloaderProductIdentifier = ctrl?.register(
-            ControlReg.BootloaderProductIdentifier
+            ControlReg.BootloaderProductIdentifier,
         )?.uintValue
         const ready =
             productIdentifier !== undefined ||
@@ -487,7 +486,7 @@ export class JDDevice extends JDNode {
                 reg.once(REPORT_UPDATE, () => {
                     this.emitPropagated(DEVICE_FIRMWARE_INFO)
                     this.emitPropagated(CHANGE)
-                })
+                }),
             )
     }
 
@@ -538,7 +537,7 @@ export class JDDevice extends JDNode {
             if (!this._firmwareUpdater) {
                 // clear firmware info
                 const reg = this.service(0)?.register(
-                    ControlReg.FirmwareVersion
+                    ControlReg.FirmwareVersion,
                 )
                 reg?.clearData()
             }
@@ -798,9 +797,9 @@ export class JDDevice extends JDNode {
                             resolve = null
                             reject(err)
                         }
-                    }
+                    },
                 )
-            })
+            }),
         )
     }
 
@@ -877,7 +876,7 @@ export class JDDevice extends JDNode {
         )
             this._statusLight = new LEDController(
                 this.service(0),
-                ControlCmd.SetStatusLight
+                ControlCmd.SetStatusLight,
             )
         return this._statusLight
     }
@@ -1045,14 +1044,14 @@ export class JDDevice extends JDNode {
                         numdrop++
                         if (Flags.diagnostics)
                             console.debug(
-                                `ack: ${this.shortId} drop ${aa.pkt} (${drops} drops, ${resends} resends)`
+                                `ack: ${this.shortId} drop ${aa.pkt} (${drops} drops, ${resends} resends)`,
                             )
                     } else {
                         resends++
                         aa.pkt.sendCmdAsync(this)
                         if (Flags.diagnostics)
                             console.debug(
-                                `ack: ${this.shortId} resend ${aa.pkt} (${drops} drops, ${resends} resends)`
+                                `ack: ${this.shortId} resend ${aa.pkt} (${drops} drops, ${resends} resends)`,
                             )
                     }
                 }
@@ -1062,13 +1061,13 @@ export class JDDevice extends JDNode {
 
             if (Flags.diagnostics)
                 console.debug(
-                    `ack: ${this.shortId} awaits ${this._ackAwaiting.length}`
+                    `ack: ${this.shortId} awaits ${this._ackAwaiting.length}`,
                 )
             if (this._ackAwaiting.length > 0) {
                 this.bus.scheduler.setTimeout(
                     resend,
                     Math.random() * (ACK_MAX_DELAY - ACK_MIN_DELAY) +
-                        ACK_MIN_DELAY
+                        ACK_MIN_DELAY,
                 )
             } else {
                 this._ackAwaiting = undefined
