@@ -78,7 +78,6 @@ import {
     SRV_HID_KEYBOARD,
     SRV_HID_MOUSE,
     SRV_HID_JOYSTICK,
-    SRV_CLOUD_CONFIGURATION,
     DotMatrixVariant,
     SRV_FLEX,
     SRV_WIFI,
@@ -100,6 +99,7 @@ import {
     SRV_SERIAL,
     SystemReg,
     SRV_ROS,
+    SRV_INDEXED_SCREEN,
 } from "../jdom/constants"
 import { JDServerServiceProvider } from "../jdom/servers/serverserviceprovider"
 import { ProtocolTestServer } from "../jdom/servers/protocoltestserver"
@@ -162,9 +162,11 @@ import { DualMotorsServer } from "./dualmotorsserver"
 import { CloudAdapterServer } from "./cloudadapterserver"
 import { SatNavServer } from "./satnavserver"
 import { PlanarPositionServer } from "./planarpositionserver"
-import { RosServer, isNumericType, randomDeviceId } from "../jacdac"
 import { SerialServer } from "./serialserver"
-import { genFieldInfo } from "../../jacdac-spec/spectool/jdspec"
+import { genFieldInfo, isNumericType } from "../../jacdac-spec/spectool/jdspec"
+import { RosServer } from "./rosserver"
+import { IndexedScreenServer } from "./indexedscreenserver"
+import { randomDeviceId } from "../jdom/random"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     readingValues: [21.5],
@@ -1768,6 +1770,35 @@ function initProviders() {
                 name: "ROS (simulator)",
                 serviceClasses: [SRV_ROS],
                 services: () => [new RosServer()],
+            },
+            {
+                name: "Display 128x64 monochrome (1bpp)",
+                serviceClasses: [SRV_INDEXED_SCREEN],
+                services: () => [
+                    new IndexedScreenServer({
+                        width: 128,
+                        height: 64,
+                        bitsPerPixel: 1,
+                        palette: [0x000000, 0xffffff],
+                    }),
+                ],
+            },
+            {
+                name: "Display 128x128 16colors (4bpp)",
+                serviceClasses: [SRV_INDEXED_SCREEN],
+                services: () => [
+                    new IndexedScreenServer({
+                        width: 128,
+                        height: 128,
+                        bitsPerPixel: 4,
+                        palette: [
+                            0x000000, 0xffffff, 0xff2121, 0xff93c4, 0xff8135,
+                            0xfff609, 0x249ca3, 0x78dc52, 0x003fad, 0x87f2ff,
+                            0x8e2ec4, 0xa4839f, 0x5c406c, 0xe5cdc4, 0x91463d,
+                            0x000000,
+                        ],
+                    }),
+                ],
             },
             Flags.diagnostics
                 ? {

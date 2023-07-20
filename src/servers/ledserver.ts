@@ -3,6 +3,7 @@ import {
     LedReg,
     CONST_LED_MAX_PIXELS_LENGTH,
     SRV_LED,
+    FRAME_PROCESS_LARGE,
 } from "../jdom/constants"
 import { JDRegisterServer } from "../jdom/servers/registerserver"
 import { JDServiceServer, JDServerOptions } from "../jdom/servers/serviceserver"
@@ -77,6 +78,12 @@ export class LedServer extends JDServiceServer {
             this.limit_intensity()
         })
         this.pixels.on(CHANGE, () => this.limit_intensity())
+
+        this.on(FRAME_PROCESS_LARGE, this.handleFrameLarge.bind(this))
+    }
+
+    private handleFrameLarge(topic: string, data: Uint8Array) {
+        if (topic === "leds") this.pixels.setValues([data])
     }
 
     /**

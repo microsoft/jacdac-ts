@@ -1,6 +1,6 @@
 import { JDFrameBuffer, Packet, isLargeFrame } from "./packet"
 import { JDDevice } from "./device"
-import { strcmp, arrayConcatMany, toHex } from "./utils"
+import { arrayConcatMany, strcmp, toHex, uint8ArrayToString } from "./utils"
 import {
     JD_SERVICE_INDEX_CTRL,
     CMD_ADVERTISEMENT_DATA,
@@ -100,6 +100,7 @@ import { DeviceFilter } from "./filters/devicefilter"
 import { Flags } from "./flags"
 import { stack } from "./trace/trace"
 import { DeviceCatalog } from "./catalog"
+import { jdunpack } from "./pack"
 
 export type BusBroadcastMessageType =
     | "visibilitychange"
@@ -1065,7 +1066,7 @@ ${dev
         if (frame._jacdac_timestamp === undefined)
             frame._jacdac_timestamp = this.timestamp
         if (isLargeFrame(frame)) {
-            this.emit(FRAME_PROCESS_LARGE, frame)
+            this.processLargeFrame(frame)
             return
         }
         this.emit(FRAME_SEND, frame)
@@ -1368,7 +1369,7 @@ ${dev
         if (frame._jacdac_timestamp === undefined)
             frame._jacdac_timestamp = this.timestamp
         if (isLargeFrame(frame)) {
-            this.emit(FRAME_PROCESS_LARGE, frame)
+            this.processLargeFrame(frame)
             return
         }
         this.emit(FRAME_PROCESS, frame)
@@ -1380,6 +1381,30 @@ ${dev
             if (frame._jacdac_replay) pkt.replay = true
             this.processPacketCore(pkt)
         }
+    }
+
+    private processLargeFrame(frame: JDFrameBuffer) {
+        if (!this.passive) {
+            // don't try to route large packet in a passive bus
+            const did = toHex(frame.slice(8, 8))
+            const device = this.device(did, true)
+            if (device) {
+                // decode the topic?
+                const [topic, data]: [string, Uint8Array] = jdunpack(
+                    frame.slice(16),
+                    "z b"
+                )
+                const { si, command } =
+                    /^jd\/(?<si>\d+)\/(?<command>.+)$/.exec(topic)?.groups || {}
+                const serviceIndex = parseInt(si)
+                if (serviceIndex > 0) {
+                    const service = device.service(serviceIndex)
+                    const twin = service?.twin
+                    if (twin) twin.processLargeFrame(command, data)
+                }
+            }
+        }
+        this.emit(FRAME_PROCESS_LARGE, frame)
     }
 
     private processPacketCore(pkt: Packet) {
