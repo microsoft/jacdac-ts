@@ -1386,8 +1386,7 @@ ${dev
     private processLargeFrame(frame: JDFrameBuffer) {
         if (!this.passive) {
             // don't try to route large packet in a passive bus
-            let did = toHex(frame.slice(8, 16))
-            if (did === "784bcf55ebb6733f") did = "8018d4204cff51e4"
+            const did = toHex(frame.slice(8, 16))
             const device = this.device(did, true)
             if (device) {
                 // decode the topic?
