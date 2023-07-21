@@ -91,7 +91,7 @@ export class JDServiceServer extends JDEventSource {
 
     constructor(
         public readonly serviceClass: number,
-        options?: JDServerOptions
+        options?: JDServerOptions,
     ) {
         super()
         const {
@@ -106,18 +106,18 @@ export class JDServiceServer extends JDEventSource {
         } = options || {}
 
         this.specification = serviceSpecificationFromClassIdentifier(
-            this.serviceClass
+            this.serviceClass,
         )
 
         this.statusCode = this.addRegister<[SystemStatusCodes, number]>(
             SystemReg.StatusCode,
-            [SystemStatusCodes.Ready, 0]
+            [SystemStatusCodes.Ready, 0],
         )
         if (valueValues) this.addRegister(SystemReg.Value, valueValues)
         if (intensityValues) {
             const intensity = this.addRegister(
                 SystemReg.Intensity,
-                intensityValues
+                intensityValues,
             )
             if (intensityProcessor)
                 intensity.valueProcessor = intensityProcessor
@@ -128,7 +128,7 @@ export class JDServiceServer extends JDEventSource {
                         this.sendEvent(
                             isActive(intensity.values())
                                 ? SystemEvent.Active
-                                : SystemEvent.Inactive
+                                : SystemEvent.Inactive,
                         )
                 })
         }
@@ -141,12 +141,12 @@ export class JDServiceServer extends JDEventSource {
 
         // any extra
         registerValues?.forEach(({ code, values }) =>
-            this.addRegister<PackedValues>(code, values)
+            this.addRegister<PackedValues>(code, values),
         )
 
         // emit event when status code changes
         this.statusCode.on(CHANGE, () =>
-            this.sendEvent(BaseEvent.StatusCodeChanged, this.statusCode.data)
+            this.sendEvent(BaseEvent.StatusCodeChanged, this.statusCode.data),
         )
 
         // if the device has a calibrate command, regiser handler
@@ -155,16 +155,16 @@ export class JDServiceServer extends JDEventSource {
             this.specification.packets.find(
                 pkt =>
                     pkt.kind === "command" &&
-                    pkt.identifier === SystemCmd.Calibrate
+                    pkt.identifier === SystemCmd.Calibrate,
             )
         ) {
             this.addCommand(
                 SystemCmd.Calibrate,
-                this.handleCalibrate.bind(this)
+                this.handleCalibrate.bind(this),
             )
             this.statusCode.setValues(
                 [SystemStatusCodes.CalibrationNeeded, 0],
-                true
+                true,
             )
         }
 
@@ -207,8 +207,8 @@ export class JDServiceServer extends JDEventSource {
                     reg?.setValues(twinReg.unpackedValue)
                     this._twinCleanup.push(
                         twinReg.subscribe(REPORT_UPDATE, () =>
-                            reg.setValues(twinReg.unpackedValue)
-                        )
+                            reg.setValues(twinReg.unpackedValue),
+                        ),
                     )
                 }
             })
@@ -231,15 +231,15 @@ export class JDServiceServer extends JDEventSource {
     }
 
     register<TValues extends PackedValues = PackedValues>(
-        code: number
+        code: number,
     ): JDRegisterServer<TValues> {
         return this._registers.find(
-            reg => reg.identifier === code
+            reg => reg.identifier === code,
         ) as JDRegisterServer<TValues>
     }
 
     protected addExistingRegister<TValues extends PackedValues = PackedValues>(
-        reg: JDRegisterServer<TValues>
+        reg: JDRegisterServer<TValues>,
     ) {
         this._registers.push(reg)
         return reg
@@ -247,16 +247,16 @@ export class JDServiceServer extends JDEventSource {
 
     addRegister<TValues extends PackedValues = PackedValues>(
         identifier: number,
-        defaultValue?: TValues
+        defaultValue?: TValues,
     ): JDRegisterServer<TValues> {
         let reg = this._registers.find(
-            r => r.identifier === identifier
+            r => r.identifier === identifier,
         ) as JDRegisterServer<TValues>
         if (!reg && !this._locked) {
             // make sure this register is supported
             if (
                 !this.specification.packets.find(
-                    pkt => isRegister(pkt) && pkt.identifier === identifier
+                    pkt => isRegister(pkt) && pkt.identifier === identifier,
                 )
             )
                 return undefined
@@ -339,7 +339,7 @@ export class JDServiceServer extends JDEventSource {
         this.statusCode.setValues([SystemStatusCodes.Calibrating, 0])
         // wait 5 seconds
         await this.device.bus.delay(CALIBRATION_DELAY)
-        // finish calibraion
+        // finish
         this.statusCode.setValues([SystemStatusCodes.Ready, 0])
     }
 }

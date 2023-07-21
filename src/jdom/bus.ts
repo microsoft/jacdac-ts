@@ -1,6 +1,6 @@
 import { JDFrameBuffer, Packet, isLargeFrame } from "./packet"
 import { JDDevice } from "./device"
-import { arrayConcatMany, strcmp, toHex, uint8ArrayToString } from "./utils"
+import { arrayConcatMany, strcmp, toHex } from "./utils"
 import {
     JD_SERVICE_INDEX_CTRL,
     CMD_ADVERTISEMENT_DATA,
@@ -60,7 +60,7 @@ import {
     DISPOSE,
     FRAME_PROCESS_LARGE,
 } from "./constants"
-import { serviceClass } from "./pretty"
+import { serviceClass, shortDeviceId } from "./pretty"
 import { JDNode } from "./node"
 import { FirmwareBlob, sendStayInBootloaderCommand } from "./flashing"
 import { JDService } from "./service"
@@ -1386,7 +1386,7 @@ ${dev
     private processLargeFrame(frame: JDFrameBuffer) {
         if (!this.passive) {
             // don't try to route large packet in a passive bus
-            const did = toHex(frame.slice(8, 8))
+            const did = toHex(frame.slice(8, 16))
             const device = this.device(did, true)
             if (device) {
                 // decode the topic?
