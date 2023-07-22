@@ -6,6 +6,7 @@ import { JDEventSource } from "../eventsource"
 import {
     CHANGE,
     CMD_GET_REG,
+    JD_SERIAL_MAX_PAYLOAD_SIZE,
     PACKET_DATA_NORMALIZE,
     PACKET_INVALID_DATA,
     REGISTER_PRE_GET,
@@ -14,7 +15,7 @@ import {
 import { isRegister } from "../spec"
 
 function defaultFieldPayload(
-    specification: jdspec.PacketMember
+    specification: jdspec.PacketMember,
 ): PackedSimpleValue {
     let r: PackedSimpleValue = undefined
     switch (specification.type) {
@@ -30,12 +31,12 @@ function defaultFieldPayload(
             const min = pick(
                 specification.typicalMin,
                 specification.absoluteMin,
-                undefined
+                undefined,
             )
             const max = pick(
                 specification.typicalMax,
                 specification.absoluteMax,
-                undefined
+                undefined,
             )
             if (max !== undefined && min !== undefined) r = (max + min) / 2
             else r = 0
@@ -58,7 +59,7 @@ function defaultFieldPayload(
 }
 
 function defaultPayload<T extends PackedValues>(
-    specification: jdspec.PacketInfo
+    specification: jdspec.PacketInfo,
 ): T {
     const { fields } = specification
     const rs = fields.map(defaultFieldPayload)
@@ -70,7 +71,7 @@ function defaultPayload<T extends PackedValues>(
  * @category Servers
  */
 export class JDRegisterServer<
-    TValues extends PackedValues
+    TValues extends PackedValues,
 > extends JDEventSource {
     data: Uint8Array
     lastSetTime: number
@@ -85,12 +86,12 @@ export class JDRegisterServer<
     constructor(
         public readonly service: JDServiceServer,
         public readonly identifier: number,
-        defaultValue?: TValues
+        defaultValue?: TValues,
     ) {
         super()
         const serviceSpecification = this.service.specification
         this.specification = serviceSpecification.packets.find(
-            pkt => isRegister(pkt) && pkt.identifier === this.identifier
+            pkt => isRegister(pkt) && pkt.identifier === this.identifier,
         )
         let v: PackedValues = defaultValue
         if (!v && !this.specification.optional)
@@ -104,7 +105,7 @@ export class JDRegisterServer<
 
         // don't check boundaries if there are none
         this.skipBoundaryCheck = !this.specification?.fields.some(
-            field => isSet(field.absoluteMin) || isSet(field.absoluteMax)
+            field => isSet(field.absoluteMin) || isSet(field.absoluteMax),
         )
     }
 
@@ -160,11 +161,17 @@ export class JDRegisterServer<
         this.data = this.resetData?.slice(0)
     }
 
+    allowLargeFrames = false
+
     async sendGetAsync() {
         this.emit(REGISTER_PRE_GET)
 
         let d = this.data
         if (!d) return
+        // large frames
+        if (this.allowLargeFrames && d.length > JD_SERIAL_MAX_PAYLOAD_SIZE) {
+            d = new Uint8Array(0)
+        }
 
         const error =
             !this.skipErrorInjection && this.errorRegister?.values()[0]
@@ -177,7 +184,7 @@ export class JDRegisterServer<
             d = jdpack(this.packFormat, vs)
         }
         await this.service.sendPacketAsync(
-            Packet.from(this.identifier | CMD_GET_REG, d)
+            Packet.from(this.identifier | CMD_GET_REG, d),
         )
     }
 
@@ -218,4 +225,3 @@ export class JDRegisterServer<
         return true
     }
 }
-
