@@ -56,7 +56,7 @@ export class JdUsbProto implements Proto {
                 if (
                     bufferEq(
                         this.hf2Resp,
-                        buf.slice(1, 1 + this.hf2Resp.length)
+                        buf.slice(1, 1 + this.hf2Resp.length),
                     )
                 )
                     this.isHF2 = true
@@ -248,7 +248,7 @@ export class JdUsbProto implements Proto {
 
     async detectHF2() {
         const pkt_en = this.encodeFrame(
-            this.processingPkt(UsbBridgeCmd.EnablePackets)
+            this.processingPkt(UsbBridgeCmd.EnablePackets),
         )[0]
         // tag0,1 are arbitrary, but should be somewhat unusual
         const tag0 = 0x81
@@ -291,7 +291,7 @@ export class JdUsbProto implements Proto {
                     (this.io.description?.() ?? ""),
                 {
                     code: ERROR_TRANSPORT_HF2_NOT_SUPPORTED,
-                }
+                },
             )
         })
     }
@@ -323,7 +323,7 @@ export class JdUsbProto implements Proto {
     private serialData: Uint8Array
     private serialTimeout: any
     private colorState = ""
-    serialLineCallback = (line: string, lineWithColor: string) => {}
+    onLog: (line: string, lineWithColor: string) => void
 
     private fromUTF(line: Uint8Array) {
         let str = uint8ArrayToString(line)
@@ -372,8 +372,8 @@ export class JdUsbProto implements Proto {
                         return ""
                     })
                     const withcolors = prevColor + sline
-                    this.serialLineCallback(nocolors, withcolors)
-                    console.debug("DEV: " + withcolors)
+                    this.onLog?.(nocolors, withcolors)
+                    console.log(nocolors)
                 }
                 start = i + 1
             }
@@ -383,7 +383,7 @@ export class JdUsbProto implements Proto {
             if (this.serialData)
                 this.serialData = bufferConcat(
                     this.serialData,
-                    data.slice(start)
+                    data.slice(start),
                 )
             else this.serialData = data.slice(start)
             this.serialTimeout = setTimeout(() => {
@@ -396,10 +396,10 @@ export class JdUsbProto implements Proto {
     async postConnectAsync() {
         for (let i = 0; i < 100; ++i) {
             await this.sendJDMessageAsync(
-                this.processingPkt(UsbBridgeCmd.EnablePackets)
+                this.processingPkt(UsbBridgeCmd.EnablePackets),
             )
             await this.sendJDMessageAsync(
-                this.processingPkt(UsbBridgeCmd.EnableLog)
+                this.processingPkt(UsbBridgeCmd.EnableLog),
             )
             await delay(100)
             if (this.numFrames > 0) break

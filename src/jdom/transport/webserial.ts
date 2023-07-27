@@ -46,6 +46,7 @@ export class WebSerialTransport extends Transport {
     protected async transportConnectAsync(background: boolean) {
         this.transport = this.mkTransport(this.bus)
         this.transport.onError = e => this.errorHandler(SERIAL_TRANSPORT, e)
+        this.transport.onLog = line => this.handleLog(line)
         this.hf2 = await this.transport.connectAsync(background)
         this.hf2.onJDMessage(this.handleFrame.bind(this))
     }
