@@ -27,9 +27,10 @@ export class WebSerialIO implements HF2_IO {
     onData = (v: Uint8Array) => {}
     onError = (e: Error) => {
         console.warn(
-            `webserial error: ${errorCode(e) || ""} ${e ? e.stack : e}`
+            `webserial error: ${errorCode(e) || ""} ${e ? e.stack : e}`,
         )
     }
+    onLog: (line: string) => void
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     log(msg: string, v?: any) {
@@ -96,7 +97,7 @@ export class WebSerialIO implements HF2_IO {
         console.debug("webserial: start read loop")
 
         const readpkt = async (
-            reader: ReadableStreamDefaultReader<Uint8Array>
+            reader: ReadableStreamDefaultReader<Uint8Array>,
         ) => {
             let value: Uint8Array = null
             for (;;) {
@@ -204,6 +205,10 @@ export class WebSerialIO implements HF2_IO {
         // let's connect
         await this.openDeviceAsync()
         const jdusb = new JdUsbProto(this)
+        jdusb.serialLineCallback = (nocolor, withcolor) => {
+            // we've receive a log message from the device, and it needs to make its way back to the devtools
+            this.onLog?.(withcolor)
+        }
         let proto: Proto = jdusb
         try {
             const isHF2 = await jdusb.detectHF2()

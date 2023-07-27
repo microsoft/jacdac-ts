@@ -13,6 +13,7 @@ import {
     TRANSPORT_CONNECT_RETRY_DELAY,
     DISPOSE,
     TRANSPORT_ERROR,
+    LOG,
 } from "../constants"
 import { isCancelError } from "../error"
 import { JDEventSource } from "../eventsource"
@@ -360,6 +361,10 @@ export abstract class Transport extends JDEventSource {
         this._lastReceivedTime = timestamp
         this.bus.processFrame(payload, this.type, skipCrc)
     }
+
+    protected handleLog(line: string) {
+        this.emit(LOG, line)
+    }    
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     protected errorHandler(context: string, exception: any) {

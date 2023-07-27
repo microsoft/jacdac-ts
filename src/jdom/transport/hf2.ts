@@ -109,6 +109,7 @@ export interface HF2_IO {
     isFreeFlowing?: boolean
     onData: (v: Uint8Array) => void
     onError: (e: Error) => void
+    onLog?: (line: string) => void
     connectAsync(background: boolean): Promise<Proto>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     log(msg: string, v?: any): void
