@@ -326,9 +326,9 @@ export class JDBus extends JDNode {
         // interactions with multiple tabs and windows
         const channel = new BroadcastChannel("jacdac")
         const postConnectionState = () => {
-            channel.postMessage({
+            channel.postMessage(<BusBroadcastConnectionStateMessage>{
                 id: this.selfDevice.shortId,
-                event: CONNECTION_STATE,
+                event: "connectionstate",
                 transports: this._transports.map(tr => ({
                     type: tr.type,
                     connectionState: tr.connectionState,
