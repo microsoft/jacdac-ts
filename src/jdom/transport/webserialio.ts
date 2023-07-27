@@ -205,9 +205,9 @@ export class WebSerialIO implements HF2_IO {
         // let's connect
         await this.openDeviceAsync()
         const jdusb = new JdUsbProto(this)
-        jdusb.serialLineCallback = (nocolor, withcolor) => {
+        jdusb.onLog = line => {
             // we've receive a log message from the device, and it needs to make its way back to the devtools
-            this.onLog?.(withcolor)
+            this.onLog?.(line)
         }
         let proto: Proto = jdusb
         try {
