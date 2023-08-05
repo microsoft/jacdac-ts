@@ -2,7 +2,7 @@ import deviceRegistryData from "../../jacdac-spec/dist/devices.json"
 import { CHANGE, DOCS_ROOT } from "./constants"
 import { JDEventSource } from "./eventsource"
 import { Flags } from "./flags"
-import { cryptoRandomUint32 } from "./random"
+import { anyRandomUint32 } from "./random"
 import { serviceSpecificationFromClassIdentifier } from "./spec"
 import { toFullHex, unique } from "./utils"
 
@@ -145,7 +145,7 @@ export class DeviceCatalog extends JDEventSource {
      */
     uniqueFirmwareId(decimal?: boolean) {
         const genFirmwareId = () => {
-            const n = cryptoRandomUint32(1)
+            const n = anyRandomUint32(1)
             if (n === undefined) return undefined
             return (n[0] & 0xfff_ffff) | 0x3000_0000
         }
@@ -167,7 +167,7 @@ export class DeviceCatalog extends JDEventSource {
      */
     uniqueServiceId() {
         const genServId = () => {
-            const n = cryptoRandomUint32(1)
+            const n = anyRandomUint32(1)
             if (n === undefined) return undefined
             return (n[0] & 0xfff_ffff) | 0x1000_0000
         }
@@ -187,7 +187,7 @@ export class DeviceCatalog extends JDEventSource {
      * @returns
      */
     uniqueDeviceId() {
-        const n = cryptoRandomUint32(2)
+        const n = anyRandomUint32(2)
         return n !== undefined && toFullHex([n[0], n[1]])
     }
 }

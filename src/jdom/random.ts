@@ -1,6 +1,6 @@
 import { toHex } from "./utils"
 
-export function cryptoRandomUint32(length: number): Uint32Array {
+function cryptoRandomUint32(length: number): Uint32Array {
     const crypto = (typeof self !== "undefined" ? self.crypto : undefined)
         || (typeof globalThis !== "undefined" ? globalThis.crypto : undefined)
     if (!crypto) return undefined
