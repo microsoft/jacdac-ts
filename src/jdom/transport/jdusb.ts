@@ -373,7 +373,8 @@ export class JdUsbProto implements Proto {
                     })
                     const withcolors = prevColor + sline
                     this.onLog?.(nocolors, withcolors)
-                    console.log(nocolors)
+                    // see overrideConsoleDebug() in devicescript before changing the next line
+                    console.debug("DEV: " + nocolors)
                 }
                 start = i + 1
             }
