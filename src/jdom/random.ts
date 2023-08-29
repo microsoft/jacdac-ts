@@ -1,8 +1,9 @@
 import { toHex } from "./utils"
 
 function cryptoRandomUint32(length: number): Uint32Array {
-    const crypto = (typeof self !== "undefined" ? self.crypto : undefined)
-        || (typeof globalThis !== "undefined" ? globalThis.crypto : undefined)
+    const crypto =
+        (typeof self !== "undefined" ? self.crypto : undefined) ||
+        (typeof globalThis !== "undefined" ? globalThis.crypto : undefined)
     if (!crypto) return undefined
 
     const vals = new Uint32Array(length)
