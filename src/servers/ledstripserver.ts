@@ -593,6 +593,7 @@ export class LedStripServer extends JDServiceServer {
             this.dirty = false
             if (isBufferEmpty(this.pxbuffer)) {
                 this.jd_power_enable(false)
+                this.emit(RENDER)
                 return
             } else {
                 this.jd_power_enable(true)
