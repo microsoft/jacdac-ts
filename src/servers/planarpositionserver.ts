@@ -13,6 +13,7 @@ export class PlanarPositionServer extends SensorServer<[number, number]> {
     }
 
     move(dx: number, dy: number) {
+        if (!dx && !dy) return
         let [x = 0, y = 0] = this.reading.values()
         x += dx
         y += dy
