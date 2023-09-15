@@ -1407,6 +1407,15 @@ function initProviders() {
                 ],
             },
             {
+                name: "Hall sensor (potentiometer)",
+                serviceClasses: [SRV_POTENTIOMETER],
+                services: () => [
+                    new AnalogSensorServer(SRV_POTENTIOMETER, {
+                        variant: PotentiometerVariant.Hall,
+                    }),
+                ],
+            },
+            {
                 name: "soil moisture",
                 serviceClasses: [SRV_SOIL_MOISTURE],
                 services: () => [
