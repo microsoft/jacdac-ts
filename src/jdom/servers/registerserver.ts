@@ -144,8 +144,14 @@ export class JDRegisterServer<
         )
     }
 
+    /**
+     * Sets the value on the register
+     * @param values values to set
+     * @param skipChangeEvent true to avoid emitting CHANGE
+     * @returns true if values changed; false otherwise
+     */
     setValues(values: TValues, skipChangeEvent?: boolean) {
-        if (this.readOnly) return
+        if (this.readOnly) return false
 
         if (this.shouldNormalize()) this.normalize(values)
         if (this.valueProcessor) values = this.valueProcessor(values)
@@ -154,7 +160,10 @@ export class JDRegisterServer<
         if (!bufferEq(this.data, d)) {
             this.data = d
             if (!skipChangeEvent) this.emit(CHANGE)
+            return true
         }
+
+        return false
     }
 
     reset() {

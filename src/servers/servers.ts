@@ -167,6 +167,7 @@ import { genFieldInfo, isNumericType } from "../../jacdac-spec/spectool/jdspec"
 import { RosServer } from "./rosserver"
 import { IndexedScreenServer } from "./indexedscreenserver"
 import { randomDeviceId } from "../jdom/random"
+import { SevenSegmentDisplayServer } from "./sevensegmentdisplayserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     readingValues: [21.5],
@@ -358,19 +359,8 @@ function initProviders() {
                 name: "7-segment (4 segments)",
                 serviceClasses: [SRV_SEVEN_SEGMENT_DISPLAY],
                 services: () => [
-                    new JDServiceServer(SRV_SEVEN_SEGMENT_DISPLAY, {
-                        intensityValues: [0xffff],
-                        valueValues: [fromHex("00000000")],
-                        registerValues: [
-                            {
-                                code: SevenSegmentDisplayReg.DigitCount,
-                                values: [4],
-                            },
-                            {
-                                code: SevenSegmentDisplayReg.DecimalPoint,
-                                values: [true],
-                            },
-                        ],
+                    new SevenSegmentDisplayServer({
+                        digits: fromHex("00000000"),
                     }),
                 ],
             },
@@ -378,19 +368,8 @@ function initProviders() {
                 name: "7-segment (8 segments)",
                 serviceClasses: [SRV_SEVEN_SEGMENT_DISPLAY],
                 services: () => [
-                    new JDServiceServer(SRV_SEVEN_SEGMENT_DISPLAY, {
-                        intensityValues: [0xffff],
-                        valueValues: [fromHex("0000000000000000")],
-                        registerValues: [
-                            {
-                                code: SevenSegmentDisplayReg.DigitCount,
-                                values: [8],
-                            },
-                            {
-                                code: SevenSegmentDisplayReg.DecimalPoint,
-                                values: [true],
-                            },
-                        ],
+                    new SevenSegmentDisplayServer({
+                        digits: fromHex("0000000000000000"),
                     }),
                 ],
             },
