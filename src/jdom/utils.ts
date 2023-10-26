@@ -560,10 +560,11 @@ export function renderWithPrecision(
 ): string {
     const r = roundWithPrecision(x, digits, round)
     let rs = r.toLocaleString()
+    const sep = (0.1).toLocaleString()[1]
     if (digits > 0) {
-        let doti = rs.indexOf(".")
+        let doti = rs.indexOf(sep)
         if (doti < 0) {
-            rs += "."
+            rs += sep
             doti = rs.length - 1
         }
         while (rs.length - 1 - doti < digits) rs += "0"
