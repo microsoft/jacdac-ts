@@ -62,7 +62,7 @@ export function loadServiceSpecifications(
                 if (JSON.stringify(existingSpec) === JSON.stringify(spec))
                     continue // inserting a duplicate, ignore
                 errors.push({
-                    message: "classIdentifier already in use",
+                    message: `classIdentifier 0x${spec.classIdentifier.toString(16)} already in use`,
                     spec,
                 })
                 continue
