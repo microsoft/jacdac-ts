@@ -888,7 +888,11 @@ ${this._bridges
             .map(
                 dev => `device: 
   id: ${dev.shortId} (0x${dev.deviceId})
-  product: ${dev.name || "?"} (0x${dev.productIdentifier?.toString(16) || "?"})
+  product: ${
+      this.deviceCatalog.specificationFromProductIdentifier(
+          dev.productIdentifier,
+      )?.name || "?"
+  } (0x${dev.productIdentifier?.toString(16) || "?"})
   firmware_version: ${dev.firmwareVersion || ""}
   uptime: ${dev.uptime || ""}
   stats: ${dev.stats.toString()}
