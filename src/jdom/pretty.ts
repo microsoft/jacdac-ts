@@ -121,7 +121,7 @@ export function prettySize(b: number) {
     else return roundWithPrecision(b / 1e6, 1) + "mb"
 }
 
-export function prettyDuration(ms: number) {
+export function prettyDuration(ms: number, millis?: boolean) {
     let s = ms / 1000
     if (s < 1) return `${roundWithPrecision(s, 2)}s`
     if (s < 10) return `${roundWithPrecision(s, 1)}s`
@@ -144,7 +144,10 @@ export function prettyDuration(ms: number) {
         s -= m * 60
     }
     r += Math.floor(s)
-    return r
+    if (millis) {
+        const ms = Math.floor((s - Math.floor(s)) * 1000)
+        r += "." + ms
+    } else return r
 }
 
 export function prettyMicroDuration(us: number) {
