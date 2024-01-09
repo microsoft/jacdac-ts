@@ -100,6 +100,8 @@ import {
     SystemReg,
     SRV_ROS,
     SRV_INDEXED_SCREEN,
+    SRV_PCMONITOR,
+    SRV_PCCONTROLLER,
 } from "../jdom/constants"
 import { JDServerServiceProvider } from "../jdom/servers/serverserviceprovider"
 import { ProtocolTestServer } from "../jdom/servers/protocoltestserver"
@@ -168,6 +170,8 @@ import { RosServer } from "./rosserver"
 import { IndexedScreenServer } from "./indexedscreenserver"
 import { randomDeviceId } from "../jdom/random"
 import { SevenSegmentDisplayServer } from "./sevensegmentdisplayserver"
+import { PCMonitorServer } from "./pcmonitorserver"
+import { PCControllerServer } from "./pccontrollerserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     readingValues: [21.5],
@@ -1142,6 +1146,16 @@ function initProviders() {
                 serviceClasses: [SRV_DUAL_MOTORS],
                 services: () => [new DualMotorsServer()],
                 resetIn: true,
+            },
+            {
+                name: "PC controller",
+                serviceClasses: [SRV_PCCONTROLLER],
+                services: () => [new PCControllerServer()],
+            },
+            {
+                name: "PC monitor",
+                serviceClasses: [SRV_PCMONITOR],
+                services: () => [new PCMonitorServer()],
             },
             {
                 name: "planar position",
