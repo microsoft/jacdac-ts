@@ -12,6 +12,8 @@ export class PowerServer extends JDServiceServer {
     readonly maxPower: JDRegisterServer<[number]>
     readonly powerStatus: JDRegisterServer<[PowerPowerStatus]>
     readonly currentDraw: JDRegisterServer<[number]>
+    readonly keepOnPulseDuration: JDRegisterServer<[number]>
+    readonly keepOnPulsePeriod: JDRegisterServer<[number]>
 
     constructor(options?: JDServerOptions) {
         super(SRV_POWER, options)
@@ -22,6 +24,14 @@ export class PowerServer extends JDServiceServer {
             [PowerPowerStatus.Disallowed],
         )
         this.currentDraw = this.addRegister<[number]>(PowerReg.CurrentDraw, [0])
+        this.keepOnPulseDuration = this.addRegister<[number]>(
+            PowerReg.KeepOnPulseDuration,
+            [10],
+        )
+        this.keepOnPulsePeriod = this.addRegister<[number]>(
+            PowerReg.KeepOnPulsePeriod,
+            [1000],
+        )
 
         this.allowed.on(CHANGE, this.handleAllowedChange.bind(this))
     }
