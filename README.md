@@ -7,10 +7,10 @@ with applications to rapid prototyping, making, and physical computing.
 This repository contains a **TypeScript/JavaScript** client library for the [Jacdac](https://aka.ms/jacdac) protocol.
 
 -   **[Jacdac Protocol Documentation](https://aka.ms/jacdac/)**
--   **[Documentation](https://microsoft.github.io/jacdac-docs/clients/javascript/)**
--   **[API Reference](https://microsoft.github.io/jacdac-ts/)**
--   Discussions at https://github.com/microsoft/jacdac/discussions
--   Issues are tracked on https://github.com/microsoft/jacdac/issues
+-   **[Documentation](https://jacdac.github.io/jacdac-docs/clients/javascript/)**
+-   **[API Reference](https://jacdac.github.io/jacdac-ts/)**
+-   Discussions at https://github.com/jacdac/jacdac/discussions
+-   Issues are tracked on https://github.com/jacdac/jacdac/issues
 
 The rest of this page is for developers of the jacdac-ts library.
 
@@ -19,7 +19,7 @@ The rest of this page is for developers of the jacdac-ts library.
 -   clone this repository and pull all submodules
 
 ```
-git clone https://github.com/microsoft/jacdac-ts
+git clone https://github.com/jacdac/jacdac-ts
 git submodule update --init --recursive
 git pull
 ```
@@ -110,18 +110,18 @@ to also run `yarn watch` on the side.
 yarn tools
 ```
 
-These tools are also available on the [GitHub pages](https://microsoft.github.io/jacdac-ts/) of this repository:
+These tools are also available on the [GitHub pages](https://jacdac.github.io/jacdac-ts/) of this repository:
 
--   [console](https://microsoft.github.io/jacdac-ts/tools/console.html)
--   [devices](https://microsoft.github.io/jacdac-ts/tools/devices.html)
--   [flashing](https://microsoft.github.io/jacdac-ts/tools/flashing.html)
+-   [console](https://jacdac.github.io/jacdac-ts/tools/console.html)
+-   [devices](https://jacdac.github.io/jacdac-ts/tools/devices.html)
+-   [flashing](https://jacdac.github.io/jacdac-ts/tools/flashing.html)
 
 Experimental...
 
--   [namer](https://microsoft.github.io/jacdac-ts/tools/namer.html)
--   [tfite](https://microsoft.github.io/jacdac-ts/tools/tflite.html)
--   [streaming](https://microsoft.github.io/jacdac-ts/tools/streaming.html)
--   [streaming-rickshaw](https://microsoft.github.io/jacdac-ts/tools/streaming-rickshaw.html)
+-   [namer](https://jacdac.github.io/jacdac-ts/tools/namer.html)
+-   [tfite](https://jacdac.github.io/jacdac-ts/tools/tflite.html)
+-   [streaming](https://jacdac.github.io/jacdac-ts/tools/streaming.html)
+-   [streaming-rickshaw](https://jacdac.github.io/jacdac-ts/tools/streaming-rickshaw.html)
 
 ### Commits create releases
 
@@ -129,15 +129,3 @@ The releases are automatically created by the build system based on the title of
 
 -   `patch:...` or `fix:...` patch
 -   `minor:...` or `feature:...` minor
-
-## Microsoft Open Source Code of Conduct
-
-This project is hosted at https://github.com/microsoft/jacdac-ts.
-This project has adopted the
-[Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-
-### Resources:
-
--   [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/)
--   [Microsoft Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/)
--   Contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with questions or concerns

@@ -24,10 +24,10 @@
     "service",
     "src"
   ],
-  "author": "Microsoft Corporation",
+  "author": "Jacdac Organization",
   "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/jacdac-ts.git"
+    "url": "https://github.com/jacdac/jacdac-ts.git"
   },
   "license": "MIT",
   "engines": {
