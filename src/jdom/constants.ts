@@ -250,6 +250,6 @@ export const ROLE_QUERY_DEVICE = "dev"
 export const ROLE_QUERY_SELF_DEVICE = "self"
 
 // eslint-disable-next-line prefer-const
-export let DOCS_ROOT = "https://microsoft.github.io/jacdac-docs/"
+export let DOCS_ROOT = "https://jacdac.github.io/jacdac-docs/"
 
 export * from "../../jacdac-spec/dist/specconstants"

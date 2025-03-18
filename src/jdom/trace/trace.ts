@@ -25,7 +25,7 @@ export function cleanStack(text: string) {
         .slice(2)
         .join("\n") // drop first 2 lines
         .replace(/webpack-internal:\/\/\//g, "")
-        .replace(/https:\/\/microsoft\.github\.io\/jacdac-docs/g, "")
+        .replace(/https:\/\/jacdac\.github\.io\/jacdac-docs/g, "")
 }
 
 export function serializeToTrace(
