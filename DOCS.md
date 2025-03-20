@@ -5,7 +5,7 @@ The package exposes **JDOM**, a dependency-free JavaScript object model
 that reflects the state of the Jacdac elements and allows sending commands as well.
 JDOM also handles connection through WebUSB, WebBLE and other transports.
 
-To read guides and overview documents about JDOM, go to [JDOM documentation](https://microsoft.github.io/jacdac-docs/clients/javascript/jdom).
+To read guides and overview documents about JDOM, go to [JDOM documentation](https://jacdac.github.io/jacdac-docs/clients/javascript/jdom).
 
 To browser the API documentation, use the list on this page to explore classes.
 

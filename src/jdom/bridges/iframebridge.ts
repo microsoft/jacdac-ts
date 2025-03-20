@@ -14,7 +14,7 @@ class IFrameBridge extends JDBridge {
 
     private handleMessage(msg: MessageEvent) {
         const { data } = msg
-        if (data.channel === "jacdac" && data.type === "messagepacket") {
+        if (data.channel === "jacdac/pxt-jacdac" && data.type === "messagepacket") {
             const payload: Uint8Array = data.data
             this.receiveFrameOrPacket(payload)
         }
@@ -23,7 +23,7 @@ class IFrameBridge extends JDBridge {
     protected sendPacket(data: Uint8Array, sender: string): void {
         const msg = {
             type: "messagepacket",
-            channel: "jacdac",
+            channel: "jacdac/pxt-jacdac",
             data,
             sender,
             broadcast: true,
