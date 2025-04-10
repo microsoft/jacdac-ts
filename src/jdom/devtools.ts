@@ -5,9 +5,7 @@ import { randomDeviceId } from "./random"
 export function startDevTools() {
     if (
         typeof window !== "undefined" &&
-        !/^https:\/\/jacdac.github.io\/jacdac-docs\//.test(
-            window.location.href,
-        )
+        !/^https:\/\/jacdac.github.io\/jacdac-docs\//.test(window.location.href)
     )
         window.location.href = `https://jacdac.github.io/jacdac-docs/clients/javascript/devtools.html#${window.location.href}`
 }
@@ -76,9 +74,8 @@ export function injectDevTools(
         document.head.appendChild(style)
     }
 
-    const {
-        dashboardUrl = "https://jacdac.github.io/jacdac-docs/dashboard/",
-    } = options || {}
+    const { dashboardUrl = "https://jacdac.github.io/jacdac-docs/dashboard/" } =
+        options || {}
     const frameid = randomDeviceId()
 
     const container = document.createElement("div")
