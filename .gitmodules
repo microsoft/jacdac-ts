@@ -1,3 +1,4 @@
 [submodule "jacdac-spec"]
 	path = jacdac-spec
 	url = https://github.com/jacdac/jacdac
+
