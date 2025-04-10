@@ -5,11 +5,11 @@ import { randomDeviceId } from "./random"
 export function startDevTools() {
     if (
         typeof window !== "undefined" &&
-        !/^https:\/\/microsoft.github.io\/jacdac-docs\//.test(
+        !/^https:\/\/jacdac.github.io\/jacdac-docs\//.test(
             window.location.href,
         )
     )
-        window.location.href = `https://microsoft.github.io/jacdac-docs/clients/javascript/devtools.html#${window.location.href}`
+        window.location.href = `https://jacdac.github.io/jacdac-docs/clients/javascript/devtools.html#${window.location.href}`
 }
 
 /**
@@ -77,7 +77,7 @@ export function injectDevTools(
     }
 
     const {
-        dashboardUrl = "https://microsoft.github.io/jacdac-docs/dashboard/",
+        dashboardUrl = "https://jacdac.github.io/jacdac-docs/dashboard/",
     } = options || {}
     const frameid = randomDeviceId()
 
@@ -109,7 +109,7 @@ export function injectDevTools(
         createProxyBridge((data, sender) => {
             iframe.contentWindow?.postMessage({
                 type: "messagepacket",
-                channel: "jacdac",
+                channel: "jacdac/pxt-jacdac",
                 data,
                 sender,
             })
