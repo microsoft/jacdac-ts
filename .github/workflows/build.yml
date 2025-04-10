@@ -33,7 +33,7 @@ jobs:
       - run: yarn test
       - name: semantic release
         run: npx -p=semantic-release -p=@semantic-release/git -p=@semantic-release/npm -p=@semantic-release/github -p=@semantic-release/exec semantic-release
-        if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ github.ref == 'refs/heads/dev' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -41,7 +41,7 @@ jobs:
       - run: yarn disttools
       - name: github pages
         uses: peaceiris/actions-gh-pages@v3
-        if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ github.ref == 'refs/heads/dev' }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           enable_jekyll: false
