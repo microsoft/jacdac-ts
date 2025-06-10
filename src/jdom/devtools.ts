@@ -106,7 +106,7 @@ export function injectDevTools(
         createProxyBridge((data, sender) => {
             iframe.contentWindow?.postMessage({
                 type: "messagepacket",
-                channel: "jacdac/pxt-jacdac",
+                channel: "jacdac",
                 data,
                 sender,
             })
