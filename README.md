@@ -4,16 +4,15 @@
 for **microcontrollers** and their peripherals (sensors/actuators),
 with applications to rapid prototyping, making, and physical computing.
 
-This repository contains a **TypeScript/JavaScript** client library for the [Jacdac](https://aka.ms/jacdac) protocol.
+This repository contains a **TypeScript/JavaScript** client library for Jacdac:
 
--   **[Jacdac Protocol Documentation](https://aka.ms/jacdac/)**
+-   **[Jacdac Protocol Documentation](https://jacdac.github.io/jacdac-docs/reference/)**
 -   **[Documentation](https://jacdac.github.io/jacdac-docs/clients/javascript/)**
 -   **[API Reference](https://jacdac.github.io/jacdac-ts/)**
 -   Discussions at https://github.com/jacdac/jacdac/discussions
 -   Issues are tracked on https://github.com/jacdac/jacdac/issues
 
 The rest of this page is for developers of the jacdac-ts library.
-
 
 ## Developer setup
 
