@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> This repository has moved to https://github.com/jacdac/jacdac-ts 
+ 
 # Jacdac for JavaScript/TypeScript
 
 **Jacdac** is a plug-and-play hardware/software stack
